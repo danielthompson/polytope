@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_VECTOR_H
 #define POLYTOPE_VECTOR_H
 
-namespace Polytope::Structures {
+namespace Polytope {
 
    class Vector {
    public:
@@ -18,6 +18,8 @@ namespace Polytope::Structures {
       float operator[] (int index) const;
 
       float Dot(const Vector &v) const;
+
+      float Length() const;
 
    public:
       float x, y, z;

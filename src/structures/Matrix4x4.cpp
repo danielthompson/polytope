@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include "Matrix4x4.h"
 
-namespace Polytope::Structures {
+namespace Polytope {
 
    Matrix4x4::Matrix4x4() {
       Matrix[0][0] = 1;

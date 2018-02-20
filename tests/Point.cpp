@@ -4,10 +4,10 @@
 #include "../src/structures/Point.h"
 #include "../src/Constants.h"
 
-namespace Tests::Point {
+namespace Tests {
 
-   using Polytope::Constants::Epsilon;
-   using Polytope::Structures::Point;
+   using Polytope::Epsilon;
+   using Polytope::Point;
 
    namespace Equality {
 

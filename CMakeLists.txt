@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.8)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(tests "Build all tests." OFF) # Makes boolean 'tests' available.
@@ -9,7 +9,7 @@ project(${PROJECT_NAME})
 
 set(CMAKE_CXX_FLAGS "-g -Wall")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
 # If you want your own include/ directory, set this, and then you can do
 # include_directories(${COMMON_INCLUDES}) in other CMakeLists.txt files.
@@ -27,8 +27,18 @@ add_library(polytope_lib
         src/structures/Matrix4x4.h
         src/structures/Matrix4x4.cpp
         src/structures/Transform.h
-        src/structures/Transform.cpp)
-add_executable(polytope src/Main.cpp)
+        src/structures/Transform.cpp
+      src/scenes/AbstractScene.cpp
+      src/scenes/AbstractScene.h
+      src/structures/Ray.cpp
+      src/structures/Ray.h
+      src/cameras/AbstractCamera.cpp
+      src/cameras/AbstractCamera.h
+      src/shapes/AbstractShape.cpp
+      src/shapes/AbstractShape.h
+      src/shapes/Sphere.cpp
+      src/shapes/Sphere.h)
+add_executable(polytope src/Main.cpp )
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be
 # used elsewhere.
@@ -58,7 +68,8 @@ target_link_libraries(polytope polytope_lib)
     ##############
     add_executable(runUnitTests
             tests/Matrix4x4.cpp
-            tests/Point.cpp)
+            tests/Point.cpp
+          tests/Transform.cpp)
 
     # Standard linking to gtest stuff.
     target_link_libraries(runUnitTests gtest gtest_main)

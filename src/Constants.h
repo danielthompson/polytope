@@ -7,7 +7,7 @@
 
 #include <cmath>
 
-namespace Polytope::Constants {
+namespace Polytope {
 
    const float Epsilon = .00001f;
    const float PI = float(M_PI);

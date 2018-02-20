@@ -1195,7 +1195,7 @@ bool DefaultDeathTestFactory::Create(const char* statement, const RE* regex,
 
   if (GTEST_FLAG(death_test_style) == "threadsafe" ||
       GTEST_FLAG(death_test_style) == "fast") {
-    *tests = new WindowsDeathTest(statement, regex, file, line);
+    *test = new WindowsDeathTest(statement, regex, file, line);
   }
 
 # else

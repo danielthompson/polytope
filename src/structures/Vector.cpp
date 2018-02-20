@@ -3,9 +3,10 @@
 //
 
 #include <cassert>
+#include <cmath>
 #include "Vector.h"
 
-namespace Polytope::Structures {
+namespace Polytope {
 
    Vector::Vector(float x, float y, float z) : x(x), y(y), z(z) {}
 
@@ -33,6 +34,10 @@ namespace Polytope::Structures {
       if (index == 1)
          return y;
       return z;
+   }
+
+   float Vector::Length() const {
+      return std::sqrt(x * x + y * y + z + z);
    }
 
 }

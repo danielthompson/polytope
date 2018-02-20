@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_POINT_H
 #define POLYTOPE_POINT_H
 
-namespace Polytope::Structures {
+namespace Polytope {
 
    class Point {
    public:

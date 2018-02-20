@@ -6,26 +6,39 @@
 #define POLYTOPE_TRANSFORM_H
 
 #include "Matrix4x4.h"
+#include "Point.h"
+#include "Vector.h"
+#include "Ray.h"
 
-namespace Polytope::Structures {
+namespace Polytope {
 
    class Transform {
    public:
+      // methods
       bool operator==(const Transform &rhs) const;
-
       bool operator!=(const Transform &rhs) const;
-
-      Matrix4x4 Matrix;
-      Matrix4x4 Inverse;
 
       Transform();
       explicit Transform(const float values[4][4]);
       explicit Transform(const Matrix4x4 matrix);
       explicit Transform(const Matrix4x4 matrix, const Matrix4x4 inverse);
 
-      Transform Invert();
-   };
+      Transform Invert() const;
 
+      void ApplyInPlace(Point &point) const;
+      Point Apply(const Point &point) const;
+
+      void ApplyInPlace(Vector &vector) const;
+      Vector Apply(const Vector &vector) const;
+
+      void ApplyInPlace(Ray &ray) const;
+      Ray Apply(const Ray &ray) const;
+
+      // data
+
+      Matrix4x4 Matrix;
+      Matrix4x4 Inverse;
+   };
 }
 
 #endif //POLYTOPE_TRANSFORM_H

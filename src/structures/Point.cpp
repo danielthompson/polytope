@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "Point.h"
 
-namespace Polytope::Structures {
+namespace Polytope {
 
    Point::Point(float x, float y, float z) : x(x), y(y), z(z) {}
 

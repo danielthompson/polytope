@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_MATRIX4X4_H
 #define POLYTOPE_MATRIX4X4_H
 
-namespace Polytope::Structures {
+namespace Polytope {
    class Matrix4x4 {
    public:
 

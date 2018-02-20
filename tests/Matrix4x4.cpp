@@ -7,9 +7,9 @@
 
 #include "../src/structures/Matrix4x4.h"
 
-namespace Tests::Matrix4x4 {
+namespace Tests {
 
-   using Polytope::Structures::Matrix4x4;
+   using Polytope::Matrix4x4;
 
    namespace Equality {
       TEST(Matrix4x4, Equals) {
