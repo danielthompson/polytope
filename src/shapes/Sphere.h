@@ -16,6 +16,9 @@ namespace Polytope {
    public:
       explicit Sphere(const Transform &transform);
 
+      bool Hits(const Ray &worldSpaceRay) override;
+      Intersection Intersect(const Ray &worldSpaceRay) override;
+
    private:
       const Point Origin = Point(0, 0, 0);
       const float Radius = 1.0f;

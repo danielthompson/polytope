@@ -12,6 +12,7 @@ namespace Polytope {
    const float Epsilon = .00001f;
    const float PI = float(M_PI);
    const float OneOverPi = 1.0f / PI;
+   const float PIOver180 = PI / 180.0f;
 
    const float PIOver2 = PI / 2.0f;
    const float PIOver3 = PI / 3.0f;

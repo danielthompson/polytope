@@ -5,6 +5,8 @@
 #ifndef POLYTOPE_POINT_H
 #define POLYTOPE_POINT_H
 
+#include "Vector.h"
+
 namespace Polytope {
 
    class Point {
@@ -15,6 +17,9 @@ namespace Polytope {
 
       bool operator==(const Point &rhs) const;
       bool operator!=(const Point &rhs) const;
+
+      Vector operator-(const Point &rhs) const;
+      Point operator+(const Point &rhs) const;
 
       float operator[] (int index) const;
 

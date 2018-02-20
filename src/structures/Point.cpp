@@ -35,4 +35,12 @@ namespace Polytope {
       return z;
    }
 
+   Point Point::operator+(const Point &rhs) const {
+      return Point(x + rhs.x, y + rhs.y, z + rhs.z);
+   }
+
+   Vector Point::operator-(const Point &rhs) const {
+      return Vector(x - rhs.x, y - rhs.y, z - rhs.z);
+   }
+
 }

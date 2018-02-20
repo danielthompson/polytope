@@ -5,13 +5,23 @@
 #ifndef POLYTOPE_ABSTRACTSCENE_H
 #define POLYTOPE_ABSTRACTSCENE_H
 
+#include <memory>
+#include <vector>
 #include "../cameras/AbstractCamera.h"
+#include "../shapes/AbstractShape.h"
+#include "../structures/Intersection.h"
 
 namespace Polytope {
 
    class AbstractScene {
    public:
-      AbstractCamera Camera;
+      std::shared_ptr<AbstractCamera> Camera;
+      std::string ImplementationType = "Base Scene";
+
+      std::vector<AbstractShape> Shapes;
+
+   protected:
+      Intersection GetNearestShapeIteratively(std::vector<AbstractShape> shapes, Ray ray);
 
    };
 
