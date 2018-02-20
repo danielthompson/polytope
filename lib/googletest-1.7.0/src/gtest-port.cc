@@ -279,7 +279,7 @@ void Mutex::ThreadSafeLazyInit() {
         ::InterlockedCompareExchange(&critical_section_init_phase_, 1L, 0L)) {
       case 0:
         // If critical_section_init_phase_ was 0 before the exchange, we
-        // are the first to test it and need to perform the initialization.
+        // are the first to tests it and need to perform the initialization.
         owner_thread_id_ = 0;
         critical_section_ = new CRITICAL_SECTION;
         ::InitializeCriticalSection(critical_section_);
@@ -730,7 +730,7 @@ bool ValidateRegex(const char* regex) {
 // expression.  The regex atom is defined as c if escaped is false,
 // or \c otherwise.  repeat is the repetition meta character (?, *,
 // or +).  The behavior is undefined if str contains too many
-// characters to be indexable by size_t, in which case the test will
+// characters to be indexable by size_t, in which case the tests will
 // probably time out anyway.  We are fine with this limitation as
 // std::string has it too.
 bool MatchRepetitionAndRegexAtHead(
@@ -943,7 +943,7 @@ class CapturedStream {
                                     << temp_file_path;
     filename_ = temp_file_path;
 # else
-    // There's no guarantee that a test has write access to the current
+    // There's no guarantee that a tests has write access to the current
     // directory, so we create the temporary file in the /tmp directory
     // instead. We use /tmp on most systems, and /sdcard on Android.
     // That's because Android doesn't have /tmp.

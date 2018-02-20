@@ -29,11 +29,11 @@
 //
 // Author: vladl@google.com (Vlad Losev)
 
-// This sample shows how to test code relying on some global flag variables.
+// This sample shows how to tests code relying on some global flag variables.
 // Combine() helps with generating all possible combinations of such flags,
-// and each test is given one combination as a parameter.
+// and each tests is given one combination as a parameter.
 
-// Use class definitions to test from this header.
+// Use class definitions to tests from this header.
 #include "prime_tables.h"
 
 #include "gtest/gtest.h"
@@ -85,7 +85,7 @@ using ::testing::Bool;
 using ::testing::Values;
 using ::testing::Combine;
 
-// To test all code paths for HybridPrimeTable we must test it with numbers
+// To tests all code paths for HybridPrimeTable we must tests it with numbers
 // both within and outside PreCalculatedPrimeTable's capacity and also with
 // PreCalculatedPrimeTable disabled. We do this by defining fixture which will
 // accept different combinations of parameters for instantiating a
@@ -113,8 +113,8 @@ class PrimeTableTest : public TestWithParam< ::testing::tuple<bool, int> > {
 };
 
 TEST_P(PrimeTableTest, ReturnsFalseForNonPrimes) {
-  // Inside the test body, you can refer to the test parameter by GetParam().
-  // In this case, the test parameter is a PrimeTable interface pointer which
+  // Inside the tests body, you can refer to the tests parameter by GetParam().
+  // In this case, the tests parameter is a PrimeTable interface pointer which
   // we can use directly.
   // Please note that you can also save it in the fixture's SetUp() method
   // or constructor and use saved copy in the tests.
@@ -146,7 +146,7 @@ TEST_P(PrimeTableTest, CanGetNextPrime) {
 }
 
 // In order to run value-parameterized tests, you need to instantiate them,
-// or bind them to a list of values which will be used as test parameters.
+// or bind them to a list of values which will be used as tests parameters.
 // You can instantiate them in a different translation module, or even
 // instantiate them several times.
 //
@@ -167,7 +167,7 @@ INSTANTIATE_TEST_CASE_P(MeaningfulTestParameters,
 // the gtest_main library, MSVC linker will not link that library at
 // all and consequently complain about missing entry point defined in
 // that library (fatal error LNK1561: entry point must be
-// defined). This dummy test keeps gtest_main linked in.
+// defined). This dummy tests keeps gtest_main linked in.
 TEST(DummyTest, CombineIsNotSupportedOnThisPlatform) {}
 
 #endif  // GTEST_HAS_COMBINE

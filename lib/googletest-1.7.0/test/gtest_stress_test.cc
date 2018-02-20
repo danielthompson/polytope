@@ -180,7 +180,7 @@ void AssertNoFatalFailureIgnoresFailuresInOtherThreads() {
   ASSERT_NO_FATAL_FAILURE(GenerateFatalFailureInAnotherThread(true));
 }
 TEST(NoFatalFailureTest, AssertNoFatalFailureIgnoresFailuresInOtherThreads) {
-  // Using a subroutine, to make sure, that the test continues.
+  // Using a subroutine, to make sure, that the tests continues.
   AssertNoFatalFailureIgnoresFailuresInOtherThreads();
   // We should only have one failure (the one from
   // GenerateFatalFailureInAnotherThread()), since the EXPECT_NO_FATAL_FAILURE
@@ -202,7 +202,7 @@ TEST(FatalFailureOnAllThreadsTest, ExpectFatalFailureOnAllThreads) {
       GenerateFatalFailureInAnotherThread(true), "expected");
   CheckTestFailureCount(0);
   // We need to add a failure, because main() checks that there are failures.
-  // But when only this test is run, we shouldn't have any failures.
+  // But when only this tests is run, we shouldn't have any failures.
   ADD_FAILURE() << "This is an expected non-fatal failure.";
 }
 
@@ -221,7 +221,7 @@ TEST(NonFatalFailureOnAllThreadsTest, ExpectNonFatalFailureOnAllThreads) {
       GenerateFatalFailureInAnotherThread(false), "expected");
   CheckTestFailureCount(0);
   // We need to add a failure, because main() checks that there are failures,
-  // But when only this test is run, we shouldn't have any failures.
+  // But when only this tests is run, we shouldn't have any failures.
   ADD_FAILURE() << "This is an expected non-fatal failure.";
 }
 

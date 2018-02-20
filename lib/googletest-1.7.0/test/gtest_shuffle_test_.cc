@@ -29,7 +29,7 @@
 //
 // Author: wan@google.com (Zhanyong Wan)
 
-// Verifies that test shuffling works.
+// Verifies that tests shuffling works.
 
 #include "gtest/gtest.h"
 
@@ -44,8 +44,8 @@ using ::testing::TestInfo;
 using ::testing::UnitTest;
 using ::testing::internal::scoped_ptr;
 
-// The test methods are empty, as the sole purpose of this program is
-// to print the test names before/after shuffling.
+// The tests methods are empty, as the sole purpose of this program is
+// to print the tests names before/after shuffling.
 
 class A : public Test {};
 TEST_F(A, A) {}
@@ -74,7 +74,7 @@ TEST(CDeathTest, A) {}
 TEST(DISABLED_D, A) {}
 TEST(DISABLED_D, DISABLED_B) {}
 
-// This printer prints the full test names only, starting each test
+// This printer prints the full tests names only, starting each tests
 // iteration with a "----" marker.
 class TestNamePrinter : public EmptyTestEventListener {
  public:
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
   InitGoogleTest(&argc, argv);
 
   // Replaces the default printer with TestNamePrinter, which prints
-  // the test name only.
+  // the tests name only.
   TestEventListeners& listeners = UnitTest::GetInstance()->listeners();
   delete listeners.Release(listeners.default_result_printer());
   listeners.Append(new TestNamePrinter);

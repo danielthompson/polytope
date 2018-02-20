@@ -29,7 +29,7 @@
 //
 // Author: wan@google.com (Zhanyong Wan)
 //
-// Tests using global test environments.
+// Tests using global tests environments.
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -46,7 +46,7 @@ enum FailureType {
   NO_FAILURE, NON_FATAL_FAILURE, FATAL_FAILURE
 };
 
-// For testing using global test environments.
+// For testing using global tests environments.
 class MyEnvironment : public testing::Environment {
  public:
   MyEnvironment() { Reset(); }
@@ -134,7 +134,7 @@ int RunAllTests(MyEnvironment* env, FailureType failure) {
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
 
-  // Registers a global test environment, and verifies that the
+  // Registers a global tests environment, and verifies that the
   // registration function returns its argument.
   MyEnvironment* const env = new MyEnvironment;
   Check(testing::AddGlobalTestEnvironment(env) == env,
@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
   Check(env->tear_down_was_run(),
         "The global tear-down should run, as the global set-up was run.");
 
-  // Verifies that RUN_ALL_TESTS() runs no test when the global set-up
+  // Verifies that RUN_ALL_TESTS() runs no tests when the global set-up
   // generates a fatal failure.
   Check(RunAllTests(env, FATAL_FAILURE) != 0,
         "RUN_ALL_TESTS() should return non-zero, as the global set-up "
@@ -174,12 +174,12 @@ int main(int argc, char **argv) {
         "The global tear-down should run, as the global set-up was run.");
 
   // Verifies that RUN_ALL_TESTS() doesn't do global set-up or
-  // tear-down when there is no test to run.
+  // tear-down when there is no tests to run.
   testing::GTEST_FLAG(filter) = "-*";
   Check(RunAllTests(env, NO_FAILURE) == 0,
-        "RUN_ALL_TESTS() should return zero, as there is no test to run.");
+        "RUN_ALL_TESTS() should return zero, as there is no tests to run.");
   Check(!env->set_up_was_run(),
-        "The global set-up should not run, as there is no test to run.");
+        "The global set-up should not run, as there is no tests to run.");
   Check(!env->tear_down_was_run(),
         "The global tear-down should not run, "
         "as the global set-up was not run.");

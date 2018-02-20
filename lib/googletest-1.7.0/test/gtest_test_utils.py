@@ -27,7 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Unit test utilities for Google C++ Testing Framework."""
+"""Unit tests utilities for Google C++ Testing Framework."""
 # Suppresses the 'Import not at the top of the file' lint complaint.
 # pylint: disable-msg=C6204
 
@@ -130,7 +130,7 @@ def GetSourceDir():
 
 
 def GetBuildDir():
-  """Returns the absolute path of the directory where the test binaries are."""
+  """Returns the absolute path of the directory where the tests binaries are."""
 
   return os.path.abspath(GetFlag('build_dir'))
 
@@ -152,18 +152,18 @@ def GetTempDir():
 
 
 def GetTestExecutablePath(executable_name, build_dir=None):
-  """Returns the absolute path of the test binary given its name.
+  """Returns the absolute path of the tests binary given its name.
 
   The function will print a message and abort the program if the resulting file
   doesn't exist.
 
   Args:
-    executable_name: name of the test binary that the test script runs.
+    executable_name: name of the tests binary that the tests script runs.
     build_dir:       directory where to look for executables, by default
                      the result of GetBuildDir().
 
   Returns:
-    The absolute path of the test binary.
+    The absolute path of the tests binary.
   """
 
   path = os.path.abspath(os.path.join(build_dir or GetBuildDir(),
@@ -173,7 +173,7 @@ def GetTestExecutablePath(executable_name, build_dir=None):
 
   if not os.path.exists(path):
     message = (
-        'Unable to find the test binary "%s". Please make sure to provide\n'
+        'Unable to find the tests binary "%s". Please make sure to provide\n'
         'a path to the binary via the --build_dir flag or the BUILD_DIR\n'
         'environment variable.' % path)
     print >> sys.stderr, message
@@ -302,7 +302,7 @@ class Subprocess:
 
 
 def Main():
-  """Runs the unit test."""
+  """Runs the unit tests."""
 
   # We must call _ParseAndStripGTestFlags() before calling
   # unittest.main().  Otherwise the latter will be confused by the

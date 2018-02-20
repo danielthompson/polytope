@@ -232,7 +232,7 @@ TEST(ScopedPtrTest, DefinesElementType) {
 TEST(GtestCheckSyntaxTest, BehavesLikeASingleStatement) {
   if (AlwaysFalse())
     GTEST_CHECK_(false) << "This should never be executed; "
-                           "It's a compilation test only.";
+                           "It's a compilation tests only.";
 
   if (AlwaysTrue())
     GTEST_CHECK_(true);
@@ -325,7 +325,7 @@ TEST(GetThreadCountTest, ReturnsCorrectValue) {
   ASSERT_EQ(0, pthread_join(thread_id, &dummy));
 
   // The OS may not immediately report the updated thread count after
-  // joining a thread, causing flakiness in this test. To counter that, we
+  // joining a thread, causing flakiness in this tests. To counter that, we
   // wait for up to .5 seconds for the OS to report the correct value.
   for (int i = 0; i < 5; ++i) {
     if (GetThreadCount() == starting_count)
@@ -371,7 +371,7 @@ TEST(GtestCheckDeathTest, LivesSilentlyOnSuccess) {
 #endif  // GTEST_HAS_DEATH_TEST
 
 // Verifies that Google Test choose regular expression engine appropriate to
-// the platform. The test will produce compiler errors in case of failure.
+// the platform. The tests will produce compiler errors in case of failure.
 // For simplicity, we only cover the most important platforms here.
 TEST(RegexEngineSelectionTest, SelectsCorrectRegexEngine) {
 #if !GTEST_USES_PCRE
@@ -957,7 +957,7 @@ TEST(CaptureDeathTest, CannotReenterStdoutCapture) {
                             "Only one stdout capturer can exist at a time");
   GetCapturedStdout();
 
-  // We cannot test stderr capturing using death tests as they use it
+  // We cannot tests stderr capturing using death tests as they use it
   // themselves.
 }
 
@@ -1025,7 +1025,7 @@ TEST(ThreadWithParamTest, ConstructorExecutesThreadFunc) {
 
 TEST(MutexDeathTest, AssertHeldShouldAssertWhenNotLocked) {
   // AssertHeld() is flaky only in the presence of multiple threads accessing
-  // the lock. In this case, the test is robust.
+  // the lock. In this case, the tests is robust.
   EXPECT_DEATH_IF_SUPPORTED({
     Mutex m;
     { MutexLock lock(&m); }

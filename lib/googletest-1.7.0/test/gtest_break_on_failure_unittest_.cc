@@ -29,14 +29,14 @@
 //
 // Author: wan@google.com (Zhanyong Wan)
 
-// Unit test for Google Test's break-on-failure mode.
+// Unit tests for Google Test's break-on-failure mode.
 //
 // A user can ask Google Test to seg-fault when an assertion fails, using
 // either the GTEST_BREAK_ON_FAILURE environment variable or the
 // --gtest_break_on_failure flag.  This file is used for testing such
 // functionality.
 //
-// This program will be invoked from a Python unit test.  It is
+// This program will be invoked from a Python unit tests.  It is
 // expected to fail.  Don't run it directly.
 
 #include "gtest/gtest.h"
@@ -48,7 +48,7 @@
 
 namespace {
 
-// A test that's expected to fail.
+// A tests that's expected to fail.
 TEST(Foo, Bar) {
   EXPECT_EQ(2, 3);
 }

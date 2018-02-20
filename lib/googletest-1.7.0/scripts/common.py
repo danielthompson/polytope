@@ -37,7 +37,7 @@ import re
 
 # Matches the line from 'svn info .' output that describes what SVN
 # path the current local directory corresponds to.  For example, in
-# a googletest SVN workspace's trunk/test directory, the output will be:
+# a googletest SVN workspace's trunk/tests directory, the output will be:
 #
 # URL: https://googletest.googlecode.com/svn/trunk/test
 _SVN_INFO_URL_RE = re.compile(r'^URL: https://(\w+)\.googlecode\.com/svn(.*)')

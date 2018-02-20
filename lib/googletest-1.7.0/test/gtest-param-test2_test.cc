@@ -39,19 +39,19 @@ using ::testing::Values;
 using ::testing::internal::ParamGenerator;
 
 // Tests that generators defined in a different translation unit
-// are functional. The test using extern_gen is defined
+// are functional. The tests using extern_gen is defined
 // in gtest-param-test_test.cc.
 ParamGenerator<int> extern_gen = Values(33);
 
-// Tests that a parameterized test case can be defined in one translation unit
-// and instantiated in another. The test is defined in gtest-param-test_test.cc
+// Tests that a parameterized tests case can be defined in one translation unit
+// and instantiated in another. The tests is defined in gtest-param-test_test.cc
 // and ExternalInstantiationTest fixture class is defined in
 // gtest-param-test_test.h.
 INSTANTIATE_TEST_CASE_P(MultiplesOf33,
                         ExternalInstantiationTest,
                         Values(33, 66));
 
-// Tests that a parameterized test case can be instantiated
+// Tests that a parameterized tests case can be instantiated
 // in multiple translation units. Another instantiation is defined
 // in gtest-param-test_test.cc and InstantiationInMultipleTranslaionUnitsTest
 // fixture is defined in gtest-param-test_test.h

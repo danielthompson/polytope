@@ -29,7 +29,7 @@
 //
 // Author: wan@google.com (Zhanyong Wan)
 //
-// This is part of the unit test for gtest_prod.h.
+// This is part of the unit tests for gtest_prod.h.
 
 #ifndef GTEST_TEST_PRODUCTION_H_
 #define GTEST_TEST_PRODUCTION_H_
@@ -38,10 +38,10 @@
 
 class PrivateCode {
  public:
-  // Declares a friend test that does not use a fixture.
+  // Declares a friend tests that does not use a fixture.
   FRIEND_TEST(PrivateCodeTest, CanAccessPrivateMembers);
 
-  // Declares a friend test that uses a fixture.
+  // Declares a friend tests that uses a fixture.
   FRIEND_TEST(PrivateCodeFixtureTest, CanAccessPrivateMembers);
 
   PrivateCode();

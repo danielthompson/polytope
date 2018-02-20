@@ -174,8 +174,8 @@ FilePath FilePath::RemoveFileName() const {
 
 // Helper functions for naming files in a directory for xml output.
 
-// Given directory = "dir", base_name = "test", number = 0,
-// extension = "xml", returns "dir/test.xml". If number is greater
+// Given directory = "dir", base_name = "tests", number = 0,
+// extension = "xml", returns "dir/tests.xml". If number is greater
 // than zero (e.g., 12), returns "dir/test_12.xml".
 // On Windows platform, uses \ as the separator rather than /.
 FilePath FilePath::MakeFileName(const FilePath& directory,
@@ -192,7 +192,7 @@ FilePath FilePath::MakeFileName(const FilePath& directory,
   return ConcatPaths(directory, FilePath(file));
 }
 
-// Given directory = "dir", relative_path = "test.xml", returns "dir/test.xml".
+// Given directory = "dir", relative_path = "tests.xml", returns "dir/tests.xml".
 // On Windows, uses \ as the separator rather than /.
 FilePath FilePath::ConcatPaths(const FilePath& directory,
                                const FilePath& relative_path) {

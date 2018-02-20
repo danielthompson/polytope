@@ -222,7 +222,7 @@ find_package(PythonInterp)
 
 # cxx_test_with_flags(name cxx_flags libs srcs...)
 #
-# creates a named C++ test that depends on the given libs and is built
+# creates a named C++ tests that depends on the given libs and is built
 # from the given source files with the given compiler flags.
 function(cxx_test_with_flags name cxx_flags libs)
   cxx_executable_with_flags(${name} "${cxx_flags}" "${libs}" ${ARGN})
@@ -231,9 +231,9 @@ endfunction()
 
 # cxx_test(name libs srcs...)
 #
-# creates a named test target that depends on the given libs and is
+# creates a named tests target that depends on the given libs and is
 # built from the given source files.  Unlike cxx_test_with_flags,
-# test/name.cc is already implicitly included in the source file list.
+# tests/name.cc is already implicitly included in the source file list.
 function(cxx_test name libs)
   cxx_test_with_flags("${name}" "${cxx_default}" "${libs}"
     "test/${name}.cc" ${ARGN})
@@ -241,8 +241,8 @@ endfunction()
 
 # py_test(name)
 #
-# creates a Python test with the given name whose main module is in
-# test/name.py.  It does nothing if Python is not installed.
+# creates a Python tests with the given name whose main module is in
+# tests/name.py.  It does nothing if Python is not installed.
 function(py_test name)
   if (PYTHONINTERP_FOUND)
     if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)

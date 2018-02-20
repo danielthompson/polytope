@@ -29,9 +29,9 @@
 //
 // Author: vladl@google.com (Vlad Losev)
 
-// This sample shows how to test common properties of multiple
+// This sample shows how to tests common properties of multiple
 // implementations of an interface (aka interface tests) using
-// value-parameterized tests. Each test in the test case has
+// value-parameterized tests. Each tests in the tests case has
 // a parameter that is an interface pointer to an implementation
 // tested.
 
@@ -44,10 +44,10 @@ namespace {
 using ::testing::TestWithParam;
 using ::testing::Values;
 
-// As a general rule, to prevent a test from affecting the tests that come
-// after it, you should create and destroy the tested objects for each test
+// As a general rule, to prevent a tests from affecting the tests that come
+// after it, you should create and destroy the tested objects for each tests
 // instead of reusing them.  In this sample we will define a simple factory
-// function for PrimeTable objects.  We will instantiate objects in test's
+// function for PrimeTable objects.  We will instantiate objects in tests's
 // SetUp() method and delete them in TearDown() method.
 typedef PrimeTable* CreatePrimeTableFunc();
 
@@ -60,8 +60,8 @@ PrimeTable* CreatePreCalculatedPrimeTable() {
   return new PreCalculatedPrimeTable(max_precalculated);
 }
 
-// Inside the test body, fixture constructor, SetUp(), and TearDown() you
-// can refer to the test parameter by GetParam().  In this case, the test
+// Inside the tests body, fixture constructor, SetUp(), and TearDown() you
+// can refer to the tests parameter by GetParam().  In this case, the tests
 // parameter is a factory function which we call in fixture's SetUp() to
 // create and store an instance of PrimeTable.
 class PrimeTableTestSmpl7 : public TestWithParam<CreatePrimeTableFunc*> {
@@ -105,7 +105,7 @@ TEST_P(PrimeTableTestSmpl7, CanGetNextPrime) {
 }
 
 // In order to run value-parameterized tests, you need to instantiate them,
-// or bind them to a list of values which will be used as test parameters.
+// or bind them to a list of values which will be used as tests parameters.
 // You can instantiate them in a different translation module, or even
 // instantiate them several times.
 //

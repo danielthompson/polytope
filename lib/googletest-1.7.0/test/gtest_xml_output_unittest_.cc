@@ -27,13 +27,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Unit test for Google Test XML output.
+// Unit tests for Google Test XML output.
 //
 // A user can specify XML output in a Google Test program to run via
 // either the GTEST_OUTPUT environment variable or the --gtest_output
 // flag.  This is used for testing such functionality.
 //
-// This program will be invoked from a Python unit test.  Don't run it
+// This program will be invoked from a Python unit tests.  Don't run it
 // directly.
 
 #include "gtest/gtest.h"
@@ -64,7 +64,7 @@ class DisabledTest : public Test {
 };
 
 TEST_F(DisabledTest, DISABLED_test_not_run) {
-  FAIL() << "Unexpected failure: Disabled test should not be run";
+  FAIL() << "Unexpected failure: Disabled tests should not be run";
 }
 
 TEST(MixedResultTest, Succeeds) {
@@ -78,7 +78,7 @@ TEST(MixedResultTest, Fails) {
 }
 
 TEST(MixedResultTest, DISABLED_test) {
-  FAIL() << "Unexpected failure: Disabled test should not be run";
+  FAIL() << "Unexpected failure: Disabled tests should not be run";
 }
 
 TEST(XmlQuotingTest, OutputsCData) {
@@ -86,7 +86,7 @@ TEST(XmlQuotingTest, OutputsCData) {
             "<?xml encoding=\"utf-8\"><top><![CDATA[cdata text]]></top>";
 }
 
-// Helps to test that invalid characters produced by test code do not make
+// Helps to tests that invalid characters produced by tests code do not make
 // it into the XML file.
 TEST(InvalidCharactersTest, InvalidCharactersInMessage) {
   FAIL() << "Invalid characters in brackets [\x1\x2]";
@@ -138,7 +138,7 @@ TEST(NoFixtureTest, ExternalUtilityThatCallsRecordStringValuedProperty) {
   ExternalUtilityThatCallsRecordProperty("key_for_utility_string", "1");
 }
 
-// Verifies that the test parameter value is output in the 'value_param'
+// Verifies that the tests parameter value is output in the 'value_param'
 // XML attribute for value-parameterized tests.
 class ValueParamTest : public TestWithParam<int> {};
 TEST_P(ValueParamTest, HasValueParamAttribute) {}

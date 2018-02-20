@@ -133,7 +133,7 @@ class CxxExceptionInConstructorTest : public Test {
 };
 
 TEST_F(CxxExceptionInConstructorTest, ThrowsExceptionInConstructor) {
-  ADD_FAILURE() << "CxxExceptionInConstructorTest test body "
+  ADD_FAILURE() << "CxxExceptionInConstructorTest tests body "
                 << "called unexpectedly.";
 }
 
@@ -197,7 +197,7 @@ class CxxExceptionInSetUpTestCaseTest : public Test {
 
 TEST_F(CxxExceptionInSetUpTestCaseTest, ThrowsExceptionInSetUpTestCase) {
   printf("%s",
-         "CxxExceptionInSetUpTestCaseTest test body "
+         "CxxExceptionInSetUpTestCaseTest tests body "
          "called as expected.\n");
 }
 
@@ -235,7 +235,7 @@ class CxxExceptionInSetUpTest : public Test {
 };
 
 TEST_F(CxxExceptionInSetUpTest, ThrowsExceptionInSetUp) {
-  ADD_FAILURE() << "CxxExceptionInSetUpTest test body "
+  ADD_FAILURE() << "CxxExceptionInSetUpTest tests body "
                 << "called unexpectedly.";
 }
 

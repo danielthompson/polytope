@@ -53,21 +53,21 @@ namespace posix = ::testing::internal::posix;
 
 // Tests catching fatal failures.
 
-// A subroutine used by the following test.
+// A subroutine used by the following tests.
 void TestEq1(int x) {
   ASSERT_EQ(1, x);
 }
 
-// This function calls a test subroutine, catches the fatal failure it
+// This function calls a tests subroutine, catches the fatal failure it
 // generates, and then returns early.
 void TryTestSubroutine() {
   // Calls a subrountine that yields a fatal failure.
   TestEq1(2);
 
-  // Catches the fatal failure and aborts the test.
+  // Catches the fatal failure and aborts the tests.
   //
   // The testing::Test:: prefix is necessary when calling
-  // HasFatalFailure() outside of a TEST, TEST_F, or test fixture.
+  // HasFatalFailure() outside of a TEST, TEST_F, or tests fixture.
   if (testing::Test::HasFatalFailure()) return;
 
   // If we get here, something is wrong.
@@ -81,14 +81,14 @@ TEST(PassingTest, PassingTest2) {
 }
 
 // Tests that parameters of failing parameterized tests are printed in the
-// failing test summary.
+// failing tests summary.
 class FailingParamTest : public testing::TestWithParam<int> {};
 
 TEST_P(FailingParamTest, Fails) {
   EXPECT_EQ(1, GetParam());
 }
 
-// This generates a test which will fail. Google Test is expected to print
+// This generates a tests which will fail. Google Test is expected to print
 // its parameter when it outputs the list of all failed tests.
 INSTANTIATE_TEST_CASE_P(PrintingFailingParams,
                         FailingParamTest,
@@ -123,9 +123,9 @@ TEST(FatalFailureTest, FatalFailureInNestedSubroutine) {
   // Calls a subrountine that yields a fatal failure.
   TryTestSubroutine();
 
-  // Catches the fatal failure and aborts the test.
+  // Catches the fatal failure and aborts the tests.
   //
-  // When calling HasFatalFailure() inside a TEST, TEST_F, or test
+  // When calling HasFatalFailure() inside a TEST, TEST_F, or tests
   // fixture, the testing::Test:: prefix is not needed.
   if (HasFatalFailure()) return;
 
@@ -253,7 +253,7 @@ TEST(SCOPED_TRACETest, CanBeRepeated) {
 // threads.  Namely, an assertion should be affected by
 // SCOPED_TRACE()s in its own thread only.
 
-// Here's the sequence of actions that happen in the test:
+// Here's the sequence of actions that happen in the tests:
 //
 //   Thread A (main)                | Thread B (spawned)
 //   ===============================|================================
@@ -334,22 +334,22 @@ TEST(ScopedTraceTest, WithExplicitFileAndLine) {
 
 TEST(DisabledTestsWarningTest,
      DISABLED_AlsoRunDisabledTestsFlagSuppressesWarning) {
-  // This test body is intentionally empty.  Its sole purpose is for
+  // This tests body is intentionally empty.  Its sole purpose is for
   // verifying that the --gtest_also_run_disabled_tests flag
   // suppresses the "YOU HAVE 12 DISABLED TESTS" warning at the end of
-  // the test output.
+  // the tests output.
 }
 
 // Tests using assertions outside of TEST and TEST_F.
 //
 // This function creates two failures intentionally.
 void AdHocTest() {
-  printf("The non-test part of the code is expected to have 2 failures.\n\n");
+  printf("The non-tests part of the code is expected to have 2 failures.\n\n");
   EXPECT_TRUE(false);
   EXPECT_EQ(2, 3);
 }
 
-// Runs all TESTs, all TEST_Fs, and the ad hoc test.
+// Runs all TESTs, all TEST_Fs, and the ad hoc tests.
 int RunAllTests() {
   AdHocTest();
   return RUN_ALL_TESTS();
@@ -360,11 +360,11 @@ class NonFatalFailureInFixtureConstructorTest : public testing::Test {
  protected:
   NonFatalFailureInFixtureConstructorTest() {
     printf("(expecting 5 failures)\n");
-    ADD_FAILURE() << "Expected failure #1, in the test fixture c'tor.";
+    ADD_FAILURE() << "Expected failure #1, in the tests fixture c'tor.";
   }
 
   ~NonFatalFailureInFixtureConstructorTest() {
-    ADD_FAILURE() << "Expected failure #5, in the test fixture d'tor.";
+    ADD_FAILURE() << "Expected failure #5, in the tests fixture d'tor.";
   }
 
   virtual void SetUp() {
@@ -377,7 +377,7 @@ class NonFatalFailureInFixtureConstructorTest : public testing::Test {
 };
 
 TEST_F(NonFatalFailureInFixtureConstructorTest, FailureInConstructor) {
-  ADD_FAILURE() << "Expected failure #3, in the test body.";
+  ADD_FAILURE() << "Expected failure #3, in the tests body.";
 }
 
 // Tests fatal failures in the fixture constructor.
@@ -389,30 +389,30 @@ class FatalFailureInFixtureConstructorTest : public testing::Test {
   }
 
   ~FatalFailureInFixtureConstructorTest() {
-    ADD_FAILURE() << "Expected failure #2, in the test fixture d'tor.";
+    ADD_FAILURE() << "Expected failure #2, in the tests fixture d'tor.";
   }
 
   virtual void SetUp() {
     ADD_FAILURE() << "UNEXPECTED failure in SetUp().  "
-                  << "We should never get here, as the test fixture c'tor "
+                  << "We should never get here, as the tests fixture c'tor "
                   << "had a fatal failure.";
   }
 
   virtual void TearDown() {
     ADD_FAILURE() << "UNEXPECTED failure in TearDown().  "
-                  << "We should never get here, as the test fixture c'tor "
+                  << "We should never get here, as the tests fixture c'tor "
                   << "had a fatal failure.";
   }
 
  private:
   void Init() {
-    FAIL() << "Expected failure #1, in the test fixture c'tor.";
+    FAIL() << "Expected failure #1, in the tests fixture c'tor.";
   }
 };
 
 TEST_F(FatalFailureInFixtureConstructorTest, FailureInConstructor) {
-  ADD_FAILURE() << "UNEXPECTED failure in the test body.  "
-                << "We should never get here, as the test fixture c'tor "
+  ADD_FAILURE() << "UNEXPECTED failure in the tests body.  "
+                << "We should never get here, as the tests fixture c'tor "
                 << "had a fatal failure.";
 }
 
@@ -433,12 +433,12 @@ class NonFatalFailureInSetUpTest : public testing::Test {
   }
  private:
   void Deinit() {
-    FAIL() << "Expected failure #4, in the test fixture d'tor.";
+    FAIL() << "Expected failure #4, in the tests fixture d'tor.";
   }
 };
 
 TEST_F(NonFatalFailureInSetUpTest, FailureInSetUp) {
-  FAIL() << "Expected failure #2, in the test function.";
+  FAIL() << "Expected failure #2, in the tests function.";
 }
 
 // Tests fatal failures in SetUp().
@@ -458,12 +458,12 @@ class FatalFailureInSetUpTest : public testing::Test {
   }
  private:
   void Deinit() {
-    FAIL() << "Expected failure #3, in the test fixture d'tor.";
+    FAIL() << "Expected failure #3, in the tests fixture d'tor.";
   }
 };
 
 TEST_F(FatalFailureInSetUpTest, FailureInSetUp) {
-  FAIL() << "UNEXPECTED failure in the test function.  "
+  FAIL() << "UNEXPECTED failure in the tests function.  "
          << "We should never get here, as SetUp() failed.";
 }
 
@@ -492,7 +492,7 @@ struct SpawnThreadNotifications {
 };
 
 // The function to be executed in the thread spawn by the
-// MultipleThreads test (below).
+// MultipleThreads tests (below).
 static void ThreadRoutine(SpawnThreadNotifications* notifications) {
   // Signals the main thread that this thread has started.
   notifications->spawn_thread_started.Notify();
@@ -501,7 +501,7 @@ static void ThreadRoutine(SpawnThreadNotifications* notifications) {
   notifications->spawn_thread_ok_to_terminate.WaitForNotification();
 }
 
-// This is a death-test test, but it's not named with a DeathTest
+// This is a death-tests tests, but it's not named with a DeathTest
 // suffix.  It starts threads which might interfere with later
 // death tests, so it must run after all other death tests.
 class DeathTestAndMultiThreadsTest : public testing::Test {
@@ -529,14 +529,14 @@ class DeathTestAndMultiThreadsTest : public testing::Test {
 
 #endif  // GTEST_IS_THREADSAFE
 
-// The MixedUpTestCaseTest test case verifies that Google Test will fail a
-// test if it uses a different fixture class than what other tests in
-// the same test case use.  It deliberately contains two fixture
+// The MixedUpTestCaseTest tests case verifies that Google Test will fail a
+// tests if it uses a different fixture class than what other tests in
+// the same tests case use.  It deliberately contains two fixture
 // classes with the same name but defined in different namespaces.
 
-// The MixedUpTestCaseWithSameTestNameTest test case verifies that
-// when the user defines two tests with the same test case name AND
-// same test name (but in different namespaces), the second test will
+// The MixedUpTestCaseWithSameTestNameTest tests case verifies that
+// when the user defines two tests with the same tests case name AND
+// same tests name (but in different namespaces), the second tests will
 // fail.
 
 namespace foo {
@@ -575,9 +575,9 @@ TEST_F(MixedUpTestCaseWithSameTestNameTest,
 
 }  // namespace bar
 
-// The following two test cases verify that Google Test catches the user
-// error of mixing TEST and TEST_F in the same test case.  The first
-// test case checks the scenario where TEST_F appears before TEST, and
+// The following two tests cases verify that Google Test catches the user
+// error of mixing TEST and TEST_F in the same tests case.  The first
+// tests case checks the scenario where TEST_F appears before TEST, and
 // the second one checks where TEST appears before TEST_F.
 
 class TEST_F_before_TEST_in_same_test_case : public testing::Test {
@@ -831,7 +831,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(Unsigned, TypedTestP, UnsignedTypes);
 
 #if GTEST_HAS_DEATH_TEST
 
-// We rely on the golden file to verify that tests whose test case
+// We rely on the golden file to verify that tests whose tests case
 // name ends with DeathTest are run first.
 
 TEST(ADeathTest, ShouldRunFirst) {
@@ -839,7 +839,7 @@ TEST(ADeathTest, ShouldRunFirst) {
 
 # if GTEST_HAS_TYPED_TEST
 
-// We rely on the golden file to verify that typed tests whose test
+// We rely on the golden file to verify that typed tests whose tests
 // case name ends with DeathTest are run first.
 
 template <typename T>
@@ -858,7 +858,7 @@ TYPED_TEST(ATypedDeathTest, ShouldRunFirst) {
 
 
 // We rely on the golden file to verify that type-parameterized tests
-// whose test case name ends with DeathTest are run first.
+// whose tests case name ends with DeathTest are run first.
 
 template <typename T>
 class ATypeParamDeathTest : public testing::Test {
@@ -995,7 +995,7 @@ TEST_F(ExpectFailureTest, ExpectNonFatalFailureOnAllThreads) {
 }
 
 
-// Two test environments for testing testing::AddGlobalTestEnvironment().
+// Two tests environments for testing testing::AddGlobalTestEnvironment().
 
 class FooEnvironment : public testing::Environment {
  public:
@@ -1024,7 +1024,7 @@ class BarEnvironment : public testing::Environment {
 // The main function.
 //
 // The idea is to use Google Test to run all the tests we have defined (some
-// of them are intended to fail), and then compare the test results
+// of them are intended to fail), and then compare the tests results
 // with the "golden" file.
 int main(int argc, char **argv) {
   testing::GTEST_FLAG(print_time) = false;
@@ -1033,8 +1033,8 @@ int main(int argc, char **argv) {
   // We will use a separate Python script to compare the output of
   // this program with the golden file.
 
-  // It's hard to test InitGoogleTest() directly, as it has many
-  // global side effects.  The following line serves as a sanity test
+  // It's hard to tests InitGoogleTest() directly, as it has many
+  // global side effects.  The following line serves as a sanity tests
   // for it.
   testing::InitGoogleTest(&argc, argv);
   bool internal_skip_environment_and_ad_hoc_tests =
@@ -1044,7 +1044,7 @@ int main(int argc, char **argv) {
 #if GTEST_HAS_DEATH_TEST
   if (testing::internal::GTEST_FLAG(internal_run_death_test) != "") {
     // Skip the usual output capturing if we're running as the child
-    // process of an threadsafe-style death test.
+    // process of an threadsafe-style death tests.
 # if GTEST_OS_WINDOWS
     posix::FReopen("nul:", "w", stdout);
 # else
@@ -1057,7 +1057,7 @@ int main(int argc, char **argv) {
   if (internal_skip_environment_and_ad_hoc_tests)
     return RUN_ALL_TESTS();
 
-  // Registers two global test environments.
+  // Registers two global tests environments.
   // The golden file verifies that they are set up in the order they
   // are registered, and torn down in the reverse order.
   testing::AddGlobalTestEnvironment(new FooEnvironment);

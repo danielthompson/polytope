@@ -43,7 +43,7 @@ namespace {
 
 // Tests the TestPartResult class.
 
-// The test fixture for testing TestPartResult.
+// The tests fixture for testing TestPartResult.
 class TestPartResultTest : public Test {
  protected:
   TestPartResultTest()
@@ -203,6 +203,6 @@ TEST_F(TestPartResultArrayDeathTest, DiesWhenIndexIsOutOfBound) {
   EXPECT_DEATH_IF_SUPPORTED(results.GetTestPartResult(1), "");
 }
 
-// TODO(mheule@google.com): Add a test for the class HasNewFatalFailureHelper.
+// TODO(mheule@google.com): Add a tests for the class HasNewFatalFailureHelper.
 
 }  // namespace

@@ -48,7 +48,7 @@
 
 namespace testing {
 
-// Input to a parameterized test name generator, describing a test parameter.
+// Input to a parameterized tests name generator, describing a tests parameter.
 // Consists of the parameter value and the integer parameter index.
 template <class ParamType>
 struct TestParamInfo {
@@ -59,7 +59,7 @@ struct TestParamInfo {
   size_t index;
 };
 
-// A builtin parameterized test name generator which returns the result of
+// A builtin parameterized tests name generator which returns the result of
 // testing::PrintToString.
 struct PrintToStringParamName {
   template <class ParamType>
@@ -73,7 +73,7 @@ namespace internal {
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
 // Outputs a message explaining invalid registration of different
-// fixture class for the same test case. This may happen when
+// fixture class for the same tests case. This may happen when
 // TEST_P macro is used to define two tests with the same name
 // but in different namespaces.
 GTEST_API_ void ReportInvalidTestCaseType(const char* test_case_name,
@@ -366,8 +366,8 @@ class ValuesInIteratorRangeGenerator : public ParamGeneratorInterface<T> {
 
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
-// Default parameterized test name generator, returns a string containing the
-// integer test parameter index.
+// Default parameterized tests name generator, returns a string containing the
+// integer tests parameter index.
 template <class ParamType>
 std::string DefaultParamName(const TestParamInfo<ParamType>& info) {
   Message name_stream;
@@ -377,9 +377,9 @@ std::string DefaultParamName(const TestParamInfo<ParamType>& info) {
 
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
-// Parameterized test name overload helpers, which help the
+// Parameterized tests name overload helpers, which help the
 // INSTANTIATE_TEST_CASE_P macro choose between the default parameterized
-// test name generator and user param name generator.
+// tests name generator and user param name generator.
 template <class ParamType, class ParamNameGenFunctor>
 ParamNameGenFunctor GetParamNameGen(ParamNameGenFunctor func) {
   return func;
@@ -419,7 +419,7 @@ class ParameterizedTestFactory : public TestFactoryBase {
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
 // TestMetaFactoryBase is a base class for meta-factories that create
-// test factories for passing into MakeAndRegisterTestInfo function.
+// tests factories for passing into MakeAndRegisterTestInfo function.
 template <class ParamType>
 class TestMetaFactoryBase {
  public:
@@ -430,9 +430,9 @@ class TestMetaFactoryBase {
 
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
-// TestMetaFactory creates test factories for passing into
+// TestMetaFactory creates tests factories for passing into
 // MakeAndRegisterTestInfo function. Since MakeAndRegisterTestInfo receives
-// ownership of test factory pointer, same factory object cannot be passed
+// ownership of tests factory pointer, same factory object cannot be passed
 // into that method twice. But ParameterizedTestCaseInfo is going to call
 // it for each Test/Parameter value combination. Thus it needs meta factory
 // creator class.
@@ -456,9 +456,9 @@ class TestMetaFactory
 //
 // ParameterizedTestCaseInfoBase is a generic interface
 // to ParameterizedTestCaseInfo classes. ParameterizedTestCaseInfoBase
-// accumulates test information provided by TEST_P macro invocations
+// accumulates tests information provided by TEST_P macro invocations
 // and generators provided by INSTANTIATE_TEST_CASE_P macro invocations
-// and uses that information to register all resulting test instances
+// and uses that information to register all resulting tests instances
 // in RegisterTests method. The ParameterizeTestCaseRegistry class holds
 // a collection of pointers to the ParameterizedTestCaseInfo objects
 // and calls RegisterTests() on each of them when asked.
@@ -466,12 +466,12 @@ class ParameterizedTestCaseInfoBase {
  public:
   virtual ~ParameterizedTestCaseInfoBase() {}
 
-  // Base part of test case name for display purposes.
+  // Base part of tests case name for display purposes.
   virtual const std::string& GetTestCaseName() const = 0;
   // Test case id to verify identity.
   virtual TypeId GetTestCaseTypeId() const = 0;
   // UnitTest class invokes this method to register tests in this
-  // test case right before running them in RUN_ALL_TESTS macro.
+  // tests case right before running them in RUN_ALL_TESTS macro.
   // This method should not be called more then once on any single
   // instance of a ParameterizedTestCaseInfoBase derived class.
   virtual void RegisterTests() = 0;
@@ -486,9 +486,9 @@ class ParameterizedTestCaseInfoBase {
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
 // ParameterizedTestCaseInfo accumulates tests obtained from TEST_P
-// macro invocations for a particular test case and generators
+// macro invocations for a particular tests case and generators
 // obtained from INSTANTIATE_TEST_CASE_P macro invocations for that
-// test case. It registers tests with all values generated by all
+// tests case. It registers tests with all values generated by all
 // generators when asked.
 template <class TestCase>
 class ParameterizedTestCaseInfo : public ParameterizedTestCaseInfoBase {
@@ -510,11 +510,11 @@ class ParameterizedTestCaseInfo : public ParameterizedTestCaseInfoBase {
   // Test case id to verify identity.
   virtual TypeId GetTestCaseTypeId() const { return GetTypeId<TestCase>(); }
   // TEST_P macro uses AddTestPattern() to record information
-  // about a single test in a LocalTestInfo structure.
-  // test_case_name is the base name of the test case (without invocation
-  // prefix). test_base_name is the name of an individual test without
-  // parameter index. For the test SequenceA/FooTest.DoBar/1 FooTest is
-  // test case base name and DoBar is test base name.
+  // about a single tests in a LocalTestInfo structure.
+  // test_case_name is the base name of the tests case (without invocation
+  // prefix). test_base_name is the name of an individual tests without
+  // parameter index. For the tests SequenceA/FooTest.DoBar/1 FooTest is
+  // tests case base name and DoBar is tests base name.
   void AddTestPattern(const char* test_case_name,
                       const char* test_base_name,
                       TestMetaFactoryBase<ParamType>* meta_factory) {
@@ -532,8 +532,8 @@ class ParameterizedTestCaseInfo : public ParameterizedTestCaseInfoBase {
         InstantiationInfo(instantiation_name, func, name_func, file, line));
     return 0;  // Return value used only to run this method in namespace scope.
   }
-  // UnitTest class invokes this method to register tests in this test case
-  // test cases right before running tests in RUN_ALL_TESTS macro.
+  // UnitTest class invokes this method to register tests in this tests case
+  // tests cases right before running tests in RUN_ALL_TESTS macro.
   // This method should not be called more then once on any single
   // instance of a ParameterizedTestCaseInfoBase derived class.
   // UnitTest has a guard to prevent from calling this method more then once.
@@ -566,12 +566,12 @@ class ParameterizedTestCaseInfo : public ParameterizedTestCaseInfoBase {
               TestParamInfo<ParamType>(*param_it, i));
 
           GTEST_CHECK_(IsValidParamName(param_name))
-              << "Parameterized test name '" << param_name
+              << "Parameterized tests name '" << param_name
               << "' is invalid, in " << file
               << " line " << line << std::endl;
 
           GTEST_CHECK_(test_param_names.count(param_name) == 0)
-              << "Duplicate parameterized test name '" << param_name
+              << "Duplicate parameterized tests name '" << param_name
               << "', in " << file << " line " << line << std::endl;
 
           test_param_names.insert(param_name);
@@ -593,7 +593,7 @@ class ParameterizedTestCaseInfo : public ParameterizedTestCaseInfoBase {
   }  // RegisterTests
 
  private:
-  // LocalTestInfo structure keeps information about a single test registered
+  // LocalTestInfo structure keeps information about a single tests registered
   // with TEST_P macro.
   struct TestInfo {
     TestInfo(const char* a_test_case_base_name,
@@ -656,7 +656,7 @@ class ParameterizedTestCaseInfo : public ParameterizedTestCaseInfoBase {
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
 // ParameterizedTestCaseRegistry contains a map of ParameterizedTestCaseInfoBase
-// classes accessed by test case names. TEST_P and INSTANTIATE_TEST_CASE_P
+// classes accessed by tests case names. TEST_P and INSTANTIATE_TEST_CASE_P
 // macros use it to locate their corresponding ParameterizedTestCaseInfo
 // descriptors.
 class ParameterizedTestCaseRegistry {
@@ -670,7 +670,7 @@ class ParameterizedTestCaseRegistry {
   }
 
   // Looks up or creates and returns a structure containing information about
-  // tests and instantiations of a particular test case.
+  // tests and instantiations of a particular tests case.
   template <class TestCase>
   ParameterizedTestCaseInfo<TestCase>* GetTestCasePatternHolder(
       const char* test_case_name,
@@ -682,7 +682,7 @@ class ParameterizedTestCaseRegistry {
         if ((*it)->GetTestCaseTypeId() != GetTypeId<TestCase>()) {
           // Complain about incorrect usage of Google Test facilities
           // and terminate the program since we cannot guaranty correct
-          // test case setup and tear-down in this case.
+          // tests case setup and tear-down in this case.
           ReportInvalidTestCaseType(test_case_name, code_location);
           posix::Abort();
         } else {

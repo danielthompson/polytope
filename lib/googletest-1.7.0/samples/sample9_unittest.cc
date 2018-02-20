@@ -30,7 +30,7 @@
 
 // This sample shows how to use Google Test listener API to implement
 // an alternative console output and how to use the UnitTest reflection API
-// to enumerate test cases and tests and to inspect their results.
+// to enumerate tests cases and tests and to inspect their results.
 
 #include <stdio.h>
 
@@ -49,16 +49,16 @@ namespace {
 // information about tests.
 class TersePrinter : public EmptyTestEventListener {
  private:
-  // Called before any test activity starts.
+  // Called before any tests activity starts.
   virtual void OnTestProgramStart(const UnitTest& /* unit_test */) {}
 
-  // Called after all test activities have ended.
+  // Called after all tests activities have ended.
   virtual void OnTestProgramEnd(const UnitTest& unit_test) {
     fprintf(stdout, "TEST %s\n", unit_test.Passed() ? "PASSED" : "FAILED");
     fflush(stdout);
   }
 
-  // Called before a test starts.
+  // Called before a tests starts.
   virtual void OnTestStart(const TestInfo& test_info) {
     fprintf(stdout,
             "*** Test %s.%s starting.\n",
@@ -78,7 +78,7 @@ class TersePrinter : public EmptyTestEventListener {
     fflush(stdout);
   }
 
-  // Called after a test ends.
+  // Called after a tests ends.
   virtual void OnTestEnd(const TestInfo& test_info) {
     fprintf(stdout,
             "*** Test %s.%s ending.\n",
@@ -89,7 +89,7 @@ class TersePrinter : public EmptyTestEventListener {
 };  // class TersePrinter
 
 TEST(CustomOutputTest, PrintsMessage) {
-  printf("Printing something from the test body...\n");
+  printf("Printing something from the tests body...\n");
 }
 
 TEST(CustomOutputTest, Succeeds) {
@@ -98,7 +98,7 @@ TEST(CustomOutputTest, Succeeds) {
 
 TEST(CustomOutputTest, Fails) {
   EXPECT_EQ(1, 2)
-      << "This test fails in order to demonstrate alternative failure messages";
+      << "This tests fails in order to demonstrate alternative failure messages";
 }
 }  // namespace
 
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
   }
   int ret_val = RUN_ALL_TESTS();
 
-  // This is an example of using the UnitTest reflection API to inspect test
+  // This is an example of using the UnitTest reflection API to inspect tests
   // results. Here we discount failures from the tests we expected to fail.
   int unexpectedly_failed_tests = 0;
   for (int i = 0; i < unit_test.total_test_case_count(); ++i) {
@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  // Test that were meant to fail should not affect the test program outcome.
+  // Test that were meant to fail should not affect the tests program outcome.
   if (unexpectedly_failed_tests == 0)
     ret_val = 0;
 

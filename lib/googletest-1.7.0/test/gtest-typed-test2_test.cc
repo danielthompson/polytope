@@ -36,7 +36,7 @@
 
 #if GTEST_HAS_TYPED_TEST_P
 
-// Tests that the same type-parameterized test case can be
+// Tests that the same type-parameterized tests case can be
 // instantiated in different translation units linked together.
 // (ContainerTest is also instantiated in gtest-typed-test_test.cc.)
 INSTANTIATE_TYPED_TEST_CASE_P(Vector, ContainerTest,

@@ -40,7 +40,7 @@
 namespace testing {
 
 // This helper class can be used to mock out Google Test failure reporting
-// so that we can test Google Test or code that builds on Google Test.
+// so that we can tests Google Test or code that builds on Google Test.
 //
 // An object of this class appends a TestPartResult object to the
 // TestPartResultArray object given in the constructor whenever a Google Test
@@ -57,7 +57,7 @@ class GTEST_API_ ScopedFakeTestPartResultReporter
     INTERCEPT_ALL_THREADS           // Intercepts all failures.
   };
 
-  // The c'tor sets this object as the test part result reporter used
+  // The c'tor sets this object as the tests part result reporter used
   // by Google Test.  The 'result' parameter specifies where to report the
   // results. This reporter will only catch failures generated in the current
   // thread. DEPRECATED
@@ -67,7 +67,7 @@ class GTEST_API_ ScopedFakeTestPartResultReporter
   ScopedFakeTestPartResultReporter(InterceptMode intercept_mode,
                                    TestPartResultArray* result);
 
-  // The d'tor restores the previous test part result reporter.
+  // The d'tor restores the previous tests part result reporter.
   virtual ~ScopedFakeTestPartResultReporter();
 
   // Appends the TestPartResult object to the TestPartResultArray
@@ -132,7 +132,7 @@ class GTEST_API_ SingleFailureChecker {
 // Note that even though the implementations of the following two
 // macros are much alike, we cannot refactor them to use a common
 // helper macro, due to some peculiarity in how the preprocessor
-// works.  The AcceptsMacroThatExpandsToUnprotectedComma test in
+// works.  The AcceptsMacroThatExpandsToUnprotectedComma tests in
 // gtest_unittest.cc will fail to compile if we do that.
 #define EXPECT_FATAL_FAILURE(statement, substr) \
   do { \
@@ -192,7 +192,7 @@ class GTEST_API_ SingleFailureChecker {
 // works.  If we do that, the code won't compile when the user gives
 // EXPECT_NONFATAL_FAILURE() a statement that contains a macro that
 // expands to code containing an unprotected comma.  The
-// AcceptsMacroThatExpandsToUnprotectedComma test in gtest_unittest.cc
+// AcceptsMacroThatExpandsToUnprotectedComma tests in gtest_unittest.cc
 // catches that.
 //
 // For the same reason, we have to write

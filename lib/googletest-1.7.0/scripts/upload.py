@@ -477,7 +477,7 @@ def GetRpcServer(options):
   if host == "localhost" or host.startswith("localhost:"):
     email = options.email
     if email is None:
-      email = "test@example.com"
+      email = "tests@example.com"
       logging.info("Using debug user %s.  Override with --email" % email)
     server = rpc_server_class(
         options.server,
@@ -1232,7 +1232,7 @@ def GuessVCS(options):
     logging.info("Guessed VCS = Subversion")
     return SubversionVCS(options)
 
-  # Git has a command to test if you're in a git tree.
+  # Git has a command to tests if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
   try:
     out, returncode = RunShellWithReturnCode(["git", "rev-parse",

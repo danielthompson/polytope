@@ -55,7 +55,7 @@ static std::vector<std::string> SplitIntoTestNames(const char* src) {
   return name_vec;
 }
 
-// Verifies that registered_tests match the test names in
+// Verifies that registered_tests match the tests names in
 // registered_tests_; returns registered_tests if successful, or
 // aborts the program otherwise.
 const char* TypedTestCasePState::VerifyRegisteredTestNames(
@@ -89,8 +89,8 @@ const char* TypedTestCasePState::VerifyRegisteredTestNames(
     if (found) {
       tests.insert(name);
     } else {
-      errors << "No test named " << name
-             << " can be found in this test case.\n";
+      errors << "No tests named " << name
+             << " can be found in this tests case.\n";
     }
   }
 
@@ -98,7 +98,7 @@ const char* TypedTestCasePState::VerifyRegisteredTestNames(
        it != registered_tests_.end();
        ++it) {
     if (tests.count(it->first) == 0) {
-      errors << "You forgot to list test " << it->first << ".\n";
+      errors << "You forgot to list tests " << it->first << ".\n";
     }
   }
 

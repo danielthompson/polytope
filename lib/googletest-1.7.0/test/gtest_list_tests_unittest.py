@@ -29,7 +29,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Unit test for Google Test's --gtest_list_tests flag.
+"""Unit tests for Google Test's --gtest_list_tests flag.
 
 A user can ask Google Test to list all tests by specifying the
 --gtest_list_tests flag.  This script tests such functionality
@@ -120,7 +120,7 @@ def Run(args):
                                      capture_stderr=False).output
 
 
-# The unit test.
+# The unit tests.
 
 
 class GTestListTestsUnitTest(gtest_test_utils.TestCase):

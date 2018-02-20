@@ -483,7 +483,7 @@ class DirectoryCreationTest : public Test {
   virtual void SetUp() {
     testdata_path_.Set(FilePath(
         TempDir() + GetCurrentExecutableName().string() +
-        "_directory_creation" GTEST_PATH_SEP_ "test" GTEST_PATH_SEP_));
+        "_directory_creation" GTEST_PATH_SEP_ "tests" GTEST_PATH_SEP_));
     testdata_file_.Set(testdata_path_.RemoveTrailingPathSeparator());
 
     unique_file0_.Set(FilePath::MakeFileName(testdata_path_, FilePath("unique"),
@@ -512,11 +512,11 @@ class DirectoryCreationTest : public Test {
 
   // Strings representing a directory and a file, with identical paths
   // except for the trailing separator character that distinquishes
-  // a directory named 'test' from a file named 'test'. Example names:
-  FilePath testdata_path_;  // "/tmp/directory_creation/test/"
-  FilePath testdata_file_;  // "/tmp/directory_creation/test"
-  FilePath unique_file0_;  // "/tmp/directory_creation/test/unique.txt"
-  FilePath unique_file1_;  // "/tmp/directory_creation/test/unique_1.txt"
+  // a directory named 'tests' from a file named 'tests'. Example names:
+  FilePath testdata_path_;  // "/tmp/directory_creation/tests/"
+  FilePath testdata_file_;  // "/tmp/directory_creation/tests"
+  FilePath unique_file0_;  // "/tmp/directory_creation/tests/unique.txt"
+  FilePath unique_file1_;  // "/tmp/directory_creation/tests/unique_1.txt"
 };
 
 TEST_F(DirectoryCreationTest, CreateDirectoriesRecursively) {

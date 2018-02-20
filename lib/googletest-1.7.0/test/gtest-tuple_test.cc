@@ -136,11 +136,11 @@ TEST(ReferenceFieldTest, IsAliasOfReferencedVariable) {
 }
 
 // Tests that tuple's default constructor default initializes each field.
-// This test needs to compile without generating warnings.
+// This tests needs to compile without generating warnings.
 TEST(TupleConstructorTest, DefaultConstructorDefaultInitializesEachField) {
   // The TR1 report requires that tuple's default constructor default
   // initializes each field, even if it's a primitive type.  If the
-  // implementation forgets to do this, this test will catch it by
+  // implementation forgets to do this, this tests will catch it by
   // generating warnings about using uninitialized variables (assuming
   // a decent compiler).
 

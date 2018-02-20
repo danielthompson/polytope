@@ -156,8 +156,8 @@ class ListenerTest : public Test {
 };
 
 TEST_F(ListenerTest, DoesFoo) {
-  // Test execution order within a test case is not guaranteed so we are not
-  // recording the test name.
+  // Test execution order within a tests case is not guaranteed so we are not
+  // recording the tests name.
   g_events->push_back("ListenerTest::* Test Body");
   SUCCEED();  // Triggers OnTestPartResult.
 }
@@ -302,7 +302,7 @@ int main(int argc, char **argv) {
                 expected_events,
                 sizeof(expected_events)/sizeof(expected_events[0]));
 
-  // We need to check manually for ad hoc test failures that happen after
+  // We need to check manually for ad hoc tests failures that happen after
   // RUN_ALL_TESTS finishes.
   if (UnitTest::GetInstance()->Failed())
     ret_val = 1;

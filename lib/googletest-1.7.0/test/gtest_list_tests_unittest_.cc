@@ -29,18 +29,18 @@
 //
 // Author: phanna@google.com (Patrick Hanna)
 
-// Unit test for Google Test's --gtest_list_tests flag.
+// Unit tests for Google Test's --gtest_list_tests flag.
 //
 // A user can ask Google Test to list all tests that will run
 // so that when using a filter, a user will know what
 // tests to look for. The tests will not be run after listing.
 //
-// This program will be invoked from a Python unit test.
+// This program will be invoked from a Python unit tests.
 // Don't run it directly.
 
 #include "gtest/gtest.h"
 
-// Several different test cases and tests that will be listed.
+// Several different tests cases and tests that will be listed.
 TEST(Foo, Bar1) {
 }
 

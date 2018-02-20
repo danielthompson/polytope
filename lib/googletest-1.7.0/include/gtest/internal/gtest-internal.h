@@ -84,10 +84,10 @@ namespace testing {
 
 class AssertionResult;                 // Result of an assertion.
 class Message;                         // Represents a failure message.
-class Test;                            // Represents a test.
-class TestInfo;                        // Information about a test.
-class TestPartResult;                  // Result of a test part.
-class UnitTest;                        // A collection of test cases.
+class Test;                            // Represents a tests.
+class TestInfo;                        // Information about a tests.
+class TestPartResult;                  // Result of a tests part.
+class UnitTest;                        // A collection of tests cases.
 
 template <typename T>
 ::std::string PrintToString(const T& value);
@@ -105,7 +105,7 @@ GTEST_API_ extern const char kStackTraceMarker[];
 // Two overloaded helpers for checking at compile time whether an
 // expression is a null pointer literal (i.e. NULL or any 0-valued
 // compile-time integral constant).  Their return values have
-// different sizes, so we can use sizeof() to test which version is
+// different sizes, so we can use sizeof() to tests which version is
 // picked by the compiler.  These helpers have no implementations, as
 // we only need their signatures.
 //
@@ -292,7 +292,7 @@ class FloatingPoint {
 
   // Reinterprets a bit pattern as a floating-point number.
   //
-  // This function is needed to test the AlmostEquals() method.
+  // This function is needed to tests the AlmostEquals() method.
   static RawType ReinterpretBits(const Bits bits) {
     FloatingPoint fp(0);
     fp.u_.bits_ = bits;
@@ -400,7 +400,7 @@ typedef FloatingPoint<float> Float;
 typedef FloatingPoint<double> Double;
 
 // In order to catch the mistake of putting tests that use different
-// test fixture classes in the same test case, we need to assign
+// tests fixture classes in the same tests case, we need to assign
 // unique IDs to fixture classes and compare them.  The TypeId type is
 // used to hold such IDs.  The user should treat TypeId as an opaque
 // type: the only operation allowed on TypeId values is to compare
@@ -444,7 +444,7 @@ class TestFactoryBase {
  public:
   virtual ~TestFactoryBase() {}
 
-  // Creates a test instance to run. The instance is both created and destroyed
+  // Creates a tests instance to run. The instance is both created and destroyed
   // within TestInfoImpl::Run()
   virtual Test* CreateTest() = 0;
 
@@ -493,17 +493,17 @@ struct CodeLocation {
 //
 // Arguments:
 //
-//   test_case_name:   name of the test case
-//   name:             name of the test
-//   type_param        the name of the test's type parameter, or NULL if
-//                     this is not a typed or a type-parameterized test.
-//   value_param       text representation of the test's value parameter,
-//                     or NULL if this is not a type-parameterized test.
-//   code_location:    code location where the test is defined
-//   fixture_class_id: ID of the test fixture class
-//   set_up_tc:        pointer to the function that sets up the test case
-//   tear_down_tc:     pointer to the function that tears down the test case
-//   factory:          pointer to the factory that creates a test object.
+//   test_case_name:   name of the tests case
+//   name:             name of the tests
+//   type_param        the name of the tests's type parameter, or NULL if
+//                     this is not a typed or a type-parameterized tests.
+//   value_param       text representation of the tests's value parameter,
+//                     or NULL if this is not a type-parameterized tests.
+//   code_location:    code location where the tests is defined
+//   fixture_class_id: ID of the tests fixture class
+//   set_up_tc:        pointer to the function that sets up the tests case
+//   tear_down_tc:     pointer to the function that tears down the tests case
+//   factory:          pointer to the factory that creates a tests object.
 //                     The newly created TestInfo instance will assume
 //                     ownership of the factory object.
 GTEST_API_ TestInfo* MakeAndRegisterTestInfo(
@@ -524,13 +524,13 @@ GTEST_API_ bool SkipPrefix(const char* prefix, const char** pstr);
 
 #if GTEST_HAS_TYPED_TEST || GTEST_HAS_TYPED_TEST_P
 
-// State of the definition of a type-parameterized test case.
+// State of the definition of a type-parameterized tests case.
 class GTEST_API_ TypedTestCasePState {
  public:
   TypedTestCasePState() : registered_(false) {}
 
-  // Adds the given test name to defined_test_names_ and return true
-  // if the test case hasn't been registered; otherwise aborts the
+  // Adds the given tests name to defined_test_names_ and return true
+  // if the tests case hasn't been registered; otherwise aborts the
   // program.
   bool AddTestName(const char* file, int line, const char* case_name,
                    const char* test_name) {
@@ -556,7 +556,7 @@ class GTEST_API_ TypedTestCasePState {
     return it->second;
   }
 
-  // Verifies that registered_tests match the test names in
+  // Verifies that registered_tests match the tests names in
   // defined_test_names_; returns registered_tests if successful, or
   // aborts the program otherwise.
   const char* VerifyRegisteredTestNames(
@@ -602,7 +602,7 @@ void SplitString(const ::std::string& str, char delimiter,
 template <GTEST_TEMPLATE_ Fixture, class TestSel, typename Types>
 class TypeParameterizedTest {
  public:
-  // 'index' is the index of the test in the type list 'Types'
+  // 'index' is the index of the tests in the type list 'Types'
   // specified in INSTANTIATE_TYPED_TEST_CASE_P(Prefix, TestCase,
   // Types).  Valid values for 'index' are [0, N - 1] where N is the
   // length of Types.
@@ -614,7 +614,7 @@ class TypeParameterizedTest {
     typedef Fixture<Type> FixtureClass;
     typedef typename GTEST_BIND_(TestSel, Type) TestClass;
 
-    // First, registers the first type-parameterized test in the type
+    // First, registers the first type-parameterized tests in the type
     // list.
     MakeAndRegisterTestInfo(
         (std::string(prefix) + (prefix[0] == '\0' ? "" : "/") + case_name + "/"
@@ -658,7 +658,7 @@ class TypeParameterizedTestCase {
     std::string test_name = StripTrailingSpaces(
         GetPrefixUntilComma(test_names));
     if (!state->TestExists(test_name)) {
-      fprintf(stderr, "Failed to get code location for test %s.%s at %s.",
+      fprintf(stderr, "Failed to get code location for tests %s.%s at %s.",
               case_name, test_name.c_str(),
               FormatFileLocation(code_location.file.c_str(),
                                  code_location.line).c_str());
@@ -669,11 +669,11 @@ class TypeParameterizedTestCase {
 
     typedef typename Tests::Head Head;
 
-    // First, register the first test in 'Test' for each type in 'Types'.
+    // First, register the first tests in 'Test' for each type in 'Types'.
     TypeParameterizedTest<Fixture, Head, Types>::Register(
         prefix, test_location, case_name, test_names, 0);
 
-    // Next, recurses (at compile time) with the tail of the test list.
+    // Next, recurses (at compile time) with the tail of the tests list.
     return TypeParameterizedTestCase<Fixture, typename Tests::Tail, Types>
         ::Register(prefix, code_location, state,
                    case_name, SkipComma(test_names));
@@ -1160,7 +1160,7 @@ class NativeArray {
            "  Actual: it doesn't.")
 
 
-// Implements Boolean test assertions such as EXPECT_TRUE. expression can be
+// Implements Boolean tests assertions such as EXPECT_TRUE. expression can be
 // either a boolean expression or an AssertionResult. text is a textual
 // represenation of expression as it was passed into the EXPECT_TRUE.
 #define GTEST_TEST_BOOLEAN_(expression, text, actual, expected, fail) \
@@ -1186,7 +1186,7 @@ class NativeArray {
            "failures in the current thread.\n" \
            "  Actual: it does.")
 
-// Expands to the name of the class that implements the given test.
+// Expands to the name of the class that implements the given tests.
 #define GTEST_TEST_CLASS_NAME_(test_case_name, test_name) \
   test_case_name##_##test_name##_Test
 

@@ -132,7 +132,7 @@ enum CharFormat {
   kSpecialEscape
 };
 
-// Returns true if c is a printable ASCII character.  We test the
+// Returns true if c is a printable ASCII character.  We tests the
 // value of c directly instead of calling isprint(), which is buggy on
 // Windows Mobile.
 inline bool IsPrintableAscii(wchar_t c) {

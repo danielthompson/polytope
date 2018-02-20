@@ -28,16 +28,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Unit test for Google Test test filters.
+"""Unit tests for Google Test tests filters.
 
-A user can specify which test(s) in a Google Test program to run via either
+A user can specify which tests(s) in a Google Test program to run via either
 the GTEST_FILTER environment variable or the --gtest_filter flag.
 This script tests such functionality by invoking
 gtest_filter_unittest_ (a program written with Google Test) with different
 environments and command line flags.
 
-Note that test sharding may also influence which tests are filtered. Therefore,
-we test that here also.
+Note that tests sharding may also influence which tests are filtered. Therefore,
+we tests that here also.
 """
 
 __author__ = 'wan@google.com (Zhanyong Wan)'
@@ -79,22 +79,22 @@ if sys.executable:
   CAN_UNSET_ENV = eval(child.output)
 
 
-# Checks if we should test with an empty filter. This doesn't
+# Checks if we should tests with an empty filter. This doesn't
 # make sense on platforms that cannot pass empty env variables (Win32)
 # and on platforms that cannot unset variables (since we cannot tell
 # the difference between "" and NULL -- Borland and Solaris < 5.10)
 CAN_TEST_EMPTY_FILTER = (CAN_PASS_EMPTY_ENV and CAN_UNSET_ENV)
 
 
-# The environment variable for specifying the test filters.
+# The environment variable for specifying the tests filters.
 FILTER_ENV_VAR = 'GTEST_FILTER'
 
-# The environment variables for test sharding.
+# The environment variables for tests sharding.
 TOTAL_SHARDS_ENV_VAR = 'GTEST_TOTAL_SHARDS'
 SHARD_INDEX_ENV_VAR = 'GTEST_SHARD_INDEX'
 SHARD_STATUS_FILE_ENV_VAR = 'GTEST_SHARD_STATUS_FILE'
 
-# The command line flag for specifying the test filters.
+# The command line flag for specifying the tests filters.
 FILTER_FLAG = 'gtest_filter'
 
 # The command line flag for including disabled tests.
@@ -106,10 +106,10 @@ COMMAND = gtest_test_utils.GetTestExecutablePath('gtest_filter_unittest_')
 # Regex for determining whether parameterized tests are enabled in the binary.
 PARAM_TEST_REGEX = re.compile(r'/ParamTest')
 
-# Regex for parsing test case names from Google Test's output.
+# Regex for parsing tests case names from Google Test's output.
 TEST_CASE_REGEX = re.compile(r'^\[\-+\] \d+ tests? from (\w+(/\w+)?)')
 
-# Regex for parsing test names from Google Test's output.
+# Regex for parsing tests names from Google Test's output.
 TEST_REGEX = re.compile(r'^\[\s*RUN\s*\].*\.(\w+(/\w+)?)')
 
 # The command line flag to tell Google Test to output the list of tests it
@@ -180,14 +180,14 @@ def SetEnvVar(env_var, value):
 
 
 def RunAndReturnOutput(args = None):
-  """Runs the test program and returns its output."""
+  """Runs the tests program and returns its output."""
 
   return gtest_test_utils.Subprocess([COMMAND] + (args or []),
                                      env=environ).output
 
 
 def RunAndExtractTestList(args = None):
-  """Runs the test program and returns its exit code and a list of tests run."""
+  """Runs the tests program and returns its exit code and a list of tests run."""
 
   p = gtest_test_utils.Subprocess([COMMAND] + (args or []), env=environ)
   tests_run = []
@@ -217,13 +217,13 @@ def InvokeWithModifiedEnv(extra_env, function, *args, **kwargs):
 
 
 def RunWithSharding(total_shards, shard_index, command):
-  """Runs a test program shard and returns exit code and a list of tests run."""
+  """Runs a tests program shard and returns exit code and a list of tests run."""
 
   extra_env = {SHARD_INDEX_ENV_VAR: str(shard_index),
                TOTAL_SHARDS_ENV_VAR: str(total_shards)}
   return InvokeWithModifiedEnv(extra_env, RunAndExtractTestList, command)
 
-# The unit test.
+# The unit tests.
 
 
 class GTestFilterUnitTest(gtest_test_utils.TestCase):
@@ -268,7 +268,7 @@ class GTestFilterUnitTest(gtest_test_utils.TestCase):
     # Windows removes empty variables from the environment when passing it
     # to a new process.  This means it is impossible to pass an empty filter
     # into a process using the environment variable.  However, we can still
-    # test the case when the variable is not supplied (i.e., gtest_filter is
+    # tests the case when the variable is not supplied (i.e., gtest_filter is
     # None).
     # pylint: disable-msg=C6403
     if CAN_TEST_EMPTY_FILTER or gtest_filter != '':
@@ -299,9 +299,9 @@ class GTestFilterUnitTest(gtest_test_utils.TestCase):
 
     Args:
       gtest_filter: A filter to apply to the tests.
-      total_shards: A total number of shards to split test run into.
+      total_shards: A total number of shards to split tests run into.
       tests_to_run: A set of tests expected to run.
-      args   :      Arguments to pass to the to the test binary.
+      args   :      Arguments to pass to the to the tests binary.
       check_exit_0: When set to a true value, make sure that all shards
                     return 0.
     """
@@ -311,7 +311,7 @@ class GTestFilterUnitTest(gtest_test_utils.TestCase):
     # Windows removes empty variables from the environment when passing it
     # to a new process.  This means it is impossible to pass an empty filter
     # into a process using the environment variable.  However, we can still
-    # test the case when the variable is not supplied (i.e., gtest_filter is
+    # tests the case when the variable is not supplied (i.e., gtest_filter is
     # None).
     # pylint: disable-msg=C6403
     if CAN_TEST_EMPTY_FILTER or gtest_filter != '':
@@ -349,7 +349,7 @@ class GTestFilterUnitTest(gtest_test_utils.TestCase):
     self.AssertSetEqual(tests_run, tests_to_run)
 
   def setUp(self):
-    """Sets up test case.
+    """Sets up tests case.
 
     Determines whether value-parameterized tests are enabled in the binary and
     sets the flags accordingly.
@@ -404,7 +404,7 @@ class GTestFilterUnitTest(gtest_test_utils.TestCase):
     self.RunAndVerifyAllowingDisabled('*.*', ACTIVE_TESTS + DISABLED_TESTS)
 
   def testFilterByTestCase(self):
-    """Tests filtering by test case name."""
+    """Tests filtering by tests case name."""
 
     self.RunAndVerify('FooTest.*', ['FooTest.Abc', 'FooTest.Xyz'])
 
@@ -414,7 +414,7 @@ class GTestFilterUnitTest(gtest_test_utils.TestCase):
                                       BAZ_TESTS + ['BazTest.DISABLED_TestC'])
 
   def testFilterByTest(self):
-    """Tests filtering by test name."""
+    """Tests filtering by tests name."""
 
     self.RunAndVerify('*.TestOne', ['BarTest.TestOne', 'BazTest.TestOne'])
 
@@ -444,7 +444,7 @@ class GTestFilterUnitTest(gtest_test_utils.TestCase):
         ])
 
   def testWildcardInTestCaseName(self):
-    """Tests using wildcard in the test case name."""
+    """Tests using wildcard in the tests case name."""
 
     self.RunAndVerify('*a*.*', [
         'BarTest.TestOne',
@@ -456,7 +456,7 @@ class GTestFilterUnitTest(gtest_test_utils.TestCase):
         'BazTest.TestB', ] + DEATH_TESTS + PARAM_TESTS)
 
   def testWildcardInTestName(self):
-    """Tests using wildcard in the test name."""
+    """Tests using wildcard in the tests name."""
 
     self.RunAndVerify('*.*A*', ['FooTest.Abc', 'BazTest.TestA'])
 
@@ -557,7 +557,7 @@ class GTestFilterUnitTest(gtest_test_utils.TestCase):
         'SeqP/ParamTest.TestY/1',
         ])
 
-    # Value parameterized tests filtering by the test name.
+    # Value parameterized tests filtering by the tests name.
     self.RunAndVerify('*/0', [
         'SeqP/ParamTest.TestX/0',
         'SeqP/ParamTest.TestY/0',
@@ -605,7 +605,7 @@ class GTestFilterUnitTest(gtest_test_utils.TestCase):
       # This assertion ensures that Google Test enumerated the tests as
       # opposed to running them.
       self.assert_('[==========]' not in output,
-                   'Unexpected output during test enumeration.\n'
+                   'Unexpected output during tests enumeration.\n'
                    'Please ensure that LIST_TESTS_FLAG is assigned the\n'
                    'correct flag value for listing Google Test tests.')
 

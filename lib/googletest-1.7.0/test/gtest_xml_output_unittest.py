@@ -29,7 +29,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Unit test for the gtest_xml_output module"""
+"""Unit tests for the gtest_xml_output module"""
 
 import datetime
 import errno
@@ -47,7 +47,7 @@ GTEST_OUTPUT_FLAG = '--gtest_output'
 GTEST_DEFAULT_OUTPUT_FILE = 'test_detail.xml'
 GTEST_PROGRAM_NAME = 'gtest_xml_output_unittest_'
 
-# The environment variables for test sharding.
+# The environment variables for tests sharding.
 TOTAL_SHARDS_ENV_VAR = 'GTEST_TOTAL_SHARDS'
 SHARD_INDEX_ENV_VAR = 'GTEST_SHARD_INDEX'
 SHARD_STATUS_FILE_ENV_VAR = 'GTEST_SHARD_STATUS_FILE'
@@ -169,15 +169,15 @@ SUPPORTS_TYPED_TESTS = 'TypedTest' in gtest_test_utils.Subprocess(
 
 class GTestXMLOutputUnitTest(gtest_xml_test_utils.GTestXMLTestCase):
   """
-  Unit test for Google Test's XML output functionality.
+  Unit tests for Google Test's XML output functionality.
   """
 
-  # This test currently breaks on platforms that do not support typed and
+  # This tests currently breaks on platforms that do not support typed and
   # type-parameterized tests, so we don't run it under them.
   if SUPPORTS_TYPED_TESTS:
     def testNonEmptyXmlOutput(self):
       """
-      Runs a test program that generates a non-empty XML output, and
+      Runs a tests program that generates a non-empty XML output, and
       tests that the XML output is expected.
       """
       self._TestXmlOutput(GTEST_PROGRAM_NAME, EXPECTED_NON_EMPTY_XML, 1)
@@ -185,7 +185,7 @@ class GTestXMLOutputUnitTest(gtest_xml_test_utils.GTestXMLTestCase):
   def testEmptyXmlOutput(self):
     """Verifies XML output for a Google Test binary without actual tests.
 
-    Runs a test program that generates an empty XML output, and
+    Runs a tests program that generates an empty XML output, and
     tests that the XML output is expected.
     """
 
@@ -194,7 +194,7 @@ class GTestXMLOutputUnitTest(gtest_xml_test_utils.GTestXMLTestCase):
   def testTimestampValue(self):
     """Checks whether the timestamp attribute in the XML output is valid.
 
-    Runs a test program that generates an empty XML output, and checks if
+    Runs a tests program that generates an empty XML output, and checks if
     the timestamp attribute in the testsuites tag is valid.
     """
     actual = self._GetXmlOutput('gtest_no_test_unittest', [], {}, 0)
@@ -270,7 +270,7 @@ class GTestXMLOutputUnitTest(gtest_xml_test_utils.GTestXMLTestCase):
   def testFilteredTestXmlOutput(self):
     """Verifies XML output when a filter is applied.
 
-    Runs a test program that executes only some tests and verifies that
+    Runs a tests program that executes only some tests and verifies that
     non-selected tests do not show up in the XML output.
     """
 
@@ -280,7 +280,7 @@ class GTestXMLOutputUnitTest(gtest_xml_test_utils.GTestXMLTestCase):
   def testShardedTestXmlOutput(self):
     """Verifies XML output when run using multiple shards.
 
-    Runs a test program that executes only one shard and verifies that tests
+    Runs a tests program that executes only one shard and verifies that tests
     from other shards do not show up in the XML output.
     """
 

@@ -52,7 +52,7 @@ struct LessByName {
 
 class UnitTestHelper {
  public:
-  // Returns the array of pointers to all test cases sorted by the test case
+  // Returns the array of pointers to all tests cases sorted by the tests case
   // name.  The caller is responsible for deleting the array.
   static TestCase const** GetSortedTestCases() {
     UnitTest& unit_test = *UnitTest::GetInstance();
@@ -68,7 +68,7 @@ class UnitTestHelper {
     return test_cases;
   }
 
-  // Returns the test case by its name.  The caller doesn't own the returned
+  // Returns the tests case by its name.  The caller doesn't own the returned
   // pointer.
   static const TestCase* FindTestCase(const char* name) {
     UnitTest& unit_test = *UnitTest::GetInstance();
@@ -80,8 +80,8 @@ class UnitTestHelper {
     return NULL;
   }
 
-  // Returns the array of pointers to all tests in a particular test case
-  // sorted by the test name.  The caller is responsible for deleting the
+  // Returns the array of pointers to all tests in a particular tests case
+  // sorted by the tests name.  The caller is responsible for deleting the
   // array.
   static TestInfo const** GetSortedTests(const TestCase* test_case) {
     TestInfo const** const tests =
@@ -108,9 +108,9 @@ const int kTypedTestCases = 0;
 const int kTypedTests = 0;
 #endif  // GTEST_HAS_TYPED_TEST
 
-// We can only test the accessors that do not change value while tests run.
+// We can only tests the accessors that do not change value while tests run.
 // Since tests can be run in any order, the values the accessors that track
-// test execution (such as failed_test_count) can not be predicted.
+// tests execution (such as failed_test_count) can not be predicted.
 TEST(ApiTest, UnitTestImmutableAccessorsWork) {
   UnitTest* unit_test = UnitTest::GetInstance();
 
@@ -133,7 +133,7 @@ TEST(ApiTest, UnitTestImmutableAccessorsWork) {
   // The following lines initiate actions to verify certain methods in
   // FinalSuccessChecker::TearDown.
 
-  // Records a test property to verify TestResult::GetTestProperty().
+  // Records a tests property to verify TestResult::GetTestProperty().
   RecordProperty("key", "value");
 }
 

@@ -171,8 +171,8 @@ void VerifyGeneratorIsEmpty(const ParamGenerator<T>& generator) {
   EXPECT_TRUE(it == generator.end());
 }
 
-// Generator tests. They test that each of the provided generator functions
-// generates an expected sequence of values. The general test pattern
+// Generator tests. They tests that each of the provided generator functions
+// generates an expected sequence of values. The general tests pattern
 // instantiates a generator using one of the generator functions,
 // checks the sequence produced by the generator using its iterator API,
 // and then resets the iterator back to the beginning of the sequence
@@ -434,7 +434,7 @@ TEST(ValuesTest, ValuesWorksForMaxLengthList) {
   VerifyGenerator(gen, expected_values);
 }
 
-// Edge case test. Tests that single-parameter Values() generates the sequence
+// Edge case tests. Tests that single-parameter Values() generates the sequence
 // with the single value.
 TEST(ValuesTest, ValuesWithSingleParameter) {
   const ParamGenerator<int> gen = Values(42);
@@ -594,13 +594,13 @@ TEST(ParamGeneratorTest, AssignmentWorks) {
   VerifyGenerator(gen, expected_values);
 }
 
-// This test verifies that the tests are expanded and run as specified:
-// one test per element from the sequence produced by the generator
-// specified in INSTANTIATE_TEST_CASE_P. It also verifies that the test's
+// This tests verifies that the tests are expanded and run as specified:
+// one tests per element from the sequence produced by the generator
+// specified in INSTANTIATE_TEST_CASE_P. It also verifies that the tests's
 // fixture constructor, SetUp(), and TearDown() have run and have been
 // supplied with the correct parameters.
 
-// The use of environment object allows detection of the case where no test
+// The use of environment object allows detection of the case where no tests
 // case functionality is run at all. In this case TestCaseTearDown will not
 // be able to detect missing tests, naturally.
 template <int kExpectedCalls>
@@ -632,16 +632,16 @@ class TestGenerationEnvironment : public ::testing::Environment {
     }
     if (perform_check) {
       EXPECT_EQ(kExpectedCalls, fixture_constructor_count_)
-          << "Fixture constructor of ParamTestGenerationTest test case "
+          << "Fixture constructor of ParamTestGenerationTest tests case "
           << "has not been run as expected.";
       EXPECT_EQ(kExpectedCalls, set_up_count_)
-          << "Fixture SetUp method of ParamTestGenerationTest test case "
+          << "Fixture SetUp method of ParamTestGenerationTest tests case "
           << "has not been run as expected.";
       EXPECT_EQ(kExpectedCalls, tear_down_count_)
-          << "Fixture TearDown method of ParamTestGenerationTest test case "
+          << "Fixture TearDown method of ParamTestGenerationTest tests case "
           << "has not been run as expected.";
       EXPECT_EQ(kExpectedCalls, test_body_count_)
-          << "Test in ParamTestGenerationTest test case "
+          << "Test in ParamTestGenerationTest tests case "
           << "has not been run as expected.";
     }
   }
@@ -695,8 +695,8 @@ class TestGenerationTest : public TestWithParam<int> {
       }
     }
     EXPECT_TRUE(all_tests_in_test_case_selected)
-        << "When running the TestGenerationTest test case all of its tests\n"
-        << "must be selected by the filter flag for the test case to pass.\n"
+        << "When running the TestGenerationTest tests case all of its tests\n"
+        << "must be selected by the filter flag for the tests case to pass.\n"
         << "If not all of them are enabled, we can't reliably conclude\n"
         << "that the correct number of tests have been generated.";
 
@@ -732,7 +732,7 @@ TEST_P(TestGenerationTest, TestsExpandedAndRun) {
 INSTANTIATE_TEST_CASE_P(TestExpansionModule, TestGenerationTest,
                         ValuesIn(test_generation_params));
 
-// This test verifies that the element sequence (third parameter of
+// This tests verifies that the element sequence (third parameter of
 // INSTANTIATE_TEST_CASE_P) is evaluated in InitGoogleTest() and neither at
 // the call site of INSTANTIATE_TEST_CASE_P nor in RUN_ALL_TESTS().  For
 // that, we declare param_value_ to be a static member of
@@ -740,7 +740,7 @@ INSTANTIATE_TEST_CASE_P(TestExpansionModule, TestGenerationTest,
 // main(), just before invocation of InitGoogleTest().  After calling
 // InitGoogleTest(), we set the value to 2.  If the sequence is evaluated
 // before or after InitGoogleTest, INSTANTIATE_TEST_CASE_P will create a
-// test with parameter other than 1, and the test body will fail the
+// tests with parameter other than 1, and the tests body will fail the
 // assertion.
 class GeneratorEvaluationTest : public TestWithParam<int> {
  public:
@@ -772,15 +772,15 @@ INSTANTIATE_TEST_CASE_P(ExternalGeneratorModule,
                         ExternalGeneratorTest,
                         extern_gen);
 
-// Tests that a parameterized test case can be defined in one translation
-// unit and instantiated in another. This test will be instantiated in
+// Tests that a parameterized tests case can be defined in one translation
+// unit and instantiated in another. This tests will be instantiated in
 // gtest-param-test_test2.cc. ExternalInstantiationTest fixture class is
 // defined in gtest-param-test_test.h.
 TEST_P(ExternalInstantiationTest, IsMultipleOf33) {
   EXPECT_EQ(0, GetParam() % 33);
 }
 
-// Tests that a parameterized test case can be instantiated with multiple
+// Tests that a parameterized tests case can be instantiated with multiple
 // generators.
 class MultipleInstantiationTest : public TestWithParam<int> {};
 TEST_P(MultipleInstantiationTest, AllowsMultipleInstances) {
@@ -788,8 +788,8 @@ TEST_P(MultipleInstantiationTest, AllowsMultipleInstances) {
 INSTANTIATE_TEST_CASE_P(Sequence1, MultipleInstantiationTest, Values(1, 2));
 INSTANTIATE_TEST_CASE_P(Sequence2, MultipleInstantiationTest, Range(3, 5));
 
-// Tests that a parameterized test case can be instantiated
-// in multiple translation units. This test will be instantiated
+// Tests that a parameterized tests case can be instantiated
+// in multiple translation units. This tests will be instantiated
 // here and in gtest-param-test_test2.cc.
 // InstantiationInMultipleTranslationUnitsTest fixture class
 // is defined in gtest-param-test_test.h.
@@ -800,7 +800,7 @@ INSTANTIATE_TEST_CASE_P(Sequence1,
                         InstantiationInMultipleTranslaionUnitsTest,
                         Values(42, 42*2));
 
-// Tests that each iteration of parameterized test runs in a separate test
+// Tests that each iteration of parameterized tests runs in a separate tests
 // object.
 class SeparateInstanceTest : public TestWithParam<int> {
  public:
@@ -809,9 +809,9 @@ class SeparateInstanceTest : public TestWithParam<int> {
   static void TearDownTestCase() {
     EXPECT_GE(global_count_, 2)
         << "If some (but not all) SeparateInstanceTest tests have been "
-        << "filtered out this test will fail. Make sure that all "
+        << "filtered out this tests will fail. Make sure that all "
         << "GeneratorEvaluationTest are selected or de-selected together "
-        << "by the test filter.";
+        << "by the tests filter.";
   }
 
  protected:
@@ -826,11 +826,11 @@ TEST_P(SeparateInstanceTest, TestsRunInSeparateInstances) {
 }
 INSTANTIATE_TEST_CASE_P(FourElemSequence, SeparateInstanceTest, Range(1, 4));
 
-// Tests that all instantiations of a test have named appropriately. Test
+// Tests that all instantiations of a tests have named appropriately. Test
 // defined with TEST_P(TestCaseName, TestName) and instantiated with
 // INSTANTIATE_TEST_CASE_P(SequenceName, TestCaseName, generator) must be named
 // SequenceName/TestCaseName.TestName/i, where i is the 0-based index of the
-// sequence element used to instantiate the test.
+// sequence element used to instantiate the tests.
 class NamingTest : public TestWithParam<int> {};
 
 TEST_P(NamingTest, TestsReportCorrectNamesAndParameters) {
@@ -849,7 +849,7 @@ TEST_P(NamingTest, TestsReportCorrectNamesAndParameters) {
 INSTANTIATE_TEST_CASE_P(ZeroToFiveSequence, NamingTest, Range(0, 5));
 
 // Tests that user supplied custom parameter names are working correctly.
-// Runs the test with a builtin helper method which uses PrintToString,
+// Runs the tests with a builtin helper method which uses PrintToString,
 // as well as a custom function and custom functor to ensure all possible
 // uses work correctly.
 class CustomFunctorNamingTest : public TestWithParam<std::string> {};
@@ -999,7 +999,7 @@ INSTANTIATE_TEST_CASE_P(StatefulNamingFunctor,
                         StatefulNamingFunctor());
 
 // Class that cannot be streamed into an ostream.  It needs to be copyable
-// (and, in case of MSVC, also assignable) in order to be a test parameter
+// (and, in case of MSVC, also assignable) in order to be a tests parameter
 // type.  Its default copy constructor and assignment operator do exactly
 // what we need.
 class Unstreamable {
@@ -1023,7 +1023,7 @@ INSTANTIATE_TEST_CASE_P(InstantiationWithComments,
                         CommentTest,
                         Values(Unstreamable(1)));
 
-// Verify that we can create a hierarchy of test fixtures, where the base
+// Verify that we can create a hierarchy of tests fixtures, where the base
 // class fixture is not parameterized and the derived class is. In this case
 // ParameterizedDerivedTest inherits from NonParameterizedBaseTest.  We
 // perform simple tests on both.
@@ -1058,22 +1058,22 @@ class ParameterizedDeathTest : public ::testing::TestWithParam<int> { };
 
 TEST_F(ParameterizedDeathTest, GetParamDiesFromTestF) {
   EXPECT_DEATH_IF_SUPPORTED(GetParam(),
-                            ".* value-parameterized test .*");
+                            ".* value-parameterized tests .*");
 }
 
 INSTANTIATE_TEST_CASE_P(RangeZeroToFive, ParameterizedDerivedTest, Range(0, 5));
 
 
 int main(int argc, char **argv) {
-  // Used in TestGenerationTest test case.
+  // Used in TestGenerationTest tests case.
   AddGlobalTestEnvironment(TestGenerationTest::Environment::Instance());
-  // Used in GeneratorEvaluationTest test case. Tests that the updated value
+  // Used in GeneratorEvaluationTest tests case. Tests that the updated value
   // will be picked up for instantiating tests in GeneratorEvaluationTest.
   GeneratorEvaluationTest::set_param_value(1);
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  // Used in GeneratorEvaluationTest test case. Tests that value updated
+  // Used in GeneratorEvaluationTest tests case. Tests that value updated
   // here will NOT be used for instantiating tests in
   // GeneratorEvaluationTest.
   GeneratorEvaluationTest::set_param_value(2);

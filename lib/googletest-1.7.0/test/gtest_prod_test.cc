@@ -29,7 +29,7 @@
 //
 // Author: wan@google.com (Zhanyong Wan)
 //
-// Unit test for gtest/gtest_prod.h.
+// Unit tests for gtest/gtest_prod.h.
 
 #include "production.h"
 #include "gtest/gtest.h"

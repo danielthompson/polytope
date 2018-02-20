@@ -29,7 +29,7 @@
 //
 // Author: mheule@google.com (Markus Heule)
 //
-// This test verifies that it's possible to use Google Test by including
+// This tests verifies that it's possible to use Google Test by including
 // the gtest.h header file alone.
 
 #include "gtest/gtest.h"

@@ -1553,7 +1553,7 @@ TEST(PrintToStringTest, WorksForCharArrayWithEmbeddedNul) {
 }
 
   TEST(PrintToStringTest, ContainsNonLatin) {
-  // Sanity test with valid UTF-8. Prints both in hex and as text.
+  // Sanity tests with valid UTF-8. Prints both in hex and as text.
   std::string non_ascii_str = ::std::string("오전 4:30");
   EXPECT_PRINT_TO_STRING_(non_ascii_str,
                           "\"\\xEC\\x98\\xA4\\xEC\\xA0\\x84 4:30\"\n"
@@ -1565,7 +1565,7 @@ TEST(PrintToStringTest, WorksForCharArrayWithEmbeddedNul) {
 }
 
 TEST(IsValidUTF8Test, IllFormedUTF8) {
-  // The following test strings are ill-formed UTF-8 and are printed
+  // The following tests strings are ill-formed UTF-8 and are printed
   // as hex only (or ASCII, in case of ASCII bytes) because IsValidUTF8() is
   // expected to fail, thus output does not contain "As Text:".
 

@@ -52,7 +52,7 @@
 namespace testing {
 
 // Forward declarations of ValuesIn(), which is implemented in
-// include/gtest/gtest-param-test.h.
+// include/gtest/gtest-param-tests.h.
 template <typename ForwardIterator>
 internal::ParamGenerator<
   typename ::testing::internal::IteratorTraits<ForwardIterator>::value_type>

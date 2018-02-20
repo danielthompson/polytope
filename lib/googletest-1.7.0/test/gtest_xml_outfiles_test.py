@@ -29,7 +29,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Unit test for the gtest_xml_output module."""
+"""Unit tests for the gtest_xml_output module."""
 
 import os
 from xml.dom import minidom, Node
@@ -58,7 +58,7 @@ EXPECTED_XML_2 = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 class GTestXMLOutFilesTest(gtest_xml_test_utils.GTestXMLTestCase):
-  """Unit test for Google Test's XML output functionality."""
+  """Unit tests for Google Test's XML output functionality."""
 
   def setUp(self):
     # We want the trailing '/' that the last "" provides in os.path.join, for
@@ -99,7 +99,7 @@ class GTestXMLOutFilesTest(gtest_xml_test_utils.GTestXMLTestCase):
     self.assert_(p.exited)
     self.assertEquals(0, p.exit_code)
 
-    # TODO(wan@google.com): libtool causes the built test binary to be
+    # TODO(wan@google.com): libtool causes the built tests binary to be
     #   named lt-gtest_xml_outfiles_test_ instead of
     #   gtest_xml_outfiles_test_.  To account for this possibility, we
     #   allow both names in the following code.  We should remove this

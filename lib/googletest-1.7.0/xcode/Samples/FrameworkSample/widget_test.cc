@@ -33,14 +33,14 @@
 // widget_test.cc
 //
 
-// This is a simple test file for the Widget class in the Widget.framework
+// This is a simple tests file for the Widget class in the Widget.framework
 
 #include <string>
 #include "gtest/gtest.h"
 
 #include <Widget/widget.h>
 
-// This test verifies that the constructor sets the internal state of the
+// This tests verifies that the constructor sets the internal state of the
 // Widget class correctly.
 TEST(WidgetInitializerTest, TestConstructor) {
   Widget widget(1.0f, "name");
@@ -48,7 +48,7 @@ TEST(WidgetInitializerTest, TestConstructor) {
   EXPECT_EQ(std::string("name"), widget.GetStringValue());
 }
 
-// This test verifies the conversion of the float and string values to int and
+// This tests verifies the conversion of the float and string values to int and
 // char*, respectively.
 TEST(WidgetInitializerTest, TestConversion) {
   Widget widget(1.0f, "name");

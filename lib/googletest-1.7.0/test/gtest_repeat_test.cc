@@ -79,7 +79,7 @@ class MyEnvironment : public testing::Environment {
   virtual void TearDown() { g_environment_tear_down_count++; }
 };
 
-// A test that should fail.
+// A tests that should fail.
 
 int g_should_fail_count = 0;
 
@@ -88,7 +88,7 @@ TEST(FooTest, ShouldFail) {
   EXPECT_EQ(0, 1) << "Expected failure.";
 }
 
-// A test that should pass.
+// A tests that should pass.
 
 int g_should_pass_count = 0;
 
@@ -96,8 +96,8 @@ TEST(FooTest, ShouldPass) {
   g_should_pass_count++;
 }
 
-// A test that contains a thread-safe death test and a fast death
-// test.  It should pass.
+// A tests that contains a thread-safe death tests and a fast death
+// tests.  It should pass.
 
 int g_death_test_count = 0;
 
@@ -127,7 +127,7 @@ INSTANTIATE_TEST_CASE_P(MyParamSequence,
                         MyParamTest,
                         testing::Range(0, kNumberOfParamTests));
 
-// Resets the count for each test.
+// Resets the count for each tests.
 void ResetCounts() {
   g_environment_set_up_count = 0;
   g_environment_tear_down_count = 0;
@@ -137,7 +137,7 @@ void ResetCounts() {
   g_param_test_count = 0;
 }
 
-// Checks that the count for each test is expected.
+// Checks that the count for each tests is expected.
 void CheckCounts(int expected) {
   GTEST_CHECK_INT_EQ_(expected, g_environment_set_up_count);
   GTEST_CHECK_INT_EQ_(expected, g_environment_tear_down_count);
@@ -226,10 +226,10 @@ int main(int argc, char **argv) {
   TestRepeatWithFilterForFailedTests(4);
 
   // It would be nice to verify that the tests indeed loop forever
-  // when GTEST_FLAG(repeat) is negative, but this test will be quite
+  // when GTEST_FLAG(repeat) is negative, but this tests will be quite
   // complicated to write.  Since this flag is for interactive
-  // debugging only and doesn't affect the normal test result, such a
-  // test would be an overkill.
+  // debugging only and doesn't affect the normal tests result, such a
+  // tests would be an overkill.
 
   printf("PASS\n");
   return 0;

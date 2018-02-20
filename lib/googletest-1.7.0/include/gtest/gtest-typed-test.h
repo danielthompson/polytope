@@ -34,8 +34,8 @@
 
 // This header implements typed tests and type-parameterized tests.
 
-// Typed (aka type-driven) tests repeat the same test for types in a
-// list.  You must know which types you want to test with when writing
+// Typed (aka type-driven) tests repeat the same tests for types in a
+// list.  You must know which types you want to tests with when writing
 // typed tests. Here's how you do it:
 
 #if 0
@@ -51,7 +51,7 @@ class FooTest : public testing::Test {
   T value_;
 };
 
-// Next, associate a list of types with the test case, which will be
+// Next, associate a list of types with the tests case, which will be
 // repeated for each type in the list.  The typedef is necessary for
 // the macro to parse correctly.
 typedef testing::Types<char, int, unsigned int> MyTypes;
@@ -62,9 +62,9 @@ TYPED_TEST_CASE(FooTest, MyTypes);
 //   TYPED_TEST_CASE(FooTest, int);
 
 // Then, use TYPED_TEST() instead of TEST_F() to define as many typed
-// tests for this test case as you want.
+// tests for this tests case as you want.
 TYPED_TEST(FooTest, DoesBlah) {
-  // Inside a test, refer to TypeParam to get the type parameter.
+  // Inside a tests, refer to TypeParam to get the type parameter.
   // Since we are inside a derived class template, C++ requires use to
   // visit the members of FooTest via 'this'.
   TypeParam n = this->value_;
@@ -84,9 +84,9 @@ TYPED_TEST(FooTest, HasPropertyA) { ... }
 
 #endif  // 0
 
-// Type-parameterized tests are abstract test patterns parameterized
+// Type-parameterized tests are abstract tests patterns parameterized
 // by a type.  Compared with typed tests, type-parameterized tests
-// allow you to define the test pattern without knowing what the type
+// allow you to define the tests pattern without knowing what the type
 // parameters are.  The defined pattern can be instantiated with
 // different types any number of times, in any number of translation
 // units.
@@ -94,7 +94,7 @@ TYPED_TEST(FooTest, HasPropertyA) { ... }
 // If you are designing an interface or concept, you can define a
 // suite of type-parameterized tests to verify properties that any
 // valid implementation of the interface/concept should have.  Then,
-// each implementation can easily instantiate the test suite to verify
+// each implementation can easily instantiate the tests suite to verify
 // that it conforms to the requirements, without having to write
 // similar tests repeatedly.  Here's an example:
 
@@ -107,24 +107,24 @@ class FooTest : public testing::Test {
   ...
 };
 
-// Next, declare that you will define a type-parameterized test case
+// Next, declare that you will define a type-parameterized tests case
 // (the _P suffix is for "parameterized" or "pattern", whichever you
 // prefer):
 TYPED_TEST_CASE_P(FooTest);
 
 // Then, use TYPED_TEST_P() to define as many type-parameterized tests
-// for this type-parameterized test case as you want.
+// for this type-parameterized tests case as you want.
 TYPED_TEST_P(FooTest, DoesBlah) {
-  // Inside a test, refer to TypeParam to get the type parameter.
+  // Inside a tests, refer to TypeParam to get the type parameter.
   TypeParam n = 0;
   ...
 }
 
 TYPED_TEST_P(FooTest, HasPropertyA) { ... }
 
-// Now the tricky part: you need to register all test patterns before
+// Now the tricky part: you need to register all tests patterns before
 // you can instantiate them.  The first argument of the macro is the
-// test case name; the rest are the names of the tests in this test
+// tests case name; the rest are the names of the tests in this tests
 // case.
 REGISTER_TYPED_TEST_CASE_P(FooTest,
                            DoesBlah, HasPropertyA);
@@ -135,7 +135,7 @@ REGISTER_TYPED_TEST_CASE_P(FooTest,
 //
 // To distinguish different instances of the pattern, the first
 // argument to the INSTANTIATE_* macro is a prefix that will be added
-// to the actual test case name.  Remember to pick unique prefixes for
+// to the actual tests case name.  Remember to pick unique prefixes for
 // different instances.
 typedef testing::Types<char, int, unsigned int> MyTypes;
 INSTANTIATE_TYPED_TEST_CASE_P(My, FooTest, MyTypes);
@@ -156,7 +156,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(My, FooTest, MyTypes);
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
 // Expands to the name of the typedef for the type parameters of the
-// given test case.
+// given tests case.
 # define GTEST_TYPE_PARAMS_(TestCaseName) gtest_type_params_##TestCaseName##_
 
 // The 'Types' template argument below must have spaces around it
@@ -195,7 +195,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(My, FooTest, MyTypes);
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
 // Expands to the namespace name that the type-parameterized tests for
-// the given type-parameterized test case are defined in.  The exact
+// the given type-parameterized tests case are defined in.  The exact
 // name of the namespace is subject to change without notice.
 # define GTEST_CASE_NAMESPACE_(TestCaseName) \
   gtest_case_##TestCaseName##_
@@ -203,18 +203,18 @@ INSTANTIATE_TYPED_TEST_CASE_P(My, FooTest, MyTypes);
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
 // Expands to the name of the variable used to remember the names of
-// the defined tests in the given test case.
+// the defined tests in the given tests case.
 # define GTEST_TYPED_TEST_CASE_P_STATE_(TestCaseName) \
   gtest_typed_test_case_p_state_##TestCaseName##_
 
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE DIRECTLY.
 //
 // Expands to the name of the variable used to remember the names of
-// the registered tests in the given test case.
+// the registered tests in the given tests case.
 # define GTEST_REGISTERED_TEST_NAMES_(TestCaseName) \
   gtest_registered_test_names_##TestCaseName##_
 
-// The variables defined in the type-parameterized test macros are
+// The variables defined in the type-parameterized tests macros are
 // static as typically these macros are used in a .h file that can be
 // #included in multiple translation units linked together.
 # define TYPED_TEST_CASE_P(CaseName) \

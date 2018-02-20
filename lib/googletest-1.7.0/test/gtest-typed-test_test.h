@@ -38,7 +38,7 @@
 
 using testing::Test;
 
-// For testing that the same type-parameterized test case can be
+// For testing that the same type-parameterized tests case can be
 // instantiated in different translation units linked together.
 // ContainerTest will be instantiated in both gtest-typed-test_test.cc
 // and gtest-typed-test2_test.cc.

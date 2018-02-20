@@ -121,7 +121,7 @@ class XmlOutputChangeDirTest : public Test {
   virtual void SetUp() {
     original_working_dir_ = FilePath::GetCurrentDir();
     posix::ChDir("..");
-    // This will make the test fail if run from the root directory.
+    // This will make the tests fail if run from the root directory.
     EXPECT_NE(original_working_dir_.string(),
               FilePath::GetCurrentDir().string());
   }

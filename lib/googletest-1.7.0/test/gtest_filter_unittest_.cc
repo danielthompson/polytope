@@ -29,13 +29,13 @@
 //
 // Author: wan@google.com (Zhanyong Wan)
 
-// Unit test for Google Test test filters.
+// Unit tests for Google Test tests filters.
 //
-// A user can specify which test(s) in a Google Test program to run via
+// A user can specify which tests(s) in a Google Test program to run via
 // either the GTEST_FILTER environment variable or the --gtest_filter
 // flag.  This is used for testing such functionality.
 //
-// The program will be invoked from a Python unit test.  Don't run it
+// The program will be invoked from a Python unit tests.  Don't run it
 // directly.
 
 #include "gtest/gtest.h"
