@@ -6,4 +6,7 @@
 
 namespace Polytope {
 
+   Intersection::Intersection()
+         : Location(Point(0, 0, 0)) { }
+
 }

@@ -40,4 +40,12 @@ namespace Polytope {
       return std::sqrt(x * x + y * y + z + z);
    }
 
+   float Vector::LengthSquared() const {
+      return x * x + y * y + z * z;
+   }
+
+   Vector Vector::operator*(const float t) const {
+      return Vector(x * t, y * t, z * t);
+   }
+
 }

@@ -34,10 +34,14 @@ namespace Polytope {
       void ApplyInPlace(Ray &ray) const;
       Ray Apply(const Ray &ray) const;
 
+      bool HasScale() const;
+
       // data
 
       Matrix4x4 Matrix;
       Matrix4x4 Inverse;
+
+      static const Vector xDir, yDir, zDir;
    };
 }
 

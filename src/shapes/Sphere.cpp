@@ -13,7 +13,7 @@ namespace Polytope {
    Sphere::Sphere(const Transform &ObjectToWorld) :
       AbstractShape(ObjectToWorld) { }
 
-   bool Sphere::Hits(const Ray &worldSpaceRay) {
+   bool Sphere::Hits(Ray &worldSpaceRay) const {
       Ray objectSpaceRay = worldSpaceRay;
 
       //if (WorldToObject != 0) {
@@ -46,14 +46,14 @@ namespace Polytope {
       if (t1 < Epsilon) {
          hits = (t0 >= Epsilon) ? t0 : NOHIT;
       }
-      else if (Constants.WithinEpsilon(t1, 0)) {
-         hits = t0 < Constants.Epsilon ? t1 : t0;
+      else if (WithinEpsilon(t1, 0)) {
+         hits = t0 < Epsilon ? t1 : t0;
       }
       else {
-         if (t0 < Constants.Epsilon) {
+         if (t0 < Epsilon) {
             hits = t1;
          }
-         else if (Constants.WithinEpsilon(t0, 0)) {
+         else if (WithinEpsilon(t0, 0)) {
             hits = t0;
          }
          else {
@@ -61,14 +61,14 @@ namespace Polytope {
          }
       }
 
-      if (hits == Constants.NOHIT)
+      if (hits == NOHIT)
          return false;
 
-      if (hits < Constants.Epsilon)
+      if (hits < Epsilon)
          return false;
 
       // convert T back to world space
-      if (ObjectToWorld != null && ObjectToWorld.HasScale()) {
+      if (/*ObjectToWorld != null && */ObjectToWorld.HasScale()) {
          Point objectSpaceIntersectionPoint = objectSpaceRay.GetPointAtT(hits);
          Point worldSpaceIntersectionPoint = ObjectToWorld.Apply(objectSpaceIntersectionPoint);
          hits = worldSpaceRay.GetTAtPoint(worldSpaceIntersectionPoint);
@@ -79,7 +79,8 @@ namespace Polytope {
    }
 
    Intersection Sphere::Intersect(const Ray &worldSpaceRay) {
-      return nullptr;
+      // TODO
+      return Intersection();
    }
 
 

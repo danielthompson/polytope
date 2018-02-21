@@ -12,18 +12,24 @@ namespace Polytope {
 
    class Ray {
    public:
+
+      // methods
+
+      Ray(const Point &origin, const Vector &direction);
+
+      bool operator==(const Ray &rhs) const;
+      bool operator!=(const Ray &rhs) const;
+
+      Point GetPointAtT(float t) const;
+      float GetTAtPoint(Point p) const;
+
+      // data
+
       Point Origin;
       Vector Direction;
       Vector DirectionInverse;
       float MinT;
       float MaxT;
-
-      Ray(const Point &origin, const Vector &direction);
-
-      bool operator==(const Ray &rhs) const;
-
-      bool operator!=(const Ray &rhs) const;
-
    };
 
 }

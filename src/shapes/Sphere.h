@@ -16,7 +16,7 @@ namespace Polytope {
    public:
       explicit Sphere(const Transform &transform);
 
-      bool Hits(const Ray &worldSpaceRay) override;
+      bool Hits(Ray &worldSpaceRay) const override;
       Intersection Intersect(const Ray &worldSpaceRay) override;
 
    private:

@@ -6,6 +6,10 @@
 
 namespace Polytope {
 
+   const Vector Transform::xDir = Vector(1, 0, 0);
+   const Vector Transform::yDir = Vector(0, 1, 0);
+   const Vector Transform::zDir = Vector(0, 0, 1);
+
    Transform::Transform() {
       Matrix = Matrix4x4();
       Inverse = Matrix4x4();
@@ -111,6 +115,16 @@ namespace Polytope {
    Ray Transform::Apply(const Ray &ray) const {
       return Ray(Apply(ray.Origin), Apply(ray.Direction));
 
+   }
+
+   bool Transform::HasScale() const {
+      float lengthX = Apply(xDir).LengthSquared();
+      float lengthY = Apply(yDir).LengthSquared();
+      float lengthZ = Apply(zDir).LengthSquared();
+
+      return (lengthX < .999 || lengthX > 1.001
+              || lengthY < .999 || lengthY > 1.001
+              || lengthZ < .999 || lengthZ > 1.001);
    }
 
 }

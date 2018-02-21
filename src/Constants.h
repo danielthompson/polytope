@@ -14,6 +14,8 @@ namespace Polytope {
    const float OneOverPi = 1.0f / PI;
    const float PIOver180 = PI / 180.0f;
 
+   const float NOHIT = -1.0f;
+
    const float PIOver2 = PI / 2.0f;
    const float PIOver3 = PI / 3.0f;
    const float PIOver4 = PI / 4.0f;

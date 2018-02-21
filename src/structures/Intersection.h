@@ -11,7 +11,14 @@ namespace Polytope {
 
    class Intersection {
    public:
-      Point Intersection;
+
+      // methods
+
+      Intersection();
+
+      // data
+
+      Point Location;
       bool Hits;
    };
 

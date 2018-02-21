@@ -18,9 +18,9 @@ namespace Polytope {
 
       for (int i = 0; i < shapes.size(); i++) {
 
-         AbstractShape shape = shapes[i];
+         AbstractShape *shape = &shapes[i];
 
-         bool hits = shape.Hits(ray);
+         bool hits = shape->Hits(ray);
 
          test = (hits && ray.MinT >= Epsilon && ray.MinT < closestT);
 
@@ -32,11 +32,13 @@ namespace Polytope {
       Intersection closestStateToRay;
 
       if (nearestShapeIndex >= 0) {
-         closestStateToRay = shapes[nearestShapeIndex].getHitInfo(ray);
+         AbstractShape *nearestShape = &shapes[nearestShapeIndex];
 
-         if (isnan(closestStateToRay.Intersection.x)) {
+         closestStateToRay = nearestShape->Intersect(ray);
+
+         if (isnan(closestStateToRay.Location.x)) {
             // wtf?
-            closestStateToRay = shapes[nearestShapeIndex].getHitInfo(ray);
+            closestStateToRay = nearestShape->Intersect(ray);
          }
       }
 

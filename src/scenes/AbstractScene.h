@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 #include "../cameras/AbstractCamera.h"
 #include "../shapes/AbstractShape.h"
 #include "../structures/Intersection.h"

@@ -27,4 +27,27 @@ namespace Polytope {
    bool Ray::operator!=(const Ray &rhs) const {
       return !(rhs == *this);
    }
+
+   Point Ray::GetPointAtT(float t) const {
+      return Origin + (Direction * t);
+   }
+
+   float Ray::GetTAtPoint(Point p) const {
+      float tX, tY, tZ;
+
+      if (Direction.x != 0) {
+         tX = (p.x - Origin.x) / Direction.x;
+         return tX;
+      }
+
+      if (Direction.y != 0) {
+         tY = (p.y - Origin.y) / Direction.y;
+         return tY;
+      }
+
+      if (Direction.z != 0) {
+         tZ = (p.z - Origin.z) / Direction.z;
+         return tZ;
+      }
+   }
 }

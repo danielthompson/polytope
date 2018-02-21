@@ -21,6 +21,8 @@ namespace Polytope {
       Vector operator-(const Point &rhs) const;
       Point operator+(const Point &rhs) const;
 
+      Point operator+(const Vector &rhs) const;
+
       float operator[] (int index) const;
 
       float Dot(const Point &p) const;

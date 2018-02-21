@@ -16,10 +16,13 @@ namespace Polytope {
       bool operator==(const Vector &rhs) const;
       bool operator!=(const Vector &rhs) const;
       float operator[] (int index) const;
+      Vector operator*(const float t) const;
+
 
       float Dot(const Vector &v) const;
 
       float Length() const;
+      float LengthSquared() const;
 
    public:
       float x, y, z;
