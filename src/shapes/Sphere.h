@@ -17,7 +17,7 @@ namespace Polytope {
       explicit Sphere(const Transform &transform);
 
       bool Hits(Ray &worldSpaceRay) const override;
-      Intersection Intersect(const Ray &worldSpaceRay) override;
+      void Intersect(const Ray &worldSpaceRay, Intersection *intersection) override;
 
    private:
       const Point Origin = Point(0, 0, 0);

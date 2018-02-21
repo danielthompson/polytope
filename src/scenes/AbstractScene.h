@@ -19,7 +19,7 @@ namespace Polytope {
       std::shared_ptr<AbstractCamera> Camera;
       std::string ImplementationType = "Base Scene";
 
-      std::vector<AbstractShape> Shapes;
+      std::vector<std::shared_ptr<AbstractShape>> Shapes;
 
    protected:
       Intersection GetNearestShapeIteratively(std::vector<AbstractShape> shapes, Ray ray);

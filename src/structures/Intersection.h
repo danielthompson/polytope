@@ -5,7 +5,9 @@
 #ifndef POLYTOPE_INTERSECTION_H
 #define POLYTOPE_INTERSECTION_H
 
+#include <memory>
 #include "Point.h"
+#include "../shapes/AbstractShape.h"
 
 namespace Polytope {
 
@@ -18,6 +20,7 @@ namespace Polytope {
 
       // data
 
+      std::shared_ptr<AbstractShape> Shape;
       Point Location;
       bool Hits;
    };

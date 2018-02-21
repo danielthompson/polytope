@@ -78,8 +78,40 @@ namespace Polytope {
       return true;
    }
 
-   Intersection Sphere::Intersect(const Ray &worldSpaceRay) {
+   void Sphere::Intersect(const Ray &worldSpaceRay, Intersection *intersection) {
       // TODO
+
+      intersection->Hits = true;
+      intersection->Shape = std::make_shared<AbstractShape>(this);
+
+      // we need to find the normal, for which we need the intersectionpoint in object space
+
+      Point worldSpaceIntersectionPoint = worldSpaceRay.GetPointAtT(worldSpaceRay.MinT);
+
+      state.IntersectionPoint = worldSpaceIntersectionPoint;
+
+      Point objectSpaceIntersectionPoint = worldSpaceIntersectionPoint;
+
+      if (WorldToObject != null) {
+         objectSpaceIntersectionPoint = WorldToObject.Apply(worldSpaceIntersectionPoint);
+      }
+
+      objectSpaceIntersectionPoint.Minus(Origin);
+
+      Normal objectSpaceNormal = new Normal(objectSpaceIntersectionPoint.X, objectSpaceIntersectionPoint.Y, objectSpaceIntersectionPoint.Z);
+
+      Normal worldSpaceNormal = objectSpaceNormal;
+
+      if (ObjectToWorld != null) {
+         worldSpaceNormal = ObjectToWorld.Apply(worldSpaceNormal);
+      }
+
+      worldSpaceNormal.Normalize();
+
+      state.Normal = worldSpaceNormal;
+
+      return state;
+
       return Intersection();
    }
 

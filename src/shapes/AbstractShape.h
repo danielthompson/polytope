@@ -19,7 +19,7 @@ namespace Polytope {
       AbstractShape(const Transform &ObjectToWorld, const Transform &WorldToObject);
 
       virtual bool Hits(Ray &worldSpaceRay) const = 0;
-      virtual Intersection Intersect(const Ray &worldSpaceRay) = 0;
+      virtual void Intersect(const Ray &worldSpaceRay, Intersection *intersection) = 0;
 
       // data
       Transform ObjectToWorld;

@@ -45,7 +45,11 @@ add_library(polytope_lib
         src/structures/Intersection.cpp
         src/structures/Intersection.h
         src/structures/Normal.cpp
-        src/structures/Normal.h)
+        src/structures/Normal.h
+        src/runners/AbstractRunner.h
+        src/runners/AbstractRunner.cpp
+        src/runners/PixelRunner.cpp
+        src/runners/PixelRunner.h)
 add_executable(polytope src/Main.cpp )
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be
