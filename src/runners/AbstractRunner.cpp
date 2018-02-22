@@ -7,7 +7,7 @@
 namespace Polytope {
 
    void Polytope::AbstractRunner::Trace(int x, int y) {
-      
+
    }
 
 }

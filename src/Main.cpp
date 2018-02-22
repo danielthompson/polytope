@@ -4,11 +4,15 @@
 
 #include <iostream>
 #include "runners/PixelRunner.h"
+#include "samplers/AbstractSampler.h"
+#include "samplers/CenterSampler.h"
 
 int main() {
 
    int x = 640;
    int y = 480;
+
+   Polytope::AbstractSampler sampler = Polytope::CenterSampler();
 
    Polytope::PixelRunner runner = Polytope::PixelRunner(x, y);
 
