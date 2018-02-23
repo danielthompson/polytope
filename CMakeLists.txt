@@ -55,7 +55,7 @@ add_library(polytope_lib
         src/structures/Point2.cpp
         src/structures/Point2.h
         src/samplers/CenterSampler.cpp
-        src/samplers/CenterSampler.h)
+        src/samplers/CenterSampler.h src/scenes/NaiveScene.cpp src/scenes/NaiveScene.h)
 add_executable(${PROJECT_NAME} src/Main.cpp )
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be

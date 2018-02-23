@@ -24,7 +24,7 @@ namespace Polytope {
 
       // data
 
-      AbstractShape *Shape;
+      std::shared_ptr<AbstractShape> Shape;
       Point Location;
       Normal Normal;
       bool Hits;
