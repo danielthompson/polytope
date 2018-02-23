@@ -106,6 +106,25 @@ namespace Polytope {
       return Vector(newX, newY, newZ);
    }
 
+   void Transform::ApplyInPlace(Normal &n) const {
+      float newX = n.x * Matrix.Matrix[0][0] + n.y * Matrix.Matrix[0][1] + n.z * Matrix.Matrix[0][2];
+      float newY = n.x * Matrix.Matrix[1][0] + n.y * Matrix.Matrix[1][1] + n.z * Matrix.Matrix[1][2];
+      float newZ = n.x * Matrix.Matrix[2][0] + n.y * Matrix.Matrix[2][1] + n.z * Matrix.Matrix[2][2];
+
+      n.x = newX;
+      n.y = newY;
+      n.z = newZ;
+   }
+
+   Normal Transform::Apply(const Normal &n) const {
+
+      float newX = n.x * Inverse.Matrix[0][0] + n.y * Matrix.Matrix[1][0] + n.z * Matrix.Matrix[2][0];
+      float newY = n.x * Matrix.Matrix[0][1] + n.y * Matrix.Matrix[1][1] + n.z * Matrix.Matrix[2][1];
+      float newZ = n.x * Matrix.Matrix[0][2] + n.y * Matrix.Matrix[1][2] + n.z * Matrix.Matrix[2][2];
+
+      return Normal(newX, newY, newZ);
+   }
+
    void Transform::ApplyInPlace(Ray &ray) const {
       ApplyInPlace(ray.Origin);
       ApplyInPlace(ray.Direction);
@@ -126,5 +145,8 @@ namespace Polytope {
               || lengthY < .999 || lengthY > 1.001
               || lengthZ < .999 || lengthZ > 1.001);
    }
+
+
+
 
 }

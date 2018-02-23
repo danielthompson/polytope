@@ -9,6 +9,7 @@
 #include "Point.h"
 #include "Vector.h"
 #include "Ray.h"
+#include "Normal.h"
 
 namespace Polytope {
 
@@ -30,6 +31,9 @@ namespace Polytope {
 
       void ApplyInPlace(Vector &vector) const;
       Vector Apply(const Vector &vector) const;
+
+      void ApplyInPlace(Normal &normal) const;
+      Normal Apply(const Normal &normal) const;
 
       void ApplyInPlace(Ray &ray) const;
       Ray Apply(const Ray &ray) const;

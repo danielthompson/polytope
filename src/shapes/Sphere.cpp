@@ -5,6 +5,7 @@
 #include <cmath>
 #include "Sphere.h"
 #include "../Constants.h"
+#include "../structures/Normal.h"
 
 namespace Polytope {
 
@@ -88,31 +89,31 @@ namespace Polytope {
 
       Point worldSpaceIntersectionPoint = worldSpaceRay.GetPointAtT(worldSpaceRay.MinT);
 
-      state.IntersectionPoint = worldSpaceIntersectionPoint;
+
+
+      intersection->Location = worldSpaceIntersectionPoint;
 
       Point objectSpaceIntersectionPoint = worldSpaceIntersectionPoint;
 
-      if (WorldToObject != null) {
+      //if (WorldToObject != null) {
          objectSpaceIntersectionPoint = WorldToObject.Apply(worldSpaceIntersectionPoint);
-      }
+      //}
 
-      objectSpaceIntersectionPoint.Minus(Origin);
+      // this can probably be deleted since Origin is always 0
+      //objectSpaceIntersectionPoint -= Origin;
 
-      Normal objectSpaceNormal = new Normal(objectSpaceIntersectionPoint.X, objectSpaceIntersectionPoint.Y, objectSpaceIntersectionPoint.Z);
+      Normal objectSpaceNormal = Normal(objectSpaceIntersectionPoint.x, objectSpaceIntersectionPoint.y, objectSpaceIntersectionPoint.z);
 
       Normal worldSpaceNormal = objectSpaceNormal;
 
-      if (ObjectToWorld != null) {
+      // transforms should never be null
+      //if (ObjectToWorld != null) {
          worldSpaceNormal = ObjectToWorld.Apply(worldSpaceNormal);
-      }
+      //}
 
       worldSpaceNormal.Normalize();
 
-      state.Normal = worldSpaceNormal;
-
-      return state;
-
-      return Intersection();
+      intersection->Normal = worldSpaceNormal;
    }
 
 

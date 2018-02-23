@@ -9,6 +9,24 @@ namespace Polytope {
 
    class Normal {
    public:
+
+      // constructors
+
+      Normal () {x = y = z = 0;}
+
+      Normal (float x, float y, float z) : x(x), y(y), z(z) { }
+
+      // operators
+
+      // methods
+
+      float Length();
+      float LengthSquared();
+
+      void Normalize();
+
+      // data
+
       float x, y, z;
    };
 

@@ -11,6 +11,12 @@ namespace Polytope {
 
    class AbstractRunner {
    public:
+
+      // methods
+
+      AbstractRunner(AbstractSampler *sampler);
+
+      // data
       AbstractSampler *Sampler;
 
    protected:

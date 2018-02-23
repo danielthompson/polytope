@@ -19,6 +19,7 @@ namespace Polytope {
       bool operator!=(const Point &rhs) const;
 
       Vector operator-(const Point &rhs) const;
+
       Point operator+(const Point &rhs) const;
 
       Point operator+(const Vector &rhs) const;
