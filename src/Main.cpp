@@ -3,8 +3,8 @@
 //
 
 #include <iostream>
+#include <memory>
 #include "runners/PixelRunner.h"
-#include "samplers/AbstractSampler.h"
 #include "samplers/CenterSampler.h"
 
 int main() {
@@ -12,13 +12,15 @@ int main() {
    int x = 640;
    int y = 480;
 
-   Polytope::AbstractSampler sampler = Polytope::CenterSampler();
+   Polytope::AbstractSampler *sampler = new Polytope::CenterSampler() ;
 
-   Polytope::PixelRunner runner = Polytope::PixelRunner(x, y);
+   Polytope::PixelRunner runner = Polytope::PixelRunner(sampler, x, y);
 
    runner.Run();
 
-
    std::cout << "Hello, World!" << std::endl;
+
+   delete sampler;
+
    return 0;
 }

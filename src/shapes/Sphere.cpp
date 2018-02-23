@@ -82,9 +82,6 @@ namespace Polytope {
    void Sphere::Intersect(const Ray &worldSpaceRay, Intersection *intersection) {
       // TODO
 
-      intersection->Hits = true;
-      intersection->Shape = std::make_shared<AbstractShape>(this);
-
       // we need to find the normal, for which we need the intersectionpoint in object space
 
       Point worldSpaceIntersectionPoint = worldSpaceRay.GetPointAtT(worldSpaceRay.MinT);

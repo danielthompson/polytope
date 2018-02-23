@@ -7,9 +7,13 @@
 
 #include <memory>
 #include "Point.h"
-#include "../shapes/AbstractShape.h"
+#include "Normal.h"
+
+
 
 namespace Polytope {
+
+   class AbstractShape; // predeclared to avoid circular header references
 
    class Intersection {
    public:
@@ -20,7 +24,7 @@ namespace Polytope {
 
       // data
 
-      std::shared_ptr<AbstractShape> Shape;
+      AbstractShape *Shape;
       Point Location;
       Normal Normal;
       bool Hits;

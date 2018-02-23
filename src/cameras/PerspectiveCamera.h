@@ -8,7 +8,7 @@
 #include "AbstractCamera.h"
 
 namespace Polytope {
-   class PerspectiveCamera : AbstractCamera {
+   class PerspectiveCamera : public AbstractCamera {
    public:
       PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld);
 

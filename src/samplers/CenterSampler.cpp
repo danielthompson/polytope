@@ -10,4 +10,5 @@ namespace Polytope {
       return Point2f(x + 0.5f, y + 0.5f);
    }
 
+
 }

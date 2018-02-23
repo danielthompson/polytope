@@ -8,7 +8,6 @@
 
 namespace Polytope {
 
-
    Intersection AbstractScene::GetNearestShapeIteratively(std::vector<AbstractShape> shapes, Ray ray) {
       int nearestShapeIndex = -1;
 
@@ -29,19 +28,22 @@ namespace Polytope {
          closestT = test ? ray.MinT : closestT;
       }
 
-      Intersection closestStateToRay;
+      Intersection intersection;
 
       if (nearestShapeIndex >= 0) {
          AbstractShape *nearestShape = &shapes[nearestShapeIndex];
 
-         closestStateToRay = nearestShape->Intersect(ray);
+         nearestShape->Intersect(ray, &intersection);
 
-         if (isnan(closestStateToRay.Location.x)) {
+         intersection.Hits = true;
+         intersection.Shape = nearestShape;
+
+         if (std::isnan(intersection.Location.x)) {
             // wtf?
-            closestStateToRay = nearestShape->Intersect(ray);
+            nearestShape->Intersect(ray, &intersection);
          }
       }
 
-      return closestStateToRay;
+      return intersection;
    }
 }

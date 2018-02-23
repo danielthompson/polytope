@@ -12,7 +12,7 @@
 
 namespace Polytope {
 
-   class Sphere : AbstractShape {
+   class Sphere : public AbstractShape {
    public:
       explicit Sphere(const Transform &transform);
 

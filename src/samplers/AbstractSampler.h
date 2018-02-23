@@ -15,6 +15,10 @@ namespace Polytope {
       // methods
       virtual Point2f GetSample(int x, int y) = 0;
 
+      // destructors
+
+      virtual ~AbstractSampler() { }
+
    };
 
 }

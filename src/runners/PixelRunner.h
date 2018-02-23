@@ -9,13 +9,19 @@
 
 namespace Polytope {
 
-   class PixelRunner : AbstractRunner {
+   class PixelRunner : public AbstractRunner {
    public:
-      PixelRunner(AbstractSampler *sampler, int x, int y);
+
+      // constructors
+
+      PixelRunner(AbstractSampler *sampler, int x, int y) : AbstractRunner(sampler), _x(x), _y(y) { }
+
+      // methods
 
       void Run();
    private:
       int _x, _y;
+      AbstractSampler *_sampler;
    };
 
 }

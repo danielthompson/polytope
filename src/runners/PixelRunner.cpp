@@ -16,8 +16,5 @@ namespace Polytope {
 
    }
 
-   PixelRunner::PixelRunner(AbstractSampler *sampler, int x, int y)
-         : AbstractRunner(sampler), _x(x), _y(y) {
 
-   }
 }

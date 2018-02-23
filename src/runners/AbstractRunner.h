@@ -5,6 +5,7 @@
 #ifndef POLYTOPE_ABSTRACTRUNNER_H
 #define POLYTOPE_ABSTRACTRUNNER_H
 
+#include <memory>
 #include "../samplers/AbstractSampler.h"
 
 namespace Polytope {
@@ -12,9 +13,12 @@ namespace Polytope {
    class AbstractRunner {
    public:
 
-      // methods
+      // constructors
 
-      AbstractRunner(AbstractSampler *sampler);
+      explicit AbstractRunner(AbstractSampler *sampler)
+            : Sampler(sampler) { }
+
+      // methods
 
       // data
       AbstractSampler *Sampler;

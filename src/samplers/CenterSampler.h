@@ -9,10 +9,11 @@
 
 namespace Polytope {
 
-   class CenterSampler : AbstractSampler {
+   class CenterSampler : public AbstractSampler {
    public:
       Point2f GetSample(int x, int y) override;
 
+      virtual ~CenterSampler() { }
    };
 
 }

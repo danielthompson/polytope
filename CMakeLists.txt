@@ -49,7 +49,13 @@ add_library(polytope_lib
         src/runners/AbstractRunner.h
         src/runners/AbstractRunner.cpp
         src/runners/PixelRunner.cpp
-        src/runners/PixelRunner.h src/samplers/AbstractSampler.cpp src/samplers/AbstractSampler.h src/structures/Point2.cpp src/structures/Point2.h src/samplers/CenterSampler.cpp src/samplers/CenterSampler.h)
+        src/runners/PixelRunner.h
+        src/samplers/AbstractSampler.cpp
+        src/samplers/AbstractSampler.h
+        src/structures/Point2.cpp
+        src/structures/Point2.h
+        src/samplers/CenterSampler.cpp
+        src/samplers/CenterSampler.h)
 add_executable(${PROJECT_NAME} src/Main.cpp )
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be
