@@ -149,44 +149,44 @@ namespace Polytope {
    }
 
 
-   Matrix4x4 Matrix4x4::Multiply(Matrix4x4 m) {
+   Matrix4x4 Matrix4x4::operator*(const Matrix4x4 &rhs) const {
       Matrix4x4 ret = Matrix4x4();
 
-      ret.Matrix[0][0] = Matrix[0][0] * m.Matrix[0][0] + Matrix[0][1] * m.Matrix[1][0] + Matrix[0][2] * m.Matrix[2][0] +
-                         Matrix[0][3] * m.Matrix[3][0];
-      ret.Matrix[0][1] = Matrix[0][0] * m.Matrix[0][1] + Matrix[0][1] * m.Matrix[1][1] + Matrix[0][2] * m.Matrix[2][1] +
-                         Matrix[0][3] * m.Matrix[3][1];
-      ret.Matrix[0][2] = Matrix[0][0] * m.Matrix[0][2] + Matrix[0][1] * m.Matrix[1][2] + Matrix[0][2] * m.Matrix[2][2] +
-                         Matrix[0][3] * m.Matrix[3][2];
-      ret.Matrix[0][3] = Matrix[0][0] * m.Matrix[0][3] + Matrix[0][1] * m.Matrix[1][3] + Matrix[0][2] * m.Matrix[2][3] +
-                         Matrix[0][3] * m.Matrix[3][3];
+      ret.Matrix[0][0] = Matrix[0][0] * rhs.Matrix[0][0] + Matrix[0][1] * rhs.Matrix[1][0] + Matrix[0][2] * rhs.Matrix[2][0] +
+                         Matrix[0][3] * rhs.Matrix[3][0];
+      ret.Matrix[0][1] = Matrix[0][0] * rhs.Matrix[0][1] + Matrix[0][1] * rhs.Matrix[1][1] + Matrix[0][2] * rhs.Matrix[2][1] +
+                         Matrix[0][3] * rhs.Matrix[3][1];
+      ret.Matrix[0][2] = Matrix[0][0] * rhs.Matrix[0][2] + Matrix[0][1] * rhs.Matrix[1][2] + Matrix[0][2] * rhs.Matrix[2][2] +
+                         Matrix[0][3] * rhs.Matrix[3][2];
+      ret.Matrix[0][3] = Matrix[0][0] * rhs.Matrix[0][3] + Matrix[0][1] * rhs.Matrix[1][3] + Matrix[0][2] * rhs.Matrix[2][3] +
+                         Matrix[0][3] * rhs.Matrix[3][3];
 
-      ret.Matrix[1][0] = Matrix[1][0] * m.Matrix[0][0] + Matrix[1][1] * m.Matrix[1][0] + Matrix[1][2] * m.Matrix[2][0] +
-                         Matrix[1][3] * m.Matrix[3][0];
-      ret.Matrix[1][1] = Matrix[1][0] * m.Matrix[0][1] + Matrix[1][1] * m.Matrix[1][1] + Matrix[1][2] * m.Matrix[2][1] +
-                         Matrix[1][3] * m.Matrix[3][1];
-      ret.Matrix[1][2] = Matrix[1][0] * m.Matrix[0][2] + Matrix[1][1] * m.Matrix[1][2] + Matrix[1][2] * m.Matrix[2][2] +
-                         Matrix[1][3] * m.Matrix[3][2];
-      ret.Matrix[1][3] = Matrix[1][0] * m.Matrix[0][3] + Matrix[1][1] * m.Matrix[1][3] + Matrix[1][2] * m.Matrix[2][3] +
-                         Matrix[1][3] * m.Matrix[3][3];
+      ret.Matrix[1][0] = Matrix[1][0] * rhs.Matrix[0][0] + Matrix[1][1] * rhs.Matrix[1][0] + Matrix[1][2] * rhs.Matrix[2][0] +
+                         Matrix[1][3] * rhs.Matrix[3][0];
+      ret.Matrix[1][1] = Matrix[1][0] * rhs.Matrix[0][1] + Matrix[1][1] * rhs.Matrix[1][1] + Matrix[1][2] * rhs.Matrix[2][1] +
+                         Matrix[1][3] * rhs.Matrix[3][1];
+      ret.Matrix[1][2] = Matrix[1][0] * rhs.Matrix[0][2] + Matrix[1][1] * rhs.Matrix[1][2] + Matrix[1][2] * rhs.Matrix[2][2] +
+                         Matrix[1][3] * rhs.Matrix[3][2];
+      ret.Matrix[1][3] = Matrix[1][0] * rhs.Matrix[0][3] + Matrix[1][1] * rhs.Matrix[1][3] + Matrix[1][2] * rhs.Matrix[2][3] +
+                         Matrix[1][3] * rhs.Matrix[3][3];
 
-      ret.Matrix[2][0] = Matrix[2][0] * m.Matrix[0][0] + Matrix[2][1] * m.Matrix[1][0] + Matrix[2][2] * m.Matrix[2][0] +
-                         Matrix[2][3] * m.Matrix[3][0];
-      ret.Matrix[2][1] = Matrix[2][0] * m.Matrix[0][1] + Matrix[2][1] * m.Matrix[1][1] + Matrix[2][2] * m.Matrix[2][1] +
-                         Matrix[2][3] * m.Matrix[3][1];
-      ret.Matrix[2][2] = Matrix[2][0] * m.Matrix[0][2] + Matrix[2][1] * m.Matrix[1][2] + Matrix[2][2] * m.Matrix[2][2] +
-                         Matrix[2][3] * m.Matrix[3][2];
-      ret.Matrix[2][3] = Matrix[2][0] * m.Matrix[0][3] + Matrix[2][1] * m.Matrix[1][3] + Matrix[2][2] * m.Matrix[2][3] +
-                         Matrix[2][3] * m.Matrix[3][3];
+      ret.Matrix[2][0] = Matrix[2][0] * rhs.Matrix[0][0] + Matrix[2][1] * rhs.Matrix[1][0] + Matrix[2][2] * rhs.Matrix[2][0] +
+                         Matrix[2][3] * rhs.Matrix[3][0];
+      ret.Matrix[2][1] = Matrix[2][0] * rhs.Matrix[0][1] + Matrix[2][1] * rhs.Matrix[1][1] + Matrix[2][2] * rhs.Matrix[2][1] +
+                         Matrix[2][3] * rhs.Matrix[3][1];
+      ret.Matrix[2][2] = Matrix[2][0] * rhs.Matrix[0][2] + Matrix[2][1] * rhs.Matrix[1][2] + Matrix[2][2] * rhs.Matrix[2][2] +
+                         Matrix[2][3] * rhs.Matrix[3][2];
+      ret.Matrix[2][3] = Matrix[2][0] * rhs.Matrix[0][3] + Matrix[2][1] * rhs.Matrix[1][3] + Matrix[2][2] * rhs.Matrix[2][3] +
+                         Matrix[2][3] * rhs.Matrix[3][3];
 
-      ret.Matrix[3][0] = Matrix[3][0] * m.Matrix[0][0] + Matrix[3][1] * m.Matrix[1][0] + Matrix[3][2] * m.Matrix[2][0] +
-                         Matrix[3][3] * m.Matrix[3][0];
-      ret.Matrix[3][1] = Matrix[3][0] * m.Matrix[0][1] + Matrix[3][1] * m.Matrix[1][1] + Matrix[3][2] * m.Matrix[2][1] +
-                         Matrix[3][3] * m.Matrix[3][1];
-      ret.Matrix[3][2] = Matrix[3][0] * m.Matrix[0][2] + Matrix[3][1] * m.Matrix[1][2] + Matrix[3][2] * m.Matrix[2][2] +
-                         Matrix[3][3] * m.Matrix[3][2];
-      ret.Matrix[3][3] = Matrix[3][0] * m.Matrix[0][3] + Matrix[3][1] * m.Matrix[1][3] + Matrix[3][2] * m.Matrix[2][3] +
-                         Matrix[3][3] * m.Matrix[3][3];
+      ret.Matrix[3][0] = Matrix[3][0] * rhs.Matrix[0][0] + Matrix[3][1] * rhs.Matrix[1][0] + Matrix[3][2] * rhs.Matrix[2][0] +
+                         Matrix[3][3] * rhs.Matrix[3][0];
+      ret.Matrix[3][1] = Matrix[3][0] * rhs.Matrix[0][1] + Matrix[3][1] * rhs.Matrix[1][1] + Matrix[3][2] * rhs.Matrix[2][1] +
+                         Matrix[3][3] * rhs.Matrix[3][1];
+      ret.Matrix[3][2] = Matrix[3][0] * rhs.Matrix[0][2] + Matrix[3][1] * rhs.Matrix[1][2] + Matrix[3][2] * rhs.Matrix[2][2] +
+                         Matrix[3][3] * rhs.Matrix[3][2];
+      ret.Matrix[3][3] = Matrix[3][0] * rhs.Matrix[0][3] + Matrix[3][1] * rhs.Matrix[1][3] + Matrix[3][2] * rhs.Matrix[2][3] +
+                         Matrix[3][3] * rhs.Matrix[3][3];
 
       return ret;
    }

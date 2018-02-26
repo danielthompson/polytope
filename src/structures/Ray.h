@@ -7,6 +7,7 @@
 
 #include "Point.h"
 #include "Vector.h"
+#include "../Constants.h"
 
 namespace Polytope {
 
@@ -15,6 +16,7 @@ namespace Polytope {
 
       // methods
 
+      Ray() : MaxT(Infinity) { };
       Ray(const Point &origin, const Vector &direction);
 
       bool operator==(const Ray &rhs) const;

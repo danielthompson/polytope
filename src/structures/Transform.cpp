@@ -146,7 +146,11 @@ namespace Polytope {
               || lengthZ < .999 || lengthZ > 1.001);
    }
 
+   Transform Transform::operator*(const Transform &rhs) const {
+      Matrix4x4 matrix = this->Matrix * rhs.Matrix;
+      Matrix4x4 inverse = rhs.Inverse * this->Inverse;
 
-
+      return Transform(matrix, inverse);
+   }
 
 }

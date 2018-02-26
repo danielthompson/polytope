@@ -6,21 +6,29 @@
 #include <memory>
 #include "runners/PixelRunner.h"
 #include "samplers/CenterSampler.h"
+#include "scenes/AbstractScene.h"
+#include "scenes/NaiveScene.h"
+#include "scenes/SceneBuilder.h"
 
 int main() {
 
    int x = 640;
    int y = 480;
 
-   Polytope::AbstractSampler *sampler = new Polytope::CenterSampler() ;
+   Polytope::AbstractSampler sampler = Polytope::CenterSampler();
 
-   Polytope::PixelRunner runner = Polytope::PixelRunner(sampler, x, y);
+   Polytope::AbstractScene *scene = Polytope::SceneBuilder::Default(x, y);
+
+
+   Polytope::PixelRunner runner = Polytope::PixelRunner(&sampler, x, y);
 
    runner.Run();
 
    std::cout << "Hello, World!" << std::endl;
 
+   delete scene;
    delete sampler;
+
 
    return 0;
 }

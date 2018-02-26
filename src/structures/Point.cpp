@@ -7,10 +7,6 @@
 
 namespace Polytope {
 
-   Point::Point(float x, float y, float z) : x(x), y(y), z(z) {}
-
-   Point::Point(const Point &p) = default;
-
    bool Point::operator==(const Point &rhs) const {
       return x == rhs.x &&
              y == rhs.y &&

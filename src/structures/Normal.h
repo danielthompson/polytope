@@ -18,6 +18,8 @@ namespace Polytope {
 
       // operators
 
+      Normal operator*(const float t);
+
       // methods
 
       float Length();

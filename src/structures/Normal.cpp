@@ -21,4 +21,8 @@ namespace Polytope {
    float Normal::LengthSquared() {
       return (x * x + y * y + z * z);
    }
+
+   Normal Normal::operator*(const float t) {
+      return Normal(x * t, y * t, z * t);
+   }
 }

@@ -14,14 +14,15 @@ namespace Polytope {
 
       // constructors
 
-      PixelRunner(AbstractSampler *sampler, int x, int y) : AbstractRunner(sampler), _x(x), _y(y) { }
+      PixelRunner(AbstractSampler *sampler, int x, int y)
+            : AbstractRunner(sampler), _x(x), _y(y) { }
 
       // methods
 
       void Run();
    private:
       int _x, _y;
-      AbstractSampler *_sampler;
+
    };
 
 }

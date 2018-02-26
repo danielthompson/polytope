@@ -11,22 +11,27 @@ namespace Polytope {
 
    class Point {
    public:
-      Point(float x, float y, float z);
 
-      Point(const Point &p);
+      // constructors
+
+      Point() : x(0), y(0), z(0) { };
+      Point(float x, float y, float z)  : x(x), y(y), z(z) {}
+      Point(const Point &p) = default;
+
+      // operators
 
       bool operator==(const Point &rhs) const;
       bool operator!=(const Point &rhs) const;
-
       Vector operator-(const Point &rhs) const;
-
       Point operator+(const Point &rhs) const;
-
       Point operator+(const Vector &rhs) const;
-
       float operator[] (int index) const;
 
+      // methods
+
       float Dot(const Point &p) const;
+
+      // data
 
       float x, y, z;
 

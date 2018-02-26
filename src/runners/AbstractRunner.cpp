@@ -12,6 +12,11 @@ namespace Polytope {
 
       Point2f sample = Sampler->GetSample(x, y);
 
+
+      Ray ray = Ray();
+
+
+
       //Ray cameraRay =
    }
 
