@@ -9,6 +9,7 @@
 #include "scenes/AbstractScene.h"
 #include "scenes/NaiveScene.h"
 #include "scenes/SceneBuilder.h"
+#include "shading/Spectrum.h"
 
 int main() {
 
@@ -18,7 +19,6 @@ int main() {
    Polytope::AbstractSampler sampler = Polytope::CenterSampler();
 
    Polytope::AbstractScene *scene = Polytope::SceneBuilder::Default(x, y);
-
 
    Polytope::PixelRunner runner = Polytope::PixelRunner(&sampler, x, y);
 
