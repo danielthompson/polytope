@@ -8,13 +8,14 @@
 #include "../structures/Transform.h"
 #include "../structures/Ray.h"
 #include "../structures/Intersection.h"
+#include "../shading/Material.h"
 
 namespace Polytope {
 
    class AbstractShape {
    public:
       // methods
-      explicit AbstractShape(const Transform &ObjectToWorld);
+      explicit AbstractShape(const Transform &ObjectToWorld, const Material);
 
       AbstractShape(const Transform &ObjectToWorld, const Transform &WorldToObject);
 
@@ -24,6 +25,7 @@ namespace Polytope {
       // data
       Transform ObjectToWorld;
       Transform WorldToObject;
+      Material Material;
    };
 
 }

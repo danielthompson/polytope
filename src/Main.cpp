@@ -9,18 +9,22 @@
 #include "scenes/AbstractScene.h"
 #include "scenes/NaiveScene.h"
 #include "scenes/SceneBuilder.h"
-#include "shading/Spectrum.h"
+
 
 int main() {
 
    int x = 640;
    int y = 480;
 
-   Polytope::AbstractSampler sampler = Polytope::CenterSampler();
+   using namespace Polytope;
 
-   Polytope::AbstractScene *scene = Polytope::SceneBuilder::Default(x, y);
+   AbstractSampler sampler = CenterSampler();
 
-   Polytope::PixelRunner runner = Polytope::PixelRunner(&sampler, x, y);
+   SceneBuilder sceneBuilder = SceneBuilder();
+
+   AbstractScene *scene = sceneBuilder.Default(x, y);
+
+   PixelRunner runner = PixelRunner(&sampler, x, y);
 
    runner.Run();
 

@@ -7,6 +7,7 @@
 #include "NaiveScene.h"
 #include "../shading/Material.h"
 #include "../shading/brdf/MirrorBRDF.h"
+#include "../shapes/Sphere.h"
 
 namespace Polytope {
 
@@ -21,21 +22,14 @@ namespace Polytope {
 
       // Orange ball
 
-      Material material = Material();
+      Material material = Material(std::make_unique<AbstractBRDF>(new MirrorBRDF()), Solarizedcyan);
 
-      material.BRDF = MirrorBRDF();
-      material.ReflectanceSpectrum = new ReflectanceSpectrum(Solarized.cyan);
+      Transform objectToWorld =
+            Transform::Translate(Vector(100.0f, 0.0f, -250f))
+            * Transform::Scale(100f, 100f, 100f)
+            * Transform::Translate(Vector(-.5f, -.5f, -.5f));
 
-      inputTransforms = new Transform[4];
-      inputTransforms[0] = Transform.Translate(new Vector(100.0f, 0.0f, -250f));
-      inputTransforms[1] = Transform.RotateX(45);
-      //inputTransforms[2] = Transform.RotateY(45);
-      inputTransforms[2] = Transform.Scale(100f, 100f, 100f);
-      inputTransforms[3] = Transform.Translate(new Vector(-.5f, -.5f, -.5f));
-
-      compositeTransforms = Transform.composite(inputTransforms);
-
-      Box box = new Box(compositeTransforms, material);
+      Sphere sphere = new Sphere(objectToWorld, material);
 
       scene.addShape(box);
 

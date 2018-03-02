@@ -8,7 +8,7 @@ namespace Polytope {
 
    using Polytope::Transform;
 
-   AbstractShape::AbstractShape(const Transform &ObjectToWorld)
+   AbstractShape::AbstractShape(const Transform &ObjectToWorld, const Material)
       : ObjectToWorld(ObjectToWorld), WorldToObject(ObjectToWorld.Invert()) { }
 
    AbstractShape::AbstractShape(const Transform &ObjectToWorld, const Transform &WorldToObject)

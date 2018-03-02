@@ -47,6 +47,13 @@ namespace Polytope {
 
       bool HasScale() const;
 
+      static Transform Translate(const Vector &delta) const;
+      static Transform Translate(float x, float y, float z) const;
+
+      static Transform Scale(const Vector &delta) const;
+      static Transform Scale(float x, float y, float z) const;
+      static Transform Scale(float t) const;
+
       // data
 
       Matrix4x4 Matrix;

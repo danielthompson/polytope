@@ -153,4 +153,97 @@ namespace Polytope {
       return Transform(matrix, inverse);
    }
 
+   Transform Transform::Translate(const Vector &delta) const {
+      Matrix4x4 matrix = Matrix4x4(
+            1, 0, 0, delta.x,
+            0, 1, 0, delta.y,
+            0, 0, 1, delta.z,
+            0, 0, 0, 1);
+
+      Matrix4x4 inverse = Matrix4x4(
+            1, 0, 0, -delta.x,
+            0, 1, 0, -delta.y,
+            0, 0, 1, -delta.z,
+            0, 0, 0, 1);
+
+      Transform transform = Transform(matrix, inverse);
+
+      return transform;
+   }
+
+   Transform Transform::Translate(const float x, const float y, const float z) const {
+      Matrix4x4 matrix = Matrix4x4(
+            1, 0, 0, x,
+            0, 1, 0, y,
+            0, 0, 1, z,
+            0, 0, 0, 1);
+
+      Matrix4x4 inverse = Matrix4x4(
+            1, 0, 0, x,
+            0, 1, 0, y,
+            0, 0, 1, z,
+            0, 0, 0, 1);
+
+      Transform transform = Transform(matrix, inverse);
+
+      return transform;
+   }
+
+   Transform Transform::Scale(const Vector &delta) const {
+      Matrix4x4 matrix = Matrix4x4(
+            delta.x, 0, 0, 0,
+            0, delta.y, 0, 0,
+            0, 0, delta.z, 0,
+            0, 0, 0, 1);
+
+      Matrix4x4 inverse = Matrix4x4(
+            1.f/delta.x, 0,    0,    0,
+            0,    1.f/delta.y, 0,    0,
+            0,    0,    1.f/delta.z, 0,
+            0,    0,    0,    1);
+
+      Transform transform = Transform(matrix, inverse);
+
+      return transform;
+   }
+
+   Transform Transform::Scale(const float x, const float y, const float z) const {
+      Matrix4x4 matrix = Matrix4x4(
+            x, 0, 0, 0,
+            0, y, 0, 0,
+            0, 0, z, 0,
+            0, 0, 0, 1);
+
+      Matrix4x4 inverse = Matrix4x4(
+            1.f/x, 0,    0,    0,
+            0,    1.f/y, 0,    0,
+            0,    0,    1.f/z, 0,
+            0,    0,    0,    1);
+
+      Transform transform = Transform(matrix, inverse);
+
+      return transform;
+   }
+
+   Transform Transform::Scale(const float t) const {
+      Matrix4x4 matrix = Matrix4x4(
+            t, 0, 0, 0,
+            0, t, 0, 0,
+            0, 0, t, 0,
+            0, 0, 0, 1);
+
+      const float oneOverT = 1.0f / t;
+
+      Matrix4x4 inverse = Matrix4x4(
+            oneOverT, 0,    0,    0,
+            0,    oneOverT, 0,    0,
+            0,    0,    oneOverT, 0,
+            0,    0,    0,    1);
+
+      Transform transform = Transform(matrix, inverse);
+
+      return transform;
+   }
+
+
 }

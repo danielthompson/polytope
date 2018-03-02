@@ -13,7 +13,7 @@ namespace Polytope {
    public:
 
       // constructors
-      explicit NaiveScene(const std::shared_ptr<Polytope::AbstractCamera> &camera) : AbstractScene(camera) {}
+      explicit NaiveScene(const std::shared_ptr<AbstractCamera> &camera) : AbstractScene(camera) {}
 
       Intersection GetNearestShape(Ray ray, int x, int y) override {
          return GetNearestShapeIteratively(Shapes, ray);

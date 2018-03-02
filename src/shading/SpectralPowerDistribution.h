@@ -13,6 +13,7 @@ namespace Polytope {
 
       explicit SpectralPowerDistribution() : r(0), g(0), b(0) { };
       SpectralPowerDistribution(float r, float g, float b) : r(r), g(g), b(b) { };
+      SpectralPowerDistribution(const SpectralPowerDistribution &other) : r(other.r), g(other.g), b(other.b) { }
 
       // operators
 
@@ -38,7 +39,7 @@ namespace Polytope {
          return SpectralPowerDistribution(r * t, g * t, b * t);
       }
 
-      SpectralPowerDistribution operator*=(const float t) {
+      SpectralPowerDistribution &operator*=(const float t) {
          r *= t;
          g *= t;
          b *= t;
