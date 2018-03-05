@@ -24,7 +24,7 @@ namespace Tests {
          Matrix4x4 m1 = Matrix4x4();
          Matrix4x4 m2 = Matrix4x4();
 
-         Matrix4x4 actual = m1.Multiply(m2);
+         Matrix4x4 actual = m1 * m2;
          Matrix4x4 expected = Matrix4x4();
 
 
@@ -35,7 +35,7 @@ namespace Tests {
          Matrix4x4 m1 = Matrix4x4( 1,   2,   3,   4,    5,   6,   7,   8,    9,  10,  11,  12,   13,  14,  15,  16);
          Matrix4x4 m2 = Matrix4x4( 1,   2,   3,   4,    5,   6,   7,   8,    9,  10,  11,  12,   13,  14,  15,  16);
 
-         Matrix4x4 actual = m1.Multiply(m2);
+         Matrix4x4 actual = m1 * m2;
          Matrix4x4 expected = Matrix4x4(90, 100, 110, 120,  202, 228, 254, 280,  314, 356, 398, 440,  426, 484, 542, 600);
          EXPECT_EQ(actual, expected);
       }
@@ -44,7 +44,7 @@ namespace Tests {
          Matrix4x4 m1 = Matrix4x4( 5,  3,  1,  4,   3,  4,  2,  3,   1,  2,  4,  7,    9,   5,   8,   3);
          Matrix4x4 m2 = Matrix4x4( 4,  6,  7,  1,   2,  3,  4,  7,   9,  6,  5,  8,    7,   4,   1,   3);
 
-         Matrix4x4 actual = m1.Multiply(m2);
+         Matrix4x4 actual = m1 * m2;
          Matrix4x4 expected = Matrix4x4(63, 61, 56, 46,  59, 54, 50, 56,  93, 64, 42, 68,  139, 129, 126, 117);
          EXPECT_EQ(actual, expected);
       }

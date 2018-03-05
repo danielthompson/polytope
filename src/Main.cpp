@@ -18,13 +18,13 @@ int main() {
 
    using namespace Polytope;
 
-   AbstractSampler sampler = CenterSampler();
+   AbstractSampler *sampler = new CenterSampler();
 
    SceneBuilder sceneBuilder = SceneBuilder();
 
    AbstractScene *scene = sceneBuilder.Default(x, y);
 
-   PixelRunner runner = PixelRunner(&sampler, x, y);
+   PixelRunner runner = PixelRunner(sampler, x, y);
 
    runner.Run();
 

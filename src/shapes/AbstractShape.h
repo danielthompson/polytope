@@ -13,19 +13,22 @@
 namespace Polytope {
 
    class AbstractShape {
+   protected:
+
+      // constructors
+      AbstractShape(const Transform &objectToWorld, std::shared_ptr<Material> material);
+      AbstractShape(const Transform &objectToWorld, const Transform &worldToObject, std::shared_ptr<Material> material);
+
    public:
+
       // methods
-      explicit AbstractShape(const Transform &ObjectToWorld, const Material);
-
-      AbstractShape(const Transform &ObjectToWorld, const Transform &WorldToObject);
-
       virtual bool Hits(Ray &worldSpaceRay) const = 0;
       virtual void Intersect(const Ray &worldSpaceRay, Intersection *intersection) = 0;
 
       // data
       Transform ObjectToWorld;
       Transform WorldToObject;
-      Material Material;
+      std::shared_ptr<Material> Material;
    };
 
 }

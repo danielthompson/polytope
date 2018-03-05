@@ -57,7 +57,23 @@ add_library(polytope_lib
         src/samplers/CenterSampler.cpp
         src/samplers/CenterSampler.h
         src/scenes/NaiveScene.cpp
-        src/scenes/NaiveScene.h src/scenes/SceneBuilder.cpp src/scenes/SceneBuilder.h src/shading/Material.cpp src/shading/Material.h src/shading/brdf/AbstractBRDF.cpp src/shading/brdf/AbstractBRDF.h src/shading/brdf/MirrorBRDF.cpp src/shading/brdf/MirrorBRDF.h src/shading/SpectralPowerDistribution.cpp src/shading/SpectralPowerDistribution.h src/shading/ReflectanceSpectrum.cpp src/shading/ReflectanceSpectrum.h)
+        src/scenes/NaiveScene.h
+        src/scenes/SceneBuilder.cpp
+        src/scenes/SceneBuilder.h
+        src/shading/Material.cpp
+        src/shading/Material.h
+        src/shading/brdf/AbstractBRDF.cpp
+        src/shading/brdf/AbstractBRDF.h
+        src/shading/brdf/MirrorBRDF.cpp
+        src/shading/brdf/MirrorBRDF.h
+        src/shading/SpectralPowerDistribution.cpp
+        src/shading/SpectralPowerDistribution.h
+        src/shading/ReflectanceSpectrum.cpp
+        src/shading/ReflectanceSpectrum.h
+        src/lights/AbstractLight.cpp
+        src/lights/AbstractLight.h
+        src/lights/PointLight.cpp
+        src/lights/PointLight.h src/integrators/AbstractIntegrator.cpp src/integrators/AbstractIntegrator.h)
 add_executable(${PROJECT_NAME} src/Main.cpp )
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be

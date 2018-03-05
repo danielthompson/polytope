@@ -4,14 +4,16 @@
 
 #include "AbstractShape.h"
 
+#include <utility>
+
 namespace Polytope {
 
-   using Polytope::Transform;
+   //using Polytope::Transform;
 
-   AbstractShape::AbstractShape(const Transform &ObjectToWorld, const Material)
-      : ObjectToWorld(ObjectToWorld), WorldToObject(ObjectToWorld.Invert()) { }
+   AbstractShape::AbstractShape(const Transform &objectToWorld, std::shared_ptr<Polytope::Material> material)
+      : ObjectToWorld(objectToWorld), WorldToObject(objectToWorld.Invert()), Material(std::move(material)) { }
 
-   AbstractShape::AbstractShape(const Transform &ObjectToWorld, const Transform &WorldToObject)
-   : ObjectToWorld(ObjectToWorld), WorldToObject(WorldToObject) { }
-
+   AbstractShape::AbstractShape(const Transform &objectToWorld, const Transform &worldToObject,
+                                std::shared_ptr<Polytope::Material> material)
+   : ObjectToWorld(objectToWorld), WorldToObject(worldToObject), Material(std::move(material)) {   }
 }

@@ -12,6 +12,7 @@
 #include "../cameras/AbstractCamera.h"
 #include "../shapes/AbstractShape.h"
 #include "../structures/Intersection.h"
+#include "../lights/AbstractLight.h"
 
 namespace Polytope {
 
@@ -20,7 +21,8 @@ namespace Polytope {
 
       // constructors
 
-      explicit AbstractScene(std::shared_ptr<AbstractCamera> camera) : Camera(std::move(camera)) {} ;
+      explicit AbstractScene(std::shared_ptr<AbstractCamera> camera)
+            : Camera(std::move(camera)) {} ;
 
       // methods
 
@@ -35,6 +37,7 @@ namespace Polytope {
       std::shared_ptr<AbstractCamera> Camera;
       std::string ImplementationType = "Base Scene";
       std::vector<std::shared_ptr<AbstractShape>> Shapes;
+      std::vector<std::shared_ptr<AbstractLight>> Lights;
 
    protected:
       Intersection GetNearestShapeIteratively(std::vector<std::shared_ptr<AbstractShape>> shapes, Ray ray);

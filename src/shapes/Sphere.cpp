@@ -3,16 +3,23 @@
 //
 
 #include <cmath>
+#include <utility>
 #include "Sphere.h"
 #include "../Constants.h"
 #include "../structures/Normal.h"
 
 namespace Polytope {
 
+   const Point Sphere::Origin = Point(0, 0, 0);
+
    using Polytope::Transform;
 
-   Sphere::Sphere(const Transform &ObjectToWorld) :
-      AbstractShape(ObjectToWorld) { }
+   Sphere::Sphere(const Transform &objectToWorld, std::shared_ptr<Polytope::Material> material) : AbstractShape(
+         objectToWorld, std::move(material)) {  }
+
+   Sphere::Sphere(const Transform &objectToWorld, const Transform &worldToObject,
+                  std::shared_ptr<Polytope::Material> material) : AbstractShape(objectToWorld, worldToObject,
+                                                                                std::move(material)) {  }
 
    bool Sphere::Hits(Ray &worldSpaceRay) const {
       Ray objectSpaceRay = worldSpaceRay;
@@ -112,6 +119,7 @@ namespace Polytope {
 
       intersection->Normal = worldSpaceNormal;
    }
+
 
 
 }
