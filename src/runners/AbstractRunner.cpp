@@ -8,14 +8,11 @@
 
 namespace Polytope {
 
-   void Polytope::AbstractRunner::Trace(int x, int y) {
+   void AbstractRunner::Trace(int x, int y) {
 
       Point2f sample = Sampler->GetSample(x, y);
-
-
-      Ray ray = Ray();
-
-
+      Ray ray = Scene->Camera->GetRay(sample);
+      Integrator->GetSample(ray, 0, x, y);
 
       //Ray cameraRay =
    }

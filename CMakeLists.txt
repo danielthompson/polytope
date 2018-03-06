@@ -73,7 +73,7 @@ add_library(polytope_lib
         src/lights/AbstractLight.cpp
         src/lights/AbstractLight.h
         src/lights/PointLight.cpp
-        src/lights/PointLight.h src/integrators/AbstractIntegrator.cpp src/integrators/AbstractIntegrator.h)
+        src/lights/PointLight.h src/integrators/AbstractIntegrator.cpp src/integrators/AbstractIntegrator.h src/structures/Sample.cpp src/structures/Sample.h src/integrators/PathTraceIntegrator.cpp src/integrators/PathTraceIntegrator.h lib/lodepng.cpp lib/lodepng.h)
 add_executable(${PROJECT_NAME} src/Main.cpp )
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be

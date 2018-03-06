@@ -17,9 +17,9 @@ namespace Polytope {
       TanFOVOver2 = (float)tan(Settings.FieldOfView * PIOver180 * .5f);
    }
 
-   Ray PerspectiveCamera::GetRay(const float x, const float y) {
-      float pixelNDCx = (x + 0.5f) * OneOverWidth;
-      float pixelNDCy = (y + 0.5f) * OneOverHeight;
+   Ray PerspectiveCamera::GetRay(const Point2f pixel) {
+      float pixelNDCx = (pixel.x + 0.5f) * OneOverWidth;
+      float pixelNDCy = (pixel.y + 0.5f) * OneOverHeight;
 
       float pixelCameraX = (2 * pixelNDCx - 1) * AspectRatio * TanFOVOver2;
       float pixelCameraY = (1 - 2 * pixelNDCy) * TanFOVOver2;

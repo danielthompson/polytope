@@ -5,6 +5,8 @@
 #ifndef POLYTOPE_SPECTRALPOWERDISTRIBUTION_H
 #define POLYTOPE_SPECTRALPOWERDISTRIBUTION_H
 
+#include "../shading/ReflectanceSpectrum.h"
+
 namespace Polytope {
 
    class SpectralPowerDistribution {
@@ -47,6 +49,10 @@ namespace Polytope {
       }
 
       SpectralPowerDistribution operator*(const SpectralPowerDistribution &rhs) {
+         return SpectralPowerDistribution(r * rhs.r, g + rhs.g, b + rhs.b);
+      }
+
+      SpectralPowerDistribution operator*(const ReflectanceSpectrum &rhs) {
          return SpectralPowerDistribution(r * rhs.r, g + rhs.g, b + rhs.b);
       }
 

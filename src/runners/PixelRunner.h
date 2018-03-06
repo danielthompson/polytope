@@ -6,6 +6,7 @@
 #define POLYTOPE_PIXELRUNNER_H
 
 #include "AbstractRunner.h"
+#include "../integrators/AbstractIntegrator.h"
 
 namespace Polytope {
 
@@ -14,10 +15,11 @@ namespace Polytope {
 
       // constructors
 
-      PixelRunner(AbstractSampler *sampler, int x, int y)
-            : AbstractRunner(sampler), _x(x), _y(y) { }
+      PixelRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator, int x, int y)
+            : AbstractRunner(sampler, scene, integrator), _x(x), _y(y) { }
 
       // methods
+
 
       void Run();
    private:

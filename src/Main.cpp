@@ -9,6 +9,8 @@
 #include "scenes/AbstractScene.h"
 #include "scenes/NaiveScene.h"
 #include "scenes/SceneBuilder.h"
+#include "integrators/AbstractIntegrator.h"
+#include "integrators/PathTraceIntegrator.h"
 
 
 int main() {
@@ -24,15 +26,18 @@ int main() {
 
    AbstractScene *scene = sceneBuilder.Default(x, y);
 
-   PixelRunner runner = PixelRunner(sampler, x, y);
+   AbstractIntegrator *integrator = new PathTraceIntegrator(scene, 3);
 
-   runner.Run();
+   AbstractRunner *runner = new PixelRunner(sampler, scene, integrator, x, y);
+
+   runner->Run();
 
    std::cout << "Hello, World!" << std::endl;
 
+   delete runner;
+   delete integrator;
    delete scene;
    delete sampler;
-
 
    return 0;
 }

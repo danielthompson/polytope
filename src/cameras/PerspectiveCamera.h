@@ -6,13 +6,14 @@
 #define POLYTOPE_PERSPECTIVECAMERA_H
 
 #include "AbstractCamera.h"
+#include "../structures/Point2.h"
 
 namespace Polytope {
    class PerspectiveCamera : public AbstractCamera {
    public:
       PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld);
 
-      Ray GetRay(float x, float y) override;
+      Ray GetRay(Point2f pixel) override;
 
    private:
       float OneOverWidth;

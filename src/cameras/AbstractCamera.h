@@ -6,6 +6,7 @@
 #define POLYTOPE_ABSTRACTCAMERA_H
 
 #include "../structures/Vector.h"
+#include "../structures/Point2.h"
 #include "../structures/Transform.h"
 #include "CameraSettings.h"
 
@@ -17,7 +18,7 @@ namespace Polytope {
       // methods
       AbstractCamera(const CameraSettings &settings, const Transform &cameraToWorld);
 
-      virtual Ray GetRay(float x, float y) = 0;
+      virtual Ray GetRay(Point2f pixel) = 0;
 
       // data
       const CameraSettings Settings;
