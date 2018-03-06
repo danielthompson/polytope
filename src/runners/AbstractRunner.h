@@ -9,6 +9,7 @@
 #include "../samplers/AbstractSampler.h"
 #include "../scenes/AbstractScene.h"
 #include "../integrators/AbstractIntegrator.h"
+#include "../films/AbstractFilm.h"
 
 namespace Polytope {
 
@@ -17,8 +18,9 @@ namespace Polytope {
 
       // constructors
 
-      explicit AbstractRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator)
-            : Sampler(sampler), Scene(scene), Integrator(integrator) { }
+      explicit AbstractRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator,
+                              AbstractFilm *film)
+            : Sampler(sampler), Scene(scene), Integrator(integrator), Film(film){ }
 
       // methods
       virtual void Run() = 0;
@@ -39,6 +41,7 @@ namespace Polytope {
 
       AbstractScene *Scene;
       AbstractIntegrator *Integrator;
+      AbstractFilm *Film;
    };
 
 }

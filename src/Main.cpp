@@ -11,6 +11,7 @@
 #include "scenes/SceneBuilder.h"
 #include "integrators/AbstractIntegrator.h"
 #include "integrators/PathTraceIntegrator.h"
+#include "films/PNGFilm.h"
 
 
 int main() {
@@ -28,13 +29,18 @@ int main() {
 
    AbstractIntegrator *integrator = new PathTraceIntegrator(scene, 3);
 
-   AbstractRunner *runner = new PixelRunner(sampler, scene, integrator, x, y);
+   AbstractFilm *film = new PNGFilm(x, y, "test.png");
+
+   AbstractRunner *runner = new PixelRunner(sampler, scene, integrator, film, x, y);
 
    runner->Run();
+
+   film->Output();
 
    std::cout << "Hello, World!" << std::endl;
 
    delete runner;
+   delete film;
    delete integrator;
    delete scene;
    delete sampler;
