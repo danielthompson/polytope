@@ -16,7 +16,7 @@ namespace Polytope {
 
       // methods
 
-      Ray() : MaxT(Infinity) { };
+      Ray() : MinT(Infinity), MaxT(Infinity) { };
       Ray(const Point &origin, const Vector &direction);
 
       bool operator==(const Ray &rhs) const;

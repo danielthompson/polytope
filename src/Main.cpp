@@ -12,6 +12,7 @@
 #include "integrators/AbstractIntegrator.h"
 #include "integrators/PathTraceIntegrator.h"
 #include "films/PNGFilm.h"
+#include "integrators/DebugIntegrator.h"
 
 
 int main() {
@@ -27,7 +28,7 @@ int main() {
 
    AbstractScene *scene = sceneBuilder.Default(x, y);
 
-   AbstractIntegrator *integrator = new PathTraceIntegrator(scene, 3);
+   AbstractIntegrator *integrator = new DebugIntegrator(scene, 3);
 
    AbstractFilm *film = new PNGFilm(x, y, "test.png");
 

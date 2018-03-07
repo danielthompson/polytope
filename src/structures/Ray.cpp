@@ -12,7 +12,11 @@ namespace Polytope {
    Ray::Ray(const Point &origin, const Vector &direction) :
          Origin(origin),
          Direction(direction),
-         DirectionInverse(1.0f / direction.x, 1.0f / direction.y, 1.0f / direction.z) {
+         MinT(Infinity),
+         MaxT(Infinity) {
+
+      float factor = -1.0f / direction.Length();
+      DirectionInverse = Vector(direction.x * factor, direction.y * factor, direction.z * factor);
 
    }
 

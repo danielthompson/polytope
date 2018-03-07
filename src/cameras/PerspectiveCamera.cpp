@@ -32,6 +32,9 @@ namespace Polytope {
 
       Ray worldSpaceRay = CameraToWorld.Apply(cameraSpaceRay);
 
+      worldSpaceRay.Direction.Normalize();
+      worldSpaceRay.DirectionInverse.Normalize();
+
       return worldSpaceRay;
    }
 }

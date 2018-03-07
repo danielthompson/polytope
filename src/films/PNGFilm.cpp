@@ -9,17 +9,30 @@
 namespace Polytope {
 
    void PNGFilm::AddSample(Point2f location, Sample sample) {
-      int index = int(location.x) * Width + int(location.y);
+//      int index = int(location.y) * Height + int(location.x);
 
-      int r = int(sample.SpectralPowerDistribution.r);
-      int g = int(sample.SpectralPowerDistribution.g);
-      int b = int(sample.SpectralPowerDistribution.b);
-      int a = 0;
+      int x = int(location.x);
+      int y = int(location.y);
 
-      Data[index + 0] = static_cast<unsigned char>(r);
-      Data[index + 1] = static_cast<unsigned char>(g);
-      Data[index + 2] = static_cast<unsigned char>(b);
-      Data[index + 3] = static_cast<unsigned char>(a);
+      if (x == 0 && y == 200) {
+
+      }
+
+      int index = 4 * (y * Width + x);
+
+      unsigned char r = static_cast<unsigned char>(sample.SpectralPowerDistribution.r);
+      unsigned char g = static_cast<unsigned char>(sample.SpectralPowerDistribution.g);
+      unsigned char b = static_cast<unsigned char>(sample.SpectralPowerDistribution.b);
+      unsigned char a = static_cast<unsigned char>(255);
+
+      //std::cout << "writing index [" << index << "] for x [" << x << "], y [" << y << "]...";
+
+      Data[index + 0] = r;
+      Data[index + 1] = g;
+      Data[index + 2] = b;
+      Data[index + 3] = a;
+
+      //std::cout << " done" << std::endl;
    }
 
    void PNGFilm::Output() {

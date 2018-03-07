@@ -43,7 +43,7 @@ namespace Polytope {
    }
 
    float Vector::Length() const {
-      return std::sqrt(x * x + y * y + z + z);
+      return std::sqrt(x * x + y * y + z * z);
    }
 
    float Vector::LengthSquared() const {
