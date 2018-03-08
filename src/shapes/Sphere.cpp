@@ -120,6 +120,9 @@ namespace Polytope {
       intersection->Normal = worldSpaceNormal;
    }
 
+   Point Sphere::GetRandomPointOnSurface() const {
+      return Point();
+   }
 
 
 }

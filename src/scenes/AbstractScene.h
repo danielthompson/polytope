@@ -27,6 +27,7 @@ namespace Polytope {
       // methods
 
       virtual Intersection GetNearestShape(Ray ray, int x, int y) = 0;
+      virtual void Compile() = 0;
 
       // destructors
 

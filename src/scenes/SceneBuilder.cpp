@@ -11,6 +11,7 @@
 #include "../shading/SpectralPowerDistribution.h"
 #include "../lights/AbstractLight.h"
 #include "../lights/PointLight.h"
+#include "../lights/ShapeLight.h"
 
 namespace Polytope {
 
@@ -65,6 +66,21 @@ namespace Polytope {
 //      AbstractLight light = new SphereLight(sphere, lightSPD);
 
       scene->Lights.push_back(std::make_shared<PointLight>(lightSPD, Point(0, 1000, 500)));
+
+      material = std::make_shared<Material>(std::make_unique<MirrorBRDF>(), FirenzeBeige);
+
+      objectToWorld =
+         Transform::Translate(0, 500, 200)
+         * Transform::Scale(50)
+         * Transform::Translate(-.5f, -.5f, -.5f);
+
+      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(objectToWorld, material);
+
+      std::shared_ptr<ShapeLight> shapeLight = std::make_shared<ShapeLight>(lightSPD, sphere);
+
+      scene->Lights.push_back(shapeLight);
+
+      scene->Shapes.push_back(sphere);
 
       // skybox
 

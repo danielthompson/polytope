@@ -24,6 +24,7 @@ namespace Polytope {
       // methods
       virtual bool Hits(Ray &worldSpaceRay) const = 0;
       virtual void Intersect(const Ray &worldSpaceRay, Intersection *intersection) = 0;
+      virtual Point GetRandomPointOnSurface() const = 0;
 
       // data
       Transform ObjectToWorld;
