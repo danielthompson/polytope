@@ -3,6 +3,7 @@
 //
 
 
+#include <iostream>
 #include "AbstractRunner.h"
 #include "../structures/Ray.h"
 
@@ -14,7 +15,4 @@ namespace Polytope {
       Sample sample = Integrator->GetSample(ray, 0, x, y);
       Film->AddSample(sampleLocation, sample);
    }
-
-
-
 }

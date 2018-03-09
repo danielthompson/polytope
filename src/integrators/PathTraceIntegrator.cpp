@@ -2,11 +2,13 @@
 // Created by Daniel Thompson on 3/5/18.
 //
 
+#include <iostream>
 #include "PathTraceIntegrator.h"
 
 namespace Polytope {
 
    Sample PathTraceIntegrator::GetSample(Ray ray, int depth, int x, int y) {
+
       Intersection closestStateToRay = Scene->GetNearestShape(ray, x, y);
 
       if (!closestStateToRay.Hits) {
@@ -31,11 +33,6 @@ namespace Polytope {
 //         }
          Normal intersectionNormal = closestStateToRay.Normal;
          Vector incomingDirection = ray.Direction;
-//
-//         if (x == 476 && y == 531) {
-//            int j = 0;
-//            Vector outgoingDirection = objectMaterial.BRDF.getVectorInPDF(intersectionNormal, incomingDirection);
-//         }
 
          Vector outgoingDirection = closestShape->Material->BRDF->getVectorInPDF(intersectionNormal, incomingDirection);
          float scalePercentage = closestShape->Material->BRDF->f(incomingDirection, intersectionNormal, outgoingDirection);
