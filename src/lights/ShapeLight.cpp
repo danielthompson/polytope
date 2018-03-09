@@ -12,7 +12,7 @@ namespace Polytope {
       : AbstractLight(spectralPowerDistribution), Shape(std::move(shape)) { }
 
    Point ShapeLight::GetRandomPointOnSurface() {
-      return Point();
+      return Shape->GetRandomPointOnSurface();
    }
 }
 

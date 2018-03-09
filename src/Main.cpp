@@ -50,13 +50,12 @@ void log(std::string text) {
 
 
 void compile(Polytope::AbstractScene *scene);
-void run();
 
 int main() {
 
    log("Polytope started.");
 
-   auto start = std::chrono::system_clock::now();
+   auto totalRunTimeStart = std::chrono::system_clock::now();
 
    int x = 640;
    int y = 480;
@@ -71,15 +70,25 @@ int main() {
 
    compile(scene);
 
-   AbstractIntegrator *integrator = new DebugIntegrator(scene, 3);
-
+   AbstractIntegrator *integrator = new PathTraceIntegrator(scene, 3);
    AbstractFilm *film = new PNGFilm(x, y, "test.png");
-
    AbstractRunner *runner = new PixelRunner(sampler, scene, integrator, film, x, y);
 
+   log("Rendering...");
+   auto renderingStart = std::chrono::system_clock::now();
    runner->Run();
+   auto renderingEnd = std::chrono::system_clock::now();
 
+   std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
+   log("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
+
+   log("Outputting to film...");
+   auto outputStart = std::chrono::system_clock::now();
    film->Output();
+   auto outputEnd = std::chrono::system_clock::now();
+
+   std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
+   log("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
 
    delete runner;
    delete film;
@@ -87,13 +96,14 @@ int main() {
    delete scene;
    delete sampler;
 
-   auto end = std::chrono::system_clock::now();
+   auto totalRunTimeEnd = std::chrono::system_clock::now();
 
-   std::chrono::duration<double> elapsed_seconds = end - start;
-   std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+   std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
+   std::time_t end_time = std::chrono::system_clock::to_time_t(totalRunTimeEnd);
 
-   std::cout << "finished computation at " << std::ctime(&end_time)
-             << "elapsed time: " << elapsed_seconds.count() << "s\n";
+   log("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
+
+   log("Exiting Polytope.");
 
    return 0;
 }
@@ -103,10 +113,15 @@ void compile(Polytope::AbstractScene *scene) {
    unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
    log("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
    log("Using 1 thread until multi-threading is implemented.");
+   log("Compiling scene...");
 
+   auto start = std::chrono::system_clock::now();
    scene->Compile();
+   auto end = std::chrono::system_clock::now();
+
+   std::chrono::duration<double> elapsed_seconds = end - start;
+   log("Compilation complete in " + std::to_string(elapsed_seconds.count()) + "s.");
    log("Scene has " + std::to_string(scene->Shapes.size()) + " shapes, " + std::to_string(scene->Lights.size()) + " lights.");
    log("Scene is implemented with " + scene->ImplementationType + ".");
-
 
 }

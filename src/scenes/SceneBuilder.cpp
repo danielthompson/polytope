@@ -65,7 +65,7 @@ namespace Polytope {
 //
 //      AbstractLight light = new SphereLight(sphere, lightSPD);
 
-      scene->Lights.push_back(std::make_shared<PointLight>(lightSPD, Point(0, 1000, 500)));
+      //scene->Lights.push_back(std::make_shared<PointLight>(lightSPD, Point(0, 1000, 500)));
 
       material = std::make_shared<Material>(std::make_unique<MirrorBRDF>(), FirenzeBeige);
 

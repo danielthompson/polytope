@@ -27,6 +27,7 @@ namespace Polytope {
    constexpr float Root2 = float(M_SQRT2);
 
    constexpr float Infinity = std::numeric_limits<float>::infinity();
+   constexpr float DenormMin = std::numeric_limits<float>::denorm_min();
 
    const float Root3 = sqrt(3.0f);
 
