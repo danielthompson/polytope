@@ -7,40 +7,38 @@
 
 namespace Polytope {
 
-   Sample PathTraceIntegrator::GetSample(Ray ray, int depth, int x, int y) {
+   Sample PathTraceIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
 
-      Intersection closestStateToRay = Scene->GetNearestShape(ray, x, y);
+      Intersection intersection = Scene->GetNearestShape(ray, x, y);
 
-      if (!closestStateToRay.Hits) {
+      if (!intersection.Hits) {
          return Sample(SpectralPowerDistribution());
       }
 
-      // TODO
-//      if (closestStateToRay.Shape instanceof AbstractLight) {
-//         sample.SpectralPowerDistribution = ((AbstractLight) closestStateToRay.Shape).SpectralPowerDistribution;
-//         return sample;
-//      }
+      if (intersection.Shape->IsLight()) {
+         return Sample(intersection.Shape->Light->SpectralPowerDistribution);
+      }
 
       // base case
       if (depth >= MaxDepth) {
          return Sample(SpectralPowerDistribution());
       }
       else {
-         std::shared_ptr<AbstractShape> closestShape = closestStateToRay.Shape;
+         std::shared_ptr<AbstractShape> closestShape = intersection.Shape;
 //         if (closestShape == null) {
 //            sample.SpectralPowerDistribution = new SpectralPowerDistribution();
 //            return sample;
 //         }
-         Normal intersectionNormal = closestStateToRay.Normal;
+         Normal intersectionNormal = intersection.Normal;
          Vector incomingDirection = ray.Direction;
 
          Vector outgoingDirection = closestShape->Material->BRDF->getVectorInPDF(intersectionNormal, incomingDirection);
          float scalePercentage = closestShape->Material->BRDF->f(incomingDirection, intersectionNormal, outgoingDirection);
 
-         Ray bounceRay = Ray(closestStateToRay.Location, outgoingDirection);
+         Ray bounceRay = Ray(intersection.Location, outgoingDirection);
 
-         // TODO for fuzz
-         // bounceRay.OffsetOriginForward(Constants.HalfEpsilon);
+         // fuzz fix/hack
+         bounceRay.OffsetOrigin(intersectionNormal, Polytope::OffsetEpsilon);
 
          Sample incomingSample = GetSample(bounceRay, depth + 1, x, y);
 

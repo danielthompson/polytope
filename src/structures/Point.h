@@ -16,7 +16,7 @@ namespace Polytope {
 
       Point() : x(0), y(0), z(0) { };
       Point(float x, float y, float z)  : x(x), y(y), z(z) {}
-      Point(const Point &p) = default;
+      Point(const Point &p) : x(p.x), y(p.y), z(p.z) { }
 
       // operators
 
@@ -26,6 +26,20 @@ namespace Polytope {
       Point operator+(const Point &rhs) const;
       Point operator+(const Vector &rhs) const;
       float operator[] (int index) const;
+      Point &operator+=(const Vector &rhs) {
+         x += rhs.x;
+         y += rhs.y;
+         z += rhs.z;
+         return *this;
+      }
+
+      Point &operator+=(const Normal &rhs) {
+         x += rhs.x;
+         y += rhs.y;
+         z += rhs.z;
+         return *this;
+      }
+
 
       // methods
 

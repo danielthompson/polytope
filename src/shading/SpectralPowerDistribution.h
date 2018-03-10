@@ -49,11 +49,11 @@ namespace Polytope {
       }
 
       SpectralPowerDistribution operator*(const SpectralPowerDistribution &rhs) {
-         return SpectralPowerDistribution(r * rhs.r, g + rhs.g, b + rhs.b);
+         return SpectralPowerDistribution(r * rhs.r, g * rhs.g, b * rhs.b);
       }
 
       SpectralPowerDistribution operator*(const ReflectanceSpectrum &rhs) {
-         return SpectralPowerDistribution(r * rhs.r, g + rhs.g, b + rhs.b);
+         return SpectralPowerDistribution(r * rhs.r, g * rhs.g, b * rhs.b);
       }
 
       // methods

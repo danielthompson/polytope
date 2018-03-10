@@ -26,7 +26,7 @@ namespace Polytope {
 
       // methods
 
-      virtual Intersection GetNearestShape(Ray ray, int x, int y) = 0;
+      virtual Intersection GetNearestShape(Ray &ray, int x, int y) = 0;
       virtual void Compile() = 0;
 
       // destructors
@@ -41,7 +41,7 @@ namespace Polytope {
       std::vector<std::shared_ptr<AbstractLight>> Lights;
 
    protected:
-      Intersection GetNearestShapeIteratively(std::vector<std::shared_ptr<AbstractShape>> shapes, Ray ray);
+      Intersection GetNearestShapeIteratively(std::vector<std::shared_ptr<AbstractShape>> &shapes, Ray &ray) const;
 
    };
 

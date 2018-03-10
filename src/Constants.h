@@ -10,6 +10,8 @@
 namespace Polytope {
 
    constexpr float Epsilon = .00001f;
+   constexpr float HalfEpsilon = Epsilon * 0.5f;
+   constexpr float OffsetEpsilon = 0.002f;
    constexpr float PI = float(M_PI);
    constexpr float OneOverPi = 1.0f / PI;
    constexpr float PIOver180 = PI / 180.0f;

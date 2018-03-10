@@ -10,7 +10,7 @@ namespace Polytope {
 
    Vector::Vector(float x, float y, float z) : x(x), y(y), z(z) {}
 
-   Vector::Vector(const Vector &v) = default;
+   Vector::Vector(const Vector &v) : x(v.x), y(v.y), z(v.z) { }
 
    Vector::Vector(const Normal &n) : x(n.x), y(n.y), z(n.z) { }
 

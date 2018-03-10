@@ -6,7 +6,7 @@
 
 namespace Polytope {
 
-   Sample DebugIntegrator::GetSample(Ray ray, int depth, int x, int y) {
+   Sample DebugIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
       if (x == 0 && y == 200) {
 
       }

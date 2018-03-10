@@ -28,6 +28,8 @@ namespace Polytope {
 
       Vector direction = Vector (imagePlanePixelInCameraSpace.x, imagePlanePixelInCameraSpace.y, imagePlanePixelInCameraSpace.z);
 
+      direction.Normalize();
+
       Ray cameraSpaceRay = Ray(DefaultOrigin, direction);
 
       Ray worldSpaceRay = CameraToWorld.Apply(cameraSpaceRay);

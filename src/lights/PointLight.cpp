@@ -5,7 +5,7 @@
 #include "PointLight.h"
 
 namespace Polytope {
-   Point PointLight::GetRandomPointOnSurface() {
+   Point PointLight::GetRandomPointOnSurface() const {
       return Location;
    }
 }

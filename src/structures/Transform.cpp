@@ -103,7 +103,11 @@ namespace Polytope {
       float newY = v.x * Matrix.Matrix[1][0] + v.y * Matrix.Matrix[1][1] + v.z * Matrix.Matrix[1][2];
       float newZ = v.x * Matrix.Matrix[2][0] + v.y * Matrix.Matrix[2][1] + v.z * Matrix.Matrix[2][2];
 
-      return Vector(newX, newY, newZ);
+      Vector v1 = Vector(newX, newY, newZ);
+
+      v1.Normalize();
+
+      return v1;
    }
 
    void Transform::ApplyInPlace(Normal &n) const {
@@ -132,7 +136,19 @@ namespace Polytope {
    }
 
    Ray Transform::Apply(const Ray &ray) const {
-      return Ray(Apply(ray.Origin), Apply(ray.Direction));
+      Point p = (*this).Apply(ray.Origin);
+      Vector v = (*this).Apply(ray.Direction);
+
+      Ray r = Ray(p, v);
+      r.Origin.x = p.x;
+      r.Origin.y = p.y;
+      r.Origin.z = p.z;
+
+      r.Direction.x = v.x;
+      r.Direction.y = v.y;
+      r.Direction.z = v.z;
+
+      return r;
 
    }
 

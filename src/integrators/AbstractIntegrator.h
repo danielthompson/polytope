@@ -13,7 +13,7 @@ namespace Polytope {
    class AbstractIntegrator {
    public:
       // methods
-      virtual Sample GetSample(Ray ray, int depth, int x, int y) = 0;
+      virtual Sample GetSample(Ray &ray, int depth, int x, int y) = 0;
 
       // destructors
       virtual ~AbstractIntegrator() { }

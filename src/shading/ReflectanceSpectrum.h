@@ -46,7 +46,7 @@ namespace Polytope {
       }
 
       ReflectanceSpectrum operator*(const ReflectanceSpectrum &rhs) {
-         return ReflectanceSpectrum(r * rhs.r, g + rhs.g, b + rhs.b);
+         return ReflectanceSpectrum(r * rhs.r, g * rhs.g, b * rhs.b);
       }
 
       // methods

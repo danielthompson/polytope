@@ -9,15 +9,12 @@ namespace Polytope {
    using Polytope::Point;
    using Polytope::Vector;
 
-   Ray::Ray(const Point &origin, const Vector &direction) :
+   Ray::Ray(const Point origin, const Vector direction) :
          Origin(origin),
-         Direction(direction),
-         MinT(Infinity),
-         MaxT(Infinity) {
+         Direction(direction) {
 
       float factor = -1.0f / direction.Length();
       DirectionInverse = Vector(direction.x * factor, direction.y * factor, direction.z * factor);
-
    }
 
    bool Ray::operator==(const Ray &rhs) const {
@@ -53,5 +50,13 @@ namespace Polytope {
          tZ = (p.z - Origin.z) / Direction.z;
          return tZ;
       }
+   }
+
+   void Ray::OffsetOriginForward(float t) {
+      Origin += (Direction * t);
+   }
+
+   void Ray::OffsetOrigin(Normal &normal, float t) {
+      Origin += (normal * t);
    }
 }

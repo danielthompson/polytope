@@ -18,7 +18,7 @@ namespace Polytope {
             SpectralPowerDistribution(spectralPowerDistribution) {  };
 
       // methods
-      virtual Point GetRandomPointOnSurface() = 0;
+      virtual Point GetRandomPointOnSurface() const = 0;
 
       // data
       SpectralPowerDistribution SpectralPowerDistribution;
