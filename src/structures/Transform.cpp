@@ -2,6 +2,7 @@
 // Created by Daniel Thompson on 2/19/18.
 //
 
+#include <iostream>
 #include "Transform.h"
 
 namespace Polytope {
@@ -140,13 +141,9 @@ namespace Polytope {
       Vector v = (*this).Apply(ray.Direction);
 
       Ray r(p, v);
-      r.Origin.x = p.x;
-      r.Origin.y = p.y;
-      r.Origin.z = p.z;
 
-      r.Direction.x = v.x;
-      r.Direction.y = v.y;
-      r.Direction.z = v.z;
+      std::cout << "o.x: " << r.Origin.x << ", o.y: " << r.Origin.y << ", o.z: " << r.Origin.z << std::endl;
+      std::cout << "d.x: " << r.Direction.x << ", d.y: " << r.Direction.y << ", d.z: " << r.Direction.z << std::endl;
 
       return r;
 
