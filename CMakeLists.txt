@@ -11,6 +11,8 @@ set(CMAKE_CXX_FLAGS "-g -Wall")
 
 set(CMAKE_CXX_STANDARD 14)
 
+SET(CMAKE_CXX_FLAGS "-O0")
+
 # If you want your own include/ directory, set this, and then you can do
 # include_directories(${COMMON_INCLUDES}) in other CMakeLists.txt files.
 # set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)

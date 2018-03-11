@@ -3,6 +3,7 @@
 //
 
 #include <cmath>
+#include <iostream>
 #include "PerspectiveCamera.h"
 #include "../Constants.h"
 
@@ -33,6 +34,10 @@ namespace Polytope {
       Ray cameraSpaceRay = Ray(DefaultOrigin, direction);
 
       Ray worldSpaceRay = CameraToWorld.Apply(cameraSpaceRay);
+
+      std::cout << "o.x: " << worldSpaceRay.Origin.x << ", o.y: " << worldSpaceRay.Origin.y << ", o.z: " << worldSpaceRay.Origin.z << std::endl;
+
+      std::cout << "d.x: " << worldSpaceRay.Direction.x << ", d.y: " << worldSpaceRay.Direction.y << ", d.z: " << worldSpaceRay.Direction.z << std::endl;
 
       worldSpaceRay.Direction.Normalize();
       worldSpaceRay.DirectionInverse.Normalize();

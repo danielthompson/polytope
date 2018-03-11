@@ -139,7 +139,7 @@ namespace Polytope {
       Point p = (*this).Apply(ray.Origin);
       Vector v = (*this).Apply(ray.Direction);
 
-      Ray r = Ray(p, v);
+      Ray r(p, v);
       r.Origin.x = p.x;
       r.Origin.y = p.y;
       r.Origin.z = p.z;
