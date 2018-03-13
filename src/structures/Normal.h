@@ -18,7 +18,7 @@ namespace Polytope {
 
       // operators
 
-      Normal operator*(float t);
+      Normal operator*(float t) const;
 
       // methods
 

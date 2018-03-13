@@ -19,7 +19,7 @@ namespace Polytope {
 
       // methods
 
-      virtual float f(float thetaIncoming, float thetaOutgoing) = 0;
+      virtual float f(float thetaIncoming, float thetaOutgoing) const = 0;
 
       /**
        * Gets an outgoing vector according to the BxDF's PDF.
@@ -28,7 +28,7 @@ namespace Polytope {
        * @param incoming The incoming vector.
        * @return A vector randomly sampled according to the BxDF's PDF.
        */
-      virtual Vector getVectorInPDF(Normal normal, Vector incoming) = 0;
+      virtual Vector getVectorInPDF(const Normal &normal, const Vector &incoming) const = 0;
 
       /**
        * Returns the proportion of outgoing light that comes from the incoming direction.
@@ -40,7 +40,7 @@ namespace Polytope {
        * @param outgoing The direction of outgoing light.
        * @return The proportion of outgoing light that comes from the incoming direction.
        */
-      virtual float f(Vector incoming, Normal normal, Vector outgoing) = 0;
+      virtual float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const = 0;
 
 
       // data

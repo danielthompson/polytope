@@ -22,7 +22,7 @@ namespace Polytope {
       return (x * x + y * y + z * z);
    }
 
-   Normal Normal::operator*(const float t) {
+   Normal Normal::operator*(const float t) const {
       return Normal(x * t, y * t, z * t);
    }
 }

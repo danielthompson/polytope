@@ -22,7 +22,7 @@ namespace Polytope {
       };
 
       // methods
-      void AddSample(Point2f location, Sample sample) override;
+      void AddSample(const Point2f &location, const Sample &sample) override;
       void Output() override;
 
       // data

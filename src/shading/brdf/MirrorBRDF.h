@@ -18,9 +18,9 @@ namespace Polytope {
 
       // methods
 
-      float f(float thetaIncoming, float thetaOutgoing) override;
-      Vector getVectorInPDF(Normal normal, Vector incoming) override;
-      float f(Vector incoming, Normal normal, Vector outgoing) override;
+      float f(float thetaIncoming, float thetaOutgoing) const override;
+      Vector getVectorInPDF(const Normal &normal, const Vector &incoming) const override;
+      float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const override;
 
       // data
 

@@ -7,32 +7,23 @@
 
 namespace Polytope {
 
-   float MirrorBRDF::f(float thetaIncoming, float thetaOutgoing) {
+   float MirrorBRDF::f(const float thetaIncoming, const float thetaOutgoing) const {
       if (Polytope::WithinEpsilon(thetaIncoming, thetaOutgoing))
          return 1.0f;
       return 0.0f;
    }
 
-   Vector MirrorBRDF::getVectorInPDF(Normal normal, Vector incoming) {
-      normal.Normalize();
+   Vector MirrorBRDF::getVectorInPDF(const Normal &normal, const Vector &incoming) const {
       float factor = incoming.Dot(normal) * 2;
       Vector scaled = Vector(normal * factor);
 
-      //Vector outgoing = Vector.Minus(incoming, scaled);
-
-      // TODO combine these two statements
-      Vector outgoing = scaled - incoming;
-      outgoing = -outgoing;
-
+      Vector outgoing = incoming - scaled;
       return outgoing;
    }
 
-   float MirrorBRDF::f(Vector incoming, Normal normal, Vector outgoing) {
+   float MirrorBRDF::f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const {
 
-      // Vector fixedIncoming = Vector.Scale(incoming, -1);
-      incoming = -incoming;
-
-      float thetaIncoming = RadiansBetween(incoming, normal);
+      float thetaIncoming = RadiansBetween(-incoming, normal);
       float thetaOutgoing = RadiansBetween(outgoing, normal);
 
       return f(thetaIncoming, thetaOutgoing);

@@ -8,7 +8,7 @@
 
 namespace Polytope {
 
-   void PNGFilm::AddSample(Point2f location, Sample sample) {
+   void PNGFilm::AddSample(const Point2f &location, const Sample &sample) {
 //      int index = int(location.y) * Height + int(location.x);
 
       int x = int(location.x);

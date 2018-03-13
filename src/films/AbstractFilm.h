@@ -17,7 +17,7 @@ namespace Polytope {
       AbstractFilm(unsigned int width, unsigned int height) : Width(width), Height(height) { };
 
       // methods
-      virtual void AddSample(Point2f location, Sample sample) = 0;
+      virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
       virtual void Output() = 0;
 
       // destructors

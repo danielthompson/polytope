@@ -52,7 +52,7 @@ namespace Polytope {
    }
 
 
-   inline float RadiansBetween(Vector &v, Normal &n) {
+   inline float RadiansBetween(const Vector &v, const Normal &n) {
       //v.Normalize();
       //n.Normalize();
 
