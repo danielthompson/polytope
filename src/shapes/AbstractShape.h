@@ -35,6 +35,8 @@ namespace Polytope {
       Transform ObjectToWorld;
       Transform WorldToObject;
       std::shared_ptr<Polytope::Material> Material;
+
+      // TODO change to weak to break cycles?
       std::shared_ptr<AbstractLight> Light;
    };
 

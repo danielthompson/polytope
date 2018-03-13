@@ -106,7 +106,7 @@ namespace Polytope {
 
       Vector v1 = Vector(newX, newY, newZ);
 
-      v1.Normalize();
+      //v1.Normalize();
 
       return v1;
    }
@@ -140,10 +140,11 @@ namespace Polytope {
       Point p = (*this).Apply(ray.Origin);
       Vector v = (*this).Apply(ray.Direction);
 
+      v.Normalize();
       Ray r(p, v);
 
-      std::cout << "o.x: " << r.Origin.x << ", o.y: " << r.Origin.y << ", o.z: " << r.Origin.z << std::endl;
-      std::cout << "d.x: " << r.Direction.x << ", d.y: " << r.Direction.y << ", d.z: " << r.Direction.z << std::endl;
+      //std::cout << "o.x: " << r.Origin.x << ", o.y: " << r.Origin.y << ", o.z: " << r.Origin.z << std::endl;
+      //std::cout << "d.x: " << r.Direction.x << ", d.y: " << r.Direction.y << ", d.z: " << r.Direction.z << std::endl;
 
       return r;
 

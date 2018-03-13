@@ -9,7 +9,7 @@ namespace Polytope {
    using Polytope::Point;
    using Polytope::Vector;
 
-   Ray::Ray(const Point origin, const Vector direction) :
+   Ray::Ray(const Point &origin, const Vector &direction) :
          Origin(origin),
          Direction(direction) {
 
@@ -29,11 +29,11 @@ namespace Polytope {
       return !(rhs == *this);
    }
 
-   Point Ray::GetPointAtT(float t) const {
+   Point Ray::GetPointAtT(const float t) const {
       return Origin + (Direction * t);
    }
 
-   float Ray::GetTAtPoint(Point p) const {
+   float Ray::GetTAtPoint(const Point &p) const {
       float tX, tY, tZ;
 
       if (Direction.x != 0) {
@@ -52,11 +52,11 @@ namespace Polytope {
       }
    }
 
-   void Ray::OffsetOriginForward(float t) {
+   void Ray::OffsetOriginForward(const float t) {
       Origin += (Direction * t);
    }
 
-   void Ray::OffsetOrigin(Normal &normal, float t) {
-      Origin += (normal * t);
+   void Ray::OffsetOrigin(Normal &normal, const float t) {
+      Origin += normal * t;
    }
 }

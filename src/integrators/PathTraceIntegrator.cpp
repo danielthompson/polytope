@@ -16,6 +16,12 @@ namespace Polytope {
       }
 
       if (intersection.Shape->IsLight()) {
+
+         if (depth > 0) {
+            x++;
+            x--;
+         }
+
          return Sample(intersection.Shape->Light->SpectralPowerDistribution);
       }
 
@@ -25,10 +31,7 @@ namespace Polytope {
       }
       else {
          std::shared_ptr<AbstractShape> closestShape = intersection.Shape;
-//         if (closestShape == null) {
-//            sample.SpectralPowerDistribution = new SpectralPowerDistribution();
-//            return sample;
-//         }
+
          Normal intersectionNormal = intersection.Normal;
          Vector incomingDirection = ray.Direction;
 
@@ -45,7 +48,6 @@ namespace Polytope {
          SpectralPowerDistribution incomingSPD = incomingSample.SpectralPowerDistribution * scalePercentage;
 
          // compute the interaction of the incoming SPD with the object's SRC
-
          SpectralPowerDistribution reflectedSPD = incomingSPD * closestShape->Material->ReflectanceSpectrum;
 
          return Sample(reflectedSPD);

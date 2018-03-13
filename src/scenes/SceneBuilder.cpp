@@ -34,9 +34,8 @@ namespace Polytope {
       );
 
       Transform objectToWorld =
-            Transform::Translate(100, 0, -250)
-            * Transform::Scale(50)
-            * Transform::Translate(-.5f, -.5f, -.5f);
+            Transform::Translate(100, 0, -200)
+            * Transform::Scale(50);
 
       scene->Shapes.push_back(std::make_shared<Sphere>(objectToWorld, material));
 
@@ -45,15 +44,14 @@ namespace Polytope {
       material = std::make_shared<Material>(std::make_unique<MirrorBRDF>(), FirenzeBeige);
 
       objectToWorld =
-            Transform::Translate(-100, 0, -250)
-            * Transform::Scale(50)
-            * Transform::Translate(-.5f, -.5f, -.5f);
+            Transform::Translate(-100, 0, -200)
+            * Transform::Scale(50);
 
       scene->Shapes.push_back(std::make_shared<Sphere>(objectToWorld, material));
 
       // white light
 
-      SpectralPowerDistribution lightSPD = SpectralPowerDistribution(300, 0, 0);
+      SpectralPowerDistribution lightSPD = SpectralPowerDistribution(255, 0, 0);
 
 //      inputTransforms = new Transform[2];
 //      inputTransforms[0] = Transform.Translate(new Vector(300, 3300, -1500));
@@ -70,9 +68,8 @@ namespace Polytope {
       material = std::make_shared<Material>(std::make_unique<MirrorBRDF>(), FirenzeBeige);
 
       objectToWorld =
-         Transform::Translate(0, 100, -200)
-         * Transform::Scale(25)
-         * Transform::Translate(-.5f, -.5f, -.5f);
+         Transform::Translate(0, 0, -300)
+         * Transform::Scale(25);
 
       std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(objectToWorld, material);
 

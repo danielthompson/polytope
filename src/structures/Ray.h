@@ -17,13 +17,13 @@ namespace Polytope {
       // methods
 
       Ray() : MinT(Infinity), MaxT(Infinity) { };
-      Ray(Point origin, Vector direction);
+      Ray(const Point &origin, const Vector &direction);
 
       bool operator==(const Ray &rhs) const;
       bool operator!=(const Ray &rhs) const;
 
       Point GetPointAtT(float t) const;
-      float GetTAtPoint(Point p) const;
+      float GetTAtPoint(const Point &p) const;
       void OffsetOriginForward(float t);
       void OffsetOrigin(Normal &normal, float t);
 
