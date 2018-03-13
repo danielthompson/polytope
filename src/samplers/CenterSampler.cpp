@@ -6,7 +6,7 @@
 
 namespace Polytope {
 
-   Polytope::Point2f Polytope::CenterSampler::GetSample(int x, int y) {
+   Point2f CenterSampler::GetSample(const int x, const int y) {
       return Point2f(x + 0.5f, y + 0.5f);
    }
 

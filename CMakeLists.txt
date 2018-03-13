@@ -52,7 +52,6 @@ add_library(polytope_lib
         src/runners/AbstractRunner.cpp
         src/runners/PixelRunner.cpp
         src/runners/PixelRunner.h
-        src/samplers/AbstractSampler.cpp
         src/samplers/AbstractSampler.h
         src/structures/Point2.cpp
         src/structures/Point2.h

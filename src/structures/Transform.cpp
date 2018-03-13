@@ -11,25 +11,17 @@ namespace Polytope {
    const Vector Transform::yDir = Vector(0, 1, 0);
    const Vector Transform::zDir = Vector(0, 0, 1);
 
-   Transform::Transform() {
-      Matrix = Matrix4x4();
-      Inverse = Matrix4x4();
-   }
+   Transform::Transform() : Matrix(Matrix4x4()), Inverse(Matrix4x4()) { }
 
-   Transform::Transform(const float values[4][4]) {
-      Matrix = Matrix4x4(values);
+   Transform::Transform(const float values[4][4]) : Matrix(Matrix4x4(values)) {
       Inverse = Matrix.Inverse();
    }
 
-   Transform::Transform(const Matrix4x4 matrix) {
-      Matrix = matrix;
+   Transform::Transform(const Matrix4x4 &matrix) : Matrix(matrix) {
       Inverse = Matrix.Inverse();
    }
 
-   Transform::Transform(const Matrix4x4 matrix, const Matrix4x4 inverse) {
-      Matrix = matrix;
-      Inverse = inverse;
-   }
+   Transform::Transform(const Matrix4x4 &matrix, const Matrix4x4 &inverse) : Matrix(matrix), Inverse(inverse) { }
 
    Transform Transform::Invert() const {
       Transform transform = Transform(Inverse, Matrix);
@@ -132,8 +124,12 @@ namespace Polytope {
 
    void Transform::ApplyInPlace(Ray &ray) const {
       ApplyInPlace(ray.Origin);
+
       ApplyInPlace(ray.Direction);
+      ray.Direction.Normalize();
+
       ApplyInPlace(ray.DirectionInverse);
+      ray.DirectionInverse.Normalize();
    }
 
    Ray Transform::Apply(const Ray &ray) const {

@@ -20,8 +20,8 @@ namespace Polytope {
 
       Transform();
       explicit Transform(const float values[4][4]);
-      explicit Transform(const Matrix4x4 matrix);
-      explicit Transform(const Matrix4x4 matrix, const Matrix4x4 inverse);
+      explicit Transform(const Matrix4x4 &matrix);
+      explicit Transform(const Matrix4x4 &matrix, const Matrix4x4 &inverse);
 
       // operators
 

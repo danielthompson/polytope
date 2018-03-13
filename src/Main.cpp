@@ -70,7 +70,7 @@ int main() {
 
    compile(scene);
 
-   AbstractIntegrator *integrator = new PathTraceIntegrator(scene, 3);
+   AbstractIntegrator *integrator = new DebugIntegrator(scene, 3);
    AbstractFilm *film = new PNGFilm(x, y, "test.png");
    AbstractRunner *runner = new PixelRunner(sampler, scene, integrator, film, x, y);
 

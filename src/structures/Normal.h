@@ -14,7 +14,7 @@ namespace Polytope {
 
       Normal () {x = y = z = 0;}
 
-      Normal (float x, float y, float z) : x(x), y(y), z(z) { }
+      Normal (const float x, const float y, const float z) : x(x), y(y), z(z) { }
 
       // operators
 
