@@ -15,6 +15,11 @@ namespace Polytope {
          return Sample(SpectralPowerDistribution());
       }
 
+      if (depth > 0) {
+         x++;
+         x--;
+      }
+
       if (intersection.Shape->IsLight()) {
 
          if (depth > 0) {

@@ -6,6 +6,7 @@
 #define POLYTOPE_CONSTANTS_H
 
 #include <cmath>
+#include <limits>
 
 namespace Polytope {
 
@@ -56,7 +57,7 @@ namespace Polytope {
       //v.Normalize();
       //n.Normalize();
 
-      return abs(acos(v.Dot(n)));
+      return float(std::abs(acos(v.Dot(n))));
    }
 }
 

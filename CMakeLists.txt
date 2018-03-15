@@ -7,7 +7,7 @@ option(tests "Build all tests." OFF) # Makes boolean 'tests' available.
 set(PROJECT_NAME polytope)
 project(${PROJECT_NAME})
 
-set(CMAKE_CXX_FLAGS "-g -Wall")
+set(CMAKE_CXX_FLAGS "-g -Wno-error=unused-function")
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -105,7 +105,8 @@ target_link_libraries(${PROJECT_NAME} polytope_lib)
     add_executable(runUnitTests
             tests/Matrix4x4.cpp
             tests/Point.cpp
-          tests/Transform.cpp)
+          tests/Transform.cpp
+          tests/MirrorBRDF.cpp)
 
     # Standard linking to gtest stuff.
     target_link_libraries(runUnitTests gtest gtest_main)

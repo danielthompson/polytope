@@ -32,9 +32,11 @@ namespace Polytope {
 
       // TODO this can be simplified
 
+      Vector v = objectSpaceRay.Origin - Origin;
+
       float a = objectSpaceRay.Direction.Dot(objectSpaceRay.Direction);
-      float b = 2 * (objectSpaceRay.Direction.Dot(objectSpaceRay.Origin - Origin));
-      float c = (objectSpaceRay.Origin - Origin).Dot(objectSpaceRay.Origin - Origin) - (Radius * Radius);
+      float b = 2 * (objectSpaceRay.Direction.Dot(v));
+      float c = (v).Dot(v) - (Radius * Radius);
 
       float discriminant = (b * b) - (4 * a * c);
 
