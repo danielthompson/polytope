@@ -15,6 +15,11 @@ namespace Polytope {
          return Sample(SpectralPowerDistribution());
       }
 
+      if (x == 180 && y == 230) {
+         x++;
+         x--;
+      }
+
       if (depth > 0) {
          x++;
          x--;

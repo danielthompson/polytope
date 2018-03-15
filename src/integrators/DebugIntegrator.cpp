@@ -7,8 +7,9 @@
 namespace Polytope {
 
    Sample DebugIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
-      if (x == 0 && y == 200) {
-
+      if (x == 180 && y == 230) {
+         x++;
+         x--;
       }
 
       Intersection closestStateToRay = Scene->GetNearestShape(ray, x, y);

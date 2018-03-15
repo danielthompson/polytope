@@ -115,11 +115,15 @@ namespace Polytope {
 
    Normal Transform::Apply(const Normal &n) const {
 
-      float newX = n.x * Inverse.Matrix[0][0] + n.y * Matrix.Matrix[1][0] + n.z * Matrix.Matrix[2][0];
-      float newY = n.x * Matrix.Matrix[0][1] + n.y * Matrix.Matrix[1][1] + n.z * Matrix.Matrix[2][1];
-      float newZ = n.x * Matrix.Matrix[0][2] + n.y * Matrix.Matrix[1][2] + n.z * Matrix.Matrix[2][2];
+      float newX = n.x * Inverse.Matrix[0][0] + n.y * Inverse.Matrix[1][0] + n.z * Inverse.Matrix[2][0];
+      float newY = n.x * Inverse.Matrix[0][1] + n.y * Inverse.Matrix[1][1] + n.z * Inverse.Matrix[2][1];
+      float newZ = n.x * Inverse.Matrix[0][2] + n.y * Inverse.Matrix[1][2] + n.z * Inverse.Matrix[2][2];
 
-      return Normal(newX, newY, newZ);
+      Normal normal(newX, newY, newZ);
+
+      normal.Normalize();
+
+      return normal;
    }
 
    void Transform::ApplyInPlace(Ray &ray) const {

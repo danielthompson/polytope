@@ -116,8 +116,6 @@ namespace Polytope {
          worldSpaceNormal = ObjectToWorld.Apply(worldSpaceNormal);
       //}
 
-      worldSpaceNormal.Normalize();
-
       intersection->Normal = worldSpaceNormal;
    }
 
