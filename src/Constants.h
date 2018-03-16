@@ -17,6 +17,8 @@ namespace Polytope {
    constexpr float OneOverPi = 1.0f / PI;
    constexpr float PIOver180 = PI / 180.0f;
 
+   constexpr float OneThird = 1.0f / 3.0f;
+
    constexpr float NOHIT = -1.0f;
 
    constexpr float PIOver2 = PI / 2.0f;

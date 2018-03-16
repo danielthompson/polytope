@@ -38,15 +38,15 @@ namespace Polytope {
       // base case
       if (depth >= MaxDepth) {
          return Sample(SpectralPowerDistribution());
-      }
-      else {
+      } else {
          std::shared_ptr<AbstractShape> closestShape = intersection.Shape;
 
          Normal intersectionNormal = intersection.Normal;
          Vector incomingDirection = ray.Direction;
 
          Vector outgoingDirection = closestShape->Material->BRDF->getVectorInPDF(intersectionNormal, incomingDirection);
-         float scalePercentage = closestShape->Material->BRDF->f(incomingDirection, intersectionNormal, outgoingDirection);
+         float scalePercentage = closestShape->Material->BRDF->f(incomingDirection, intersectionNormal,
+                                                                 outgoingDirection);
 
          Ray bounceRay = Ray(intersection.Location, outgoingDirection);
 

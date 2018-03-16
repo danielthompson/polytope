@@ -57,8 +57,8 @@ int main() {
 
    auto totalRunTimeStart = std::chrono::system_clock::now();
 
-   int x = 640;
-   int y = 480;
+   int x = 1920;
+   int y = 1080;
 
    using namespace Polytope;
 

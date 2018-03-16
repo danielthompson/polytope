@@ -41,7 +41,6 @@ namespace Polytope {
 
       // yellow ball
 
-      material = std::make_shared<Material>(std::make_unique<MirrorBRDF>(), FirenzeBeige);
 
       objectToWorld =
             Transform::Translate(-100, 0, -200)

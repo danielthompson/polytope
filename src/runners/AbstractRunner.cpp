@@ -10,15 +10,26 @@
 namespace Polytope {
 
    void AbstractRunner::Trace(int x, int y) {
-      Point2f sampleLocation = Sampler->GetSample(x, y);
-      Ray ray = Scene->Camera->GetRay(sampleLocation);
 
-      if (x == 0 && y == 113) {
-         x++;
-         x--;
+      Point2f points[NumSamples];
+
+      Sampler->GetSamples(points, NumSamples, x, y);
+
+      for (int i = 0; i < NumSamples; i++) {
+
+         Point2f sampleLocation = points[i];
+
+         Ray ray = Scene->Camera->GetRay(sampleLocation);
+
+         if (x == 0 && y == 113) {
+            x++;
+            x--;
+         }
+
+         Sample sample = Integrator->GetSample(ray, 0, x, y);
+         Film->AddSample(sampleLocation, sample);
       }
 
-      Sample sample = Integrator->GetSample(ray, 0, x, y);
-      Film->AddSample(sampleLocation, sample);
+
    }
 }
