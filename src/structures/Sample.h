@@ -13,6 +13,8 @@ namespace Polytope {
    public:
 
       // constructors
+      Sample() : SpectralPowerDistribution() { }
+
       explicit Sample(const SpectralPowerDistribution &spectralPowerDistribution)
             : SpectralPowerDistribution(spectralPowerDistribution) { }
 

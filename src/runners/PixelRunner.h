@@ -16,17 +16,14 @@ namespace Polytope {
 
       // constructors
 
-      PixelRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator,
-                  AbstractFilm *film, int x, int y)
-            : AbstractRunner(sampler, scene, integrator, film), _x(x), _y(y) { }
+      PixelRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator, AbstractFilm *film,
+                        const Polytope::Bounds bounds, const unsigned int numSamples)
+            : AbstractRunner(sampler, scene, integrator, film, numSamples, bounds) { }
 
       // methods
 
 
       void Run();
-   private:
-      int _x, _y;
-
 
    };
 

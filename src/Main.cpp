@@ -16,6 +16,8 @@
 #include "integrators/PathTraceIntegrator.h"
 #include "films/PNGFilm.h"
 #include "integrators/DebugIntegrator.h"
+#include "filters/BoxFilter.h"
+
 
 std::string time_in_HH_MM_SS_MMM()
 {
@@ -57,22 +59,25 @@ int main() {
 
    auto totalRunTimeStart = std::chrono::system_clock::now();
 
-   int x = 1920;
-   int y = 1080;
-
    using namespace Polytope;
+
+   const Polytope::Bounds bounds(1920, 1080);
+
+   const unsigned int numSamples = 1;
 
    AbstractSampler *sampler = new CenterSampler();
 
-   SceneBuilder sceneBuilder = SceneBuilder();
+   SceneBuilder sceneBuilder = SceneBuilder(bounds);
 
-   AbstractScene *scene = sceneBuilder.Default(x, y);
+   AbstractScene *scene = sceneBuilder.Default();
 
    compile(scene);
 
    AbstractIntegrator *integrator = new PathTraceIntegrator(scene, 3);
-   AbstractFilm *film = new PNGFilm(x, y, "test.png");
-   AbstractRunner *runner = new PixelRunner(sampler, scene, integrator, film, x, y);
+
+   AbstractFilm *film = new PNGFilm(bounds, "test.png", std::make_unique<BoxFilter>(bounds));
+
+   AbstractRunner *runner = new PixelRunner(sampler, scene, integrator, film, bounds, numSamples);
 
    log("Rendering...");
    auto renderingStart = std::chrono::system_clock::now();

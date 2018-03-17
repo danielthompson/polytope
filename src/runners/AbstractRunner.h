@@ -19,8 +19,9 @@ namespace Polytope {
       // constructors
 
       explicit AbstractRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator,
-                              AbstractFilm *film, unsigned int numSamples)
-            : Sampler(sampler), Scene(scene), Integrator(integrator), Film(film), NumSamples(numSamples) { }
+                              AbstractFilm *film, const unsigned int numSamples, const Bounds bounds)
+            : Sampler(sampler), Scene(scene), Integrator(integrator), Film(film), NumSamples(numSamples),
+               Bounds(bounds) { }
 
       // methods
       virtual void Run() = 0;
@@ -39,11 +40,10 @@ namespace Polytope {
       void Trace(int x, int y);
 
       // data
-
-
       AbstractScene *Scene;
       AbstractIntegrator *Integrator;
       AbstractFilm *Film;
+      const Bounds Bounds;
    };
 
 }

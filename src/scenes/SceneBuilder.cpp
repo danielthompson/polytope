@@ -15,8 +15,8 @@
 
 namespace Polytope {
 
-   AbstractScene* SceneBuilder::Default(float x, float y) {
-      CameraSettings settings = CameraSettings(x, y, 50);
+   AbstractScene* SceneBuilder::Default() {
+      CameraSettings settings = CameraSettings(_bounds, 50);
 
       Transform identity = Transform();
 

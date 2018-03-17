@@ -7,14 +7,10 @@
 namespace Polytope {
 
    void Polytope::PixelRunner::Run() {
-      for (int x = 0; x < _x; x++) {
-         for (int y = 0; y < _y; y++) {
-
+      for (int x = 0; x < Bounds.x; x++) {
+         for (int y = 0; y < Bounds.y; y++) {
             Trace(x, y);
          }
       }
-
    }
-
-
 }

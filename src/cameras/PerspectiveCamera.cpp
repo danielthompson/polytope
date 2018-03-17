@@ -12,9 +12,9 @@ namespace Polytope {
 
    PerspectiveCamera::PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld)
          : AbstractCamera(settings, cameraToWorld) {
-      OneOverWidth = 1.0f / (float)Settings.x;
-      OneOverHeight = 1.0f / (float)Settings.y;
-      AspectRatio = (float) Settings.x * OneOverHeight;
+      OneOverWidth = 1.0f / (float)Settings.Bounds.x;
+      OneOverHeight = 1.0f / (float)Settings.Bounds.y;
+      AspectRatio = (float) Settings.Bounds.x * OneOverHeight;
       TanFOVOver2 = (float)tan(Settings.FieldOfView * PIOver180 * .5f);
    }
 

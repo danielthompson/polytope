@@ -5,8 +5,10 @@
 #ifndef POLYTOPE_ABSTRACTFILM_H
 #define POLYTOPE_ABSTRACTFILM_H
 
+#include <memory>
 #include "../structures/Sample.h"
 #include "../structures/Point2.h"
+#include "../filters/AbstractFilter.h"
 
 namespace Polytope {
 
@@ -14,7 +16,8 @@ namespace Polytope {
    public:
 
       // constructors
-      AbstractFilm(unsigned int width, unsigned int height) : Width(width), Height(height) { };
+      AbstractFilm(const Polytope::Bounds bounds, std::unique_ptr<AbstractFilter> filter)
+            : Bounds(bounds), Filter(std::move(filter)) { };
 
       // methods
       virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
@@ -24,7 +27,8 @@ namespace Polytope {
       virtual ~AbstractFilm() = default;;
 
       // data
-      unsigned int Width, Height;
+      const Polytope::Bounds Bounds;
+      std::unique_ptr<AbstractFilter> Filter;
 
    };
 

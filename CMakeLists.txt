@@ -73,7 +73,7 @@ add_library(polytope_lib
         src/lights/AbstractLight.cpp
         src/lights/AbstractLight.h
         src/lights/PointLight.cpp
-        src/lights/PointLight.h src/integrators/AbstractIntegrator.cpp src/integrators/AbstractIntegrator.h src/structures/Sample.cpp src/structures/Sample.h src/integrators/PathTraceIntegrator.cpp src/integrators/PathTraceIntegrator.h lib/lodepng.cpp lib/lodepng.h src/films/AbstractFilm.cpp src/films/AbstractFilm.h src/films/PNGFilm.cpp src/films/PNGFilm.h src/integrators/DebugIntegrator.cpp src/integrators/DebugIntegrator.h src/utilities/GeometryCalculations.h src/lights/SphereLight.cpp src/lights/SphereLight.h src/samplers/GridSampler.cpp src/samplers/GridSampler.h src/filters/AbstractFilter.cpp src/filters/AbstractFilter.h src/filters/BoxFilter.cpp src/filters/BoxFilter.h)
+        src/lights/PointLight.h src/integrators/AbstractIntegrator.cpp src/integrators/AbstractIntegrator.h src/structures/Sample.cpp src/structures/Sample.h src/integrators/PathTraceIntegrator.cpp src/integrators/PathTraceIntegrator.h lib/lodepng.cpp lib/lodepng.h src/films/AbstractFilm.h src/films/PNGFilm.cpp src/films/PNGFilm.h src/integrators/DebugIntegrator.cpp src/integrators/DebugIntegrator.h src/utilities/GeometryCalculations.h src/lights/SphereLight.cpp src/lights/SphereLight.h src/samplers/GridSampler.cpp src/samplers/GridSampler.h src/filters/AbstractFilter.cpp src/filters/AbstractFilter.h src/filters/BoxFilter.cpp src/filters/BoxFilter.h)
 add_executable(${PROJECT_NAME} src/Main.cpp )
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be

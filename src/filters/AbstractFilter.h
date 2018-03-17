@@ -6,6 +6,7 @@
 #define POLYTOPE_ABSTRACTFILTER_H
 
 #include "../structures/Sample.h"
+#include "../structures/Point2.h"
 
 namespace Polytope {
 
@@ -17,14 +18,17 @@ namespace Polytope {
    public:
 
       // constructors
-      AbstractFilter() = default;
+      explicit AbstractFilter(const Bounds &bounds) : Bounds(bounds) { }
 
       // methods
-      virtual void AddSample(const Sample &sample) = 0;
+      virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
+
+      virtual Sample Output(const Point2i &pixel) = 0;
 
       // destructors
       virtual ~AbstractFilter() { }
 
+      const Bounds Bounds;
    };
 
 }

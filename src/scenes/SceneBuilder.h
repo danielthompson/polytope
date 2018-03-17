@@ -12,9 +12,12 @@ namespace Polytope {
 
    class SceneBuilder {
    public:
-      AbstractScene *Default(float x, float y);
+      SceneBuilder(Polytope::Bounds bounds) : _bounds(bounds) { }
+      AbstractScene *Default();
 
    private:
+      Polytope::Bounds _bounds;
+
       ReflectanceSpectrum FirenzeGreen = ReflectanceSpectrum(70, 137, 102);
       ReflectanceSpectrum FirenzeBeige = ReflectanceSpectrum(255, 240, 165);
       ReflectanceSpectrum FirenzeYellow = ReflectanceSpectrum(255, 176, 59);

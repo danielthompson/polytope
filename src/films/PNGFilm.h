@@ -5,7 +5,6 @@
 #ifndef POLYTOPE_PNGFILM_H
 #define POLYTOPE_PNGFILM_H
 
-
 #include <string>
 #include <vector>
 #include "AbstractFilm.h"
@@ -16,9 +15,10 @@ namespace Polytope {
    public:
 
       // constructors
-      PNGFilm(unsigned int width, unsigned int height, const std::string &filename) :
-            AbstractFilm(width, height), Filename(std::move(filename)) {
-         Data = std::vector<unsigned char>(size_t(width * height * 4));
+      PNGFilm(const Polytope::Bounds bounds, const std::string &filename, std::unique_ptr<AbstractFilter> filter) :
+            AbstractFilm(bounds, std::move(filter)), Filename(std::move(filename))
+             {
+         //Data = std::vector<unsigned char>(size_t(bounds.x * bounds.y * 4));
       };
 
       // methods
@@ -26,8 +26,8 @@ namespace Polytope {
       void Output() override;
 
       // data
-      std::string Filename;
-      std::vector<unsigned char> Data;
+      const std::string Filename;
+      //std::vector<unsigned char> Data;
    };
 
 }

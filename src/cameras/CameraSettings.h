@@ -5,20 +5,20 @@
 #ifndef POLYTOPE_CAMERASETTINGS_H
 #define POLYTOPE_CAMERASETTINGS_H
 
+#include "../structures/Point2.h"
+
 namespace Polytope {
 
    class CameraSettings {
    public:
 
-      // methods
-      CameraSettings(int x, int y, float fov);
+      // constructors
+      CameraSettings(const Bounds bounds, const float fov) :
+            Bounds(bounds), FieldOfView(fov) { }
 
       // data
-      const int x;
-      const int y;
+      const Bounds Bounds;
       const float FieldOfView;
-
-
    };
 
 }
