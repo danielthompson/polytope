@@ -7,6 +7,8 @@
 
 namespace Polytope {
 
+   std::mutex BoxFilter::_mutex;
+
    void BoxFilter::AddSample(const Point2f &location, const Sample &sample) {
       const int x = static_cast<int>(location.x);
       const int y = static_cast<int>(location.y);
@@ -19,6 +21,7 @@ namespace Polytope {
          j--;
       }
 
+      std::lock_guard<std::mutex> lock(_mutex);
       _data[index].push_back(sample);
    }
 
@@ -27,6 +30,8 @@ namespace Polytope {
       const int y = static_cast<int>(location.y);
 
       const unsigned int index = y * Bounds.x + x;
+
+      std::lock_guard<std::mutex> lock(_mutex);
 
       for (unsigned int i = 0; i < samples.size(); i++) {
          _data[index].push_back(samples[i]);

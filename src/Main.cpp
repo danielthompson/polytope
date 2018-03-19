@@ -81,11 +81,26 @@ int main() {
 
    AbstractFilm *film = new PNGFilm(bounds, "test.png", std::make_unique<BoxFilter>(bounds));
 
+   const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
+
+   std::vector<std::thread> threads;
+
    AbstractRunner *runner = new PixelRunner(sampler, scene, integrator, film, bounds, numSamples);
 
    log("Rendering...");
    auto renderingStart = std::chrono::system_clock::now();
-   runner->Run();
+
+   //   runner->Run();
+
+   for (int i = 0; i < concurrentThreadsSupported; i++) {
+      std::thread thread(&AbstractRunner::Run, runner);
+      threads.push_back(thread);
+   }
+
+   for (int i = 0; i < concurrentThreadsSupported; i++) {
+      threads[i].join();
+   }
+
    auto renderingEnd = std::chrono::system_clock::now();
 
    std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
@@ -119,7 +134,7 @@ int main() {
 
 void compile(Polytope::AbstractScene *scene) {
 
-   unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
+   const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
    log("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
    log("Using 1 thread until multi-threading is implemented.");
    log("Compiling scene...");

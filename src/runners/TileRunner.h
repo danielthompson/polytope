@@ -5,6 +5,7 @@
 #ifndef POLYTOPE_TILERUNNER_H
 #define POLYTOPE_TILERUNNER_H
 
+#include <mutex>
 #include "AbstractRunner.h"
 
 namespace Polytope {
@@ -37,6 +38,8 @@ namespace Polytope {
 
       unsigned int _numXTiles;
       unsigned int _numYTiles;
+
+      static std::mutex _mutex;
 
    };
 

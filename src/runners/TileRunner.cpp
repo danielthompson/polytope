@@ -6,6 +6,8 @@
 
 namespace Polytope {
 
+   std::mutex TileRunner::_mutex;
+
    void TileRunner::Run() {
       Point2i tile(-1, -1);
 
@@ -33,8 +35,6 @@ namespace Polytope {
          tile.y = -1;
          getNextTile(tile);
       }
-
-
    }
 
    TileRunner::TileRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator,
@@ -84,15 +84,14 @@ namespace Polytope {
          tile.x = _xTilePointer;
          tile.y = _yTilePointer;
 
+         std::lock_guard<std::mutex> lock(_mutex);
+
          _xTilePointer++;
 
          if (_xTilePointer >= _numXTiles) {
             _xTilePointer = 0;
             _yTilePointer++;
          }
-      }
-      else {
-         int j = 0;
       }
    }
 }
