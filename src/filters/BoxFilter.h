@@ -7,7 +7,6 @@
 
 #include <vector>
 #include <mutex>
-#include "boost/multi_array.hpp"
 #include "AbstractFilter.h"
 #include "../structures/Point2.h"
 
@@ -28,7 +27,7 @@ namespace Polytope {
    private:
       std::vector<std::vector<Sample>> _data;
 
-      static std::mutex _mutex;
+      //static std::mutex _mutex;
    };
 
 }

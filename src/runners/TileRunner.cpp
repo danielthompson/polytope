@@ -2,6 +2,7 @@
 // Created by Daniel on 19-Mar-18.
 //
 
+#include <iostream>
 #include "TileRunner.h"
 
 namespace Polytope {
@@ -12,6 +13,10 @@ namespace Polytope {
       Point2i tile(-1, -1);
 
       getNextTile(tile);
+
+      //std::thread::id threadID = std::this_thread::get_id();
+      //std::cout << "Thread (start) " << threadID << " tile = [" << tile.x << ", " << tile.y << "]" << std::endl;
+
       while (tile.x != -1) {
 
          const unsigned int xMin = tile.x * _xTileWidth;
@@ -26,14 +31,21 @@ namespace Polytope {
          if (tile.y == _numYTiles - 1)
             yMax = tile.y * _yTileWidth + _yLastTileWidth;
 
+         //std::cout << "Thread " << threadID << " tracing..." << std::endl;
+
          for (int y = yMin; y < yMax; y++) {
             for (int x = xMin; x < xMax; x++) {
                Trace(x, y);
             }
          }
+
+         //std::cout << "Thread " << threadID << " trace complete." << std::endl;
+
          tile.x = -1;
          tile.y = -1;
          getNextTile(tile);
+
+         //std::cout << "Thread " << threadID << " tile = [" << tile.x << ", " << tile.y << "]" << std::endl;
       }
    }
 
@@ -80,11 +92,19 @@ namespace Polytope {
    }
 
    void TileRunner::getNextTile(Point2i &tile) {
+
+      //std::thread::id threadID = std::this_thread::get_id();
+
+      //std::cout << "Thread " << threadID << " entering critical section..." << std::endl;
+
+      std::lock_guard<std::mutex> lock(_mutex);
+
+      //std::cout << "Thread " << threadID << " entered critical section, " ;
+
       if (_xTilePointer < _numXTiles && _yTilePointer < _numYTiles) {
+         //std::cout << " passed if check." << std::endl;
          tile.x = _xTilePointer;
          tile.y = _yTilePointer;
-
-         std::lock_guard<std::mutex> lock(_mutex);
 
          _xTilePointer++;
 
@@ -93,5 +113,8 @@ namespace Polytope {
             _yTilePointer++;
          }
       }
+      else {
+         //std::cout << " failed if check." << std::endl;
+      };
    }
 }

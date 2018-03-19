@@ -22,14 +22,7 @@ namespace Polytope {
       for (int x = 0; x < width; x++) {
          for (int y = 0; y < height; y++) {
 
-            if (x == 313 && y == 197) {
-               x++;
-               x--;
-            }
-
             const int index = 4 * (y * width + x);
-
-
             const SpectralPowerDistribution spd = Filter->Output(Point2i(x, y));
 
             const unsigned char r = static_cast<unsigned char>(spd.r);

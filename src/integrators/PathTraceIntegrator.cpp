@@ -9,6 +9,11 @@ namespace Polytope {
 
    Sample PathTraceIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
 
+      if (x == 175 && y == 239) {
+         x++;
+         x--;
+      }
+
       Intersection intersection = Scene->GetNearestShape(ray, x, y);
 
       if (!intersection.Hits) {

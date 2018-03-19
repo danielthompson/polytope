@@ -27,7 +27,6 @@ namespace Polytope {
 
       // data
       const std::string Filename;
-      //std::vector<unsigned char> Data;
    };
 
 }

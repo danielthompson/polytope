@@ -6,7 +6,6 @@
 #include <memory>
 #include <iomanip>
 #include <thread>
-#include <sstream>
 #include "runners/PixelRunner.h"
 #include "samplers/CenterSampler.h"
 #include "scenes/AbstractScene.h"
@@ -55,6 +54,12 @@ void log(std::string text) {
 
 void compile(Polytope::AbstractScene *scene);
 
+Polytope::AbstractRunner *runner;
+
+void startThread() {
+   runner->Run();
+}
+
 int main() {
 
    log("Polytope started.");
@@ -63,9 +68,9 @@ int main() {
 
    using namespace Polytope;
 
-   constexpr unsigned int numSamples = 5;
+   constexpr unsigned int numSamples = 4;
    constexpr unsigned int width = 640;
-   constexpr unsigned int height = 480;
+   constexpr unsigned int height = 640;
 
    const Polytope::Bounds bounds(width, height);
 
@@ -81,11 +86,11 @@ int main() {
 
    AbstractFilm *film = new PNGFilm(bounds, "test.png", std::make_unique<BoxFilter>(bounds));
 
-   const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
+   const unsigned int concurrentThreadsSupported = 3; //std::thread::hardware_concurrency();
 
    std::vector<std::thread> threads;
 
-   AbstractRunner *runner = new PixelRunner(sampler, scene, integrator, film, bounds, numSamples);
+   runner = new TileRunner(sampler, scene, integrator, film, bounds, numSamples);
 
    log("Rendering...");
    auto renderingStart = std::chrono::system_clock::now();
@@ -93,8 +98,7 @@ int main() {
    //   runner->Run();
 
    for (int i = 0; i < concurrentThreadsSupported; i++) {
-      std::thread thread(&AbstractRunner::Run, runner);
-      threads.push_back(thread);
+      threads.emplace_back(startThread);
    }
 
    for (int i = 0; i < concurrentThreadsSupported; i++) {
@@ -136,7 +140,6 @@ void compile(Polytope::AbstractScene *scene) {
 
    const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
    log("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
-   log("Using 1 thread until multi-threading is implemented.");
    log("Compiling scene...");
 
    auto start = std::chrono::system_clock::now();
