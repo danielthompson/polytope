@@ -21,14 +21,21 @@ namespace Polytope {
 
       for (int x = 0; x < width; x++) {
          for (int y = 0; y < height; y++) {
-            int index = 4 * (y * width + x);
 
-            Sample sample = Filter->Output(Point2i(x, y));
+            if (x == 313 && y == 197) {
+               x++;
+               x--;
+            }
 
-            unsigned char r = static_cast<unsigned char>(sample.SpectralPowerDistribution.r);
-            unsigned char g = static_cast<unsigned char>(sample.SpectralPowerDistribution.g);
-            unsigned char b = static_cast<unsigned char>(sample.SpectralPowerDistribution.b);
-            unsigned char a = static_cast<unsigned char>(255);
+            const int index = 4 * (y * width + x);
+
+
+            const SpectralPowerDistribution spd = Filter->Output(Point2i(x, y));
+
+            const unsigned char r = static_cast<unsigned char>(spd.r);
+            const unsigned char g = static_cast<unsigned char>(spd.g);
+            const unsigned char b = static_cast<unsigned char>(spd.b);
+            const unsigned char a = static_cast<unsigned char>(255);
 
             //std::cout << "writing index [" << index << "] for x [" << x << "], y [" << y << "]...";
 
@@ -39,7 +46,7 @@ namespace Polytope {
          }
       }
 
-      unsigned error = lodepng::encode(Filename.c_str(), Data, Bounds.x, Bounds.y);
+      unsigned error = lodepng::encode(Filename, Data, Bounds.x, Bounds.y);
 
       //if there's an error, display it
       if (error) {

@@ -17,7 +17,7 @@ namespace Polytope {
 
    typedef Point2<int> Point2i;
    typedef Point2<float> Point2f;
-   typedef Point2<unsigned int> Bounds;
+   typedef Point2<const unsigned int> Bounds;
 
 }
 

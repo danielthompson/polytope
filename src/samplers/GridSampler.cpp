@@ -62,6 +62,7 @@ namespace Polytope {
 
             points[3].x = 0.75f;
             points[3].y = 0.75f;
+            break;
          }
          default: {
             for (int i = 0; i < number; i++) {
@@ -69,6 +70,11 @@ namespace Polytope {
                points[i].y = 0.5f;
             }
          }
+      }
+
+      for (int i = 0; i < number; i++) {
+         points[i].x += x;
+         points[i].y += y;
       }
    }
 }

@@ -19,8 +19,8 @@ namespace Polytope {
    }
 
    Ray PerspectiveCamera::GetRay(const Point2f pixel) {
-      float pixelNDCx = (pixel.x + 0.5f) * OneOverWidth;
-      float pixelNDCy = (pixel.y + 0.5f) * OneOverHeight;
+      float pixelNDCx = (pixel.x/* + 0.5f*/) * OneOverWidth;
+      float pixelNDCy = (pixel.y/* + 0.5f*/) * OneOverHeight;
 
       float pixelCameraX = (2 * pixelNDCx - 1) * AspectRatio * TanFOVOver2;
       float pixelCameraY = (1 - 2 * pixelNDCy) * TanFOVOver2;

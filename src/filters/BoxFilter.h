@@ -16,19 +16,16 @@ namespace Polytope {
    class BoxFilter : public AbstractFilter {
    public:
       explicit BoxFilter(const Polytope::Bounds &bounds)
-            : AbstractFilter(bounds), _data(array_type(boost::extents[bounds.x][bounds.y][1])) { }
+            : AbstractFilter(bounds), _data(bounds.x * bounds.y, std::vector<Sample>(0)){ }
 
-      Sample Output(const Point2i &pixel) override;
+      SpectralPowerDistribution Output(const Point2i &pixel) override;
 
       void AddSample(const Point2f &location, const Sample &sample) override;
 
+      void AddSamples(const Point2f &location, const std::vector<Sample> &samples) override;
+
    private:
-      typedef boost::multi_array<Sample, 3> array_type;
-      typedef array_type::index index;
-
-      array_type _data;
-
-
+      std::vector<std::vector<Sample>> _data;
    };
 
 }

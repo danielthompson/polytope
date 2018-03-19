@@ -17,6 +17,7 @@
 #include "films/PNGFilm.h"
 #include "integrators/DebugIntegrator.h"
 #include "filters/BoxFilter.h"
+#include "samplers/GridSampler.h"
 
 
 std::string time_in_HH_MM_SS_MMM()
@@ -61,11 +62,13 @@ int main() {
 
    using namespace Polytope;
 
-   const Polytope::Bounds bounds(1920, 1080);
+   constexpr unsigned int numSamples = 4;
+   constexpr unsigned int width = 640;
+   constexpr unsigned int height = 480;
 
-   const unsigned int numSamples = 1;
+   const Polytope::Bounds bounds(width, height);
 
-   AbstractSampler *sampler = new CenterSampler();
+   AbstractSampler *sampler = new GridSampler();
 
    SceneBuilder sceneBuilder = SceneBuilder(bounds);
 

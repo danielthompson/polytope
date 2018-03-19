@@ -5,6 +5,7 @@
 #ifndef POLYTOPE_ABSTRACTFILTER_H
 #define POLYTOPE_ABSTRACTFILTER_H
 
+#include <vector>
 #include "../structures/Sample.h"
 #include "../structures/Point2.h"
 
@@ -22,8 +23,9 @@ namespace Polytope {
 
       // methods
       virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
+      virtual void AddSamples(const Point2f &location, const std::vector<Sample> &samples) = 0;
 
-      virtual Sample Output(const Point2i &pixel) = 0;
+      virtual SpectralPowerDistribution Output(const Point2i &pixel) = 0;
 
       // destructors
       virtual ~AbstractFilter() { }
