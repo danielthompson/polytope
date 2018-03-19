@@ -18,6 +18,7 @@
 #include "integrators/DebugIntegrator.h"
 #include "filters/BoxFilter.h"
 #include "samplers/GridSampler.h"
+#include "runners/TileRunner.h"
 
 
 std::string time_in_HH_MM_SS_MMM()
@@ -62,7 +63,7 @@ int main() {
 
    using namespace Polytope;
 
-   constexpr unsigned int numSamples = 4;
+   constexpr unsigned int numSamples = 5;
    constexpr unsigned int width = 640;
    constexpr unsigned int height = 480;
 

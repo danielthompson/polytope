@@ -64,6 +64,23 @@ namespace Polytope {
             points[3].y = 0.75f;
             break;
          }
+         case 5: {
+            points[0].x = 0.1f;
+            points[0].y = 0.1f;
+
+            points[1].x = 0.3f;
+            points[1].y = 0.5f;
+
+            points[2].x = 0.5f;
+            points[2].y = 0.9f;
+
+            points[3].x = 0.7f;
+            points[3].y = 0.3f;
+
+            points[4].x = 0.9f;
+            points[5].y = 0.7f;
+            break;
+         }
          default: {
             for (int i = 0; i < number; i++) {
                points[i].x = 0.5f;
