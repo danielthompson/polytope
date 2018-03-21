@@ -7,6 +7,7 @@
 
 #include <mutex>
 #include "AbstractRunner.h"
+#include "../utilities/Logger.h"
 
 namespace Polytope {
 
@@ -40,6 +41,7 @@ namespace Polytope {
       unsigned int _numYTiles;
 
       static std::mutex _mutex;
+      Logger logger = Logger();
 
    };
 

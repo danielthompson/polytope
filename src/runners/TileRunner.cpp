@@ -97,7 +97,15 @@ namespace Polytope {
 
       //std::cout << "Thread " << threadID << " entering critical section..." << std::endl;
 
+      //logger.logThread("Waiting for lock...");
+
+      auto outputStart = std::chrono::system_clock::now();
+
       std::lock_guard<std::mutex> lock(_mutex);
+
+      auto outputEnd = std::chrono::system_clock::now();
+      std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
+      logger.logThread("Entered lock in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
 
       //std::cout << "Thread " << threadID << " entered critical section, " ;
 
@@ -116,5 +124,6 @@ namespace Polytope {
       else {
          //std::cout << " failed if check." << std::endl;
       };
+      //logger.logThread("Left lock.");
    }
 }
