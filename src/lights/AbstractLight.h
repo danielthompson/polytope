@@ -14,14 +14,14 @@ namespace Polytope {
    public:
 
       // constructors
-      explicit AbstractLight(const SpectralPowerDistribution &spectralPowerDistribution) :
+      explicit AbstractLight(const Polytope::SpectralPowerDistribution &spectralPowerDistribution) :
             SpectralPowerDistribution(spectralPowerDistribution) {  };
 
       // methods
       virtual Point GetRandomPointOnSurface() const = 0;
 
       // data
-      SpectralPowerDistribution SpectralPowerDistribution;
+      Polytope::SpectralPowerDistribution SpectralPowerDistribution;
    };
 
 }

@@ -26,7 +26,7 @@ namespace Polytope {
 
       AbstractShape *Shape;
       Point Location;
-      Normal Normal;
+      Polytope::Normal Normal;
       bool Hits = false;
    };
 
