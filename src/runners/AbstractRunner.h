@@ -25,7 +25,7 @@ namespace Polytope {
             std::unique_ptr<AbstractIntegrator> integrator,
             std::unique_ptr<AbstractFilm> film,
             const unsigned int numSamples,
-            const Bounds bounds)
+            const Polytope::Bounds bounds)
             : Sampler(std::move(sampler)),
               Scene(scene),
               Integrator(std::move(integrator)),
@@ -59,7 +59,7 @@ namespace Polytope {
       AbstractScene *Scene;
       std::unique_ptr<AbstractIntegrator> Integrator;
       std::unique_ptr<AbstractFilm> Film;
-      const Bounds Bounds;
+      const Polytope::Bounds Bounds;
    };
 
 }
