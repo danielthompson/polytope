@@ -14,14 +14,14 @@ namespace Polytope {
    class Tracer {
    public:
 
-      Tracer(Logger logger) : Logger(logger) { }
+      Tracer(Polytope::Logger logger) : Logger(logger) { }
 
       // methods
       void Run();
       void Compile(AbstractScene *scene);
 
       // data
-      Logger Logger;
+      Polytope::Logger Logger;
 
    private:
       void startThread();
