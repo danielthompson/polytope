@@ -44,7 +44,7 @@ namespace Polytope {
       if (depth >= MaxDepth) {
          return Sample(SpectralPowerDistribution());
       } else {
-         std::shared_ptr<AbstractShape> closestShape = intersection.Shape;
+         AbstractShape *closestShape = intersection.Shape;
 
          Normal intersectionNormal = intersection.Normal;
          Vector incomingDirection = ray.Direction;

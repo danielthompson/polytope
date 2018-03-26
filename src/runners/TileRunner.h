@@ -13,8 +13,13 @@ namespace Polytope {
 
    class TileRunner : public AbstractRunner {
    public:
-      explicit TileRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator,
-                          AbstractFilm *film, const Polytope::Bounds bounds, unsigned int numSamples);
+      explicit TileRunner(
+            std::unique_ptr<AbstractSampler> sampler,
+            AbstractScene *scene,
+            std::unique_ptr<AbstractIntegrator> integrator,
+            std::unique_ptr<AbstractFilm> film,
+            const Polytope::Bounds bounds,
+            unsigned int numSamples);
 
       void Run() override;
 

@@ -17,9 +17,18 @@ namespace Polytope {
    protected:
 
       // constructors
-      AbstractShape(const Transform &objectToWorld, std::shared_ptr<Material> material);
-      AbstractShape(const Transform &objectToWorld, const Transform &worldToObject, std::shared_ptr<Material> material);
-      AbstractShape(const Transform &objectToWorld, const Transform &worldToObject, std::shared_ptr<Material> material, std::shared_ptr<AbstractLight> light);
+      AbstractShape(
+            const Transform &objectToWorld,
+            std::shared_ptr<Material> material);
+      AbstractShape(
+            const Transform &objectToWorld,
+            const Transform &worldToObject,
+            std::shared_ptr<Material> material);
+      AbstractShape(
+            const Transform &objectToWorld,
+            const Transform &worldToObject,
+            std::shared_ptr<Material> material,
+            AbstractLight *light);
 
    public:
 
@@ -37,7 +46,7 @@ namespace Polytope {
       std::shared_ptr<Polytope::Material> Material;
 
       // TODO change to weak to break cycles?
-      std::shared_ptr<AbstractLight> Light;
+      AbstractLight *Light;
    };
 
 }

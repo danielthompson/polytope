@@ -49,9 +49,20 @@ namespace Polytope {
       }
    }
 
-   TileRunner::TileRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator,
-                          AbstractFilm *film, const Polytope::Bounds bounds, unsigned int numSamples)
-         : AbstractRunner(sampler, scene, integrator, film, numSamples, bounds) {
+   TileRunner::TileRunner(
+         std::unique_ptr<AbstractSampler> sampler,
+         AbstractScene *scene,
+         std::unique_ptr<AbstractIntegrator> integrator,
+         std::unique_ptr<AbstractFilm> film,
+         const Polytope::Bounds bounds,
+         unsigned int numSamples)
+         : AbstractRunner(
+            std::move(sampler),
+            scene,
+            std::move(integrator),
+            std::move(film),
+            numSamples,
+            bounds) {
 
       _xLastTileWidth = getXLastTileWidth();
       _yLastTileWidth = getYLastTileWidth();
@@ -105,7 +116,7 @@ namespace Polytope {
 
       auto outputEnd = std::chrono::system_clock::now();
       std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
-      logger.logThread("Entered lock in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
+      //logger.logThread("Entered lock in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
 
       //std::cout << "Thread " << threadID << " entered critical section, " ;
 

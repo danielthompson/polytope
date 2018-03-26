@@ -16,9 +16,22 @@ namespace Polytope {
 
       // constructors
 
-      PixelRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator, AbstractFilm *film,
-                        const Polytope::Bounds bounds, const unsigned int numSamples)
-            : AbstractRunner(sampler, scene, integrator, film, numSamples, bounds) { }
+      PixelRunner(
+            std::unique_ptr<AbstractSampler> sampler,
+            AbstractScene *scene,
+            std::unique_ptr<AbstractIntegrator> integrator,
+            std::unique_ptr<AbstractFilm> film,
+            const Polytope::Bounds bounds,
+            const unsigned int numSamples)
+            : AbstractRunner(
+               std::move(sampler),
+               scene,
+               std::move(integrator),
+               std::move(film),
+               numSamples,
+               bounds
+            ) { }
+
 
       // methods
 

@@ -3,6 +3,7 @@
 //
 
 #include <thread>
+#include <iostream>
 #include "Tracer.h"
 #include "samplers/AbstractSampler.h"
 #include "samplers/GridSampler.h"
@@ -21,12 +22,10 @@ namespace Polytope {
       auto totalRunTimeStart = std::chrono::system_clock::now();
 
       constexpr unsigned int numSamples = 128;
-      constexpr unsigned int width = 128;
-      constexpr unsigned int height = 128;
+      constexpr unsigned int width = 640;
+      constexpr unsigned int height = 640;
 
       const Polytope::Bounds bounds(width, height);
-
-      AbstractSampler *sampler = new GridSampler();
 
       SceneBuilder sceneBuilder = SceneBuilder(bounds);
 
@@ -34,59 +33,58 @@ namespace Polytope {
 
       Compile(scene);
 
-      AbstractIntegrator *integrator = new PathTraceIntegrator(scene, 3);
-
-      AbstractFilm *film = new PNGFilm(bounds, "test.png", std::make_unique<BoxFilter>(bounds));
-
       const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
       Logger.log("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
 
-      unsigned int usingThreads = concurrentThreadsSupported;
+      unsigned int usingThreads = 1;//concurrentThreadsSupported;
       Logger.log("Using " + std::to_string(usingThreads) + " threads.");
 
-      std::vector<std::thread> threads;
+      {
+         std::unique_ptr<AbstractSampler> sampler = std::make_unique<GridSampler>();
+         std::unique_ptr<AbstractIntegrator> integrator = std::make_unique<PathTraceIntegrator>(scene, 3);
+         std::unique_ptr<AbstractFilm> film = std::make_unique<PNGFilm>(bounds, "test.png", std::make_unique<BoxFilter>(bounds));
+         const std::unique_ptr<AbstractRunner> runner = std::make_unique<TileRunner>(std::move(sampler), scene, std::move(integrator), std::move(film), bounds, numSamples);
 
-      AbstractRunner *runner = new TileRunner(sampler, scene, integrator, film, bounds, numSamples);
+         Logger.log(std::string("Image is [") + std::to_string(width) + std::string("] x [") + std::to_string(height) +
+                    std::string("], ") + std::to_string(numSamples) + " spp.");
 
-      Logger.log(std::string("Image is [") + std::to_string(width) + std::string("] x [") + std::to_string(height) + std::string("], ") + std::to_string(numSamples) + " spp.");
+         Logger.log("Rendering...");
 
-      Logger.log("Rendering...");
+         auto renderingStart = std::chrono::system_clock::now();
 
-      auto renderingStart = std::chrono::system_clock::now();
+         //   runner->Run();
 
-      //   runner->Run();
+         std::map<std::thread::id, int> threadMap;
+         std::vector<std::thread> threads;
+         for (int i = 0; i < usingThreads; i++) {
 
-      std::map<std::thread::id, int> threadMap;
+            threads.emplace_back(runner->Spawn());
+            const std::thread::id threadID = threads[i].get_id();
+            threadMap[threadID] = i;
+            Logger.log(std::string("Started thread " + std::to_string(i) + std::string(".")));
+         }
 
-      for (int i = 0; i < usingThreads; i++) {
+         for (int i = 0; i < usingThreads; i++) {
+            threads[i].join();
+            Logger.log(std::string("Joined thread " + std::to_string(i) + std::string(".")));
+         }
 
-         threads.emplace_back(startThread);
-         const std::thread::id threadID = threads[i].get_id();
-         threadMap[threadID] = i;
+         auto renderingEnd = std::chrono::system_clock::now();
+
+         std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
+         Logger.log("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
+
+         Logger.log("Outputting to film...");
+         auto outputStart = std::chrono::system_clock::now();
+         film->Output();
+         auto outputEnd = std::chrono::system_clock::now();
+
+         std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
+         Logger.log("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
+
       }
 
-      for (int i = 0; i < usingThreads; i++) {
-         threads[i].join();
-      }
-
-      auto renderingEnd = std::chrono::system_clock::now();
-
-      std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
-      Logger.log("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
-
-      Logger.log("Outputting to film...");
-      auto outputStart = std::chrono::system_clock::now();
-      film->Output();
-      auto outputEnd = std::chrono::system_clock::now();
-
-      std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
-      Logger.log("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
-
-      delete runner;
-      delete film;
-      delete integrator;
       delete scene;
-      delete sampler;
 
       auto totalRunTimeEnd = std::chrono::system_clock::now();
 

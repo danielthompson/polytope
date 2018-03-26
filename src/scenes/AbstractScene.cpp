@@ -8,7 +8,7 @@
 
 namespace Polytope {
 
-   Intersection AbstractScene::GetNearestShapeIteratively(std::vector<std::shared_ptr<AbstractShape>> &shapes, Ray &ray) const {
+   Intersection AbstractScene::GetNearestShapeIteratively(std::vector<AbstractShape*> &shapes, Ray &ray) const {
       int nearestShapeIndex = -1;
 
       float closestT = ray.MinT;
@@ -17,7 +17,7 @@ namespace Polytope {
 
       for (int i = 0; i < shapes.size(); i++) {
 
-         std::shared_ptr<AbstractShape> shape = shapes[i];
+         AbstractShape *shape = shapes[i];
 
          bool hits = shape->Hits(ray);
 
@@ -31,7 +31,7 @@ namespace Polytope {
       Intersection intersection;
 
       if (nearestShapeIndex >= 0) {
-         std::shared_ptr<AbstractShape> nearestShape = shapes[nearestShapeIndex];
+         AbstractShape *nearestShape = shapes[nearestShapeIndex];
 
          nearestShape->Intersect(ray, &intersection);
 

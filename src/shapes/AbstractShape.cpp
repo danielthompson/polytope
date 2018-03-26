@@ -17,7 +17,13 @@ namespace Polytope {
                                 std::shared_ptr<Polytope::Material> material)
    : ObjectToWorld(objectToWorld), WorldToObject(worldToObject), Material(std::move(material)) {   }
 
-   AbstractShape::AbstractShape(const Transform &objectToWorld, const Transform &worldToObject,
-                                std::shared_ptr<Polytope::Material> material, std::shared_ptr<AbstractLight> light)
-   : ObjectToWorld(objectToWorld), WorldToObject(worldToObject), Material(std::move(material)), Light(std::move(light)) { };
+   AbstractShape::AbstractShape(
+         const Transform &objectToWorld,
+         const Transform &worldToObject,
+         std::shared_ptr<Polytope::Material> material,
+         AbstractLight *light)
+   : ObjectToWorld(objectToWorld),
+     WorldToObject(worldToObject),
+     Material(std::move(material)),
+     Light(light) { };
 }

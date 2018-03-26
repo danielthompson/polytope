@@ -6,6 +6,7 @@
 #define POLYTOPE_ABSTRACTRUNNER_H
 
 #include <memory>
+#include <thread>
 #include "../samplers/AbstractSampler.h"
 #include "../scenes/AbstractScene.h"
 #include "../integrators/AbstractIntegrator.h"
@@ -18,20 +19,35 @@ namespace Polytope {
 
       // constructors
 
-      explicit AbstractRunner(AbstractSampler *sampler, AbstractScene *scene, AbstractIntegrator *integrator,
-                              AbstractFilm *film, const unsigned int numSamples, const Bounds bounds)
-            : Sampler(sampler), Scene(scene), Integrator(integrator), Film(film), NumSamples(numSamples),
-               Bounds(bounds) { }
+      explicit AbstractRunner(
+            std::unique_ptr<AbstractSampler> sampler,
+            AbstractScene *scene,
+            std::unique_ptr<AbstractIntegrator> integrator,
+            std::unique_ptr<AbstractFilm> film,
+            const unsigned int numSamples,
+            const Bounds bounds)
+            : Sampler(std::move(sampler)),
+              Scene(scene),
+              Integrator(std::move(integrator)),
+              Film(std::move(film)),
+              NumSamples(numSamples),
+              Bounds(bounds) { }
 
       // methods
       virtual void Run() = 0;
+
+      void Output();
+
+      std::thread Spawn() {
+         return std::thread(&AbstractRunner::Run, this);
+      }
 
       // destructors
       virtual ~AbstractRunner() { }
 
       // data
       const unsigned int NumSamples;
-      AbstractSampler *Sampler;
+      std::unique_ptr<AbstractSampler> Sampler;
 
    protected:
 
@@ -41,8 +57,8 @@ namespace Polytope {
 
       // data
       AbstractScene *Scene;
-      AbstractIntegrator *Integrator;
-      AbstractFilm *Film;
+      std::unique_ptr<AbstractIntegrator> Integrator;
+      std::unique_ptr<AbstractFilm> Film;
       const Bounds Bounds;
    };
 

@@ -37,7 +37,7 @@ namespace Polytope {
             Transform::Translate(100, 0, -200)
             * Transform::Scale(50);
 
-      scene->Shapes.push_back(std::make_shared<Sphere>(objectToWorld, material));
+      scene->Shapes.push_back(new Sphere(objectToWorld, material));
 
       // yellow ball
 
@@ -46,7 +46,7 @@ namespace Polytope {
             Transform::Translate(-100, 0, -200)
             * Transform::Scale(50);
 
-      scene->Shapes.push_back(std::make_shared<Sphere>(objectToWorld, material));
+      scene->Shapes.push_back(new Sphere(objectToWorld, material));
 
       // white light
 
@@ -70,9 +70,9 @@ namespace Polytope {
          Transform::Translate(0, 0, -300)
          * Transform::Scale(25);
 
-      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(objectToWorld, material);
+      Sphere *sphere = new Sphere(objectToWorld, material);
 
-      std::shared_ptr<SphereLight> sphereLight = std::make_shared<SphereLight>(lightSPD, sphere);
+      AbstractLight *sphereLight = new SphereLight(lightSPD, sphere);
 
       sphere->Light = sphereLight;
 

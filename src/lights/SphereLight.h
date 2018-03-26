@@ -13,12 +13,12 @@ namespace Polytope {
    class SphereLight : public AbstractLight {
    public:
       SphereLight(const Polytope::SpectralPowerDistribution &spectralPowerDistribution,
-                  const std::shared_ptr<Polytope::Sphere> sphere)
+                  const Polytope::Sphere *sphere)
          : AbstractLight(spectralPowerDistribution), Sphere(sphere) {  };
 
       Point GetRandomPointOnSurface() const override;
 
-      std::shared_ptr<Polytope::Sphere> Sphere;
+      const Polytope::Sphere *Sphere;
 
    };
 
