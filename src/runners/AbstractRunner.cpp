@@ -29,7 +29,7 @@ namespace Polytope {
          Sample sample = Integrator->GetSample(ray, 0, x, y);
          Film->AddSample(sampleLocation, sample);
       }
-   }sudo asdfasdf
+   }
 
    void AbstractRunner::Output() {
       Film->Output();
