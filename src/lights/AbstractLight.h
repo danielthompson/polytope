@@ -24,7 +24,7 @@ namespace Polytope {
       Polytope::SpectralPowerDistribution SpectralPowerDistribution;
    };
 
-}
+}me
 
 
 #endif //POLYTOPE_ABSTRACTLIGHT_H
