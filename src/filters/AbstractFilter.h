@@ -19,7 +19,7 @@ namespace Polytope {
    public:
 
       // constructors
-      explicit AbstractFilter(const Bounds &bounds) : Bounds(bounds) { }
+      explicit AbstractFilter(const Polytope::Bounds &bounds) : Bounds(bounds) { }
 
       // methods
       virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
@@ -30,7 +30,7 @@ namespace Polytope {
       // destructors
       virtual ~AbstractFilter() { }
 
-      const Bounds Bounds;
+      const Polytope::Bounds Bounds;
    };
 
 }

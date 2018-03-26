@@ -15,11 +15,11 @@ namespace Polytope {
       // constructors
       Sample() : SpectralPowerDistribution() { }
 
-      explicit Sample(const SpectralPowerDistribution &spectralPowerDistribution)
+      explicit Sample(const Polytope::SpectralPowerDistribution &spectralPowerDistribution)
             : SpectralPowerDistribution(spectralPowerDistribution) { }
 
       // data
-      SpectralPowerDistribution SpectralPowerDistribution;
+      Polytope::SpectralPowerDistribution SpectralPowerDistribution;
    };
 
 }
