@@ -22,8 +22,8 @@ namespace Polytope {
       auto totalRunTimeStart = std::chrono::system_clock::now();
 
       constexpr unsigned int numSamples = 4;
-      constexpr unsigned int width = 640;
-      constexpr unsigned int height = 640;
+      constexpr unsigned int width = 128;
+      constexpr unsigned int height = 128;
 
       const Polytope::Bounds bounds(width, height);
 
