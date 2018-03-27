@@ -7,11 +7,9 @@ option(tests "Build all tests." OFF) # Makes boolean 'tests' available.
 set(PROJECT_NAME polytope)
 project(${PROJECT_NAME})
 
-set(CMAKE_CXX_FLAGS "-g -Wno-error=unused-function")
-
 set(CMAKE_CXX_STANDARD 14)
 
-SET(CMAKE_CXX_FLAGS "-O0")
+SET(CMAKE_CXX_FLAGS "-O0 -g -Wno-error=unused-function")
 
 # If you want your own include/ directory, set this, and then you can do
 # include_directories(${COMMON_INCLUDES}) in other CMakeLists.txt files.

@@ -46,7 +46,7 @@ namespace Polytope {
       std::shared_ptr<Polytope::Material> Material;
 
       // TODO change to weak to break cycles?
-      AbstractLight *Light;
+      AbstractLight *Light = nullptr;
    };
 
 }
