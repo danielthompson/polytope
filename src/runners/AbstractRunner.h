@@ -48,6 +48,7 @@ namespace Polytope {
       // data
       const unsigned int NumSamples;
       std::unique_ptr<AbstractSampler> Sampler;
+      std::unique_ptr<AbstractFilm> Film;
 
    protected:
 
@@ -58,7 +59,7 @@ namespace Polytope {
       // data
       AbstractScene *Scene;
       std::unique_ptr<AbstractIntegrator> Integrator;
-      std::unique_ptr<AbstractFilm> Film;
+
       const Polytope::Bounds Bounds;
    };
 

@@ -76,7 +76,7 @@ namespace Polytope {
 
          Logger.log("Outputting to film...");
          auto outputStart = std::chrono::system_clock::now();
-         film->Output();
+         runner->Film->Output();
          auto outputEnd = std::chrono::system_clock::now();
 
          std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
