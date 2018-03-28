@@ -14,7 +14,7 @@ namespace Polytope {
    class Tracer {
    public:
 
-      Tracer(Polytope::Logger logger) : Logger(logger) { }
+      explicit Tracer(Polytope::Logger logger) : Logger(logger) { }
 
       // methods
       void Run();
@@ -23,9 +23,6 @@ namespace Polytope {
       // data
       Polytope::Logger Logger;
 
-   private:
-      void startThread();
-      AbstractRunner *runner;
    };
 
 }

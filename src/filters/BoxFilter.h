@@ -16,7 +16,14 @@ namespace Polytope {
    class BoxFilter : public AbstractFilter {
    public:
       explicit BoxFilter(const Polytope::Bounds &bounds)
-            : AbstractFilter(bounds), _data(bounds.x * bounds.y, std::vector<Sample>(0)){ }
+            : AbstractFilter(bounds), _data(bounds.x * bounds.y, std::vector<Sample>()){
+         for (int x = 0; x < bounds.x; x++) {
+            for (int y = 0; y < bounds.y; y++) {
+               const unsigned int index = y * Bounds.x + x;
+               _data[index].reserve(64);
+            }
+         }
+      }
 
       SpectralPowerDistribution Output(const Point2i &pixel) override;
 

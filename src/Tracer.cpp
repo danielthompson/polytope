@@ -21,9 +21,9 @@ namespace Polytope {
 
       auto totalRunTimeStart = std::chrono::system_clock::now();
 
-      constexpr unsigned int numSamples = 4;
-      constexpr unsigned int width = 128;
-      constexpr unsigned int height = 128;
+      constexpr unsigned int numSamples = 64;
+      constexpr unsigned int width = 640;
+      constexpr unsigned int height = 640;
 
       const Polytope::Bounds bounds(width, height);
 
@@ -36,7 +36,7 @@ namespace Polytope {
       const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
       Logger.log("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
 
-      unsigned int usingThreads = 1;//concurrentThreadsSupported;
+      unsigned int usingThreads = 16;//concurrentThreadsSupported;
       Logger.log("Using " + std::to_string(usingThreads) + " threads.");
 
       {
@@ -111,9 +111,4 @@ namespace Polytope {
       Logger.log("Scene is implemented with " + scene->ImplementationType + ".");
 
    }
-
-   void Tracer::startThread() {
-      runner->Run();
-   }
-
 }

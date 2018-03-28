@@ -112,7 +112,7 @@ namespace Polytope {
 
       auto outputStart = std::chrono::system_clock::now();
 
-      std::lock_guard<std::mutex> lock(_mutex);
+      //std::lock_guard<std::mutex> lock(_mutex);
 
       auto outputEnd = std::chrono::system_clock::now();
       std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
