@@ -25,10 +25,7 @@ namespace Polytope {
    bool Sphere::Hits(Ray &worldSpaceRay) const {
       Ray objectSpaceRay = worldSpaceRay;
 
-      //if (WorldToObject != 0) {
       objectSpaceRay = WorldToObject.Apply(worldSpaceRay);
-      //}
-
 
       // TODO this can be simplified
 
@@ -79,7 +76,7 @@ namespace Polytope {
          return false;
 
       // convert T back to world space
-      if (/*ObjectToWorld != null && */ObjectToWorld.HasScale()) {
+      if (ObjectToWorld.HasScale()) {
          Point objectSpaceIntersectionPoint = objectSpaceRay.GetPointAtT(hits);
          Point worldSpaceIntersectionPoint = ObjectToWorld.Apply(objectSpaceIntersectionPoint);
          hits = worldSpaceRay.GetTAtPoint(worldSpaceIntersectionPoint);
