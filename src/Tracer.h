@@ -8,13 +8,15 @@
 #include "utilities/Logger.h"
 #include "scenes/AbstractScene.h"
 #include "runners/AbstractRunner.h"
+#include "utilities/Options.h"
 
 namespace Polytope {
 
    class Tracer {
    public:
 
-      explicit Tracer(Polytope::Logger logger) : Logger(logger) { }
+      Tracer(Polytope::Logger logger, Polytope::Options options)
+            : Logger(logger), Options(options) { }
 
       // methods
       void Run();
@@ -22,6 +24,7 @@ namespace Polytope {
 
       // data
       Polytope::Logger Logger;
+      Polytope::Options Options;
 
    };
 

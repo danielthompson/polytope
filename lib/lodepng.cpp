@@ -5212,7 +5212,7 @@ static void filterScanline(unsigned char* out, const unsigned char* scanline, co
    }
 }
 
-/* log2 approximation. A slight bit faster than std::log. */
+/* log2 approximation. A slight bit faster than std::LogTime. */
 static float flog2(float f)
 {
    float result = 0;

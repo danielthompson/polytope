@@ -12,7 +12,8 @@
 
 namespace Polytope {
 
-   OptionsParser::OptionsParser(int &argc, char **argv) {
+   OptionsParser::OptionsParser(int &argc, char **argv, Polytope::Logger &logger)
+   : Logger(logger) {
       for (int i=1; i < argc; ++i)
          this->_tokens.emplace_back(argv[i]);
    }
@@ -40,22 +41,48 @@ namespace Polytope {
          std::cout << "Polytope help text blah blah blah" << std::endl;
       }
 
-      if (OptionExists("-threads")) {
-         const std::string threads = GetOption("-threads");
+      std::string option = "-threads";
+
+      if (OptionExists(option)) {
+         const std::string value = GetOption(option);
 
          try {
-            options.threads = std::stoi(threads);
-            std::cout << "Parsed \"-threads " << threads << "\", using " << options.threads << " threads." << std::endl;
+            unsigned int parsedValue = stou(value);
+            options.threads = parsedValue;
+            Logger.LogTime("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
          }
-         catch (std::invalid_argument&) {
+         catch (...) {
             options.valid = false;
-            std::cout << "Failed to parse \"-threads " << threads << "\"." << std::endl;
+            Logger.LogTime("Failed to parse [" + option + "] = [" + value + "].");
+         }
+      }
+
+      option = "-samples";
+
+      if (OptionExists(option)) {
+         const std::string value = GetOption(option);
+
+         try {
+            unsigned int parsedValue = stou(value);
+            options.samples = parsedValue;
+            Logger.LogTime("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
+         }
+         catch (...) {
+            options.valid = false;
+            Logger.LogTime("Failed to parse [" + option + "] = [" + value + "].");
          }
       }
 
       return options;
    }
 
+   unsigned int OptionsParser::stou(std::string const & str, size_t * idx, int base)  {
+      unsigned long result = std::stoul(str, idx, base);
+      if (result > std::numeric_limits<unsigned>::max()) {
+         throw std::out_of_range("stou");
+      }
+      return result;
+   }
 
 
 }

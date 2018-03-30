@@ -34,7 +34,7 @@ namespace Polytope {
       return oss.str();
    }
 
-   void Logger::log(std::string text) const {
+   void Logger::LogTime(std::string text) const {
       auto time = std::time(nullptr);
       std::cout << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] "; // ISO 8601 format.
       std::cout << text << std::endl;
@@ -47,6 +47,10 @@ namespace Polytope {
 
       std::cout << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] "; // ISO 8601 format.
       std::cout << "Thread [" << threadID << "] ";
+      std::cout << text << std::endl;
+   }
+
+   void Logger::Log(std::string text) const {
       std::cout << text << std::endl;
    }
 
