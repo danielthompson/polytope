@@ -13,12 +13,14 @@ namespace Polytope {
       return 0.0f;
    }
 
-   Vector MirrorBRDF::getVectorInPDF(const Normal &normal, const Vector &incoming) const {
+   Vector MirrorBRDF::getVectorInPDF(const Normal &normal, const Vector &incoming, float &pdf) const {
       float factor = incoming.Dot(normal) * 2;
       Vector scaled = Vector(normal * factor);
 
+      pdf = 1.0f;
       Vector outgoing = incoming - scaled;
       return outgoing;
+
    }
 
    float MirrorBRDF::f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const {

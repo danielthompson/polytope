@@ -9,4 +9,12 @@ namespace Polytope {
    Intersection::Intersection()
          : Location(Point(0, 0, 0)) { }
 
+   Vector Intersection::WorldToLocal(const Vector &world) const {
+      return Vector();
+   }
+
+   Vector Intersection::LocalToWorld(const Vector &local) const {
+      return Vector();
+   }
+
 }

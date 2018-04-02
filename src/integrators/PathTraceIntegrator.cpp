@@ -9,33 +9,13 @@ namespace Polytope {
 
    Sample PathTraceIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
 
-      if (x == 175 && y == 239) {
-         x++;
-         x--;
-      }
-
       Intersection intersection = Scene->GetNearestShape(ray, x, y);
 
       if (!intersection.Hits) {
          return Sample(SpectralPowerDistribution());
       }
 
-      if (x == 180 && y == 230) {
-         x++;
-         x--;
-      }
-
-      if (depth > 0) {
-         x++;
-         x--;
-      }
-
       if (intersection.Shape->IsLight()) {
-
-         if (depth > 0) {
-            x++;
-            x--;
-         }
 
          return Sample(intersection.Shape->Light->SpectralPowerDistribution);
       }
@@ -49,9 +29,9 @@ namespace Polytope {
          Normal intersectionNormal = intersection.Normal;
          Vector incomingDirection = ray.Direction;
 
-         Vector outgoingDirection = closestShape->Material->BRDF->getVectorInPDF(intersectionNormal, incomingDirection);
-         float scalePercentage = closestShape->Material->BRDF->f(incomingDirection, intersectionNormal,
-                                                                 outgoingDirection);
+         float pdf = 0.0f;
+
+         Vector outgoingDirection = closestShape->Material->BRDF->getVectorInPDF(intersectionNormal, incomingDirection, pdf);
 
          Ray bounceRay = Ray(intersection.Location, outgoingDirection);
 
@@ -60,7 +40,7 @@ namespace Polytope {
 
          Sample incomingSample = GetSample(bounceRay, depth + 1, x, y);
 
-         SpectralPowerDistribution incomingSPD = incomingSample.SpectralPowerDistribution * scalePercentage;
+         SpectralPowerDistribution incomingSPD = incomingSample.SpectralPowerDistribution * pdf;
 
          // compute the interaction of the incoming SPD with the object's SRC
          SpectralPowerDistribution reflectedSPD = incomingSPD * closestShape->Material->ReflectanceSpectrum;

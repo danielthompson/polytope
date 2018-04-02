@@ -7,6 +7,7 @@
 #include "NaiveScene.h"
 #include "../shading/Material.h"
 #include "../shading/brdf/MirrorBRDF.h"
+#include "../shading/brdf/LambertBRDF.h"
 #include "../shapes/Sphere.h"
 #include "../shading/SpectralPowerDistribution.h"
 #include "../lights/AbstractLight.h"
@@ -28,7 +29,7 @@ namespace Polytope {
 
       std::shared_ptr<Material> material = std::make_shared<Material>(
 
-         std::make_unique<MirrorBRDF>(),
+         std::make_unique<LambertBRDF>(),
          Solarizedcyan
 
       );
@@ -50,7 +51,7 @@ namespace Polytope {
 
       // white light
 
-      SpectralPowerDistribution lightSPD = SpectralPowerDistribution(255, 0, 0);
+      SpectralPowerDistribution lightSPD = SpectralPowerDistribution(255, 255, 255);
 
 //      inputTransforms = new Transform[2];
 //      inputTransforms[0] = Transform.Translate(new Vector(300, 3300, -1500));

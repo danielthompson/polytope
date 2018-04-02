@@ -24,10 +24,14 @@ namespace Polytope {
 
       // data
 
-      AbstractShape *Shape;
+      AbstractShape *Shape = nullptr;
       Point Location;
       Polytope::Normal Normal;
+      Vector TangentToNormal;
       bool Hits = false;
+
+      Vector WorldToLocal(const Vector &world) const;
+      Vector LocalToWorld(const Vector &local) const;
    };
 
 }

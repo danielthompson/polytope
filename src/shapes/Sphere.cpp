@@ -89,9 +89,13 @@ namespace Polytope {
    void Sphere::Intersect(const Ray &worldSpaceRay, Intersection *intersection) {
       // TODO
 
-      // we need to find the normal, for which we need the intersectionpoint in object space
+      // we need to find the normal, for which we need the intersection point in object space
 
       Point worldSpaceIntersectionPoint = worldSpaceRay.GetPointAtT(worldSpaceRay.MinT);
+
+      // spherical coordinate stuff
+
+
 
       intersection->Location = worldSpaceIntersectionPoint;
 
@@ -101,8 +105,28 @@ namespace Polytope {
          objectSpaceIntersectionPoint = WorldToObject.Apply(worldSpaceIntersectionPoint);
       //}
 
+      // TODO this can be optimized
+
+      float phi = std::atan2(objectSpaceIntersectionPoint.y, objectSpaceIntersectionPoint.x);
+      float theta = std::acos(objectSpaceIntersectionPoint.z);
+      float r = 1;
+
+      float dxdu = -objectSpaceIntersectionPoint.y;
+      float dydu = objectSpaceIntersectionPoint.x;
+      float dzdu = 0.0f;
+
+      Vector dpdu = Vector(dxdu, dydu, dzdu);
+
+      float dxdv = objectSpaceIntersectionPoint.z * std::cos(phi);
+      float dydv = objectSpaceIntersectionPoint.z * std::sin(phi);
+      float dzdv = -Radius * std::sin(theta);
+
+      Vector dpdv = Vector(dxdv, dydv, dzdv);
+
       // this can probably be deleted since Origin is always 0
       //objectSpaceIntersectionPoint -= Origin;
+
+      intersection->TangentToNormal = dpdu;
 
       Normal objectSpaceNormal = Normal(objectSpaceIntersectionPoint.x, objectSpaceIntersectionPoint.y, objectSpaceIntersectionPoint.z);
 

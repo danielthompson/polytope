@@ -38,6 +38,7 @@ namespace Polytope {
       Polytope::Options options = Polytope::Options();
 
       if (OptionExists("--help")) {
+
          std::cout << "Polytope help text blah blah blah" << std::endl;
       }
 

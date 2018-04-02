@@ -15,6 +15,8 @@ namespace Polytope {
 
       // constructors
 
+
+
       // operators
 
       // methods
@@ -26,10 +28,10 @@ namespace Polytope {
        * Should be used for both delta and non-delta.
        * @param normal The surface normal at the point of intersection.
        * @param incoming The incoming vector.
+       * @param pdf The pdf of the returned vector.
        * @return A vector randomly sampled according to the BxDF's PDF.
        */
-      virtual Vector getVectorInPDF(const Normal &normal, const Vector &incoming) const = 0;
-
+      virtual Vector getVectorInPDF(const Normal &normal, const Vector &incoming, float &pdf) const;
       /**
        * Returns the proportion of outgoing light that comes from the incoming direction.
        * Should only be used for non-delta distributions - f() can be assumed to be 0 for deltas
@@ -41,17 +43,6 @@ namespace Polytope {
        * @return The proportion of outgoing light that comes from the incoming direction.
        */
       virtual float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const = 0;
-
-
-      // data
-
-      /**
-       * Whether or not the distribution is a delta distribution.
-       * If so, it should be sampled with f_delta(), not f().
-       */
-      bool Delta = false;
-
-      bool Glossy = false;
 
    };
 
