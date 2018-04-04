@@ -37,6 +37,8 @@ namespace Polytope {
       float Length() const;
       float LengthSquared() const;
       void Normalize();
+      Vector Cross(const Vector &rhs) const;
+      Vector Cross(const Normal &rhs) const;
 
       // data
 

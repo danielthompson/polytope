@@ -14,6 +14,7 @@
 #include "films/PNGFilm.h"
 #include "filters/BoxFilter.h"
 #include "runners/TileRunner.h"
+#include "samplers/HaltonSampler.h"
 
 namespace Polytope {
 
@@ -44,7 +45,7 @@ namespace Polytope {
       Logger.LogTime("Using " + std::to_string(usingThreads) + " threads.");
 
       {
-         std::unique_ptr<AbstractSampler> sampler = std::make_unique<GridSampler>();
+         std::unique_ptr<AbstractSampler> sampler = std::make_unique<HaltonSampler>();
          std::unique_ptr<AbstractIntegrator> integrator = std::make_unique<PathTraceIntegrator>(scene, 3);
          std::unique_ptr<AbstractFilm> film = std::make_unique<PNGFilm>(bounds, "test.png", std::make_unique<BoxFilter>(bounds));
          const std::unique_ptr<AbstractRunner> runner = std::make_unique<TileRunner>(std::move(sampler), scene, std::move(integrator), std::move(film), bounds, Options.samples);

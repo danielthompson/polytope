@@ -15,7 +15,7 @@ namespace Polytope {
       // methods
       virtual Point2f GetSample(int x, int y) = 0;
 
-      virtual void GetSamples(Point2f *points, int number, int x, int y) = 0;
+      virtual void GetSamples(Point2f points[], int number, int x, int y) = 0;
 
       // destructors
 

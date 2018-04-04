@@ -73,5 +73,15 @@ namespace Polytope {
       z *= lengthDivisor;
    }
 
+   Vector Vector::Cross(const Vector &rhs) const {
+      return Vector(y * rhs.z - z * rhs.y,
+                    z * rhs.x - x * rhs.z,
+                    x * rhs.y - y * rhs.x);
+   }
 
+   Vector Vector::Cross(const Normal &rhs) const {
+      return Vector(y * rhs.z - z * rhs.y,
+                    z * rhs.x - x * rhs.z,
+                    x * rhs.y - y * rhs.x);
+   }
 }

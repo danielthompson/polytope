@@ -13,7 +13,7 @@ namespace Polytope {
    public:
       Point2f GetSample(int x, int y) override;
 
-      void GetSamples(Point2f *points, int number, int x, int y) override;
+      void GetSamples(Point2f points[], int number, int x, int y) override;
 
       virtual ~CenterSampler() { }
    };

@@ -15,12 +15,6 @@ namespace Polytope {
 
       const unsigned int index = y * Bounds.x + x;
 
-//      int j = 0;
-//      if (x == 905 && y == 458) {
-//         j++;
-//         j--;
-//      }
-
       // std::lock_guard<std::mutex> lock(_mutex);
       _data[index].push_back(sample);
    }
@@ -40,11 +34,10 @@ namespace Polytope {
 
    SpectralPowerDistribution BoxFilter::Output(const Point2i &pixel) {
 
-//      int j = 0;
-//      if (pixel.x == 313 && pixel.y == 197) {
-//         j++;
-//         j--;
-//      }
+      if (pixel.x == 487 && pixel.y == 299) {
+         int j = 0;
+      }
+
       const unsigned int index = pixel.y * Bounds.x + pixel.x;
 
       const unsigned long numSamples = _data[index].size();

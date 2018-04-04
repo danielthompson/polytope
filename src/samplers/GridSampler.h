@@ -16,7 +16,7 @@ namespace Polytope {
 
       virtual ~GridSampler() { }
 
-      void GetSamples(Point2f *points, int number, int x, int y) override;
+      void GetSamples(Point2f points[], int number, int x, int y) override;
    };
 
 }

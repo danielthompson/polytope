@@ -38,10 +38,6 @@ namespace Polytope {
          intersection.Hits = true;
          intersection.Shape = nearestShape;
 
-         if (std::isnan(intersection.Location.x)) {
-            // wtf?
-            nearestShape->Intersect(ray, &intersection);
-         }
       }
 
       return intersection;

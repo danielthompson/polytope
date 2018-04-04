@@ -20,7 +20,7 @@ namespace Polytope {
          for (int x = 0; x < bounds.x; x++) {
             for (int y = 0; y < bounds.y; y++) {
                const unsigned int index = y * Bounds.x + x;
-               _data[index].reserve(64);
+               _data[index].reserve(1024);
             }
          }
       }

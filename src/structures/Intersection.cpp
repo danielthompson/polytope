@@ -10,11 +10,13 @@ namespace Polytope {
          : Location(Point(0, 0, 0)) { }
 
    Vector Intersection::WorldToLocal(const Vector &world) const {
-      return Vector();
+      return Vector(world.Dot(Tangent1), world.Dot(Normal), world.Dot(Tangent2));
    }
 
    Vector Intersection::LocalToWorld(const Vector &local) const {
-      return Vector();
+      return Vector(Tangent1.x * local.x + Normal.x * local.y + Tangent2.x * local.z,
+                    Tangent1.y * local.x + Normal.y * local.y + Tangent2.y * local.z,
+                    Tangent1.z * local.x + Normal.z * local.y + Tangent2.z * local.z);
    }
 
 }

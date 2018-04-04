@@ -126,7 +126,7 @@ namespace Polytope {
       // this can probably be deleted since Origin is always 0
       //objectSpaceIntersectionPoint -= Origin;
 
-      intersection->TangentToNormal = dpdu;
+      intersection->Tangent1 = dpdu;
 
       Normal objectSpaceNormal = Normal(objectSpaceIntersectionPoint.x, objectSpaceIntersectionPoint.y, objectSpaceIntersectionPoint.z);
 
@@ -138,6 +138,8 @@ namespace Polytope {
       //}
 
       intersection->Normal = worldSpaceNormal;
+
+      intersection->Tangent2 = dpdu.Cross(worldSpaceNormal);
    }
 
 

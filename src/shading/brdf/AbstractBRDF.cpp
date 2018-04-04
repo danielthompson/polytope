@@ -7,7 +7,7 @@
 
 namespace Polytope {
 
-   Vector AbstractBRDF::getVectorInPDF(const Normal &normal, const Vector &incoming, float &pdf) const {
+   Vector AbstractBRDF::getVectorInPDF(const Vector incoming, float &pdf) const {
       const float u0 = NormalizedUniformRandom();
       const float u1 = NormalizedUniformRandom();
 

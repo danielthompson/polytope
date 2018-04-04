@@ -30,8 +30,11 @@ namespace Polytope {
          Vector incomingDirection = ray.Direction;
 
          float pdf = 0.0f;
-
-         Vector outgoingDirection = closestShape->Material->BRDF->getVectorInPDF(intersectionNormal, incomingDirection, pdf);
+         Vector outgoingDirection = intersection.LocalToWorld(
+               closestShape->Material->BRDF->getVectorInPDF(
+                  intersection.WorldToLocal(incomingDirection), pdf
+               )
+            );
 
          Ray bounceRay = Ray(intersection.Location, outgoingDirection);
 

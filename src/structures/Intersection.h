@@ -27,7 +27,8 @@ namespace Polytope {
       AbstractShape *Shape = nullptr;
       Point Location;
       Polytope::Normal Normal;
-      Vector TangentToNormal;
+      Vector Tangent1;
+      Vector Tangent2;
       bool Hits = false;
 
       Vector WorldToLocal(const Vector &world) const;

@@ -10,7 +10,7 @@ namespace Polytope {
    class Options {
    public:
       unsigned int threads = 0;
-      unsigned int samples = 1;
+      unsigned int samples = 4;
       bool valid = true;
    };
 
