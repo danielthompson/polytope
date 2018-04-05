@@ -69,8 +69,12 @@ namespace Polytope {
       return float(std::abs(acos(v.Dot(n))));
    }
 
+   static thread_local std::random_device random_device;
+
+   static thread_local std::mt19937 Generator(random_device());
+
    inline float NormalizedUniformRandom() {
-      static thread_local std::mt19937 Generator;
+      //static thread_local std::mt19937 Generator;
       std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
       return distribution(Generator);
    }

@@ -51,7 +51,7 @@ namespace Polytope {
 
       // white light
 
-      SpectralPowerDistribution lightSPD = SpectralPowerDistribution(255, 255, 255);
+      SpectralPowerDistribution lightSPD = SpectralPowerDistribution(1, 1, 1);
 
 //      inputTransforms = new Transform[2];
 //      inputTransforms[0] = Transform.Translate(new Vector(300, 3300, -1500));

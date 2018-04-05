@@ -47,7 +47,7 @@ namespace Polytope {
       {
          std::unique_ptr<AbstractSampler> sampler = std::make_unique<HaltonSampler>();
          std::unique_ptr<AbstractIntegrator> integrator = std::make_unique<PathTraceIntegrator>(scene, 3);
-         std::unique_ptr<AbstractFilm> film = std::make_unique<PNGFilm>(bounds, "test.png", std::make_unique<BoxFilter>(bounds));
+         std::unique_ptr<AbstractFilm> film = std::make_unique<PNGFilm>(bounds, Options.filename, std::make_unique<BoxFilter>(bounds, Options.samples));
          const std::unique_ptr<AbstractRunner> runner = std::make_unique<TileRunner>(std::move(sampler), scene, std::move(integrator), std::move(film), bounds, Options.samples);
 
          Logger.LogTime(
@@ -82,7 +82,7 @@ namespace Polytope {
 
          Logger.LogTime("Outputting to film...");
          auto outputStart = std::chrono::system_clock::now();
-         runner->Film->Output();
+         runner->Output();
          auto outputEnd = std::chrono::system_clock::now();
 
          std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
