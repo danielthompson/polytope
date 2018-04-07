@@ -25,8 +25,6 @@ namespace Polytope {
             const int index = 4 * (y * width + x);
             const SpectralPowerDistribution spd = Filter->Output(Point2i(x, y));
 
-
-
             const unsigned char r = static_cast<unsigned char>(spd.r > 255 ? 255 : spd.r);
             const unsigned char g = static_cast<unsigned char>(spd.g > 255 ? 255 : spd.g);
             const unsigned char b = static_cast<unsigned char>(spd.b > 255 ? 255 : spd.b);

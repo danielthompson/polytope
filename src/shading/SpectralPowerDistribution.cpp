@@ -41,7 +41,7 @@ namespace Polytope {
    }
 
    SpectralPowerDistribution SpectralPowerDistribution::operator*(const ReflectanceSpectrum &rhs) {
-      return SpectralPowerDistribution(r * rhs.r * OneOver255, g * rhs.g * OneOver255, b * rhs.b * OneOver255);
+      return SpectralPowerDistribution(r * rhs.r, g * rhs.g, b * rhs.b);
    }
 
    SpectralPowerDistribution

@@ -35,7 +35,7 @@ namespace Polytope {
       );
 
       Transform objectToWorld =
-            Transform::Translate(100, 0, -200)
+            Transform::Translate(100, 0, -400)
             * Transform::Scale(50);
 
       scene->Shapes.push_back(new Sphere(objectToWorld, material));
@@ -49,9 +49,16 @@ namespace Polytope {
 
       scene->Shapes.push_back(new Sphere(objectToWorld, material));
 
+      objectToWorld =
+            Transform::Translate(0, -50050, 0)
+            * Transform::Scale(50000);
+
+      scene->Shapes.push_back(new Sphere(objectToWorld, material));
+
+
       // white light
 
-      SpectralPowerDistribution lightSPD = SpectralPowerDistribution(2550, 2550, 2550);
+      SpectralPowerDistribution lightSPD = SpectralPowerDistribution(50000, 50000, 50000);
 
 //      inputTransforms = new Transform[2];
 //      inputTransforms[0] = Transform.Translate(new Vector(300, 3300, -1500));

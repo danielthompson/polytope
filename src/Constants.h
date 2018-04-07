@@ -91,8 +91,6 @@ namespace Polytope {
 
       return Vector(x, y, std::sqrt(std::max(0.0f, 1.0f - u0)));
    }
-
-
 }
 
 #endif //POLYTOPE_CONSTANTS_H

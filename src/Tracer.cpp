@@ -46,7 +46,7 @@ namespace Polytope {
 
       {
          std::unique_ptr<AbstractSampler> sampler = std::make_unique<HaltonSampler>();
-         std::unique_ptr<AbstractIntegrator> integrator = std::make_unique<PathTraceIntegrator>(scene, 3);
+         std::unique_ptr<AbstractIntegrator> integrator = std::make_unique<PathTraceIntegrator>(scene, 5);
          std::unique_ptr<AbstractFilm> film = std::make_unique<PNGFilm>(bounds, Options.filename, std::make_unique<BoxFilter>(bounds, Options.samples));
          const std::unique_ptr<AbstractRunner> runner = std::make_unique<TileRunner>(std::move(sampler), scene, std::move(integrator), std::move(film), bounds, Options.samples);
 

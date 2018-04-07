@@ -29,6 +29,8 @@ namespace Polytope {
          Normal intersectionNormal = intersection.Normal;
          Vector incomingDirection = ray.Direction;
 
+         // indirect lighting
+
          float pdf = 0.0f;
          Vector outgoingDirection = intersection.LocalToWorld(
                closestShape->Material->BRDF->getVectorInPDF(
@@ -47,6 +49,7 @@ namespace Polytope {
 
          // compute the interaction of the incoming SPD with the object's SRC
          SpectralPowerDistribution reflectedSPD = incomingSPD * closestShape->Material->ReflectanceSpectrum;
+
 
          return Sample(reflectedSPD);
       }

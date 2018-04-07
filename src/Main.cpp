@@ -7,20 +7,27 @@
 
 int main(int argc, char* argv[]) {
 
-   Polytope::Logger logger = Polytope::Logger();
+   try {
+      Polytope::Logger logger = Polytope::Logger();
 
-   logger.LogTime("Polytope started.");
+      logger.LogTime("Polytope started.");
 
-   Polytope::Options options = Polytope::Options();
+      Polytope::Options options = Polytope::Options();
 
-   if (argc > 0) {
-      Polytope::OptionsParser parser(argc, argv, logger);
-      options = parser.Parse();
+      if (argc > 0) {
+         Polytope::OptionsParser parser(argc, argv, logger);
+         options = parser.Parse();
+      }
+
+      Polytope::Tracer tracer = Polytope::Tracer(logger, options);
+      tracer.Run();
+
+      logger.LogTime("Exiting Polytope.");
+   }
+   catch(const std::exception&) {
+      return EXIT_FAILURE;
    }
 
-   Polytope::Tracer tracer = Polytope::Tracer(logger, options);
-   tracer.Run();
 
-   logger.LogTime("Exiting Polytope.");
 
 }

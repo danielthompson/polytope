@@ -1,0 +1,32 @@
+Integrator "path" "integer maxdepth" [ 7 ] 
+LookAt 0 0 0 # eye
+       0 0 -1 # look at point
+       0 1 0 # up	   
+Sampler "random" "integer pixelsamples" [ 64 ] 
+PixelFilter "triangle" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ] 
+Film "image" "integer xresolution" [ 640 ] "integer yresolution" [ 640 ] "string filename" [ "three-balls.png" ] 
+Camera "perspective" "float fov" [ 50 ] 
+WorldBegin
+	MakeNamedMaterial "lambert" "string type" [ "matte" ]  "rgb Kd" [ 0.164705 0.631372 0.596078 ] 
+	AttributeBegin
+		AreaLightSource "diffuse" "rgb L" [ 10 10 10 ] 
+		TransformBegin
+			Translate 0 0 -300
+			Shape "sphere" "float radius" [ 25 ] 
+		TransformEnd
+	AttributeEnd
+	NamedMaterial "lambert" 
+	TransformBegin
+		Translate -100 0 -400
+		Shape "sphere" "float radius" [ 50 ] 
+	TransformEnd
+	TransformBegin
+		Translate 100 0 -200
+		Shape "sphere" "float radius" [ 50 ] 
+	TransformEnd
+	TransformBegin
+		Translate 0 -50050 0
+		# Scale 50000 50000 50000
+		Shape "sphere" "float radius" [ 50000 ] 
+	TransformEnd
+WorldEnd
