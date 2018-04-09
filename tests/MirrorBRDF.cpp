@@ -23,7 +23,9 @@ namespace Tests {
 
          Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF();
 
-         Vector actual = brdf.getVectorInPDF(normal, incoming);
+         float pdf = 0.0;
+
+         Vector actual = brdf.getVectorInPDF(incoming, pdf);
 
          EXPECT_EQ(expected, actual);
       }
@@ -40,7 +42,10 @@ namespace Tests {
 
          Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF();
 
-         Vector actual = brdf.getVectorInPDF(normal, incoming);
+         float pdf = 0.0;
+
+         Vector actual = brdf.getVectorInPDF(incoming, pdf);
+
 
          EXPECT_EQ(expected, actual);
       }
@@ -57,7 +62,10 @@ namespace Tests {
 
          Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF();
 
-         Vector actual = brdf.getVectorInPDF(normal, incoming);
+         float pdf = 0.0;
+
+         Vector actual = brdf.getVectorInPDF(incoming, pdf);
+
 
          EXPECT_EQ(expected, actual);
       }
@@ -74,7 +82,10 @@ namespace Tests {
 
          Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF();
 
-         Vector actual = brdf.getVectorInPDF(normal, incoming);
+         float pdf = 0.0;
+
+         Vector actual = brdf.getVectorInPDF(incoming, pdf);
+
 
          EXPECT_EQ(expected, actual);
       }
