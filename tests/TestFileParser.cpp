@@ -5,26 +5,32 @@
 #include "gtest/gtest.h"
 
 #include "../src/parsers/PBRTFileParser.h"
+#include "../src/samplers/HaltonSampler.h"
+#include "../src/samplers/GridSampler.h"
 
 namespace Tests {
 
    using Polytope::PBRTFileParser;
 
    namespace Parse {
-      TEST(FileParser, Open) {
 
-         const std::string filename = "two-balls.pbrt";
+      TEST(FileParser, Sampler) {
 
-         PBRTFileParser fp = PBRTFileParser(filename);
-         fp.Parse();
-      }
+         Polytope::Logger logger = Polytope::Logger();
 
-      TEST(FileParser, Open2) {
+         PBRTFileParser fp = PBRTFileParser(logger);
+         std::string desc = R"(Sampler "random" "integer pixelsamples" [ 64 ] )";
+         std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(desc);
 
-         const std::string filename = "two-balls.pbrt";
+         ASSERT_NE(nullptr, runner);
+         ASSERT_NE(nullptr, runner->Sampler);
 
-         PBRTFileParser fp = PBRTFileParser(filename);
-         fp.Parse();
+         std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
+
+         Polytope::HaltonSampler *result = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
+
+         ASSERT_NE(nullptr, result);
+
       }
    }
 }

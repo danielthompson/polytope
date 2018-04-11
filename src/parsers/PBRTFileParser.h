@@ -5,8 +5,10 @@
 #ifndef POLYTOPE_FILEPARSER_H
 #define POLYTOPE_FILEPARSER_H
 
+#include <iostream>
 #include <string>
 #include "../runners/AbstractRunner.h"
+#include "../utilities/Logger.h"
 
 namespace Polytope {
 
@@ -28,28 +30,37 @@ namespace Polytope {
    public:
 
       // constructors
-      explicit PBRTFileParser(const std::string &filename) : Filename(filename) { };
+      explicit PBRTFileParser(const Polytope::Logger logger)
+            : Logger(logger) { };
 
-      // methods
-      std::unique_ptr<AbstractRunner> Parse() noexcept(false);
+      std::unique_ptr<AbstractRunner> ParseFile(const std::string &filename) noexcept(false);
+      std::unique_ptr<AbstractRunner> ParseString(const std::string &text) noexcept(false);
 
       std::string Filename;
 
       std::unique_ptr<AbstractRunner> Runner;
    private:
 
+      std::unique_ptr<AbstractRunner> Parse(std::unique_ptr<std::istream> stream) noexcept(false);
+
+
+      Polytope::Logger Logger;
+
       bool IsQuoted(std::string token);
       bool StartQuoted(std::string token);
       bool EndQuoted(std::string token);
+      void LogBadArgument(const PBRTArgument &argument);
+      void LogBadIdentifier(const PBRTDirective &directive);
 
       void CreateSampler(std::vector<std::string> &directive);
       void CreateIntegrator(std::vector<std::string> &directive);
 
       std::unique_ptr<AbstractSampler> Sampler;
-      AbstractScene *scene;
+      AbstractScene *scene = nullptr;
       std::unique_ptr<AbstractIntegrator> Integrator;
       std::unique_ptr<AbstractFilm> Film;
-      unsigned int numSamples;
+      std::unique_ptr<AbstractFilter> Filter;
+      unsigned int numSamples = 0;
       Polytope::Bounds Bounds;
 
       const std::vector<std::string> Directives {

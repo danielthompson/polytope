@@ -10,23 +10,31 @@
 #include "../integrators/PathTraceIntegrator.h"
 #include "../samplers/HaltonSampler.h"
 #include "../runners/TileRunner.h"
+#include "../films/PNGFilm.h"
+#include "../filters/BoxFilter.h"
 
 namespace Polytope {
 
-   std::unique_ptr<AbstractRunner> PBRTFileParser::Parse() noexcept(false){
+   std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filename) {
+      return Parse(std::make_unique<std::ifstream>(filename));
+   }
 
-      std::ifstream file(Filename);
+   std::unique_ptr<AbstractRunner> PBRTFileParser::ParseString(const std::string &text) {
+      return Parse(std::make_unique<std::istringstream>(text));
+   }
+
+   std::unique_ptr<AbstractRunner> PBRTFileParser::Parse(std::unique_ptr<std::istream> stream) noexcept(false){
 
       std::vector<std::vector<std::string>> tokens;
 
       // scan
 
-      if (file.is_open())
+      if (stream->good())
       {
          int sourceLineNumber = 0;
          int targetLineNumber = -1;
          std::string line;
-         while (getline(file, line))
+         while (getline(*stream, line))
          {
             tokens.emplace_back();
             std::string word;
@@ -68,7 +76,7 @@ namespace Polytope {
             sourceLineNumber++;
 
          }
-         file.close();
+
       }
       else {
          throw std::invalid_argument("Couldn't open file " + Filename);
@@ -80,6 +88,7 @@ namespace Polytope {
 
       for (std::vector<std::string> line : tokens) {
          PBRTDirective currentDirective = PBRTDirective();
+
 
          if (line.empty())
             continue;
@@ -111,8 +120,10 @@ namespace Polytope {
             continue;
          }
 
-         if (line.size() == 2)
+         if (line.size() == 2) {
+            directives.push_back(currentDirective);
             continue;
+         }
 
          currentDirective.Arguments = std::vector<PBRTArgument>();
          PBRTArgument currentArgument = PBRTArgument();
@@ -159,6 +170,114 @@ namespace Polytope {
          directives.push_back(currentDirective);
       }
 
+      // sampler
+
+      unsigned int numSamples = 16;
+
+      for (PBRTDirective directive : directives) {
+         if (directive.Name == "Sampler") {
+            if (directive.Identifier == "halton") {
+               Sampler = std::make_unique<HaltonSampler>();
+               break;
+            } else {
+               Logger.Log("Sampler identifier specified [" + directive.Identifier + "] is unknown, using Halton");
+               Sampler = std::make_unique<HaltonSampler>();
+            }
+
+            for (PBRTArgument arg : directive.Arguments) {
+               if (arg.Type == "integer") {
+                  if (arg.Name == "pixelsamples") {
+                     numSamples = static_cast<unsigned int>(stoi(arg.Values[0]));
+                     break;
+                  }
+                  else {
+                     LogBadArgument(arg);
+                  }
+               }
+            }
+         }
+      }
+
+      if (Sampler == nullptr) {
+         Logger.Log("No Sampler specified, using Halton.");
+         Sampler = std::make_unique<HaltonSampler>();
+      }
+
+      // filter
+
+      bool createBoxFilter = false;
+
+      for (PBRTDirective directive : directives) {
+         if (directive.Name == "PixelFilter") {
+            if (directive.Identifier == "box") {
+               createBoxFilter = true;
+               unsigned int xWidth = 0;
+               unsigned int yWidth = 0;
+
+               for (PBRTArgument arg : directive.Arguments) {
+                  if (arg.Type == "integer") {
+                     if (arg.Name == "xwidth") {
+                        xWidth = static_cast<unsigned int>(stoi(arg.Values[0]));
+                     }
+                     else if (arg.Name == "ywidth") {
+                        yWidth = static_cast<unsigned int>(stoi(arg.Values[0]));
+                     }
+                     else {
+                        LogBadArgument(arg);
+                     }
+                  }
+               }
+            }
+            else {
+               LogBadIdentifier(directive);
+            }
+         }
+      }
+
+      // film
+
+      for (PBRTDirective directive : directives) {
+         if (directive.Name == "Film") {
+            if (directive.Identifier == "image") {
+               unsigned int x = 0;
+               unsigned int y = 0;
+               std::string filename;
+
+               for (PBRTArgument arg : directive.Arguments) {
+                  if (arg.Type == "integer") {
+                     if (arg.Name == "xresolution") {
+                        x = static_cast<unsigned int>(stoi(arg.Values[0]));
+                     }
+                     else if (arg.Name == "yresolution") {
+                        y = static_cast<unsigned int>(stoi(arg.Values[0]));
+                     }
+                     else {
+                        LogBadArgument(arg);
+                     }
+                  }
+                  else if (arg.Type == "string") {
+                     if (arg.Name == "filename") {
+                        filename = arg.Values[0];
+                     }
+                     else {
+                        LogBadArgument(arg);
+                     }
+                  }
+               }
+
+               Polytope::Bounds bounds = Polytope::Bounds(x, y);
+
+               // TODO
+
+               if (createBoxFilter) {
+                  Filter = std::make_unique<BoxFilter>(bounds);
+               }
+               Film = std::make_unique<PNGFilm>(bounds, filename, )
+            }
+         }
+      }
+
+
 
       return std::make_unique<TileRunner>(
             std::move(Sampler),
@@ -168,6 +287,14 @@ namespace Polytope {
             Bounds,
             numSamples
       );
+   }
+
+   void PBRTFileParser::LogBadArgument(const PBRTArgument &argument) {
+      Logger.Log("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
+   }
+
+   void PBRTFileParser::LogBadIdentifier(const PBRTDirective &directive) {
+      Logger.Log("Unknown directive/identifier combination: [" + directive.Name + "] / [" + directive.Identifier + "].");
    }
 
    bool PBRTFileParser::IsQuoted(std::string token) {
@@ -203,6 +330,8 @@ namespace Polytope {
 
       numSamples = std::stoi(directive[4]);
    }
+
+
 
 
 }

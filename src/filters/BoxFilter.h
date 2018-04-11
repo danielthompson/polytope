@@ -15,15 +15,15 @@ namespace Polytope {
 
    class BoxFilter : public AbstractFilter {
    public:
-      explicit BoxFilter(const Polytope::Bounds &bounds, const unsigned int samples)
-            : AbstractFilter(bounds), _data(bounds.x * bounds.y, std::vector<Sample>()){
-         for (int x = 0; x < bounds.x; x++) {
-            for (int y = 0; y < bounds.y; y++) {
-               const unsigned int index = y * Bounds.x + x;
-               _data[index].reserve(samples);
-            }
-         }
-      }
+
+      // constructor
+
+      explicit BoxFilter(const Polytope::Bounds &bounds)
+            : AbstractFilter(bounds), _data(bounds.x * bounds.y, std::vector<Sample>()) { }
+
+      // methods
+
+      void SetSamples(const unsigned int samples);
 
       SpectralPowerDistribution Output(const Point2i &pixel) override;
 

@@ -56,5 +56,15 @@ namespace Polytope {
       return accum;
    }
 
+   void BoxFilter::SetSamples(const unsigned int samples) {
+      for (int x = 0; x < Bounds.x; x++) {
+         for (int y = 0; y < Bounds.y; y++) {
+            const unsigned int index = y * Bounds.x + x;
+            _data[index].reserve(samples);
+         }
+      }
+
+   }
+
 
 }
