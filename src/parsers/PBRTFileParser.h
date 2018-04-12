@@ -63,13 +63,24 @@ namespace Polytope {
       unsigned int numSamples = 0;
       Polytope::Bounds Bounds;
 
+      // scene
+
+
+      // world
+
+      const std::string IntegratorText = "Integrator";
+
+      const std::string WorldBeginText = "WorldBegin";
+      
+
+
       const std::vector<std::string> Directives {
          "AreaLightSource",
          "AttributeBegin", // done
          "AttributeEnd", // done
          "Camera",
          "Film",
-         "Integrator",
+         IntegratorText,
          "LookAt", // done
          "MakeNamedMaterial",
          "NamedMaterial", // done
@@ -80,8 +91,10 @@ namespace Polytope {
          "TransformEnd", // done
          "Translate", // done
          "WorldBegin", // done
-         "WorldEnd" // done
+         WorldBeginText // done
       };
+
+
 
    };
 

@@ -259,5 +259,51 @@ namespace Polytope {
       return transform;
    }
 
+   Transform LookAt(const Point &eye, const Point &lookAt, Vector &up) {
+
+      float m[4][4];
+
+      m[0][3] = eye.x;
+      m[1][3] = eye.y;
+      m[2][3] = eye.z;
+      m[3][3] = 1;
+
+      Vector dir = eye - lookAt;
+      dir.Normalize();
+
+      up.Normalize();
+      Vector left = up.Cross(dir);
+
+      if (left.Length() == 0) {
+
+         std::cout << "Bad Transform::LookAt() call - left vector is 0. Up and viewing direction are pointing in the same direction. Using identity.";
+         return Transform();
+
+      }
+
+      left.Normalize();
+
+      Vector newUp = dir.Cross(left);
+
+      m[0][0] = left.x;
+      m[1][0] = left.y;
+      m[2][0] = left.z;
+      m[3][0] = 0;
+
+      m[0][1] = newUp.x;
+      m[1][1] = newUp.y;
+      m[2][1] = newUp.z;
+      m[3][1] = 0;
+
+      m[0][2] = dir.x;
+      m[1][2] = dir.y;
+      m[2][2] = dir.z;
+      m[3][2] = 0;
+
+      Matrix4x4 matrix = Matrix4x4(m);
+      Matrix4x4 inverse = matrix.Inverse();
+
+      return Transform(inverse, matrix);
+   }
 
 }

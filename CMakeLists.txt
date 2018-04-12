@@ -38,7 +38,6 @@ add_library(polytope_lib
       src/shapes/AbstractShape.h
       src/shapes/Sphere.cpp
       src/shapes/Sphere.h
-      src/cameras/CameraSettings.cpp
       src/cameras/CameraSettings.h
       src/cameras/PerspectiveCamera.cpp
       src/cameras/PerspectiveCamera.h

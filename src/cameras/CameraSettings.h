@@ -13,12 +13,12 @@ namespace Polytope {
    public:
 
       // constructors
-      CameraSettings(const Polytope::Bounds bounds, const float fov) :
+      CameraSettings(const Polytope::Bounds bounds, float fov) :
             Bounds(bounds), FieldOfView(fov) { }
 
       // data
       const Polytope::Bounds Bounds;
-      const float FieldOfView;
+      float FieldOfView;
    };
 
 }

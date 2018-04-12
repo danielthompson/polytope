@@ -12,6 +12,7 @@
 #include "../runners/TileRunner.h"
 #include "../films/PNGFilm.h"
 #include "../filters/BoxFilter.h"
+#include "../cameras/PerspectiveCamera.h"
 
 namespace Polytope {
 
@@ -84,97 +85,102 @@ namespace Polytope {
 
       // parse
 
-      std::vector<PBRTDirective> directives;
+      std::vector<PBRTDirective> sceneDirectives;
+      std::vector<PBRTDirective> worldDirectives;
 
-      for (std::vector<std::string> line : tokens) {
-         PBRTDirective currentDirective = PBRTDirective();
+      {
+         std::vector<PBRTDirective> *currentDirectives = &sceneDirectives;
 
+         for (std::vector<std::string> line : tokens) {
+            PBRTDirective currentDirective = PBRTDirective();
 
-         if (line.empty())
-            continue;
+            if (line.empty())
+               continue;
 
-         currentDirective.Name = line[0];
+            currentDirective.Name = line[0];
 
-         if (line.size() == 1) {
-            //currentDirective.
-            directives.push_back(currentDirective);
+            if (currentDirective.Name == WorldBegin)
+               currentDirectives = &worldDirectives;
 
-            continue;
-         }
+            if (line.size() == 1) {
+               //currentDirective.
+               currentDirectives->push_back(currentDirective);
 
-         if (IsQuoted(line[1])) {
-            currentDirective.Identifier = line[1].substr(1, line[1].length() - 2);
-         }
-         else {
+               continue;
+            }
+
+            if (IsQuoted(line[1])) {
+               currentDirective.Identifier = line[1].substr(1, line[1].length() - 2);
+            } else {
+               currentDirective.Arguments = std::vector<PBRTArgument>();
+               PBRTArgument argument = PBRTArgument();
+               argument.Type = "float";
+               argument.Values = std::vector<std::string>();
+
+               for (int i = 1; i < line.size(); i++) {
+                  argument.Values.push_back(line[i]);
+               }
+
+               currentDirective.Arguments.push_back(argument);
+               currentDirectives->push_back(currentDirective);
+               continue;
+            }
+
+            if (line.size() == 2) {
+               currentDirectives->push_back(currentDirective);
+               continue;
+            }
+
             currentDirective.Arguments = std::vector<PBRTArgument>();
-            PBRTArgument argument = PBRTArgument();
-            argument.Type = "float";
-            argument.Values = std::vector<std::string>();
+            PBRTArgument currentArgument = PBRTArgument();
+            bool inValue = false;
+            int i = 2;
+            while (i < line.size()) {
 
-            for (int i = 1; i < line.size(); i++) {
-               argument.Values.push_back(line[i]);
+               if (StartQuoted(line[i]) && EndQuoted(line[i + 1])) {
+                  // we're in an argument
+                  currentArgument.Type = line[i].substr(1, line[i].length() - 1);
+                  currentArgument.Name = line[i + 1].substr(0, line[i + 1].length() - 1);
+                  inValue = true;
+                  i += 2;
+                  continue;
+               }
+               if (line[i] == "[") {
+                  inValue = true;
+                  i++;
+                  continue;
+               }
+               if (line[i] == "]") {
+                  inValue = false;
+                  i++;
+                  currentDirective.Arguments.push_back(currentArgument);
+                  currentArgument = PBRTArgument();
+                  continue;
+               }
+               if (inValue) {
+                  if (IsQuoted(line[i])) {
+                     currentArgument.Values.push_back(line[i].substr(1, line[i].length() - 2));
+                  } else {
+                     currentArgument.Values.push_back(line[i]);
+                  }
+                  i++;
+                  continue;
+               }
             }
 
-            currentDirective.Arguments.push_back(argument);
-            directives.push_back(currentDirective);
-            continue;
-         }
-
-         if (line.size() == 2) {
-            directives.push_back(currentDirective);
-            continue;
-         }
-
-         currentDirective.Arguments = std::vector<PBRTArgument>();
-         PBRTArgument currentArgument = PBRTArgument();
-         bool inValue = false;
-         int i = 2;
-         while (i < line.size()) {
-
-            if (StartQuoted(line[i]) && EndQuoted(line[i + 1])) {
-               // we're in an argument
-               currentArgument.Type = line[i].substr(1, line[i].length() - 1);
-               currentArgument.Name = line[i + 1].substr(0, line[i + 1].length() - 1);
-               inValue = true;
-               i += 2;
-               continue;
-            }
-            if (line[i] == "[") {
-               inValue = true;
-               i++;
-               continue;
-            }
-            if (line[i] == "]") {
-               inValue = false;
-               i++;
-               currentDirective.Arguments.push_back(currentArgument);
-               currentArgument = PBRTArgument();
-               continue;
-            }
             if (inValue) {
-               if (IsQuoted(line[i])) {
-                  currentArgument.Values.push_back(line[i].substr(1, line[i].length() - 2));
-               }
-               else {
-                  currentArgument.Values.push_back(line[i]);
-               }
-               i++;
-               continue;
+               currentDirective.Arguments.push_back(currentArgument);
             }
-         }
 
-         if (inValue) {
-            currentDirective.Arguments.push_back(currentArgument);
+            currentDirectives->push_back(currentDirective);
          }
-
-         directives.push_back(currentDirective);
       }
 
       // sampler
 
       unsigned int numSamples = 16;
 
-      for (PBRTDirective directive : directives) {
+      for (PBRTDirective directive : sceneDirectives) {
          if (directive.Name == "Sampler") {
             if (directive.Identifier == "halton") {
                Sampler = std::make_unique<HaltonSampler>();
@@ -207,7 +213,7 @@ namespace Polytope {
 
       bool createBoxFilter = false;
 
-      for (PBRTDirective directive : directives) {
+      for (PBRTDirective directive : sceneDirectives) {
          if (directive.Name == "PixelFilter") {
             if (directive.Identifier == "box") {
                createBoxFilter = true;
@@ -236,7 +242,9 @@ namespace Polytope {
 
       // film
 
-      for (PBRTDirective directive : directives) {
+      Polytope::Bounds bounds;
+
+      for (PBRTDirective directive : sceneDirectives) {
          if (directive.Name == "Film") {
             if (directive.Identifier == "image") {
                unsigned int x = 0;
@@ -265,19 +273,79 @@ namespace Polytope {
                   }
                }
 
-               Polytope::Bounds bounds = Polytope::Bounds(x, y);
+               bounds = Polytope::Bounds(x, y);
 
                // TODO
 
                if (createBoxFilter) {
                   Filter = std::make_unique<BoxFilter>(bounds);
                }
-               Film = std::make_unique<PNGFilm>(bounds, filename, )
+               Film = std::make_unique<PNGFilm>(bounds, filename, std::move(Filter));
             }
          }
       }
 
+      // camera
 
+      Transform currentTransform;
+
+      for (PBRTDirective directive : sceneDirectives) {
+         if (directive.Name == "LookAt") {
+            if (directive.Arguments.size() == 1) {
+               if (directive.Arguments[0].Values.size() == 9) {
+                  float eyeX = stof(directive.Arguments[0].Values[0]);
+                  float eyeY = stof(directive.Arguments[0].Values[1]);
+                  float eyeZ = stof(directive.Arguments[0].Values[2]);
+
+                  Point eye = Point(eyeX, eyeY, eyeZ);
+
+                  float lookAtX = stof(directive.Arguments[0].Values[3]);
+                  float lookAtY = stof(directive.Arguments[0].Values[4]);
+                  float lookAtZ = stof(directive.Arguments[0].Values[5]);
+
+                  Point lookAt = Point(lookAtX, lookAtY, lookAtZ);
+
+                  float upX = stof(directive.Arguments[0].Values[6]);
+                  float upY = stof(directive.Arguments[0].Values[7]);
+                  float upZ = stof(directive.Arguments[0].Values[8]);
+
+                  Vector up = Vector(upX, upY, upZ);
+
+                  Transform t = Transform::LookAt(eye, lookAt, up);
+
+                  currentTransform = currentTransform * t;
+               }
+            }
+            break;
+         }
+      }
+
+      std::unique_ptr<AbstractCamera> camera;
+
+      CameraSettings settings = CameraSettings(bounds, 50);
+
+      for (PBRTDirective directive : sceneDirectives) {
+         if (directive.Name == "Camera") {
+            if (directive.Identifier == "perspective") {
+               float fov = 50;
+
+               for (PBRTArgument arg : directive.Arguments) {
+                  if (arg.Type == "float") {
+                     if (arg.Name == "fov") {
+                        fov = static_cast<float>(stof(arg.Values[0]));
+                     }
+                     else {
+                        LogBadArgument(arg);
+                     }
+                  }
+               }
+
+               settings.FieldOfView = 50;
+
+               camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
+            }
+         }
+      }
 
       return std::make_unique<TileRunner>(
             std::move(Sampler),
