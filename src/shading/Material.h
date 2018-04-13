@@ -18,6 +18,7 @@ namespace Polytope {
 
       std::unique_ptr<AbstractBRDF> BRDF;
       Polytope::ReflectanceSpectrum ReflectanceSpectrum;
+      std::string Name;
    };
 
 }

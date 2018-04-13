@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <stack>
 #include "PBRTFileParser.h"
 #include "../integrators/PathTraceIntegrator.h"
 #include "../samplers/HaltonSampler.h"
@@ -13,6 +14,7 @@
 #include "../films/PNGFilm.h"
 #include "../filters/BoxFilter.h"
 #include "../cameras/PerspectiveCamera.h"
+#include "../shading/brdf/LambertBRDF.h"
 
 namespace Polytope {
 
@@ -99,7 +101,7 @@ namespace Polytope {
 
             currentDirective.Name = line[0];
 
-            if (currentDirective.Name == WorldBegin)
+            if (currentDirective.Name == WorldBeginText)
                currentDirectives = &worldDirectives;
 
             if (line.size() == 1) {
@@ -181,7 +183,7 @@ namespace Polytope {
       unsigned int numSamples = 16;
 
       for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == "Sampler") {
+         if (directive.Name == SamplerText) {
             if (directive.Identifier == "halton") {
                Sampler = std::make_unique<HaltonSampler>();
                break;
@@ -191,7 +193,7 @@ namespace Polytope {
             }
 
             for (PBRTArgument arg : directive.Arguments) {
-               if (arg.Type == "integer") {
+               if (arg.Type == IntegerText) {
                   if (arg.Name == "pixelsamples") {
                      numSamples = static_cast<unsigned int>(stoi(arg.Values[0]));
                      break;
@@ -214,14 +216,14 @@ namespace Polytope {
       bool createBoxFilter = false;
 
       for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == "PixelFilter") {
+         if (directive.Name == PixelFilterText) {
             if (directive.Identifier == "box") {
                createBoxFilter = true;
                unsigned int xWidth = 0;
                unsigned int yWidth = 0;
 
                for (PBRTArgument arg : directive.Arguments) {
-                  if (arg.Type == "integer") {
+                  if (arg.Type == IntegerText) {
                      if (arg.Name == "xwidth") {
                         xWidth = static_cast<unsigned int>(stoi(arg.Values[0]));
                      }
@@ -245,14 +247,14 @@ namespace Polytope {
       Polytope::Bounds bounds;
 
       for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == "Film") {
+         if (directive.Name == FilmText) {
             if (directive.Identifier == "image") {
                unsigned int x = 0;
                unsigned int y = 0;
                std::string filename;
 
                for (PBRTArgument arg : directive.Arguments) {
-                  if (arg.Type == "integer") {
+                  if (arg.Type == IntegerText) {
                      if (arg.Name == "xresolution") {
                         x = static_cast<unsigned int>(stoi(arg.Values[0]));
                      }
@@ -263,7 +265,7 @@ namespace Polytope {
                         LogBadArgument(arg);
                      }
                   }
-                  else if (arg.Type == "string") {
+                  else if (arg.Type == StringText) {
                      if (arg.Name == "filename") {
                         filename = arg.Values[0];
                      }
@@ -290,7 +292,7 @@ namespace Polytope {
       Transform currentTransform;
 
       for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == "LookAt") {
+         if (directive.Name == LookAtText) {
             if (directive.Arguments.size() == 1) {
                if (directive.Arguments[0].Values.size() == 9) {
                   float eyeX = stof(directive.Arguments[0].Values[0]);
@@ -324,13 +326,13 @@ namespace Polytope {
 
       CameraSettings settings = CameraSettings(bounds, 50);
 
-      for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == "Camera") {
+      for (const PBRTDirective &directive : sceneDirectives) {
+         if (directive.Name == CameraText) {
             if (directive.Identifier == "perspective") {
                float fov = 50;
 
                for (PBRTArgument arg : directive.Arguments) {
-                  if (arg.Type == "float") {
+                  if (arg.Type == FloatText) {
                      if (arg.Name == "fov") {
                         fov = static_cast<float>(stof(arg.Values[0]));
                      }
@@ -340,11 +342,55 @@ namespace Polytope {
                   }
                }
 
-               settings.FieldOfView = 50;
+               settings.FieldOfView = fov;
 
                camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
             }
          }
+      }
+
+      // world
+
+      std::vector<Material> namedMaterials;
+
+      std::stack<Transform> transformStack;
+      std::stack<Material> materialStack;
+
+      Material currentMaterial;
+
+      for (const PBRTDirective &directive : worldDirectives) {
+         if (directive.Name == MakeNamedMaterialText) {
+            // how to make a named material?
+            std::string materialName = directive.Identifier;
+            std::unique_ptr<AbstractBRDF> brdf;
+            Polytope::ReflectanceSpectrum reflectanceSpectrum;
+            for (const PBRTArgument &argument : directive.Arguments) {
+               if (argument.Type == StringText) {
+                  if (argument.Name == "type") {
+                     if (argument.Values[0] == "matte") {
+                        brdf = std::make_unique<Polytope::LambertBRDF>();
+                     }
+                  }
+               }
+               if (argument.Type == RGBText) {
+                  if (argument.Name == "Kd") {
+                     reflectanceSpectrum.r = stof(argument.Values[0]);
+                     reflectanceSpectrum.g = stof(argument.Values[1]);
+                     reflectanceSpectrum.b = stof(argument.Values[2]);
+                  }
+               }
+            }
+
+            Material material = Material(std::move(brdf), reflectanceSpectrum);
+            material.Name = materialName;
+
+            namedMaterials.push_back(material);
+         }
+
+         if (directive.Name == AttributeBeginText) {
+
+         }
+
       }
 
       return std::make_unique<TileRunner>(

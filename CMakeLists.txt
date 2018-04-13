@@ -58,7 +58,6 @@ add_library(polytope_lib
       src/scenes/NaiveScene.h
       src/scenes/SceneBuilder.cpp
       src/scenes/SceneBuilder.h
-      src/shading/Material.cpp
       src/shading/Material.h
       src/shading/brdf/AbstractBRDF.h
       src/shading/brdf/MirrorBRDF.cpp

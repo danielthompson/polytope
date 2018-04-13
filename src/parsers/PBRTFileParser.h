@@ -26,6 +26,12 @@ namespace Polytope {
       std::vector<Polytope::PBRTArgument> Arguments;
    };
 
+   class PBRTGraphicsState {
+   public:
+      std::unique_ptr<Material> material;
+
+   };
+
    class PBRTFileParser {
    public:
 
@@ -63,35 +69,54 @@ namespace Polytope {
       unsigned int numSamples = 0;
       Polytope::Bounds Bounds;
 
+      // datatypes
+
+      constexpr std::string IntegerText = "integer";
+      constexpr std::string FloatText = "float";
+      constexpr std::string StringText = "string";
+      constexpr std::string RGBText = "rgb";
+
       // scene
 
+      constexpr std::string CameraText = "Camera";
+      constexpr std::string FilmText = "Film";
+      constexpr std::string IntegratorText = "Integrator";
+      constexpr std::string LookAtText = "LookAt";
+      constexpr std::string PixelFilterText = "PixelFilter";
+      constexpr std::string SamplerText = "Sampler";
 
       // world
 
-      const std::string IntegratorText = "Integrator";
+      constexpr std::string AreaLightSourceText = "AreaLightSource";
+      constexpr std::string AttributeBeginText = "AttributeBegin";
+      constexpr std::string AttributeEndText = "AttributeEnd";
+      constexpr std::string MakeNamedMaterialText = "MakeNamedMaterial";
+      constexpr std::string NamedMaterialText = "NamedMaterial";
+      constexpr std::string ShapeText = "Shape";
+      constexpr std::string TransformBeginText = "TransformBegin";
+      constexpr std::string TransformEndText = "TransformEnd";
+      constexpr std::string TranslateText = "Translate";
+      constexpr std::string WorldBeginText = "WorldBegin";
+      constexpr std::string WorldEndText = "WorldEnd";
 
-      const std::string WorldBeginText = "WorldBegin";
-      
-
-
-      const std::vector<std::string> Directives {
-         "AreaLightSource",
-         "AttributeBegin", // done
-         "AttributeEnd", // done
-         "Camera",
-         "Film",
+      constexpr std::vector<std::string> Directives {
+         AreaLightSourceText,
+         AttributeBeginText, // done
+         AttributeEndText, // done
+         CameraText,
+         FilmText,
          IntegratorText,
-         "LookAt", // done
-         "MakeNamedMaterial",
-         "NamedMaterial", // done
-         "PixelFilter",
-         "Sampler",
-         "Shape",
-         "TransformBegin", // done
-         "TransformEnd", // done
-         "Translate", // done
-         "WorldBegin", // done
-         WorldBeginText // done
+         LookAtText, // done
+         MakeNamedMaterialText,
+         NamedMaterialText, // done
+         PixelFilterText,
+         SamplerText,
+         ShapeText,
+         TransformBeginText, // done
+         TransformEndText, // done
+         TranslateText, // done
+         WorldBeginText, // done
+         WorldEndText // done
       };
 
 
