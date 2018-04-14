@@ -6,6 +6,7 @@
 #define POLYTOPE_MATERIAL_H
 
 #include <memory>
+#include <utility>
 #include "brdf/AbstractBRDF.h"
 #include "ReflectanceSpectrum.h"
 
@@ -16,7 +17,7 @@ namespace Polytope {
       explicit Material() = default;
 
       Material(std::shared_ptr<AbstractBRDF> brdf, Polytope::ReflectanceSpectrum reflectanceSpectrum)
-            : BRDF(brdf), ReflectanceSpectrum(reflectanceSpectrum){ }
+            : BRDF(std::move(brdf)), ReflectanceSpectrum(reflectanceSpectrum){ }
 
       std::shared_ptr<AbstractBRDF> BRDF;
       Polytope::ReflectanceSpectrum ReflectanceSpectrum;

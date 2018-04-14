@@ -362,7 +362,7 @@ namespace Polytope {
          if (directive.Name == MakeNamedMaterialText) {
             // how to make a named material?
             std::string materialName = directive.Identifier;
-            std::unique_ptr<AbstractBRDF> brdf;
+            std::shared_ptr<AbstractBRDF> brdf;
             Polytope::ReflectanceSpectrum reflectanceSpectrum;
             for (const PBRTArgument &argument : directive.Arguments) {
                if (argument.Type == StringText) {
@@ -385,6 +385,7 @@ namespace Polytope {
             material.Name = materialName;
 
             namedMaterials.push_back(material);
+
          }
 
          if (directive.Name == AttributeBeginText) {
