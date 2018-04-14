@@ -21,7 +21,7 @@ namespace Polytope {
 
       // constructors
 
-      explicit AbstractScene(std::shared_ptr<AbstractCamera> camera)
+      explicit AbstractScene(std::unique_ptr<AbstractCamera> camera)
             : Camera(std::move(camera)) {} ;
 
       // methods
@@ -35,7 +35,7 @@ namespace Polytope {
 
       // data
 
-      std::shared_ptr<AbstractCamera> Camera{};
+      std::unique_ptr<AbstractCamera> Camera{};
       std::string ImplementationType = "Base Scene";
       std::vector<AbstractShape*> Shapes{};
       std::vector<AbstractLight*> Lights{};

@@ -21,9 +21,7 @@ namespace Polytope {
 
       Transform identity = Transform();
 
-      std::shared_ptr<AbstractCamera> camera = std::make_shared<PerspectiveCamera>(settings, identity);
-
-      AbstractScene *scene = new NaiveScene(camera);
+      AbstractScene *scene = new NaiveScene(std::make_unique<PerspectiveCamera>(settings, identity));
 
       // Orange ball
 

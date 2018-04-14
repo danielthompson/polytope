@@ -71,35 +71,35 @@ namespace Polytope {
 
       // datatypes
 
-      constexpr std::string IntegerText = "integer";
-      constexpr std::string FloatText = "float";
-      constexpr std::string StringText = "string";
-      constexpr std::string RGBText = "rgb";
+      const std::string IntegerText = "integer";
+      const std::string FloatText = "float";
+      const std::string StringText = "string";
+      const std::string RGBText = "rgb";
 
       // scene
 
-      constexpr std::string CameraText = "Camera";
-      constexpr std::string FilmText = "Film";
-      constexpr std::string IntegratorText = "Integrator";
-      constexpr std::string LookAtText = "LookAt";
-      constexpr std::string PixelFilterText = "PixelFilter";
-      constexpr std::string SamplerText = "Sampler";
+      const std::string CameraText = "Camera";
+      const std::string FilmText = "Film";
+      const std::string IntegratorText = "Integrator";
+      const std::string LookAtText = "LookAt";
+      const std::string PixelFilterText = "PixelFilter";
+      const std::string SamplerText = "Sampler";
 
       // world
 
-      constexpr std::string AreaLightSourceText = "AreaLightSource";
-      constexpr std::string AttributeBeginText = "AttributeBegin";
-      constexpr std::string AttributeEndText = "AttributeEnd";
-      constexpr std::string MakeNamedMaterialText = "MakeNamedMaterial";
-      constexpr std::string NamedMaterialText = "NamedMaterial";
-      constexpr std::string ShapeText = "Shape";
-      constexpr std::string TransformBeginText = "TransformBegin";
-      constexpr std::string TransformEndText = "TransformEnd";
-      constexpr std::string TranslateText = "Translate";
-      constexpr std::string WorldBeginText = "WorldBegin";
-      constexpr std::string WorldEndText = "WorldEnd";
+      const std::string AreaLightSourceText = "AreaLightSource";
+      const std::string AttributeBeginText = "AttributeBegin";
+      const std::string AttributeEndText = "AttributeEnd";
+      const std::string MakeNamedMaterialText = "MakeNamedMaterial";
+      const std::string NamedMaterialText = "NamedMaterial";
+      const std::string ShapeText = "Shape";
+      const std::string TransformBeginText = "TransformBegin";
+      const std::string TransformEndText = "TransformEnd";
+      const std::string TranslateText = "Translate";
+      const std::string WorldBeginText = "WorldBegin";
+      const std::string WorldEndText = "WorldEnd";
 
-      constexpr std::vector<std::string> Directives {
+      const std::vector<std::string> Directives {
          AreaLightSourceText,
          AttributeBeginText, // done
          AttributeEndText, // done

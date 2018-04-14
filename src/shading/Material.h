@@ -13,10 +13,12 @@ namespace Polytope {
 
    class Material {
    public:
-      Material(std::unique_ptr<AbstractBRDF> brdf, Polytope::ReflectanceSpectrum reflectanceSpectrum)
-            : BRDF(std::move(brdf)), ReflectanceSpectrum(reflectanceSpectrum){ }
+      explicit Material() = default;
 
-      std::unique_ptr<AbstractBRDF> BRDF;
+      Material(std::shared_ptr<AbstractBRDF> brdf, Polytope::ReflectanceSpectrum reflectanceSpectrum)
+            : BRDF(brdf), ReflectanceSpectrum(reflectanceSpectrum){ }
+
+      std::shared_ptr<AbstractBRDF> BRDF;
       Polytope::ReflectanceSpectrum ReflectanceSpectrum;
       std::string Name;
    };
