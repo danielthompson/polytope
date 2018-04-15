@@ -16,6 +16,8 @@ namespace Polytope {
    public:
       explicit Material() = default;
 
+      explicit Material(std::string name) : Name(std::move(name)) { }
+
       Material(std::shared_ptr<AbstractBRDF> brdf, Polytope::ReflectanceSpectrum reflectanceSpectrum)
             : BRDF(std::move(brdf)), ReflectanceSpectrum(reflectanceSpectrum){ }
 

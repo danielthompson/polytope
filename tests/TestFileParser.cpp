@@ -14,13 +14,58 @@ namespace Tests {
 
    namespace Parse {
 
-      TEST(FileParser, Sampler) {
+      const std::string twoballs = "Integrator \"path\" \"integer maxdepth\" [ 7 ] \n"
+                                   "LookAt 0 0 0 0 0 -1 0 1 0 \n"
+                                   "Sampler \"random\" \"integer pixelsamples\" [ 64 ] \n"
+                                   "PixelFilter \"triangle\" \"float xwidth\" [ 1.000000 ] \"float ywidth\" [ 1.000000 ] \n"
+                                   "Film \"image\" \"integer xresolution\" [ 640 ] \"integer yresolution\" [ 640 ] \"string filename\" [ \"two-balls.png\" ] \n"
+                                   "Camera \"perspective\" \"float fov\" [ 50 ] \n"
+                                   "WorldBegin\n"
+                                   "\tMakeNamedMaterial \"lambert\" \"string type\" [ \"matte\" ]  \"rgb Kd\" [ 0.164705 0.631372 0.596078 ] \n"
+                                   "\tAttributeBegin\n"
+                                   "\t\tAreaLightSource \"diffuse\" \"rgb L\" [ 10 10 10 ] \n"
+                                   "\t\tTransformBegin\n"
+                                   "\t\t\tTranslate 0 0 -300\n"
+                                   "\t\t\tShape \"sphere\" \"float radius\" [ 25 ] \n"
+                                   "\t\tTransformEnd\n"
+                                   "\tAttributeEnd\n"
+                                   "\tNamedMaterial \"lambert\" \n"
+                                   "\tTransformBegin\n"
+                                   "\t\tTranslate 100 0 -200\n"
+                                   "\t\tShape \"sphere\" \"float radius\" [ 50 ] \n"
+                                   "\tTransformEnd\n"
+                                   "\tTransformBegin\n"
+                                   "\t\tTranslate -100 0 -200\n"
+                                   "\t\tShape \"sphere\" \"float radius\" [ 50 ] \n"
+                                   "\tTransformEnd\n"
+                                   "WorldEnd";
+
+      TEST(FileParser, Sampler1) {
 
          Polytope::Logger logger = Polytope::Logger();
 
          PBRTFileParser fp = PBRTFileParser(logger);
          std::string desc = R"(Sampler "random" "integer pixelsamples" [ 64 ] )";
          std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(desc);
+
+         ASSERT_NE(nullptr, runner);
+         ASSERT_NE(nullptr, runner->Sampler);
+
+         std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
+
+         Polytope::HaltonSampler *result = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
+
+         ASSERT_NE(nullptr, result);
+
+      }
+
+      TEST(FileParser, Sampler2) {
+
+         Polytope::Logger logger = Polytope::Logger();
+
+         PBRTFileParser fp = PBRTFileParser(logger);
+
+         std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(twoballs);
 
          ASSERT_NE(nullptr, runner);
          ASSERT_NE(nullptr, runner->Sampler);

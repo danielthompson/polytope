@@ -26,24 +26,21 @@ namespace Polytope {
       return Parse(std::make_unique<std::istringstream>(text));
    }
 
-   std::unique_ptr<AbstractRunner> PBRTFileParser::Parse(std::unique_ptr<std::istream> stream) noexcept(false){
+   std::unique_ptr<AbstractRunner> PBRTFileParser::Parse(std::unique_ptr<std::istream> stream) noexcept(false) {
 
       std::vector<std::vector<std::string>> tokens;
 
       // scan
 
-      if (stream->good())
-      {
+      if (stream->good()) {
          int sourceLineNumber = 0;
          int targetLineNumber = -1;
          std::string line;
-         while (getline(*stream, line))
-         {
+         while (getline(*stream, line)) {
             tokens.emplace_back();
             std::string word;
             std::istringstream iss(line, std::istringstream::in);
-            while (iss >> word)
-            {
+            while (iss >> word) {
                // strip out comments
                if (word.find('#') == 0)
                   break;
@@ -61,16 +58,13 @@ namespace Polytope {
                   if (word[0] == '[') {
                      tokens[targetLineNumber].push_back("[");
                      tokens[targetLineNumber].push_back(word.substr(1, lastIndex));
-                  }
-                  else if (word[lastIndex] == ']') {
+                  } else if (word[lastIndex] == ']') {
                      tokens[targetLineNumber].push_back(word.substr(0, lastIndex - 1));
                      tokens[targetLineNumber].push_back("]");
-                  }
-                  else {
+                  } else {
                      tokens[targetLineNumber].push_back(word);
                   }
-               }
-               else {
+               } else {
                   tokens[targetLineNumber].push_back(word);
                }
 
@@ -80,8 +74,7 @@ namespace Polytope {
 
          }
 
-      }
-      else {
+      } else {
          throw std::invalid_argument("Couldn't open file " + Filename);
       }
 
@@ -197,8 +190,7 @@ namespace Polytope {
                   if (arg.Name == "pixelsamples") {
                      numSamples = static_cast<unsigned int>(stoi(arg.Values[0]));
                      break;
-                  }
-                  else {
+                  } else {
                      LogBadArgument(arg);
                   }
                }
@@ -226,17 +218,14 @@ namespace Polytope {
                   if (arg.Type == IntegerText) {
                      if (arg.Name == "xwidth") {
                         xWidth = static_cast<unsigned int>(stoi(arg.Values[0]));
-                     }
-                     else if (arg.Name == "ywidth") {
+                     } else if (arg.Name == "ywidth") {
                         yWidth = static_cast<unsigned int>(stoi(arg.Values[0]));
-                     }
-                     else {
+                     } else {
                         LogBadArgument(arg);
                      }
                   }
                }
-            }
-            else {
+            } else {
                LogBadIdentifier(directive);
             }
          }
@@ -257,19 +246,15 @@ namespace Polytope {
                   if (arg.Type == IntegerText) {
                      if (arg.Name == "xresolution") {
                         x = static_cast<unsigned int>(stoi(arg.Values[0]));
-                     }
-                     else if (arg.Name == "yresolution") {
+                     } else if (arg.Name == "yresolution") {
                         y = static_cast<unsigned int>(stoi(arg.Values[0]));
-                     }
-                     else {
+                     } else {
                         LogBadArgument(arg);
                      }
-                  }
-                  else if (arg.Type == StringText) {
+                  } else if (arg.Type == StringText) {
                      if (arg.Name == "filename") {
                         filename = arg.Values[0];
-                     }
-                     else {
+                     } else {
                         LogBadArgument(arg);
                      }
                   }
@@ -289,78 +274,85 @@ namespace Polytope {
 
       // camera
 
-      Transform currentTransform;
-
-      for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == LookAtText) {
-            if (directive.Arguments.size() == 1) {
-               if (directive.Arguments[0].Values.size() == 9) {
-                  float eyeX = stof(directive.Arguments[0].Values[0]);
-                  float eyeY = stof(directive.Arguments[0].Values[1]);
-                  float eyeZ = stof(directive.Arguments[0].Values[2]);
-
-                  Point eye = Point(eyeX, eyeY, eyeZ);
-
-                  float lookAtX = stof(directive.Arguments[0].Values[3]);
-                  float lookAtY = stof(directive.Arguments[0].Values[4]);
-                  float lookAtZ = stof(directive.Arguments[0].Values[5]);
-
-                  Point lookAt = Point(lookAtX, lookAtY, lookAtZ);
-
-                  float upX = stof(directive.Arguments[0].Values[6]);
-                  float upY = stof(directive.Arguments[0].Values[7]);
-                  float upZ = stof(directive.Arguments[0].Values[8]);
-
-                  Vector up = Vector(upX, upY, upZ);
-
-                  Transform t = Transform::LookAt(eye, lookAt, up);
-
-                  currentTransform = currentTransform * t;
-               }
-            }
-            break;
-         }
-      }
-
       std::unique_ptr<AbstractCamera> camera;
 
-      CameraSettings settings = CameraSettings(bounds, 50);
+      {
+         Transform currentTransform;
 
-      for (const PBRTDirective &directive : sceneDirectives) {
-         if (directive.Name == CameraText) {
-            if (directive.Identifier == "perspective") {
-               float fov = 50;
+         for (PBRTDirective directive : sceneDirectives) {
+            if (directive.Name == LookAtText) {
+               if (directive.Arguments.size() == 1) {
+                  if (directive.Arguments[0].Values.size() == 9) {
+                     float eyeX = stof(directive.Arguments[0].Values[0]);
+                     float eyeY = stof(directive.Arguments[0].Values[1]);
+                     float eyeZ = stof(directive.Arguments[0].Values[2]);
 
-               for (PBRTArgument arg : directive.Arguments) {
-                  if (arg.Type == FloatText) {
-                     if (arg.Name == "fov") {
-                        fov = static_cast<float>(stof(arg.Values[0]));
-                     }
-                     else {
-                        LogBadArgument(arg);
-                     }
+                     Point eye = Point(eyeX, eyeY, eyeZ);
+
+                     float lookAtX = stof(directive.Arguments[0].Values[3]);
+                     float lookAtY = stof(directive.Arguments[0].Values[4]);
+                     float lookAtZ = stof(directive.Arguments[0].Values[5]);
+
+                     Point lookAt = Point(lookAtX, lookAtY, lookAtZ);
+
+                     float upX = stof(directive.Arguments[0].Values[6]);
+                     float upY = stof(directive.Arguments[0].Values[7]);
+                     float upZ = stof(directive.Arguments[0].Values[8]);
+
+                     Vector up = Vector(upX, upY, upZ);
+
+                     Transform t = Transform::LookAt(eye, lookAt, up);
+
+                     currentTransform = currentTransform * t;
                   }
                }
+               break;
+            }
+         }
 
-               settings.FieldOfView = fov;
+         CameraSettings settings = CameraSettings(bounds, 50);
 
-               camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
+         for (const PBRTDirective &directive : sceneDirectives) {
+            if (directive.Name == CameraText) {
+               if (directive.Identifier == "perspective") {
+                  float fov = 50;
+
+                  for (PBRTArgument arg : directive.Arguments) {
+                     if (arg.Type == FloatText) {
+                        if (arg.Name == "fov") {
+                           fov = static_cast<float>(stof(arg.Values[0]));
+                        } else {
+                           LogBadArgument(arg);
+                        }
+                     }
+                  }
+
+                  settings.FieldOfView = fov;
+
+                  camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
+               }
             }
          }
       }
 
       // world
 
-      std::vector<Material> namedMaterials;
+      std::vector<std::shared_ptr<Material>> namedMaterials;
 
-      std::stack<Transform> transformStack;
-      std::stack<Material> materialStack;
+      std::stack<std::shared_ptr<Material>> materialStack;
+      std::stack<std::shared_ptr<SpectralPowerDistribution>> lightStack;
+      std::stack<std::shared_ptr<Transform>> transformStack;
 
-      Material currentMaterial;
+      std::shared_ptr<Material> activeMaterial;
+      std::shared_ptr<SpectralPowerDistribution> activeLight;
+      std::shared_ptr<Transform> activeTransform;
+
+      const std::shared_ptr<Material> materialMarker = std::make_shared<Material>(AttributeBeginText);
+      const std::shared_ptr<SpectralPowerDistribution> lightMarker = std::make_shared<SpectralPowerDistribution>();
+      const std::shared_ptr<Transform> transformMarker = std::make_shared<Transform>();
 
       for (const PBRTDirective &directive : worldDirectives) {
          if (directive.Name == MakeNamedMaterialText) {
-            // how to make a named material?
             std::string materialName = directive.Identifier;
             std::shared_ptr<AbstractBRDF> brdf;
             Polytope::ReflectanceSpectrum reflectanceSpectrum;
@@ -381,17 +373,65 @@ namespace Polytope {
                }
             }
 
-            Material material = Material(std::move(brdf), reflectanceSpectrum);
-            material.Name = materialName;
+            std::shared_ptr<Material> material = std::make_shared<Material>(std::move(brdf), reflectanceSpectrum);
+            material->Name = materialName;
 
             namedMaterials.push_back(material);
 
          }
 
-         if (directive.Name == AttributeBeginText) {
+         else if (directive.Name == AttributeBeginText) {
 
+            // push onto material stack
+            if (activeMaterial != nullptr) {
+               materialStack.push(activeMaterial);
+               materialStack.push(materialMarker);
+            }
+
+            // push onto light stack
+            if (activeLight != nullptr) {
+               lightStack.push(activeLight);
+               lightStack.push(lightMarker);
+            }
+
+            // push onto transform stack
+            if (activeTransform != nullptr) {
+               transformStack.push(activeTransform);
+               transformStack.push(transformMarker);
+            }
          }
 
+         else if (directive.Name == AttributeEndText) {
+            // pop material stack
+            std::shared_ptr<Material> currentStackMaterial;
+            do {
+               // pop values off stack until we've popped an attributebegin
+               currentStackMaterial = materialStack.top();
+               materialStack.pop();
+
+            } while (currentStackMaterial != materialMarker);
+
+            // pop light stack
+            std::shared_ptr<SpectralPowerDistribution> currentStackLight;
+            do {
+               // pop values off stack until we've popped an attributebegin
+               currentStackLight = lightStack.top();
+               lightStack.pop();
+
+            } while (currentStackLight != lightMarker);
+
+            // pop transform stack
+            std::shared_ptr<Transform> currentStackTransform;
+            do {
+               // pop values off stack until we've popped an attributebegin
+               currentStackTransform = transformStack.top();
+               transformStack.pop();
+            } while (activeTransform != transformMarker);
+         }
+
+         else if (directive.Name == AreaLightSourceText) {
+
+         }
       }
 
       return std::make_unique<TileRunner>(
