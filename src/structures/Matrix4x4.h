@@ -23,6 +23,7 @@ namespace Polytope {
       bool operator==(const Matrix4x4 &rhs) const;
       bool operator!=(const Matrix4x4 &rhs) const;
       Matrix4x4 operator*(const Matrix4x4 &rhs) const;
+      Matrix4x4 &operator*=(const Matrix4x4 &rhs);
 
       // methods
 

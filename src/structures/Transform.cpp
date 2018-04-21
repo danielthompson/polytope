@@ -37,6 +37,22 @@ namespace Polytope {
       return !(rhs == *this);
    }
 
+   Transform Transform::operator*(const Transform &rhs) const {
+      Matrix4x4 matrix = this->Matrix * rhs.Matrix;
+      Matrix4x4 inverse = rhs.Inverse * this->Inverse;
+
+      return Transform(matrix, inverse);
+   }
+
+   // TODO
+   Transform &Transform::operator*=(const Transform &rhs) {
+
+      this->Matrix *= rhs.Matrix;
+      this->Inverse *= rhs.Inverse;
+
+      return *this;
+   }
+
    void Transform::ApplyInPlace(Point &p) const {
       float x = p.x;
       float y = p.y;
@@ -160,12 +176,7 @@ namespace Polytope {
               || lengthZ < .999 || lengthZ > 1.001);
    }
 
-   Transform Transform::operator*(const Transform &rhs) const {
-      Matrix4x4 matrix = this->Matrix * rhs.Matrix;
-      Matrix4x4 inverse = rhs.Inverse * this->Inverse;
 
-      return Transform(matrix, inverse);
-   }
 
    Transform Transform::Translate(const Vector &delta) {
       Matrix4x4 matrix = Matrix4x4(

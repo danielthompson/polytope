@@ -21,6 +21,14 @@ namespace Polytope {
       Material(std::shared_ptr<AbstractBRDF> brdf, Polytope::ReflectanceSpectrum reflectanceSpectrum)
             : BRDF(std::move(brdf)), ReflectanceSpectrum(reflectanceSpectrum){ }
 
+      Material(
+            std::shared_ptr<AbstractBRDF> brdf,
+            Polytope::ReflectanceSpectrum reflectanceSpectrum,
+            std::string name)
+            : BRDF(std::move(brdf)),
+              ReflectanceSpectrum(reflectanceSpectrum),
+              Name (std::move(name)){ }
+
       std::shared_ptr<AbstractBRDF> BRDF;
       Polytope::ReflectanceSpectrum ReflectanceSpectrum;
       std::string Name;

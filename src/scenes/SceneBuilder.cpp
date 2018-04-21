@@ -12,7 +12,8 @@
 #include "../shading/SpectralPowerDistribution.h"
 #include "../lights/AbstractLight.h"
 #include "../lights/PointLight.h"
-#include "../lights/SphereLight.h"
+#include "../lights/ShapeLight.h"
+
 
 namespace Polytope {
 
@@ -78,7 +79,7 @@ namespace Polytope {
 
       Sphere *sphere = new Sphere(objectToWorld, material);
 
-      AbstractLight *sphereLight = new SphereLight(lightSPD, sphere);
+      ShapeLight *sphereLight = new ShapeLight(lightSPD);
 
       sphere->Light = sphereLight;
 

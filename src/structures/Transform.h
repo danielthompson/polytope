@@ -28,6 +28,7 @@ namespace Polytope {
       bool operator==(const Transform &rhs) const;
       bool operator!=(const Transform &rhs) const;
       Transform operator*(const Transform &rhs) const;
+      Transform &operator*=(const Transform &rhs);
 
       // methods
 

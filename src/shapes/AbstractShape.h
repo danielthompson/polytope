@@ -10,6 +10,7 @@
 #include "../structures/Intersection.h"
 #include "../shading/Material.h"
 #include "../lights/AbstractLight.h"
+#include "../lights/ShapeLight.h"
 
 namespace Polytope {
 
@@ -28,13 +29,15 @@ namespace Polytope {
             const Transform &objectToWorld,
             const Transform &worldToObject,
             std::shared_ptr<Material> material,
-            AbstractLight *light);
+            ShapeLight *light);
 
    public:
 
       // methods
       virtual bool Hits(Ray &worldSpaceRay) const = 0;
       virtual void Intersect(const Ray &worldSpaceRay, Intersection *intersection) = 0;
+
+      virtual Point GetRandomPointOnSurface() = 0;
 
       bool IsLight() const {
          return (Light != nullptr);
@@ -46,7 +49,7 @@ namespace Polytope {
       std::shared_ptr<Polytope::Material> Material;
 
       // TODO change to weak to break cycles?
-      AbstractLight *Light = nullptr;
+      ShapeLight *Light = nullptr;
    };
 
 }

@@ -15,6 +15,7 @@
 #include "../filters/BoxFilter.h"
 #include "../cameras/PerspectiveCamera.h"
 #include "../shading/brdf/LambertBRDF.h"
+#include "../shapes/Sphere.h"
 
 namespace Polytope {
 
@@ -373,10 +374,7 @@ namespace Polytope {
                }
             }
 
-            std::shared_ptr<Material> material = std::make_shared<Material>(std::move(brdf), reflectanceSpectrum);
-            material->Name = materialName;
-
-            namedMaterials.push_back(material);
+            namedMaterials.push_back(std::make_shared<Material>(std::move(brdf), reflectanceSpectrum, materialName));
 
          }
 
@@ -385,20 +383,20 @@ namespace Polytope {
             // push onto material stack
             if (activeMaterial != nullptr) {
                materialStack.push(activeMaterial);
-               materialStack.push(materialMarker);
             }
+            materialStack.push(materialMarker);
 
             // push onto light stack
             if (activeLight != nullptr) {
                lightStack.push(activeLight);
-               lightStack.push(lightMarker);
             }
+            lightStack.push(lightMarker);
 
             // push onto transform stack
             if (activeTransform != nullptr) {
                transformStack.push(activeTransform);
-               transformStack.push(transformMarker);
             }
+            transformStack.push(transformMarker);
          }
 
          else if (directive.Name == AttributeEndText) {
@@ -411,6 +409,11 @@ namespace Polytope {
 
             } while (currentStackMaterial != materialMarker);
 
+            activeMaterial = materialStack.top();
+            if (activeMaterial != nullptr) {
+               materialStack.pop();
+            }
+
             // pop light stack
             std::shared_ptr<SpectralPowerDistribution> currentStackLight;
             do {
@@ -420,18 +423,95 @@ namespace Polytope {
 
             } while (currentStackLight != lightMarker);
 
+            activeLight = lightStack.top();
+            if (activeLight != nullptr) {
+               lightStack.pop();
+            }
+
             // pop transform stack
             std::shared_ptr<Transform> currentStackTransform;
             do {
                // pop values off stack until we've popped an attributebegin
                currentStackTransform = transformStack.top();
                transformStack.pop();
-            } while (activeTransform != transformMarker);
+            } while (currentStackTransform != transformMarker);
+
+            activeTransform = transformStack.top();
+            if (activeTransform != nullptr) {
+               transformStack.pop();
+            }
          }
 
          else if (directive.Name == AreaLightSourceText) {
+            for (const PBRTArgument &argument : directive.Arguments) {
+               if (argument.Name == "L") {
+                  if (activeLight == nullptr) {
+                     activeLight = std::make_shared<SpectralPowerDistribution>();
+                  }
+                  activeLight->r = stof(argument.Values[0]);
+                  activeLight->g = stof(argument.Values[1]);
+                  activeLight->b = stof(argument.Values[2]);
+                  break;
+               }
+            }
+         }
+
+         else if (directive.Name == TransformBeginText) {
+
+            // push onto transform stack
+            if (activeTransform != nullptr) {
+               transformStack.push(activeTransform);
+            }
+            transformStack.push(transformMarker);
+         }
+
+         else if (directive.Name == TransformEndText) {
+            // pop transform stack
+            std::shared_ptr<Transform> currentStackTransform;
+            do {
+               // pop values off stack until we've popped an attributebegin
+               currentStackTransform = transformStack.top();
+               transformStack.pop();
+            } while (currentStackTransform != transformMarker);
+
+            activeTransform = transformStack.top();
+            if (activeTransform != nullptr) {
+               transformStack.pop();
+            }
+         }
+
+         else if (directive.Name == TranslateText) {
+            // need to ensure just one argument with 3 values
+            PBRTArgument argument = directive.Arguments[0];
+            float x = std::stof(argument.Values[0]);
+            float y = std::stof(argument.Values[1]);
+            float z = std::stof(argument.Values[2]);
+            Transform t = Transform::Translate(x, y, z);
+
+            if (activeTransform == nullptr) {
+               activeTransform = std::make_shared<Transform>();
+            }
+
+            Transform *active = activeTransform.get();
+            *active *= t;
+         }
+
+         // other transform directives
+
+         else if (directive.Name == ShapeText) {
+            if (directive.Identifier == "sphere") {
+               PBRTArgument argument = directive.Arguments[0];
+               if (argument.Type == FloatText) {
+                  float radius = std::stof(argument.Values[0]);
+                  Polytope::Sphere sphere = Sphere(*activeTransform, activeMaterial);
+                  if (activeLight != nullptr) {
+                     ShapeLight sphereLight = ShapeLight(*activeLight);
+                  }
+               }
+            }
 
          }
+
       }
 
       return std::make_unique<TileRunner>(

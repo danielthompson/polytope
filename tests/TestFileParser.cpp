@@ -17,7 +17,7 @@ namespace Tests {
       const std::string twoballs = "Integrator \"path\" \"integer maxdepth\" [ 7 ] \n"
                                    "LookAt 0 0 0 0 0 -1 0 1 0 \n"
                                    "Sampler \"random\" \"integer pixelsamples\" [ 64 ] \n"
-                                   "PixelFilter \"triangle\" \"float xwidth\" [ 1.000000 ] \"float ywidth\" [ 1.000000 ] \n"
+                                   "PixelFilter \"box\" \"float xwidth\" [ 1.000000 ] \"float ywidth\" [ 1.000000 ] \n"
                                    "Film \"image\" \"integer xresolution\" [ 640 ] \"integer yresolution\" [ 640 ] \"string filename\" [ \"two-balls.png\" ] \n"
                                    "Camera \"perspective\" \"float fov\" [ 50 ] \n"
                                    "WorldBegin\n"
