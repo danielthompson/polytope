@@ -15,6 +15,7 @@
 #include "filters/BoxFilter.h"
 #include "runners/TileRunner.h"
 #include "samplers/HaltonSampler.h"
+#include "parsers/PBRTFileParser.h"
 
 namespace Polytope {
 
@@ -26,12 +27,6 @@ namespace Polytope {
       constexpr unsigned int height = 640;
 
       const Polytope::Bounds bounds(width, height);
-
-      SceneBuilder sceneBuilder = SceneBuilder(bounds);
-
-      AbstractScene *scene = sceneBuilder.Default();
-
-      Compile(scene);
 
       const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
       Logger.LogTime("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
@@ -45,14 +40,29 @@ namespace Polytope {
       Logger.LogTime("Using " + std::to_string(usingThreads) + " threads.");
 
       {
-         std::unique_ptr<AbstractSampler> sampler = std::make_unique<HaltonSampler>();
-         std::unique_ptr<AbstractIntegrator> integrator = std::make_unique<PathTraceIntegrator>(scene, 5);
+         std::unique_ptr<AbstractRunner> runner;
+         if (Options.input_filename.empty()) {
 
-         std::unique_ptr<BoxFilter> filter = std::make_unique<BoxFilter>(bounds);
-         filter->SetSamples(Options.samples);
-         std::unique_ptr<AbstractFilm> film = std::make_unique<PNGFilm>(bounds, Options.filename, std::move(filter));
+            Logger.LogTime("No input file specified, using default scene.");
+            SceneBuilder sceneBuilder = SceneBuilder(bounds);
+            AbstractScene *scene = sceneBuilder.Default();
+            Compile(scene);
 
-         const std::unique_ptr<AbstractRunner> runner = std::make_unique<TileRunner>(std::move(sampler), scene, std::move(integrator), std::move(film), bounds, Options.samples);
+            std::unique_ptr<AbstractSampler> sampler = std::make_unique<HaltonSampler>();
+            std::unique_ptr<AbstractIntegrator> integrator = std::make_unique<PathTraceIntegrator>(scene, 5);
+
+            std::unique_ptr<BoxFilter> filter = std::make_unique<BoxFilter>(bounds);
+            filter->SetSamples(Options.samples);
+            std::unique_ptr<AbstractFilm> film = std::make_unique<PNGFilm>(bounds, Options.output_filename, std::move(filter));
+
+            runner = std::make_unique<TileRunner>(std::move(sampler), scene, std::move(integrator), std::move(film), bounds, Options.samples);
+
+         }
+         else {
+            // load file
+            PBRTFileParser parser = PBRTFileParser(Logger);
+            runner = parser.ParseFile(Options.input_filename);
+         }
 
          Logger.LogTime(
                std::string("Image is [") + std::to_string(width) + std::string("] x [") + std::to_string(height) +
@@ -93,8 +103,6 @@ namespace Polytope {
          Logger.LogTime("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
 
       }
-
-      delete scene;
 
       auto totalRunTimeEnd = std::chrono::system_clock::now();
 

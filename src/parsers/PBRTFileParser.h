@@ -57,12 +57,13 @@ namespace Polytope {
       bool EndQuoted(std::string token);
       void LogBadArgument(const PBRTArgument &argument);
       void LogBadIdentifier(const PBRTDirective &directive);
+      void LogOther(const PBRTDirective &directive, const std::string &error);
 
       void CreateSampler(std::vector<std::string> &directive);
       void CreateIntegrator(std::vector<std::string> &directive);
 
       std::unique_ptr<AbstractSampler> Sampler;
-      AbstractScene *scene = nullptr;
+      AbstractScene *Scene = nullptr;
       std::unique_ptr<AbstractIntegrator> Integrator;
       std::unique_ptr<AbstractFilm> Film;
       std::unique_ptr<AbstractFilter> Filter;

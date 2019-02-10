@@ -4,7 +4,7 @@ LookAt 0 0 0 # eye
        0 1 0 # up	   
 Sampler "random" "integer pixelsamples" [ 64 ] 
 PixelFilter "triangle" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ] 
-Film "image" "integer xresolution" [ 640 ] "integer yresolution" [ 640 ] "string filename" [ "three-balls.png" ] 
+Film "image" "integer xresolution" [ 640 ] "integer yresolution" [ 640 ] "string input_filename" [ "three-balls.png" ]
 Camera "perspective" "float fov" [ 50 ] 
 WorldBegin
 	MakeNamedMaterial "lambert" "string type" [ "matte" ]  "rgb Kd" [ 0.164705 0.631372 0.596078 ] 

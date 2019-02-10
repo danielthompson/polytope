@@ -104,21 +104,19 @@ namespace Polytope {
 
    void TileRunner::getNextTile(Point2i &tile) {
 
-      //std::thread::id threadID = std::this_thread::get_id();
+      std::thread::id threadID = std::this_thread::get_id();
+      std::cout << "Thread " << threadID << " entering critical section..." << std::endl;
+      logger.logThread("Waiting for lock...");
 
-      //std::cout << "Thread " << threadID << " entering critical section..." << std::endl;
+      //auto outputStart = std::chrono::system_clock::now();
 
-      //logger.logThread("Waiting for lock...");
+      std::lock_guard<std::mutex> lock(_mutex);
 
-      auto outputStart = std::chrono::system_clock::now();
-
-      //std::lock_guard<std::mutex> lock(_mutex);
-
-      auto outputEnd = std::chrono::system_clock::now();
-      std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
+      //auto outputEnd = std::chrono::system_clock::now();
+      //std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
       //logger.logThread("Entered lock in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
 
-      //std::cout << "Thread " << threadID << " entered critical section, " ;
+      std::cout << "Thread " << threadID << " entered critical section, " ;
 
       if (_xTilePointer < _numXTiles && _yTilePointer < _numYTiles) {
          //std::cout << " passed if check." << std::endl;
@@ -135,6 +133,6 @@ namespace Polytope {
       else {
          //std::cout << " failed if check." << std::endl;
       };
-      //logger.logThread("Left lock.");
+      logger.logThread("Left lock.");
    }
 }

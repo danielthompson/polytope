@@ -74,13 +74,28 @@ namespace Polytope {
          }
       }
 
-      option = "-filename";
+      option = "-input_filename";
 
       if (OptionExists(option)) {
          const std::string value = GetOption(option);
 
          try {
-            options.filename = value;
+            options.input_filename = value;
+            Logger.LogTime("Parsed [" + option + "] = [" + value + "].");
+         }
+         catch (...) {
+            options.valid = false;
+            Logger.LogTime("Failed to parse [" + option + "] = [" + value + "].");
+         }
+      }
+
+      option = "-output_filename";
+
+      if (OptionExists(option)) {
+         const std::string value = GetOption(option);
+
+         try {
+            options.output_filename = value;
             Logger.LogTime("Parsed [" + option + "] = [" + value + "].");
          }
          catch (...) {

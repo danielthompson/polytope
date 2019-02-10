@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iostream>
 #include <stack>
+#include <cstring>
 #include "PBRTFileParser.h"
 #include "../integrators/PathTraceIntegrator.h"
 #include "../samplers/HaltonSampler.h"
@@ -16,11 +17,32 @@
 #include "../cameras/PerspectiveCamera.h"
 #include "../shading/brdf/LambertBRDF.h"
 #include "../shapes/Sphere.h"
+#include "../scenes/NaiveScene.h"
 
 namespace Polytope {
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filename) {
-      return Parse(std::make_unique<std::ifstream>(filename));
+
+
+
+      std::ifstream stream2 = std::ifstream();
+
+      stream2.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+
+      try {
+         stream2.open(filename, std::fstream::in);
+      }
+      catch (std::ifstream::failure &e) {
+         std::cerr << "Exception opening file: " << std::strerror(errno) << "\n";
+      }
+
+      bool open = stream2.is_open();
+
+      bool good = stream2.good();
+
+      std::unique_ptr<std::ifstream> stream = std::make_unique<std::ifstream>(filename, std::ifstream::in);
+
+      return Parse(std::move(stream));
    }
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseString(const std::string &text) {
@@ -253,7 +275,7 @@ namespace Polytope {
                         LogBadArgument(arg);
                      }
                   } else if (arg.Type == StringText) {
-                     if (arg.Name == "filename") {
+                     if (arg.Name == "input_filename") {
                         filename = arg.Values[0];
                      } else {
                         LogBadArgument(arg);
@@ -352,7 +374,10 @@ namespace Polytope {
       const std::shared_ptr<SpectralPowerDistribution> lightMarker = std::make_shared<SpectralPowerDistribution>();
       const std::shared_ptr<Transform> transformMarker = std::make_shared<Transform>();
 
+      Scene = new NaiveScene(std::move(camera));
+
       for (const PBRTDirective &directive : worldDirectives) {
+         Logger.Log(std::string("Checking directive [") + directive.Name + "]");
          if (directive.Name == MakeNamedMaterialText) {
             std::string materialName = directive.Identifier;
             std::shared_ptr<AbstractBRDF> brdf;
@@ -381,64 +406,93 @@ namespace Polytope {
          else if (directive.Name == AttributeBeginText) {
 
             // push onto material stack
+            materialStack.push(materialMarker);
             if (activeMaterial != nullptr) {
                materialStack.push(activeMaterial);
             }
-            materialStack.push(materialMarker);
 
             // push onto light stack
+            lightStack.push(lightMarker);
             if (activeLight != nullptr) {
                lightStack.push(activeLight);
             }
-            lightStack.push(lightMarker);
-
+            
             // push onto transform stack
+            transformStack.push(transformMarker);
             if (activeTransform != nullptr) {
                transformStack.push(activeTransform);
             }
-            transformStack.push(transformMarker);
          }
 
          else if (directive.Name == AttributeEndText) {
+
             // pop material stack
-            std::shared_ptr<Material> currentStackMaterial;
-            do {
-               // pop values off stack until we've popped an attributebegin
-               currentStackMaterial = materialStack.top();
+            if (!materialStack.empty()) {
+               std::shared_ptr<Material> stackValue = materialStack.top();
                materialStack.pop();
-
-            } while (currentStackMaterial != materialMarker);
-
-            activeMaterial = materialStack.top();
-            if (activeMaterial != nullptr) {
-               materialStack.pop();
+               
+               if (stackValue == materialMarker) {
+                  // no value was pushed, so there wasn't any active material before, so there shouldn't be now
+                  activeMaterial = nullptr;
+               }
+               else {
+                  // a value was pushed, so there should be at least one more materialMarker on the stack
+                  if (materialStack.empty()) {
+                     // OOPS, should never happen
+                  }
+                  else {
+                     // restore the previously active material
+                     activeMaterial = stackValue;
+                     // pop the marker
+                     materialStack.pop();
+                  }
+               }
             }
 
             // pop light stack
-            std::shared_ptr<SpectralPowerDistribution> currentStackLight;
-            do {
-               // pop values off stack until we've popped an attributebegin
-               currentStackLight = lightStack.top();
+            if (!lightStack.empty()) {
+               std::shared_ptr<SpectralPowerDistribution> stackValue = lightStack.top();
                lightStack.pop();
 
-            } while (currentStackLight != lightMarker);
-
-            activeLight = lightStack.top();
-            if (activeLight != nullptr) {
-               lightStack.pop();
+               if (stackValue == lightMarker) {
+                  // no value was pushed, so there wasn't any active light before, so there shouldn't be now
+                  activeLight = nullptr;
+               }
+               else {
+                  // a value was pushed, so there should be at least one more lightMarker on the stack
+                  if (lightStack.empty()) {
+                     // OOPS, should never happen
+                  }
+                  else {
+                     // restore the previously active light
+                     activeLight = stackValue;
+                     // pop the marker
+                     lightStack.pop();
+                  }
+               }
             }
 
             // pop transform stack
-            std::shared_ptr<Transform> currentStackTransform;
-            do {
-               // pop values off stack until we've popped an attributebegin
-               currentStackTransform = transformStack.top();
+            if (!transformStack.empty()) {
+               std::shared_ptr<Transform> stackValue = transformStack.top();
                transformStack.pop();
-            } while (currentStackTransform != transformMarker);
 
-            activeTransform = transformStack.top();
-            if (activeTransform != nullptr) {
-               transformStack.pop();
+               if (stackValue == transformMarker) {
+                  // no value was pushed, so there wasn't any active transform before, so there shouldn't be now
+                  activeTransform = nullptr;
+               }
+               else {
+                  // a value was pushed, so there should be at least one more transformMarker on the stack
+                  if (transformStack.empty()) {
+                     // OOPS, should never happen
+                  }
+                  else {
+                     // restore the previously active transform
+                     activeTransform = stackValue;
+                     // pop the marker
+                     transformStack.pop();
+                  }
+               }
             }
          }
 
@@ -459,24 +513,34 @@ namespace Polytope {
          else if (directive.Name == TransformBeginText) {
 
             // push onto transform stack
+            transformStack.push(transformMarker);
             if (activeTransform != nullptr) {
                transformStack.push(activeTransform);
             }
-            transformStack.push(transformMarker);
          }
 
          else if (directive.Name == TransformEndText) {
             // pop transform stack
-            std::shared_ptr<Transform> currentStackTransform;
-            do {
-               // pop values off stack until we've popped an attributebegin
-               currentStackTransform = transformStack.top();
+            if (!transformStack.empty()) {
+               std::shared_ptr<Transform> stackValue = transformStack.top();
                transformStack.pop();
-            } while (currentStackTransform != transformMarker);
 
-            activeTransform = transformStack.top();
-            if (activeTransform != nullptr) {
-               transformStack.pop();
+               if (stackValue == transformMarker) {
+                  // no value was pushed, so there wasn't any active transform before, so there shouldn't be now
+                  activeTransform = nullptr;
+               }
+               else {
+                  // a value was pushed, so there should be at least one more transformMarker on the stack
+                  if (transformStack.empty()) {
+                     // OOPS, should never happen
+                  }
+                  else {
+                     // restore the previously active transform
+                     activeTransform = stackValue;
+                     // pop the marker
+                     transformStack.pop();
+                  }
+               }
             }
          }
 
@@ -503,20 +567,39 @@ namespace Polytope {
                PBRTArgument argument = directive.Arguments[0];
                if (argument.Type == FloatText) {
                   float radius = std::stof(argument.Values[0]);
-                  Polytope::Sphere sphere = Sphere(*activeTransform, activeMaterial);
+                  AbstractShape *sphere = new Sphere(*activeTransform, activeMaterial);
                   if (activeLight != nullptr) {
-                     ShapeLight sphereLight = ShapeLight(*activeLight);
+                     ShapeLight *sphereLight = new ShapeLight(*activeLight);
+                     sphere->Light = sphereLight;
+                     Scene->Lights.push_back(sphereLight);
                   }
+                  Scene->Shapes.push_back(sphere);
                }
             }
-
+            else {
+               LogBadIdentifier(directive);
+            }
          }
 
+         else if (directive.Name == NamedMaterialText) {
+            std::string materialName = directive.Identifier;
+            bool found = false;
+            for (const auto &material : namedMaterials) {
+               if (material->Name == materialName) {
+                  activeMaterial = material;
+                  found = true;
+                  break;
+               }
+            }
+            if (!found) {
+               LogOther(directive, "Specified material [" + materialName + "] not found. Have you defined it yet?");
+            }
+         }
       }
 
       return std::make_unique<TileRunner>(
             std::move(Sampler),
-            scene,
+            Scene,
             std::move(Integrator),
             std::move(Film),
             Bounds,
@@ -531,6 +614,11 @@ namespace Polytope {
    void PBRTFileParser::LogBadIdentifier(const PBRTDirective &directive) {
       Logger.Log("Unknown directive/identifier combination: [" + directive.Name + "] / [" + directive.Identifier + "].");
    }
+
+   void PBRTFileParser::LogOther(const PBRTDirective &directive, const std::string &error) {
+      Logger.Log(directive.Name + ": " + error);
+   }
+
 
    bool PBRTFileParser::IsQuoted(std::string token) {
       return (token[0] == '"' && token[token.size() - 1] == '"');

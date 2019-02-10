@@ -11,7 +11,8 @@ namespace Polytope {
    public:
       unsigned int threads = 0;
       unsigned int samples = 4;
-      std::string filename = "test.png";
+      std::string input_filename = "";
+      std::string output_filename = "test.png";
       bool valid = true;
    };
 
