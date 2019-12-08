@@ -5,8 +5,6 @@
 #include "Tracer.h"
 #include "utilities/OptionsParser.h"
 
-
-
 int main(int argc, char* argv[]) {
 
    try {
@@ -29,7 +27,4 @@ int main(int argc, char* argv[]) {
    catch(const std::exception&) {
       return EXIT_FAILURE;
    }
-
-
-
 }

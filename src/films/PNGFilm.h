@@ -16,7 +16,7 @@ namespace Polytope {
 
       // constructors
       PNGFilm(const Polytope::Bounds bounds, const std::string &filename, std::unique_ptr<AbstractFilter> filter) :
-            AbstractFilm(bounds, std::move(filter)), Filename(std::move(filename))
+            AbstractFilm(bounds, std::move(filter)), Filename(filename)
              {
          //Data = std::vector<unsigned char>(size_t(bounds.x * bounds.y * 4));
       };
@@ -27,9 +27,10 @@ namespace Polytope {
 
       // data
       const std::string Filename;
+
+   private:
+      std::string GetCurrentWorkingDirectory() const;
    };
-
 }
-
 
 #endif //POLYTOPE_PNGFILM_H

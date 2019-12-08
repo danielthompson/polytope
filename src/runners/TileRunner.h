@@ -18,7 +18,7 @@ namespace Polytope {
             AbstractScene *scene,
             std::unique_ptr<AbstractIntegrator> integrator,
             std::unique_ptr<AbstractFilm> film,
-            const Polytope::Bounds bounds,
+            Polytope::Bounds bounds,
             unsigned int numSamples);
 
       void Run() override;

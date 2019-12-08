@@ -22,14 +22,11 @@
 namespace Polytope {
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filename) {
-
-
-
       std::ifstream stream2 = std::ifstream();
-
       stream2.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
 
       try {
+         Logger.LogTime("Attempting to open file [" + filename + "]...");
          stream2.open(filename, std::fstream::in);
       }
       catch (std::ifstream::failure &e) {

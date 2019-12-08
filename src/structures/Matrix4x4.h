@@ -34,6 +34,5 @@ namespace Polytope {
 
       float Matrix[4][4];
    };
-
 }
 #endif //POLYTOPE_MATRIX4X4_H

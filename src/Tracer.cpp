@@ -107,7 +107,7 @@ namespace Polytope {
       auto totalRunTimeEnd = std::chrono::system_clock::now();
 
       std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
-      std::time_t end_time = std::chrono::system_clock::to_time_t(totalRunTimeEnd);
+      //std::time_t end_time = std::chrono::system_clock::to_time_t(totalRunTimeEnd);
 
       Logger.LogTime("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
 
