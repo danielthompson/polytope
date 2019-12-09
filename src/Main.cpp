@@ -5,8 +5,6 @@
 #include "Tracer.h"
 #include "utilities/OptionsParser.h"
 
-
-
 int main(int argc, char* argv[]) {
 
    try {
@@ -18,7 +16,7 @@ int main(int argc, char* argv[]) {
 
       if (argc > 0) {
          Polytope::OptionsParser parser(argc, argv, logger);
-         options = parser.Parse();
+         parser.Parse(options);
       }
 
       Polytope::Tracer tracer = Polytope::Tracer(logger, options);
@@ -26,10 +24,7 @@ int main(int argc, char* argv[]) {
 
       logger.LogTime("Exiting Polytope.");
    }
-   catch(const std::exception&) {
+   catch (const std::exception&) {
       return EXIT_FAILURE;
    }
-
-
-
 }

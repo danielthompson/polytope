@@ -43,6 +43,8 @@ namespace Polytope {
        */
       virtual float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const = 0;
 
+      virtual ~AbstractBRDF() = default;
+
    };
 
 }

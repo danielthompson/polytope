@@ -17,4 +17,5 @@ namespace Polytope {
 
       return hemi;
    }
+
 }

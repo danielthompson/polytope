@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by Daniel on 21-Mar-18.
 //
@@ -15,7 +17,7 @@ namespace Polytope {
    class Tracer {
    public:
 
-      Tracer(Polytope::Logger logger, Polytope::Options options)
+      Tracer(Polytope::Logger &logger, Polytope::Options &options)
             : Logger(logger), Options(options) { }
 
       // methods

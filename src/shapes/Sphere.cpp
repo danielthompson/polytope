@@ -29,25 +29,25 @@ namespace Polytope {
 
       // TODO this can be simplified
 
-      Vector v = objectSpaceRay.Origin - Origin;
+      const Vector v = objectSpaceRay.Origin - Origin;
 
-      float a = objectSpaceRay.Direction.Dot(objectSpaceRay.Direction);
-      float b = 2 * (objectSpaceRay.Direction.Dot(v));
-      float c = (v).Dot(v) - (Radius * Radius);
+      const float a = objectSpaceRay.Direction.Dot(objectSpaceRay.Direction);
+      const float b = 2 * (objectSpaceRay.Direction.Dot(v));
+      const float c = (v).Dot(v) - (Radius * Radius);
 
-      float discriminant = (b * b) - (4 * a * c);
+      const float discriminant = (b * b) - (4 * a * c);
 
       if (discriminant < 0) {
          return false;
       }
 
-      float root = (float) sqrt(discriminant);
+      const float root = sqrt(discriminant);
 
-      float oneOverTwoA = .5f / a;
+      const float oneOverTwoA = .5f / a;
 
-      float t0 = (-b + root) * oneOverTwoA;
+      const float t0 = (-b + root) * oneOverTwoA;
 
-      float t1 = (-b - root) * oneOverTwoA;
+      const float t1 = (-b - root) * oneOverTwoA;
 
       float hits;
 

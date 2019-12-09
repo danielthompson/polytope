@@ -13,7 +13,7 @@ namespace Polytope {
    class OptionsParser {
    public:
       OptionsParser(int &argc, char **argv, Polytope::Logger &logger);
-      Polytope::Options Parse();
+      void Parse(Polytope::Options &options) const;
 
       Polytope::Logger Logger;
 
@@ -22,7 +22,7 @@ namespace Polytope {
       bool OptionExists(const std::string &option) const;
       const std::string &GetOption(const std::string &option) const;
 
-      unsigned int stou(const std::string &str, size_t *idx = nullptr, int base = 10) ;
+      unsigned int stou(const std::string &str, size_t *idx = nullptr, int base = 10) const ;
    };
 
 }

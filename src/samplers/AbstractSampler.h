@@ -13,13 +13,13 @@ namespace Polytope {
    public:
 
       // methods
-      virtual Point2f GetSample(int x, int y) = 0;
+      virtual Point2f GetSample(int x, int y) const = 0;
 
-      virtual void GetSamples(Point2f points[], int number, int x, int y) = 0;
+      virtual void GetSamples(Point2f points[], int number, int x, int y) const = 0;
 
       // destructors
 
-      virtual ~AbstractSampler() { }
+      virtual ~AbstractSampler() = default;
 
    };
 

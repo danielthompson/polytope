@@ -48,7 +48,7 @@ namespace Polytope {
    constexpr float Infinity = std::numeric_limits<float>::infinity();
    constexpr float DenormMin = std::numeric_limits<float>::denorm_min();
 
-   constexpr float Root3 = std::sqrt(3.0f);
+   const float Root3 = std::sqrt(3.0f);
 
    inline bool WithinEpsilon(float number, float target, float epsilon) {
 

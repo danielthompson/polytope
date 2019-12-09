@@ -34,8 +34,7 @@ namespace Polytope {
              != this->_tokens.end();
    }
 
-   Polytope::Options OptionsParser::Parse() {
-      Polytope::Options options = Polytope::Options();
+   void OptionsParser::Parse(Polytope::Options &options) const {
 
       if (OptionExists("--help")) {
 
@@ -89,16 +88,13 @@ namespace Polytope {
          }
       }
 
-      return options;
    }
 
-   unsigned int OptionsParser::stou(std::string const & str, size_t * idx, int base)  {
+   unsigned int OptionsParser::stou(std::string const &str, size_t *idx, int base) const {
       unsigned long result = std::stoul(str, idx, base);
       if (result > std::numeric_limits<unsigned>::max()) {
          throw std::out_of_range("stou");
       }
       return result;
    }
-
-
 }

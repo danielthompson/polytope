@@ -259,7 +259,7 @@ namespace Polytope {
       return transform;
    }
 
-   Transform LookAt(const Point &eye, const Point &lookAt, Vector &up) {
+   Transform Transform::LookAt(const Point &eye, const Point &lookAt, Vector &up) {
 
       float m[4][4];
 

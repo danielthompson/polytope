@@ -17,14 +17,16 @@
 namespace Polytope {
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filename) {
-      return Parse(std::make_unique<std::ifstream>(filename));
+      auto tokens = Scan(std::make_unique<std::ifstream>(filename));
+      return Parse(tokens);
    }
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseString(const std::string &text) {
-      return Parse(std::make_unique<std::istringstream>(text));
+      auto tokens = Scan(std::make_unique<std::istringstream>(text));
+      return Parse(tokens);
    }
 
-   std::unique_ptr<AbstractRunner> PBRTFileParser::Parse(std::unique_ptr<std::istream> stream) noexcept(false){
+   std::vector<std::vector<std::string>> PBRTFileParser::Scan(std::unique_ptr<std::istream> stream) {
 
       std::vector<std::vector<std::string>> tokens;
 
@@ -42,7 +44,7 @@ namespace Polytope {
             std::istringstream iss(line, std::istringstream::in);
             while (iss >> word)
             {
-               // strip out comments
+               // strip out commentshj
                if (word.find('#') == 0)
                   break;
 
@@ -83,8 +85,10 @@ namespace Polytope {
          throw std::invalid_argument("Couldn't open file " + Filename);
       }
 
-      // parse
+      return tokens;
+   }
 
+   std::unique_ptr<AbstractRunner> PBRTFileParser::Parse(std::vector<std::vector<std::string>> tokens) noexcept(false){
       std::vector<PBRTDirective> sceneDirectives;
       std::vector<PBRTDirective> worldDirectives;
 
@@ -99,7 +103,7 @@ namespace Polytope {
 
             currentDirective.Name = line[0];
 
-            if (currentDirective.Name == WorldBegin)
+            if (currentDirective.Name == WorldBeginText)
                currentDirectives = &worldDirectives;
 
             if (line.size() == 1) {
@@ -273,7 +277,7 @@ namespace Polytope {
                   }
                }
 
-               bounds = Polytope::Bounds(x, y);
+               //bounds = Polytope::Bounds(x, y);
 
                // TODO
 

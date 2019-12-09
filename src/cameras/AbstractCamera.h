@@ -20,6 +20,8 @@ namespace Polytope {
 
       virtual Ray GetRay(Point2f pixel) = 0;
 
+      virtual ~AbstractCamera() = default;
+
       // data
       const CameraSettings Settings;
       const Transform CameraToWorld;

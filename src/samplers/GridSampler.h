@@ -12,11 +12,11 @@ namespace Polytope {
 
    class GridSampler : public AbstractSampler {
    public:
-      Point2f GetSample(int x, int y) override;
+      Point2f GetSample(int x, int y) const override;
 
-      virtual ~GridSampler() { }
+      ~GridSampler() override = default;
 
-      void GetSamples(Point2f points[], int number, int x, int y) override;
+      void GetSamples(Point2f points[], int number, int x, int y) const override;
    };
 
 }

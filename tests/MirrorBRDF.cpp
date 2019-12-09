@@ -27,7 +27,9 @@ namespace Tests {
 
          Vector actual = brdf.getVectorInPDF(incoming, pdf);
 
-         EXPECT_EQ(expected, actual);
+         EXPECT_FLOAT_EQ(expected.x, actual.x);
+         EXPECT_FLOAT_EQ(expected.y, actual.y);
+         EXPECT_FLOAT_EQ(expected.z, actual.z);
       }
 
       TEST(Transform, GetVectorInPDF2) {

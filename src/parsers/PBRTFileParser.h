@@ -41,8 +41,8 @@ namespace Polytope {
       std::unique_ptr<AbstractRunner> Runner;
    private:
 
-      std::unique_ptr<AbstractRunner> Parse(std::unique_ptr<std::istream> stream) noexcept(false);
-
+      std::unique_ptr<AbstractRunner> Parse(std::vector<std::vector<std::string>> tokens) noexcept(false);
+      std::vector<std::vector<std::string>> Scan(std::unique_ptr<std::istream> stream);
 
       Polytope::Logger Logger;
 

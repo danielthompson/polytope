@@ -15,6 +15,7 @@
 #include "filters/BoxFilter.h"
 #include "runners/TileRunner.h"
 #include "samplers/HaltonSampler.h"
+#include "integrators/DebugIntegrator.h"
 
 namespace Polytope {
 

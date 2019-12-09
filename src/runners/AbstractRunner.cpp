@@ -2,7 +2,6 @@
 // Created by Daniel Thompson on 2/21/18.
 //
 
-
 #include <iostream>
 #include "AbstractRunner.h"
 #include "../structures/Ray.h"
