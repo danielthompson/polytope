@@ -20,8 +20,6 @@
 #include "../scenes/NaiveScene.h"
 #include "../utilities/Common.h"
 
-
-
 namespace Polytope {
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filename) {

@@ -73,7 +73,7 @@ namespace Polytope {
          }
       }
 
-      option = "-input_filename";
+      option = "-inputfile";
 
       if (OptionExists(option)) {
          const std::string value = GetOption(option);
@@ -88,7 +88,7 @@ namespace Polytope {
          }
       }
 
-      option = "-output_filename";
+      option = "-outputfile";
 
       if (OptionExists(option)) {
          const std::string value = GetOption(option);

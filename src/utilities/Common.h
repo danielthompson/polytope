@@ -9,4 +9,6 @@
 
 extern Polytope::Logger Log;
 
+std::string GetCurrentWorkingDirectory();
+
 #endif //POLYTOPE_COMMON_H

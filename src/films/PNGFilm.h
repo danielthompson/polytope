@@ -28,8 +28,6 @@ namespace Polytope {
       // data
       const std::string Filename;
 
-   private:
-      std::string GetCurrentWorkingDirectory() const;
    };
 }
 

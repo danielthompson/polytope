@@ -34,7 +34,18 @@ namespace Polytope {
       return oss.str();
    }
 
+   void Logger::ErrorWithTime(const std::string &text) const {
+      const auto time = std::time(nullptr);
+      std::cerr
+   }
+
    void Logger::WithTime(const std::string& text) const {
+      const auto time = std::time(nullptr);
+      std::cout << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] "; // ISO 8601 format.
+      std::cout << text << std::endl;
+   }
+
+   void Logger::WithTime(const std::ostream out, const std::string &text) const {
       const auto time = std::time(nullptr);
       std::cout << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] "; // ISO 8601 format.
       std::cout << text << std::endl;
