@@ -3,8 +3,10 @@
 //
 
 #include <iostream>
+#include <sstream>
 #include "PNGFilm.h"
 #include "../../lib/lodepng.h"
+#include "../utilities/Common.h"
 
 #ifdef __CYGWIN__
 #include <windows.h>
@@ -49,15 +51,15 @@ namespace Polytope {
       }
 
       std::string cwd = GetCurrentWorkingDirectory();
-      std::cout << "Outputting to file [" << cwd << "\\" << Filename << "]..." << std::endl;
+      Log.WithTime("Outputting to file [" + cwd + "\\" + Filename + "]...");
 
       unsigned error = lodepng::encode(Filename, Data, Bounds.x, Bounds.y);
 
-      std::cout << "Output complete." << std::endl;
-
-      //if there's an error, display it
+      // if there's an error, display it
       if (error) {
-            std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+         std::ostringstream oss;
+         oss << "LodePNG encoding error (code " << error << "): " << lodepng_error_text(error);
+         Log.WithTime(oss.str());
       }
    }
 
@@ -65,15 +67,17 @@ namespace Polytope {
       TCHAR buffer[BUFSIZE];
       DWORD returnCode;
       returnCode = GetCurrentDirectory(BUFSIZE, buffer);
-
       if (returnCode == 0) {
-         // TODO fix
-         //printf("GetCurrentDirectory failed (%d)\n", GetLastError());
-         std::cout << "GetCurrentDirectory failed." << std::endl;
+         std::ostringstream oss;
+         auto error = GetLastError();
+         oss << "GetCurrentDirectory error (code " << error << ")";
+         Log.WithTime(oss.str());
          return "";
       }
       if (returnCode > BUFSIZE) {
-         std::cout << "Buffer too small (" << BUFSIZE << "); need " << returnCode << " characters...";
+         std::ostringstream oss;
+         oss << "Buffer too small (" << BUFSIZE << "); need " << returnCode << " characters...";
+         Log.WithTime(oss.str());
          return "";
       }
 

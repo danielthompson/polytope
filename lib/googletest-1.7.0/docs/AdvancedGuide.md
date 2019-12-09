@@ -976,7 +976,7 @@ _Availability:_ Linux, Windows, Mac.  `HasNonfatalFailure()` and
 
 # Logging Additional Information #
 
-In your test code, you can call `RecordProperty("key", value)` to LogTime
+In your test code, you can call `RecordProperty("key", value)` to WithTime
 additional information, where `value` can be either a string or an `int`. The _last_ value recorded for a key will be emitted to the XML output
 if you specify one. For example, the test
 

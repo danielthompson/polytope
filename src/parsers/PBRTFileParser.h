@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 #include "../runners/AbstractRunner.h"
-#include "../utilities/Logger.h"
 
 namespace Polytope {
 
@@ -36,8 +35,7 @@ namespace Polytope {
    public:
 
       // constructors
-      explicit PBRTFileParser(const Polytope::Logger logger)
-            : Logger(logger) { };
+      explicit PBRTFileParser() = default;
 
       std::unique_ptr<AbstractRunner> ParseFile(const std::string &filename) noexcept(false);
       std::unique_ptr<AbstractRunner> ParseString(const std::string &text) noexcept(false);
@@ -48,9 +46,6 @@ namespace Polytope {
    private:
 
       std::unique_ptr<AbstractRunner> Parse(std::unique_ptr<std::istream> stream) noexcept(false);
-
-
-      Polytope::Logger Logger;
 
       bool IsQuoted(std::string token);
       bool StartQuoted(std::string token);
@@ -119,12 +114,7 @@ namespace Polytope {
          WorldBeginText, // done
          WorldEndText // done
       };
-
-
-
    };
-
 }
-
 
 #endif //POLYTOPE_FILEPARSER_H

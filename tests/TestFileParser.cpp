@@ -7,6 +7,9 @@
 #include "../src/parsers/PBRTFileParser.h"
 #include "../src/samplers/HaltonSampler.h"
 #include "../src/samplers/GridSampler.h"
+#include "../src/utilities/Logger.h"
+
+Polytope::Logger Log;
 
 namespace Tests {
 
@@ -42,9 +45,7 @@ namespace Tests {
 
       TEST(FileParser, Sampler1) {
 
-         Polytope::Logger logger = Polytope::Logger();
-
-         PBRTFileParser fp = PBRTFileParser(logger);
+         PBRTFileParser fp = PBRTFileParser();
          std::string desc = R"(Sampler "random" "integer pixelsamples" [ 64 ] )";
          std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(desc);
 
@@ -61,9 +62,7 @@ namespace Tests {
 
       TEST(FileParser, Sampler2) {
 
-         Polytope::Logger logger = Polytope::Logger();
-
-         PBRTFileParser fp = PBRTFileParser(logger);
+         PBRTFileParser fp = PBRTFileParser();
          std::string desc = R"(Sampler "halton" "integer pixelsamples" [ 64 ] )";
          std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(desc);
 
@@ -80,9 +79,7 @@ namespace Tests {
 
       TEST(FileParser, Sampler3) {
 
-         Polytope::Logger logger = Polytope::Logger();
-
-         PBRTFileParser fp = PBRTFileParser(logger);
+         PBRTFileParser fp = PBRTFileParser();
 
          std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(twoballs);
 

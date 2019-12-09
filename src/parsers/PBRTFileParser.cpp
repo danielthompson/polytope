@@ -18,6 +18,9 @@
 #include "../shading/brdf/LambertBRDF.h"
 #include "../shapes/Sphere.h"
 #include "../scenes/NaiveScene.h"
+#include "../utilities/Common.h"
+
+
 
 namespace Polytope {
 
@@ -26,7 +29,7 @@ namespace Polytope {
       stream2.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
 
       try {
-         Logger.LogTime("Attempting to open file [" + filename + "]...");
+         Log.WithTime("Attempting to open file [" + filename + "]...");
          stream2.open(filename, std::fstream::in);
       }
       catch (std::ifstream::failure &e) {
@@ -201,7 +204,7 @@ namespace Polytope {
                Sampler = std::make_unique<HaltonSampler>();
                break;
             } else {
-               Logger.Log("Sampler identifier specified [" + directive.Identifier + "] is unknown, using Halton");
+               Log.Log("Sampler identifier specified [" + directive.Identifier + "] is unknown, using Halton");
                Sampler = std::make_unique<HaltonSampler>();
             }
 
@@ -219,7 +222,7 @@ namespace Polytope {
       }
 
       if (Sampler == nullptr) {
-         Logger.Log("No Sampler specified, using Halton.");
+         Log.Log("No Sampler specified, using Halton.");
          Sampler = std::make_unique<HaltonSampler>();
       }
 
@@ -374,7 +377,7 @@ namespace Polytope {
       Scene = new NaiveScene(std::move(camera));
 
       for (const PBRTDirective &directive : worldDirectives) {
-         Logger.Log(std::string("Checking directive [") + directive.Name + "]");
+         Log.Log(std::string("Checking directive [") + directive.Name + "]");
          if (directive.Name == MakeNamedMaterialText) {
             std::string materialName = directive.Identifier;
             std::shared_ptr<AbstractBRDF> brdf;
@@ -605,17 +608,16 @@ namespace Polytope {
    }
 
    void PBRTFileParser::LogBadArgument(const PBRTArgument &argument) {
-      Logger.Log("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
+      Log.Log("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
    }
 
    void PBRTFileParser::LogBadIdentifier(const PBRTDirective &directive) {
-      Logger.Log("Unknown directive/identifier combination: [" + directive.Name + "] / [" + directive.Identifier + "].");
+      Log.Log("Unknown directive/identifier combination: [" + directive.Name + "] / [" + directive.Identifier + "].");
    }
 
    void PBRTFileParser::LogOther(const PBRTDirective &directive, const std::string &error) {
-      Logger.Log(directive.Name + ": " + error);
+      Log.Log(directive.Name + ": " + error);
    }
-
 
    bool PBRTFileParser::IsQuoted(std::string token) {
       return (token[0] == '"' && token[token.size() - 1] == '"');
@@ -650,8 +652,4 @@ namespace Polytope {
 
       numSamples = std::stoi(directive[4]);
    }
-
-
-
-
 }
