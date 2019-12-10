@@ -3,8 +3,14 @@
 //
 
 #include <iostream>
+#include <sstream>
 #include "PNGFilm.h"
 #include "../../lib/lodepng.h"
+#include "../utilities/Common.h"
+#include "../utilities/GlobalDefines.h"
+
+
+// TODO include linux / osx defines
 
 namespace Polytope {
 
@@ -25,10 +31,10 @@ namespace Polytope {
             const int index = 4 * (y * width + x);
             const SpectralPowerDistribution spd = Filter->Output(Point2i(x, y));
 
-            const unsigned char r = static_cast<unsigned char>(spd.r > 255 ? 255 : spd.r);
-            const unsigned char g = static_cast<unsigned char>(spd.g > 255 ? 255 : spd.g);
-            const unsigned char b = static_cast<unsigned char>(spd.b > 255 ? 255 : spd.b);
-            const unsigned char a = static_cast<unsigned char>(255);
+            const auto r = static_cast<unsigned char>(spd.r > 255 ? 255 : spd.r);
+            const auto g = static_cast<unsigned char>(spd.g > 255 ? 255 : spd.g);
+            const auto b = static_cast<unsigned char>(spd.b > 255 ? 255 : spd.b);
+            const auto a = static_cast<unsigned char>(255);
 
             //std::cout << "writing index [" << index << "] for x [" << x << "], y [" << y << "]...";
 
@@ -39,12 +45,16 @@ namespace Polytope {
          }
       }
 
+      std::string cwd = GetCurrentWorkingDirectory();
+      Log.WithTime("Outputting to file [" + cwd + "\\" + Filename + "]...");
+
       unsigned error = lodepng::encode(Filename, Data, Bounds.x, Bounds.y);
 
-      //if there's an error, display it
+      // if there's an error, display it
       if (error) {
-            std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+         std::ostringstream oss;
+         oss << "LodePNG encoding error (code " << error << "): " << lodepng_error_text(error);
+         Log.WithTime(oss.str());
       }
    }
 }
-

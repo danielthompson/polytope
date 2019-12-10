@@ -1,0 +1,7 @@
+# ignore objects and archives, anywhere in the tree.
+*.[oa]
+.idea/
+.vs/
+build/
+cmake-build-debug/
+cmake-build-release/

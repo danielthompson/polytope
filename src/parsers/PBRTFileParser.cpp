@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <stack>
+#include <cstring>
 #include "PBRTFileParser.h"
 #include "../integrators/PathTraceIntegrator.h"
 #include "../samplers/HaltonSampler.h"
@@ -13,6 +15,10 @@
 #include "../films/PNGFilm.h"
 #include "../filters/BoxFilter.h"
 #include "../cameras/PerspectiveCamera.h"
+#include "../shading/brdf/LambertBRDF.h"
+#include "../shapes/Sphere.h"
+#include "../scenes/NaiveScene.h"
+#include "../utilities/Common.h"
 
 namespace Polytope {
 
@@ -32,19 +38,17 @@ namespace Polytope {
 
       // scan
 
-      if (stream->good())
-      {
+      if (stream->good()) {
          int sourceLineNumber = 0;
          int targetLineNumber = -1;
          std::string line;
-         while (getline(*stream, line))
-         {
+         while (getline(*stream, line)) {
             tokens.emplace_back();
             std::string word;
             std::istringstream iss(line, std::istringstream::in);
-            while (iss >> word)
-            {
-               // strip out commentshj
+
+            while (iss >> word) {
+               // strip out comments
                if (word.find('#') == 0)
                   break;
 
@@ -61,16 +65,13 @@ namespace Polytope {
                   if (word[0] == '[') {
                      tokens[targetLineNumber].push_back("[");
                      tokens[targetLineNumber].push_back(word.substr(1, lastIndex));
-                  }
-                  else if (word[lastIndex] == ']') {
+                  } else if (word[lastIndex] == ']') {
                      tokens[targetLineNumber].push_back(word.substr(0, lastIndex - 1));
                      tokens[targetLineNumber].push_back("]");
-                  }
-                  else {
+                  } else {
                      tokens[targetLineNumber].push_back(word);
                   }
-               }
-               else {
+               } else {
                   tokens[targetLineNumber].push_back(word);
                }
 
@@ -80,8 +81,7 @@ namespace Polytope {
 
          }
 
-      }
-      else {
+      } else {
          throw std::invalid_argument("Couldn't open file " + Filename);
       }
 
@@ -185,22 +185,21 @@ namespace Polytope {
       unsigned int numSamples = 16;
 
       for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == "Sampler") {
+         if (directive.Name == SamplerText) {
             if (directive.Identifier == "halton") {
                Sampler = std::make_unique<HaltonSampler>();
                break;
             } else {
-               Logger.Log("Sampler identifier specified [" + directive.Identifier + "] is unknown, using Halton");
+               Log.Log("Sampler identifier specified [" + directive.Identifier + "] is unknown, using Halton");
                Sampler = std::make_unique<HaltonSampler>();
             }
 
             for (PBRTArgument arg : directive.Arguments) {
-               if (arg.Type == "integer") {
+               if (arg.Type == IntegerText) {
                   if (arg.Name == "pixelsamples") {
                      numSamples = static_cast<unsigned int>(stoi(arg.Values[0]));
                      break;
-                  }
-                  else {
+                  } else {
                      LogBadArgument(arg);
                   }
                }
@@ -209,7 +208,7 @@ namespace Polytope {
       }
 
       if (Sampler == nullptr) {
-         Logger.Log("No Sampler specified, using Halton.");
+         Log.Log("No Sampler specified, using Halton.");
          Sampler = std::make_unique<HaltonSampler>();
       }
 
@@ -218,27 +217,24 @@ namespace Polytope {
       bool createBoxFilter = false;
 
       for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == "PixelFilter") {
+         if (directive.Name == PixelFilterText) {
             if (directive.Identifier == "box") {
                createBoxFilter = true;
                unsigned int xWidth = 0;
                unsigned int yWidth = 0;
 
                for (PBRTArgument arg : directive.Arguments) {
-                  if (arg.Type == "integer") {
+                  if (arg.Type == IntegerText) {
                      if (arg.Name == "xwidth") {
                         xWidth = static_cast<unsigned int>(stoi(arg.Values[0]));
-                     }
-                     else if (arg.Name == "ywidth") {
+                     } else if (arg.Name == "ywidth") {
                         yWidth = static_cast<unsigned int>(stoi(arg.Values[0]));
-                     }
-                     else {
+                     } else {
                         LogBadArgument(arg);
                      }
                   }
                }
-            }
-            else {
+            } else {
                LogBadIdentifier(directive);
             }
          }
@@ -249,29 +245,25 @@ namespace Polytope {
       Polytope::Bounds bounds;
 
       for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == "Film") {
+         if (directive.Name == FilmText) {
             if (directive.Identifier == "image") {
                unsigned int x = 0;
                unsigned int y = 0;
                std::string filename;
 
                for (PBRTArgument arg : directive.Arguments) {
-                  if (arg.Type == "integer") {
+                  if (arg.Type == IntegerText) {
                      if (arg.Name == "xresolution") {
                         x = static_cast<unsigned int>(stoi(arg.Values[0]));
-                     }
-                     else if (arg.Name == "yresolution") {
+                     } else if (arg.Name == "yresolution") {
                         y = static_cast<unsigned int>(stoi(arg.Values[0]));
-                     }
-                     else {
+                     } else {
                         LogBadArgument(arg);
                      }
-                  }
-                  else if (arg.Type == "string") {
-                     if (arg.Name == "filename") {
+                  } else if (arg.Type == StringText) {
+                     if (arg.Name == "input_filename") {
                         filename = arg.Values[0];
-                     }
-                     else {
+                     } else {
                         LogBadArgument(arg);
                      }
                   }
@@ -291,69 +283,309 @@ namespace Polytope {
 
       // camera
 
-      Transform currentTransform;
+      std::unique_ptr<AbstractCamera> camera;
 
-      for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == "LookAt") {
-            if (directive.Arguments.size() == 1) {
-               if (directive.Arguments[0].Values.size() == 9) {
-                  float eyeX = stof(directive.Arguments[0].Values[0]);
-                  float eyeY = stof(directive.Arguments[0].Values[1]);
-                  float eyeZ = stof(directive.Arguments[0].Values[2]);
+      {
+         Transform currentTransform;
 
-                  Point eye = Point(eyeX, eyeY, eyeZ);
+         for (PBRTDirective directive : sceneDirectives) {
+            if (directive.Name == LookAtText) {
+               if (directive.Arguments.size() == 1) {
+                  if (directive.Arguments[0].Values.size() == 9) {
+                     float eyeX = stof(directive.Arguments[0].Values[0]);
+                     float eyeY = stof(directive.Arguments[0].Values[1]);
+                     float eyeZ = stof(directive.Arguments[0].Values[2]);
 
-                  float lookAtX = stof(directive.Arguments[0].Values[3]);
-                  float lookAtY = stof(directive.Arguments[0].Values[4]);
-                  float lookAtZ = stof(directive.Arguments[0].Values[5]);
+                     Point eye = Point(eyeX, eyeY, eyeZ);
 
-                  Point lookAt = Point(lookAtX, lookAtY, lookAtZ);
+                     float lookAtX = stof(directive.Arguments[0].Values[3]);
+                     float lookAtY = stof(directive.Arguments[0].Values[4]);
+                     float lookAtZ = stof(directive.Arguments[0].Values[5]);
 
-                  float upX = stof(directive.Arguments[0].Values[6]);
-                  float upY = stof(directive.Arguments[0].Values[7]);
-                  float upZ = stof(directive.Arguments[0].Values[8]);
+                     Point lookAt = Point(lookAtX, lookAtY, lookAtZ);
 
-                  Vector up = Vector(upX, upY, upZ);
+                     float upX = stof(directive.Arguments[0].Values[6]);
+                     float upY = stof(directive.Arguments[0].Values[7]);
+                     float upZ = stof(directive.Arguments[0].Values[8]);
 
-                  Transform t = Transform::LookAt(eye, lookAt, up);
+                     Vector up = Vector(upX, upY, upZ);
 
-                  currentTransform = currentTransform * t;
+                     Transform t = Transform::LookAt(eye, lookAt, up);
+
+                     currentTransform = currentTransform * t;
+                  }
+               }
+               break;
+            }
+         }
+
+         CameraSettings settings = CameraSettings(bounds, 50);
+
+         for (const PBRTDirective &directive : sceneDirectives) {
+            if (directive.Name == CameraText) {
+               if (directive.Identifier == "perspective") {
+                  float fov = 50;
+
+                  for (PBRTArgument arg : directive.Arguments) {
+                     if (arg.Type == FloatText) {
+                        if (arg.Name == "fov") {
+                           fov = static_cast<float>(stof(arg.Values[0]));
+                        } else {
+                           LogBadArgument(arg);
+                        }
+                     }
+                  }
+
+                  settings.FieldOfView = fov;
+
+                  camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
                }
             }
-            break;
          }
       }
 
-      std::unique_ptr<AbstractCamera> camera;
+      // world
 
-      CameraSettings settings = CameraSettings(bounds, 50);
+      std::vector<std::shared_ptr<Material>> namedMaterials;
 
-      for (PBRTDirective directive : sceneDirectives) {
-         if (directive.Name == "Camera") {
-            if (directive.Identifier == "perspective") {
-               float fov = 50;
+      std::stack<std::shared_ptr<Material>> materialStack;
+      std::stack<std::shared_ptr<SpectralPowerDistribution>> lightStack;
+      std::stack<std::shared_ptr<Transform>> transformStack;
 
-               for (PBRTArgument arg : directive.Arguments) {
-                  if (arg.Type == "float") {
-                     if (arg.Name == "fov") {
-                        fov = static_cast<float>(stof(arg.Values[0]));
-                     }
-                     else {
-                        LogBadArgument(arg);
+      std::shared_ptr<Material> activeMaterial;
+      std::shared_ptr<SpectralPowerDistribution> activeLight;
+      std::shared_ptr<Transform> activeTransform;
+
+      const std::shared_ptr<Material> materialMarker = std::make_shared<Material>(AttributeBeginText);
+      const std::shared_ptr<SpectralPowerDistribution> lightMarker = std::make_shared<SpectralPowerDistribution>();
+      const std::shared_ptr<Transform> transformMarker = std::make_shared<Transform>();
+
+      Scene = new NaiveScene(std::move(camera));
+
+      for (const PBRTDirective &directive : worldDirectives) {
+         Log.Log(std::string("Checking directive [") + directive.Name + "]");
+         if (directive.Name == MakeNamedMaterialText) {
+            std::string materialName = directive.Identifier;
+            std::shared_ptr<AbstractBRDF> brdf;
+            Polytope::ReflectanceSpectrum reflectanceSpectrum;
+            for (const PBRTArgument &argument : directive.Arguments) {
+               if (argument.Type == StringText) {
+                  if (argument.Name == "type") {
+                     if (argument.Values[0] == "matte") {
+                        brdf = std::make_unique<Polytope::LambertBRDF>();
                      }
                   }
                }
+               if (argument.Type == RGBText) {
+                  if (argument.Name == "Kd") {
+                     reflectanceSpectrum.r = stof(argument.Values[0]);
+                     reflectanceSpectrum.g = stof(argument.Values[1]);
+                     reflectanceSpectrum.b = stof(argument.Values[2]);
+                  }
+               }
+            }
 
-               settings.FieldOfView = 50;
+            namedMaterials.push_back(std::make_shared<Material>(std::move(brdf), reflectanceSpectrum, materialName));
 
-               camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
+         }
+
+         else if (directive.Name == AttributeBeginText) {
+
+            // push onto material stack
+            materialStack.push(materialMarker);
+            if (activeMaterial != nullptr) {
+               materialStack.push(activeMaterial);
+            }
+
+            // push onto light stack
+            lightStack.push(lightMarker);
+            if (activeLight != nullptr) {
+               lightStack.push(activeLight);
+            }
+            
+            // push onto transform stack
+            transformStack.push(transformMarker);
+            if (activeTransform != nullptr) {
+               transformStack.push(activeTransform);
+            }
+         }
+
+         else if (directive.Name == AttributeEndText) {
+
+            // pop material stack
+            if (!materialStack.empty()) {
+               std::shared_ptr<Material> stackValue = materialStack.top();
+               materialStack.pop();
+               
+               if (stackValue == materialMarker) {
+                  // no value was pushed, so there wasn't any active material before, so there shouldn't be now
+                  activeMaterial = nullptr;
+               }
+               else {
+                  // a value was pushed, so there should be at least one more materialMarker on the stack
+                  if (materialStack.empty()) {
+                     // OOPS, should never happen
+                  }
+                  else {
+                     // restore the previously active material
+                     activeMaterial = stackValue;
+                     // pop the marker
+                     materialStack.pop();
+                  }
+               }
+            }
+
+            // pop light stack
+            if (!lightStack.empty()) {
+               std::shared_ptr<SpectralPowerDistribution> stackValue = lightStack.top();
+               lightStack.pop();
+
+               if (stackValue == lightMarker) {
+                  // no value was pushed, so there wasn't any active light before, so there shouldn't be now
+                  activeLight = nullptr;
+               }
+               else {
+                  // a value was pushed, so there should be at least one more lightMarker on the stack
+                  if (lightStack.empty()) {
+                     // OOPS, should never happen
+                  }
+                  else {
+                     // restore the previously active light
+                     activeLight = stackValue;
+                     // pop the marker
+                     lightStack.pop();
+                  }
+               }
+            }
+
+            // pop transform stack
+            if (!transformStack.empty()) {
+               std::shared_ptr<Transform> stackValue = transformStack.top();
+               transformStack.pop();
+
+               if (stackValue == transformMarker) {
+                  // no value was pushed, so there wasn't any active transform before, so there shouldn't be now
+                  activeTransform = nullptr;
+               }
+               else {
+                  // a value was pushed, so there should be at least one more transformMarker on the stack
+                  if (transformStack.empty()) {
+                     // OOPS, should never happen
+                  }
+                  else {
+                     // restore the previously active transform
+                     activeTransform = stackValue;
+                     // pop the marker
+                     transformStack.pop();
+                  }
+               }
+            }
+         }
+
+         else if (directive.Name == AreaLightSourceText) {
+            for (const PBRTArgument &argument : directive.Arguments) {
+               if (argument.Name == "L") {
+                  if (activeLight == nullptr) {
+                     activeLight = std::make_shared<SpectralPowerDistribution>();
+                  }
+                  activeLight->r = stof(argument.Values[0]);
+                  activeLight->g = stof(argument.Values[1]);
+                  activeLight->b = stof(argument.Values[2]);
+                  break;
+               }
+            }
+         }
+
+         else if (directive.Name == TransformBeginText) {
+
+            // push onto transform stack
+            transformStack.push(transformMarker);
+            if (activeTransform != nullptr) {
+               transformStack.push(activeTransform);
+            }
+         }
+
+         else if (directive.Name == TransformEndText) {
+            // pop transform stack
+            if (!transformStack.empty()) {
+               std::shared_ptr<Transform> stackValue = transformStack.top();
+               transformStack.pop();
+
+               if (stackValue == transformMarker) {
+                  // no value was pushed, so there wasn't any active transform before, so there shouldn't be now
+                  activeTransform = nullptr;
+               }
+               else {
+                  // a value was pushed, so there should be at least one more transformMarker on the stack
+                  if (transformStack.empty()) {
+                     // OOPS, should never happen
+                  }
+                  else {
+                     // restore the previously active transform
+                     activeTransform = stackValue;
+                     // pop the marker
+                     transformStack.pop();
+                  }
+               }
+            }
+         }
+
+         else if (directive.Name == TranslateText) {
+            // need to ensure just one argument with 3 values
+            PBRTArgument argument = directive.Arguments[0];
+            float x = std::stof(argument.Values[0]);
+            float y = std::stof(argument.Values[1]);
+            float z = std::stof(argument.Values[2]);
+            Transform t = Transform::Translate(x, y, z);
+
+            if (activeTransform == nullptr) {
+               activeTransform = std::make_shared<Transform>();
+            }
+
+            Transform *active = activeTransform.get();
+            *active *= t;
+         }
+
+         // other transform directives
+
+         else if (directive.Name == ShapeText) {
+            if (directive.Identifier == "sphere") {
+               PBRTArgument argument = directive.Arguments[0];
+               if (argument.Type == FloatText) {
+                  float radius = std::stof(argument.Values[0]);
+                  AbstractShape *sphere = new Sphere(*activeTransform, activeMaterial);
+                  if (activeLight != nullptr) {
+                     ShapeLight *sphereLight = new ShapeLight(*activeLight);
+                     sphere->Light = sphereLight;
+                     Scene->Lights.push_back(sphereLight);
+                  }
+                  Scene->Shapes.push_back(sphere);
+               }
+            }
+            else {
+               LogBadIdentifier(directive);
+            }
+         }
+
+         else if (directive.Name == NamedMaterialText) {
+            std::string materialName = directive.Identifier;
+            bool found = false;
+            for (const auto &material : namedMaterials) {
+               if (material->Name == materialName) {
+                  activeMaterial = material;
+                  found = true;
+                  break;
+               }
+            }
+            if (!found) {
+               LogOther(directive, "Specified material [" + materialName + "] not found. Have you defined it yet?");
             }
          }
       }
 
       return std::make_unique<TileRunner>(
             std::move(Sampler),
-            scene,
+            Scene,
             std::move(Integrator),
             std::move(Film),
             Bounds,
@@ -362,11 +594,15 @@ namespace Polytope {
    }
 
    void PBRTFileParser::LogBadArgument(const PBRTArgument &argument) {
-      Logger.Log("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
+      Log.Log("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
    }
 
    void PBRTFileParser::LogBadIdentifier(const PBRTDirective &directive) {
-      Logger.Log("Unknown directive/identifier combination: [" + directive.Name + "] / [" + directive.Identifier + "].");
+      Log.Log("Unknown directive/identifier combination: [" + directive.Name + "] / [" + directive.Identifier + "].");
+   }
+
+   void PBRTFileParser::LogOther(const PBRTDirective &directive, const std::string &error) {
+      Log.Log(directive.Name + ": " + error);
    }
 
    bool PBRTFileParser::IsQuoted(std::string token) {
@@ -402,8 +638,4 @@ namespace Polytope {
 
       numSamples = std::stoi(directive[4]);
    }
-
-
-
-
 }

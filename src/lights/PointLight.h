@@ -15,7 +15,7 @@ namespace Polytope {
       explicit PointLight(const class SpectralPowerDistribution &spectralPowerDistribution, Point location)
             : AbstractLight(spectralPowerDistribution), Location(location) { }
 
-      Point GetRandomPointOnSurface() const override;
+
 
    private:
       Point Location;

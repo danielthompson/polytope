@@ -6,21 +6,21 @@
 #define POLYTOPE_LOGGER_H
 
 #include <string>
-#include <map>
 
 namespace Polytope {
 
    class Logger {
-
    public:
 
       Logger() = default;
-      //explicit Logger(std::map<std::thread::id, int> threadMap) : threadMap(threadMap) { }
+      void ErrorWithTime(const std::string& text) const;
+      void WithTime(const std::string& text) const;
+      void Log(const std::string& text) const;
+      void logThread(const std::string& text) const;
 
+   private:
       std::string time_in_HH_MM_SS_MMM() const;
-      void LogTime(std::string text) const;
-      void Log(std::string text) const;
-      void logThread(std::string text) const;
+      void WithTime(const std::ostream out, const std::string& text) const;
    };
 }
 

@@ -3,27 +3,34 @@
 //
 
 #include "AbstractShape.h"
-
 #include <utility>
 
 namespace Polytope {
 
    //using Polytope::Transform;
 
-   AbstractShape::AbstractShape(const Transform &objectToWorld, std::shared_ptr<Polytope::Material> material)
-      : ObjectToWorld(objectToWorld), WorldToObject(objectToWorld.Invert()), Material(std::move(material)) { }
+   AbstractShape::AbstractShape(
+         const Transform &objectToWorld,
+         std::shared_ptr<Polytope::Material> material)
+      : ObjectToWorld(objectToWorld),
+        WorldToObject(objectToWorld.Invert()),
+        Material(std::move(material)) { }
 
-   AbstractShape::AbstractShape(const Transform &objectToWorld, const Transform &worldToObject,
-                                std::shared_ptr<Polytope::Material> material)
-   : ObjectToWorld(objectToWorld), WorldToObject(worldToObject), Material(std::move(material)) {   }
+   AbstractShape::AbstractShape(
+         const Transform &objectToWorld,
+         const Transform &worldToObject,
+         std::shared_ptr<Polytope::Material> material)
+      : ObjectToWorld(objectToWorld),
+        WorldToObject(worldToObject),
+        Material(std::move(material)) {   }
 
    AbstractShape::AbstractShape(
          const Transform &objectToWorld,
          const Transform &worldToObject,
          std::shared_ptr<Polytope::Material> material,
-         AbstractLight *light)
-   : ObjectToWorld(objectToWorld),
-     WorldToObject(worldToObject),
-     Material(std::move(material)),
-     Light(light) { };
+         ShapeLight *light)
+      : ObjectToWorld(objectToWorld),
+        WorldToObject(worldToObject),
+        Material(std::move(material)),
+        Light(light) { };
 }

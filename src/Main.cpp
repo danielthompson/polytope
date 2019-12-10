@@ -4,25 +4,28 @@
 
 #include "Tracer.h"
 #include "utilities/OptionsParser.h"
+#include "utilities/Common.h"
+
+Polytope::Logger Log;
 
 int main(int argc, char* argv[]) {
 
    try {
-      Polytope::Logger logger = Polytope::Logger();
+      Log = Polytope::Logger();
 
-      logger.LogTime("Polytope started.");
+      Log.WithTime("Polytope started.");
 
       Polytope::Options options = Polytope::Options();
 
       if (argc > 0) {
-         Polytope::OptionsParser parser(argc, argv, logger);
-         parser.Parse(options);
+         Polytope::OptionsParser parser(argc, argv);
+         options = parser.Parse();
       }
 
-      Polytope::Tracer tracer = Polytope::Tracer(logger, options);
+      Polytope::Tracer tracer = Polytope::Tracer(options);
       tracer.Run();
 
-      logger.LogTime("Exiting Polytope.");
+      Log.WithTime("Exiting Polytope.");
    }
    catch (const std::exception&) {
       return EXIT_FAILURE;

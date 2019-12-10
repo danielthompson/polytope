@@ -6,14 +6,13 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include <iterator>
 #include <algorithm>
 #include "OptionsParser.h"
+#include "Common.h"
 
 namespace Polytope {
 
-   OptionsParser::OptionsParser(int &argc, char **argv, Polytope::Logger &logger)
-   : Logger(logger) {
+   OptionsParser::OptionsParser(int &argc, char **argv) {
       for (int i=1; i < argc; ++i)
          this->_tokens.emplace_back(argv[i]);
    }
@@ -34,7 +33,9 @@ namespace Polytope {
              != this->_tokens.end();
    }
 
-   void OptionsParser::Parse(Polytope::Options &options) const {
+   Polytope::Options OptionsParser::Parse() {
+
+      Polytope::Options options = Polytope::Options();
 
       if (OptionExists("--help")) {
 
@@ -49,11 +50,11 @@ namespace Polytope {
          try {
             unsigned int parsedValue = stou(value);
             options.threads = parsedValue;
-            Logger.LogTime("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
+            Log.WithTime("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
          }
          catch (...) {
             options.valid = false;
-            Logger.LogTime("Failed to parse [" + option + "] = [" + value + "].");
+            Log.WithTime("Failed to parse [" + option + "] = [" + value + "].");
          }
       }
 
@@ -65,28 +66,45 @@ namespace Polytope {
          try {
             unsigned int parsedValue = stou(value);
             options.samples = parsedValue;
-            Logger.LogTime("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
+            Log.WithTime("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
          }
          catch (...) {
             options.valid = false;
-            Logger.LogTime("Failed to parse [" + option + "] = [" + value + "].");
+            Log.WithTime("Failed to parse [" + option + "] = [" + value + "].");
          }
       }
 
-      option = "-filename";
+      option = "-inputfile";
 
       if (OptionExists(option)) {
          const std::string value = GetOption(option);
 
          try {
-            options.filename = value;
-            Logger.LogTime("Parsed [" + option + "] = [" + value + "].");
+            options.input_filename = value;
+            Log.WithTime("Parsed [" + option + "] = [" + value + "].");
          }
          catch (...) {
             options.valid = false;
-            Logger.LogTime("Failed to parse [" + option + "] = [" + value + "].");
+            Log.WithTime("Failed to parse [" + option + "] = [" + value + "].");
          }
       }
+
+      option = "-outputfile";
+
+      if (OptionExists(option)) {
+         const std::string value = GetOption(option);
+
+         try {
+            options.output_filename = value;
+            Log.WithTime("Parsed [" + option + "] = [" + value + "].");
+         }
+         catch (...) {
+            options.valid = false;
+            Log.WithTime("Failed to parse [" + option + "] = [" + value + "].");
+         }
+      }
+
+      return options;
 
    }
 

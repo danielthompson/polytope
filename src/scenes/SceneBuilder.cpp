@@ -12,7 +12,8 @@
 #include "../shading/SpectralPowerDistribution.h"
 #include "../lights/AbstractLight.h"
 #include "../lights/PointLight.h"
-#include "../lights/SphereLight.h"
+#include "../lights/ShapeLight.h"
+
 
 namespace Polytope {
 
@@ -21,9 +22,7 @@ namespace Polytope {
 
       Transform identity = Transform();
 
-      std::shared_ptr<AbstractCamera> camera = std::make_shared<PerspectiveCamera>(settings, identity);
-
-      AbstractScene *scene = new NaiveScene(camera);
+      AbstractScene *scene = new NaiveScene(std::make_unique<PerspectiveCamera>(settings, identity));
 
       // Orange ball
 
@@ -80,7 +79,7 @@ namespace Polytope {
 
       Sphere *sphere = new Sphere(objectToWorld, material);
 
-      AbstractLight *sphereLight = new SphereLight(lightSPD, sphere);
+      ShapeLight *sphereLight = new ShapeLight(lightSPD);
 
       sphere->Light = sphereLight;
 

@@ -3,7 +3,7 @@
 //
 
 #include <thread>
-#include <iostream>
+#include <map>
 #include "Tracer.h"
 #include "samplers/AbstractSampler.h"
 #include "samplers/GridSampler.h"
@@ -16,26 +16,23 @@
 #include "runners/TileRunner.h"
 #include "samplers/HaltonSampler.h"
 #include "integrators/DebugIntegrator.h"
+#include "parsers/PBRTFileParser.h"
+#include "utilities/Common.h"
+
 
 namespace Polytope {
 
    void Tracer::Run() {
 
-      auto totalRunTimeStart = std::chrono::system_clock::now();
+      const auto totalRunTimeStart = std::chrono::system_clock::now();
 
       constexpr unsigned int width = 640;
       constexpr unsigned int height = 640;
 
       const Polytope::Bounds bounds(width, height);
 
-      SceneBuilder sceneBuilder = SceneBuilder(bounds);
-
-      AbstractScene *scene = sceneBuilder.Default();
-
-      Compile(scene);
-
       const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
-      Logger.LogTime("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
+      Log.WithTime("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
 
       unsigned int usingThreads = concurrentThreadsSupported;
 
@@ -43,25 +40,40 @@ namespace Polytope {
          usingThreads = Options.threads;
       }
 
-      Logger.LogTime("Using " + std::to_string(usingThreads) + " threads.");
+      Log.WithTime("Using " + std::to_string(usingThreads) + " threads.");
 
       {
-         std::unique_ptr<AbstractSampler> sampler = std::make_unique<HaltonSampler>();
-         std::unique_ptr<AbstractIntegrator> integrator = std::make_unique<PathTraceIntegrator>(scene, 5);
+         std::unique_ptr<AbstractRunner> runner;
+         if (Options.input_filename.empty()) {
 
-         std::unique_ptr<BoxFilter> filter = std::make_unique<BoxFilter>(bounds);
-         filter->SetSamples(Options.samples);
-         std::unique_ptr<AbstractFilm> film = std::make_unique<PNGFilm>(bounds, Options.filename, std::move(filter));
+            Log.WithTime("No input file specified, using default scene.");
+            SceneBuilder sceneBuilder = SceneBuilder(bounds);
+            AbstractScene *scene = sceneBuilder.Default();
+            Compile(scene);
 
-         const std::unique_ptr<AbstractRunner> runner = std::make_unique<TileRunner>(std::move(sampler), scene, std::move(integrator), std::move(film), bounds, Options.samples);
+            std::unique_ptr<AbstractSampler> sampler = std::make_unique<HaltonSampler>();
+            std::unique_ptr<AbstractIntegrator> integrator = std::make_unique<PathTraceIntegrator>(scene, 5);
 
-         Logger.LogTime(
+            std::unique_ptr<BoxFilter> filter = std::make_unique<BoxFilter>(bounds);
+            filter->SetSamples(Options.samples);
+            std::unique_ptr<AbstractFilm> film = std::make_unique<PNGFilm>(bounds, Options.output_filename, std::move(filter));
+
+            runner = std::make_unique<TileRunner>(std::move(sampler), scene, std::move(integrator), std::move(film), bounds, Options.samples);
+
+         }
+         else {
+            // load file
+            PBRTFileParser parser = PBRTFileParser();
+            runner = parser.ParseFile(Options.input_filename);
+         }
+
+         Log.WithTime(
                std::string("Image is [") + std::to_string(width) + std::string("] x [") + std::to_string(height) +
                std::string("], ") + std::to_string(Options.samples) + " spp.");
 
-         Logger.LogTime("Rendering...");
+         Log.WithTime("Rendering...");
 
-         auto renderingStart = std::chrono::system_clock::now();
+         const auto renderingStart = std::chrono::system_clock::now();
 
          //   runner->Run();
 
@@ -72,56 +84,48 @@ namespace Polytope {
             threads.emplace_back(runner->Spawn());
             const std::thread::id threadID = threads[i].get_id();
             threadMap[threadID] = i;
-            Logger.LogTime(std::string("Started thread " + std::to_string(i) + std::string(".")));
+            Log.WithTime(std::string("Started thread " + std::to_string(i) + std::string(".")));
          }
 
          for (int i = 0; i < usingThreads; i++) {
             threads[i].join();
-            Logger.LogTime(std::string("Joined thread " + std::to_string(i) + std::string(".")));
+            Log.WithTime(std::string("Joined thread " + std::to_string(i) + std::string(".")));
          }
 
-         auto renderingEnd = std::chrono::system_clock::now();
+         const auto renderingEnd = std::chrono::system_clock::now();
 
-         std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
-         Logger.LogTime("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
+         const std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
+         Log.WithTime("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
 
-         Logger.LogTime("Outputting to film...");
-         auto outputStart = std::chrono::system_clock::now();
+         Log.WithTime("Outputting to film...");
+         const auto outputStart = std::chrono::system_clock::now();
          runner->Output();
-         auto outputEnd = std::chrono::system_clock::now();
+         const auto outputEnd = std::chrono::system_clock::now();
 
-         std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
-         Logger.LogTime("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
-
+         const std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
+         Log.WithTime("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
       }
 
-      delete scene;
+      const auto totalRunTimeEnd = std::chrono::system_clock::now();
+      const std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
 
-      auto totalRunTimeEnd = std::chrono::system_clock::now();
-
-      std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
-      std::time_t end_time = std::chrono::system_clock::to_time_t(totalRunTimeEnd);
-
-      Logger.LogTime("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
-
-      Logger.LogTime("Exiting Polytope.");
-
+      Log.WithTime("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
+      Log.WithTime("Exiting Polytope.");
    }
 
    void Tracer::Compile(AbstractScene *scene) {
 
-      Logger.LogTime("Compiling scene...");
+      Log.WithTime("Compiling scene...");
 
-      auto start = std::chrono::system_clock::now();
+      const auto start = std::chrono::system_clock::now();
       scene->Compile();
-      auto end = std::chrono::system_clock::now();
+      const auto end = std::chrono::system_clock::now();
 
       std::chrono::duration<double> elapsed_seconds = end - start;
-      Logger.LogTime("Compilation complete in " + std::to_string(elapsed_seconds.count()) + "s.");
-      Logger.LogTime(
+      Log.WithTime("Compilation complete in " + std::to_string(elapsed_seconds.count()) + "s.");
+      Log.WithTime(
             "Scene has " + std::to_string(scene->Shapes.size()) + " shapes, " + std::to_string(scene->Lights.size()) +
             " lights.");
-      Logger.LogTime("Scene is implemented with " + scene->ImplementationType + ".");
-
+      Log.WithTime("Scene is implemented with " + scene->ImplementationType + ".");
    }
 }

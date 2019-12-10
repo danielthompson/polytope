@@ -6,16 +6,13 @@
 #define POLYTOPE_OPTIONSPARSER_H
 
 #include "Options.h"
-#include "Logger.h"
 
 namespace Polytope {
 
    class OptionsParser {
    public:
-      OptionsParser(int &argc, char **argv, Polytope::Logger &logger);
-      void Parse(Polytope::Options &options) const;
-
-      Polytope::Logger Logger;
+      OptionsParser(int &argc, char **argv);
+      Polytope::Options Parse();
 
    private:
       std::vector<std::string> _tokens;

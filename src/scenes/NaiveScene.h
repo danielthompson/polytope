@@ -13,7 +13,7 @@ namespace Polytope {
    public:
 
       // constructors
-      explicit NaiveScene(const std::shared_ptr<AbstractCamera> &camera) : AbstractScene(camera) {
+      explicit NaiveScene(std::unique_ptr<AbstractCamera> camera) : AbstractScene(std::move(camera)) {
          ImplementationType = "Naive Scene";
       }
 

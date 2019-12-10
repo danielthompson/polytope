@@ -15,7 +15,7 @@ namespace Polytope {
       // constructors
       explicit SpectralPowerDistribution() : r(0), g(0), b(0) { };
       SpectralPowerDistribution(float r, float g, float b) : r(r), g(g), b(b) { };
-      SpectralPowerDistribution(const SpectralPowerDistribution &other) : r(other.r), g(other.g), b(other.b) { }
+      SpectralPowerDistribution(const SpectralPowerDistribution &other) = default;
 
       // operators
       SpectralPowerDistribution &operator+=(const SpectralPowerDistribution &rhs);

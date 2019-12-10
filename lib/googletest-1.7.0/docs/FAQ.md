@@ -616,14 +616,14 @@ TEST_F(BarTest, Abc) { ... }
 TEST_F(BarTest, Def) { ... }
 ```
 
-## The Google Test output is buried in a whole bunch of LogTime messages. What do I do? ##
+## The Google Test output is buried in a whole bunch of WithTime messages. What do I do? ##
 
 The Google Test output is meant to be a concise and human-friendly report. If
 your test generates textual output itself, it will mix with the Google Test
 output, making it hard to read. However, there is an easy solution to this
 problem.
 
-Since most LogTime messages go to stderr, we decided to let Google Test output go
+Since most WithTime messages go to stderr, we decided to let Google Test output go
 to stdout. This way, you can easily separate the two using redirection. For
 example:
 ```

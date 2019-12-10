@@ -15,17 +15,17 @@ namespace Polytope {
       using namespace std::chrono;
 
       // get current time
-      auto now = system_clock::now();
+      const auto now = system_clock::now();
 
       // get number of milliseconds for the current second
       // (remainder after division into seconds)
-      auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+      const auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
 
       // convert to std::time_t in order to convert to std::tm (broken time)
-      auto timer = system_clock::to_time_t(now);
+      const auto timer = system_clock::to_time_t(now);
 
       // convert to broken time
-      std::tm bt = *std::localtime(&timer);
+      const std::tm bt = *std::localtime(&timer);
 
       std::ostringstream oss;
 
@@ -35,14 +35,20 @@ namespace Polytope {
       return oss.str();
    }
 
-   void Logger::LogTime(std::string text) const {
-      auto time = std::time(nullptr);
+   void Logger::WithTime(const std::string& text) const {
+      const auto time = std::time(nullptr);
       std::cout << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] "; // ISO 8601 format.
       std::cout << text << std::endl;
    }
 
-   void Logger::logThread(std::string text) const {
-      auto time = std::time(nullptr);
+   void Logger::WithTime(const std::ostream out, const std::string &text) const {
+      const auto time = std::time(nullptr);
+      std::cout << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] "; // ISO 8601 format.
+      std::cout << text << std::endl;
+   }
+
+   void Logger::logThread(const std::string& text) const {
+      const auto time = std::time(nullptr);
 
       const std::thread::id threadID = std::this_thread::get_id();
 
@@ -51,7 +57,7 @@ namespace Polytope {
       std::cout << text << std::endl;
    }
 
-   void Logger::Log(std::string text) const {
+   void Logger::Log(const std::string& text) const {
       std::cout << text << std::endl;
    }
 

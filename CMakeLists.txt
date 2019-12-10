@@ -19,63 +19,102 @@ SET(CMAKE_CXX_FLAGS "-O0 -g -Wno-error=unused-function")
 # Normal Libraries & Executables
 ################################
 add_library(polytope_lib
-      src/structures/Point.cpp
-      src/structures/Point.h
-      src/Constants.h
-      src/structures/Vector.cpp
-      src/structures/Vector.h
-      src/structures/Matrix4x4.h
-      src/structures/Matrix4x4.cpp
-      src/structures/Transform.h
-      src/structures/Transform.cpp
-      src/scenes/AbstractScene.cpp
-      src/scenes/AbstractScene.h
-      src/structures/Ray.cpp
-      src/structures/Ray.h
-      src/cameras/AbstractCamera.cpp
-      src/cameras/AbstractCamera.h
-      src/shapes/AbstractShape.cpp
-      src/shapes/AbstractShape.h
-      src/shapes/Sphere.cpp
-      src/shapes/Sphere.h
-      src/cameras/CameraSettings.h
-      src/cameras/PerspectiveCamera.cpp
-      src/cameras/PerspectiveCamera.h
-      src/structures/Intersection.cpp
-      src/structures/Intersection.h
-      src/structures/Normal.cpp
-      src/structures/Normal.h
-      src/runners/AbstractRunner.h
-      src/runners/AbstractRunner.cpp
-      src/runners/PixelRunner.cpp
-      src/runners/PixelRunner.h
-      src/samplers/AbstractSampler.h
-      src/structures/Point2.cpp
-      src/structures/Point2.h
-      src/samplers/CenterSampler.cpp
-      src/samplers/CenterSampler.h
-      src/scenes/NaiveScene.cpp
-      src/scenes/NaiveScene.h
-      src/scenes/SceneBuilder.cpp
-      src/scenes/SceneBuilder.h
-      src/shading/Material.cpp
-      src/shading/Material.h
-      src/shading/brdf/AbstractBRDF.h
-      src/shading/brdf/MirrorBRDF.cpp
-      src/shading/brdf/MirrorBRDF.h
-      src/shading/SpectralPowerDistribution.cpp
-      src/shading/SpectralPowerDistribution.h
-      src/shading/ReflectanceSpectrum.cpp
-      src/shading/ReflectanceSpectrum.h
-      src/lights/AbstractLight.cpp
-      src/lights/AbstractLight.h
-      src/lights/PointLight.cpp
-      src/lights/PointLight.h
-      src/integrators/AbstractIntegrator.cpp
-      src/integrators/AbstractIntegrator.h
-        src/scenes/skyboxes/AbstractSkybox.h src/scenes/skyboxes/ColorSkybox.cpp src/scenes/skyboxes/ColorSkybox.h
-      src/structures/Sample.cpp src/structures/Sample.h src/integrators/PathTraceIntegrator.cpp src/integrators/PathTraceIntegrator.h lib/lodepng.cpp lib/lodepng.h src/films/AbstractFilm.h src/films/PNGFilm.cpp src/films/PNGFilm.h src/integrators/DebugIntegrator.cpp src/integrators/DebugIntegrator.h src/utilities/GeometryCalculations.h src/lights/SphereLight.cpp src/lights/SphereLight.h src/samplers/GridSampler.cpp src/samplers/GridSampler.h src/filters/AbstractFilter.cpp src/filters/AbstractFilter.h src/filters/BoxFilter.cpp src/filters/BoxFilter.h src/runners/TileRunner.cpp src/runners/TileRunner.h src/utilities/Logger.cpp src/utilities/Logger.h src/Tracer.cpp src/Tracer.h src/utilities/OptionsParser.cpp src/utilities/OptionsParser.h src/utilities/Options.h src/shading/brdf/LambertBRDF.cpp src/shading/brdf/LambertBRDF.h src/shading/brdf/AbstractBRDF.cpp src/samplers/HaltonSampler.cpp src/samplers/HaltonSampler.h src/parsers/PBRTFileParser.cpp src/parsers/PBRTFileParser.h)
-add_executable(${PROJECT_NAME} src/Main.cpp )
+        lib/lodepng.cpp
+        lib/lodepng.h
+        src/Constants.h
+        src/Tracer.cpp
+        src/Tracer.h
+        src/cameras/AbstractCamera.cpp
+        src/cameras/AbstractCamera.h
+        src/cameras/CameraSettings.h
+        src/cameras/PerspectiveCamera.cpp
+        src/cameras/PerspectiveCamera.h
+        src/films/AbstractFilm.h
+        src/films/PNGFilm.cpp
+        src/films/PNGFilm.h
+        src/filters/AbstractFilter.cpp
+        src/filters/AbstractFilter.h
+        src/filters/BoxFilter.cpp
+        src/filters/BoxFilter.h
+        src/integrators/AbstractIntegrator.cpp
+        src/integrators/AbstractIntegrator.cpp
+        src/integrators/AbstractIntegrator.h
+        src/integrators/AbstractIntegrator.h
+        src/integrators/DebugIntegrator.cpp
+        src/integrators/DebugIntegrator.h
+        src/integrators/PathTraceIntegrator.cpp
+        src/integrators/PathTraceIntegrator.h
+        src/lights/AbstractLight.h
+        src/lights/PointLight.h
+        src/lights/ShapeLight.h
+        src/parsers/PBRTFileParser.cpp
+        src/parsers/PBRTFileParser.h
+        src/runners/AbstractRunner.cpp
+        src/runners/AbstractRunner.h
+        src/runners/PixelRunner.cpp
+        src/runners/PixelRunner.h
+        src/runners/TileRunner.cpp
+        src/runners/TileRunner.h
+        src/samplers/AbstractSampler.h
+        src/samplers/CenterSampler.cpp
+        src/samplers/CenterSampler.h
+        src/samplers/GridSampler.cpp
+        src/samplers/GridSampler.h
+        src/samplers/HaltonSampler.cpp
+        src/samplers/HaltonSampler.h
+        src/scenes/AbstractScene.cpp
+        src/scenes/AbstractScene.h
+        src/scenes/NaiveScene.cpp
+        src/scenes/NaiveScene.h
+        src/scenes/SceneBuilder.cpp
+        src/scenes/SceneBuilder.h
+        src/scenes/skyboxes/AbstractSkybox.h
+        src/scenes/skyboxes/ColorSkybox.cpp
+        src/scenes/skyboxes/ColorSkybox.h
+        src/shading/Material.h
+        src/shading/ReflectanceSpectrum.cpp
+        src/shading/ReflectanceSpectrum.h
+        src/shading/SpectralPowerDistribution.cpp
+        src/shading/SpectralPowerDistribution.h
+        src/shading/brdf/AbstractBRDF.cpp
+        src/shading/brdf/AbstractBRDF.h
+        src/shading/brdf/LambertBRDF.cpp
+        src/shading/brdf/LambertBRDF.h
+        src/shading/brdf/MirrorBRDF.cpp
+        src/shading/brdf/MirrorBRDF.h
+        src/shapes/AbstractShape.cpp
+        src/shapes/AbstractShape.h
+        src/shapes/Sphere.cpp
+        src/shapes/Sphere.h
+        src/structures/Intersection.cpp
+        src/structures/Intersection.h
+        src/structures/Matrix4x4.cpp
+        src/structures/Matrix4x4.h
+        src/structures/Normal.cpp
+        src/structures/Normal.h
+        src/structures/Point.cpp
+        src/structures/Point.h
+        src/structures/Point2.cpp
+        src/structures/Point2.h
+        src/structures/Ray.cpp
+        src/structures/Ray.h
+        src/structures/Sample.cpp
+        src/structures/Sample.h
+        src/structures/Transform.cpp
+        src/structures/Transform.h
+        src/structures/Vector.cpp
+        src/structures/Vector.h
+        src/utilities/Common.h
+        src/utilities/GeometryCalculations.h
+        src/utilities/GlobalDefines.h
+        src/utilities/Logger.cpp
+        src/utilities/Logger.h
+        src/utilities/Options.h
+        src/utilities/OptionsParser.cpp
+        src/utilities/OptionsParser.h
+        )
+
+add_executable(${PROJECT_NAME} src/Main.cpp)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be
 # used elsewhere.
@@ -114,7 +153,9 @@ add_executable(runUnitTests
       tests/Matrix4x4.cpp
       tests/Point.cpp
       tests/Transform.cpp
-      tests/MirrorBRDF.cpp tests/TestFileParser.cpp)
+      tests/MirrorBRDF.cpp
+      tests/TestFileParser.cpp
+        )
 
 # Standard linking to gtest stuff.
 target_link_libraries(runUnitTests gtest gtest_main)
