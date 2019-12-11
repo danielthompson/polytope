@@ -6,10 +6,7 @@ before_install:
 script:
   - cmake -DCOVERAGE=1 .
   - cmake --build .
-  - ls -l
   - ./runUnitTests
-  - ls -l
 
 after_success:
-  - coveralls --root . -E ".*gtest.*" -E ".*CMakeFiles.*"
-  - ls -l
+  - coveralls --root . -E ".*googletest.*" -E ".*CMakeFiles.*"
