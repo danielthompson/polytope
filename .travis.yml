@@ -8,6 +8,8 @@ script:
   - cmake --build .
   - ls -l
   - ./runUnitTests
+  - ls -l
 
 after_success:
   - coveralls --root . -E ".*gtest.*" -E ".*CMakeFiles.*"
+  - ls -l
