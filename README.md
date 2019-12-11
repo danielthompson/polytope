@@ -1,5 +1,5 @@
-# Polytope
-Hobby ray/path tracer in C++. 
+# Polytope  [![Build Status](https://travis-ci.org/danielthompson/polytope.svg?branch=master)](https://travis-ci.org/danielthompson/polytope)
+Hobby ray/path tracer in C++.  
 
 #### Goals
 * Ray tracer
