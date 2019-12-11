@@ -162,8 +162,8 @@ add_executable(runUnitTests
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 if (COVERAGE)
-   target_compile_options(runUnitTests --coverage)
-   target_link_libraries(runUnitTests --coverage)
+   target_compile_options(runUnitTests PRIVATE --coverage)
+   target_link_libraries(runUnitTests PRIVATE --coverage)
 endif()
 
 # Standard linking to gtest stuff.

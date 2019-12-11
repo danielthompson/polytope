@@ -23,7 +23,16 @@
 namespace Polytope {
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filename) {
-      auto tokens = Scan(std::make_unique<std::ifstream>(filename));
+
+      std::string cwd = GetCurrentWorkingDirectory();
+      Log.WithTime("Trying to open [" + cwd + "//" + filename + "]...");
+      std::vector<std::vector<std::string>> tokens;
+      {
+         std::unique_ptr<std::istream> stream = std::make_unique<std::ifstream>(filename);
+         Log.WithTime("Created stream on [" + cwd + "//" + filename + "]...");
+
+         tokens = Scan(std::move(stream));
+      }
       return Parse(tokens);
    }
 
