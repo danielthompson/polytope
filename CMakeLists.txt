@@ -122,14 +122,19 @@ add_executable(${PROJECT_NAME} src/Main.cpp)
 # own executable. Separating out main() means you can add this library to be
 # used elsewhere.
 
+if (COVERAGE)
+   target_compile_options(polytope_lib PRIVATE --coverage)
+   target_link_libraries(polytope_lib PRIVATE --coverage)
+endif()
+
 # link in pthreads on linux
 if (UNIX AND NOT APPLE)
    set(THREADS_PREFER_PTHREAD_FLAG ON)
    find_package(Threads REQUIRED)
-   target_link_libraries(${PROJECT_NAME} Threads::Threads)
+   target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 endif()
 
-target_link_libraries(${PROJECT_NAME} polytope_lib)
+target_link_libraries(${PROJECT_NAME} PUBLIC polytope_lib)
 
 ################################
 # Testing
