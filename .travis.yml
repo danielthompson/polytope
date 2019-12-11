@@ -4,9 +4,11 @@ before_install:
   - pip install --user cpp-coveralls
 
 script:
-  - cmake -DCOVERAGE=1 .
+  - mkdir cmake-build-debug
+  - cd cmake-build-debug
+  - cmake -DCOVERAGE=1 ../
   - cmake --build .
   - ./runUnitTests
 
 after_success:
-  - coveralls --root . -E ".*googletest.*" -E ".*CMakeFiles.*" -E ".*polytope/lib/.*" -E ".*polytope/tests/.*" -E "/usr/.*"
+  - coveralls -r .. -i "src/" --exclude "lib" --exclude "scenes" --exclude "tests" --gcov-options '-lp' --verbose
