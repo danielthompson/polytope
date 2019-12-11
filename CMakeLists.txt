@@ -167,10 +167,10 @@ if (COVERAGE)
 endif()
 
 # Standard linking to gtest stuff.
-target_link_libraries(runUnitTests gtest gtest_main)
+target_link_libraries(runUnitTests PRIVATE gtest gtest_main)
 
 # Extra linking for the project.
-target_link_libraries(runUnitTests polytope_lib)
+target_link_libraries(runUnitTests PRIVATE polytope_lib)
 
 # This is so you can do 'make tests' to see all your tests run, instead of
 # manually running the executable runUnitTests to see those specific tests.
