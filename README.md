@@ -1,5 +1,9 @@
-# Polytope  [![Build Status](https://travis-ci.org/danielthompson/polytope.svg?branch=master)](https://travis-ci.org/danielthompson/polytope)
+# Polytope  
 Hobby ray/path tracer in C++.  
+
+#### Build Status
+
+[![Build Status](https://travis-ci.org/danielthompson/polytope.svg?branch=master)](https://travis-ci.org/danielthompson/polytope) [![Coverage Status](https://coveralls.io/repos/github/danielthompson/polytope/badge.svg?branch=master)](https://coveralls.io/github/danielthompson/polytope?branch=master)
 
 #### Goals
 * Ray tracer
