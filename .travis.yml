@@ -9,4 +9,4 @@ script:
   - ./runUnitTests
 
 after_success:
-  - coveralls --root . -E ".*googletest.*" -E ".*CMakeFiles.*"
+  - coveralls --root . -E "*/googletest/*" -E ".*CMakeFiles.*" -E "*polytope/lib/*" -E "*polytope/tests/*"
