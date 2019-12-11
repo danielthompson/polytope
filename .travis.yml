@@ -1,6 +1,12 @@
 language: cpp
 
+before_install:
+  - pip install --user cpp-coveralls
+
 script:
-  - cmake .
+  - cmake -DCOVERAGE=1 .
   - cmake --build .
   - ./runUnitTests
+
+after_success:
+  - coveralls --root . -E ".*gtest.*" -E ".*CMakeFiles.*"

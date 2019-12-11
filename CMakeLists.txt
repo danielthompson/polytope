@@ -11,6 +11,9 @@ set(CMAKE_CXX_STANDARD 14)
 
 SET(CMAKE_CXX_FLAGS "-O0 -g -Wno-error=unused-function")
 
+# see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
+SET(COVERAGE OFF CACHE BOOL "Coverage")
+
 # If you want your own include/ directory, set this, and then you can do
 # include_directories(${COMMON_INCLUDES}) in other CMakeLists.txt files.
 # set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
@@ -156,6 +159,12 @@ add_executable(runUnitTests
       tests/MirrorBRDF.cpp
       tests/TestFileParser.cpp
         )
+
+# generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
+if (COVERAGE)
+   target_compile_options(runUnitTests PRIVATE --coverage)
+   target_link_libraries(runUnitTests PRIVATE --coverage)
+endif()
 
 # Standard linking to gtest stuff.
 target_link_libraries(runUnitTests gtest gtest_main)
