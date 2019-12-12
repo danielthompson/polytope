@@ -19,5 +19,5 @@ jobs:
       script:
         - mkdir cmake-build-debug
         - cd cmake-build-debug
-        - cmake -DCOVERAGE=0 ../ -- -j2
-        - cmake --build .
+        - cmake -DCOVERAGE=0 ../
+        - cmake --build . -- -j2
