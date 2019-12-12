@@ -10,7 +10,7 @@ jobs:
         - mkdir cmake-build-debug
         - cd cmake-build-debug
         - cmake -DCOVERAGE=1 ../
-        - cmake --build . -j2
+        - cmake --build . -- -j2
         - ./runUnitTests
       after_success:
         - coveralls -r ../ -i "src/" --exclude "lib" --exclude "tests" --gcov-options '\-lp' --verbose
@@ -19,5 +19,5 @@ jobs:
       script:
         - mkdir cmake-build-debug
         - cd cmake-build-debug
-        - cmake -DCOVERAGE=0 ../ -j2
+        - cmake -DCOVERAGE=0 ../ -- -j2
         - cmake --build .
