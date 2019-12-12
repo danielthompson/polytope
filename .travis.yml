@@ -1,4 +1,10 @@
+os:
+  - linux
+  - osx
+
 language: cpp
+
+compiler: clang
 
 before_install:
   - pip install --user cpp-coveralls
