@@ -1,20 +1,23 @@
-os:
-  - linux
-  - osx
-
 language: cpp
 
-compiler: clang
-
-before_install:
-  - pip install --user cpp-coveralls
-
-script:
-  - mkdir cmake-build-debug
-  - cd cmake-build-debug
-  - cmake -DCOVERAGE=1 ../
-  - cmake --build .
-  - ./runUnitTests
-
-after_success:
-  - coveralls -r ../ -i "src/" --exclude "lib" --exclude "tests" --gcov-options '\-lp' --verbose
+jobs:
+  include:
+    - os: linux
+      compiler: gcc
+      before_install:
+        - pip install --user cpp-coveralls
+      script:
+        - mkdir cmake-build-debug
+        - cd cmake-build-debug
+        - cmake -DCOVERAGE=1 ../
+        - cmake --build .
+        - ./runUnitTests
+      after_success:
+        - coveralls -r ../ -i "src/" --exclude "lib" --exclude "tests" --gcov-options '\-lp' --verbose
+    - os: osx
+      compiler: clang
+      script:
+        - mkdir cmake-build-debug
+        - cd cmake-build-debug
+        - cmake -DCOVERAGE=0 ../
+        - cmake --build .
