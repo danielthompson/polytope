@@ -8,6 +8,8 @@
 #include "../src/samplers/HaltonSampler.h"
 #include "../src/samplers/GridSampler.h"
 #include "../src/utilities/Logger.h"
+#include "../src/films/PNGFilm.h"
+#include "../src/filters/BoxFilter.h"
 
 Polytope::Logger Log;
 
@@ -61,20 +63,42 @@ namespace Tests {
          ASSERT_NE(nullptr, result);
       }
 
-      TEST(FileParser, ExampleFile) {
+      TEST(FileParser, EmptyWorld) {
 
          PBRTFileParser fp = PBRTFileParser();
-         std::string file = "../scenes/example.pbrt";
+         std::string file = "../scenes/minimum-emptyworld.pbrt";
          std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseFile(file);
 
+         // ensure nothing is null
          ASSERT_NE(nullptr, runner);
          ASSERT_NE(nullptr, runner->Sampler);
+         ASSERT_NE(nullptr, runner->Film->Filter);
+         ASSERT_NE(nullptr, runner->Integrator);
+         ASSERT_NE(nullptr, runner->Integrator->Scene);
+         ASSERT_EQ(7, runner->Integrator->MaxDepth);
+         ASSERT_NE(nullptr, runner->Scene);
 
+         // ensure the sampler is halton
          std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
+         Polytope::HaltonSampler *actualSampler = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
+         ASSERT_NE(nullptr, actualSampler);
 
-         Polytope::HaltonSampler *result = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
+         ASSERT_NE(nullptr, runner->Film);
 
-         ASSERT_NE(nullptr, result);
+         // ensure the film's filter is a box filter
+         std::unique_ptr<Polytope::AbstractFilter> filter = std::move(runner->Film->Filter);
+         Polytope::BoxFilter *actualFilter = dynamic_cast<Polytope::BoxFilter *>(filter.get());
+         ASSERT_NE(nullptr, actualFilter);
+
+         // ensure the film is PNG film
+         std::unique_ptr<Polytope::AbstractFilm> film = std::move(runner->Film);
+         Polytope::PNGFilm *actualFilm = dynamic_cast<Polytope::PNGFilm *>(film.get());
+         ASSERT_NE(nullptr, actualFilm);
+
+         // ensure the scene is a naive scene
+         // TODO std::unique_ptr<Polytope::AbstractScene> scene = std::move(runner->Integrator->Scene);
+
+
       }
 
       TEST(FileParser, Sampler2) {

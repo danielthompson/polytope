@@ -485,7 +485,7 @@ namespace Polytope {
       _scene = new NaiveScene(std::move(camera));
 
       for (const PBRTDirective& directive : worldDirectives) {
-         Log.Log(std::string("Checking directive [") + directive.Name + "]");
+         //Log.Log(std::string("Checking directive [") + directive.Name + "]");
          if (directive.Name == MakeNamedMaterialText) {
             std::string materialName = directive.Identifier;
             std::shared_ptr<AbstractBRDF> brdf;
@@ -704,6 +704,8 @@ namespace Polytope {
             }
          }
       }
+
+      _integrator->Scene = _scene;
 
       return std::make_unique<TileRunner>(
          std::move(_sampler),

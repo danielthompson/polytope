@@ -35,6 +35,7 @@ namespace Polytope {
 
       // methods
       virtual void Run() = 0;
+      void Trace(int x, int y);
 
       void Output();
 
@@ -49,14 +50,6 @@ namespace Polytope {
       const unsigned int NumSamples;
       std::unique_ptr<AbstractSampler> Sampler;
       std::unique_ptr<AbstractFilm> Film;
-
-   protected:
-
-      // methods
-
-      void Trace(int x, int y);
-
-      // data
       AbstractScene *Scene;
       std::unique_ptr<AbstractIntegrator> Integrator;
 
