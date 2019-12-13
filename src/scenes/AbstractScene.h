@@ -36,7 +36,7 @@ namespace Polytope {
       // data
 
       std::unique_ptr<AbstractCamera> Camera{};
-      std::string ImplementationType = "Base Scene";
+      std::string ImplementationType = "Base _scene";
       std::vector<AbstractShape*> Shapes{};
       std::vector<AbstractLight*> Lights{};
 

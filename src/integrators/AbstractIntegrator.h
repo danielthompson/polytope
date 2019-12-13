@@ -17,11 +17,13 @@ namespace Polytope {
 
       // destructors
       virtual ~AbstractIntegrator() { }
-   protected:
 
       // constructors
       AbstractIntegrator(AbstractScene *scene, int maxDepth)
       : Scene(scene), MaxDepth(maxDepth) { };
+
+      AbstractIntegrator(int maxDepth)
+      : MaxDepth(maxDepth) { };
 
       // data
       AbstractScene *Scene;

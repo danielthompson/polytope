@@ -124,8 +124,8 @@ namespace Polytope {
       std::chrono::duration<double> elapsed_seconds = end - start;
       Log.WithTime("Compilation complete in " + std::to_string(elapsed_seconds.count()) + "s.");
       Log.WithTime(
-            "Scene has " + std::to_string(scene->Shapes.size()) + " shapes, " + std::to_string(scene->Lights.size()) +
+            "_scene has " + std::to_string(scene->Shapes.size()) + " shapes, " + std::to_string(scene->Lights.size()) +
             " lights.");
-      Log.WithTime("Scene is implemented with " + scene->ImplementationType + ".");
+      Log.WithTime("_scene is implemented with " + scene->ImplementationType + ".");
    }
 }

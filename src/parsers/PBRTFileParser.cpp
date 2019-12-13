@@ -5,9 +5,8 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-#include <iostream>
 #include <stack>
-#include <cstring>
+#include <map>
 #include "PBRTFileParser.h"
 #include "../integrators/PathTraceIntegrator.h"
 #include "../samplers/HaltonSampler.h"
@@ -21,6 +20,84 @@
 #include "../utilities/Common.h"
 
 namespace Polytope {
+
+   namespace {
+      // datatypes
+
+      const std::string IntegerText = "integer";
+      const std::string FloatText = "float";
+      const std::string StringText = "string";
+      const std::string RGBText = "rgb";
+
+      // scene
+
+      const std::string CameraText = "Camera";
+      const std::string FilmText = "Film";
+      const std::string IntegratorText = "Integrator";
+      const std::string LookAtText = "LookAt";
+      const std::string PixelFilterText = "PixelFilter";
+      const std::string SamplerText = "Sampler";
+
+      // world
+
+      const std::string AreaLightSourceText = "AreaLightSource";
+      const std::string AttributeBeginText = "AttributeBegin";
+      const std::string AttributeEndText = "AttributeEnd";
+      const std::string MakeNamedMaterialText = "MakeNamedMaterial";
+      const std::string NamedMaterialText = "NamedMaterial";
+      const std::string ShapeText = "Shape";
+      const std::string TransformBeginText = "TransformBegin";
+      const std::string TransformEndText = "TransformEnd";
+      const std::string TranslateText = "Translate";
+      const std::string WorldBeginText = "WorldBegin";
+      const std::string WorldEndText = "WorldEnd";
+
+      const std::vector<std::string> Directives {
+         AreaLightSourceText,
+         AttributeBeginText, // done
+         AttributeEndText, // done
+         CameraText,
+         FilmText,
+         IntegratorText,
+         LookAtText, // done
+         MakeNamedMaterialText,
+         NamedMaterialText, // done
+         PixelFilterText,
+         SamplerText,
+         ShapeText,
+         TransformBeginText, // done
+         TransformEndText, // done
+         TranslateText, // done
+         WorldBeginText, // done
+         WorldEndText // done
+      };
+
+      enum SceneDirectiveName {
+         Camera,
+         Film,
+         Integrator,
+         LookAt,
+         PixelFilter,
+         Sampler
+      };
+
+      std::map<std::string, SceneDirectiveName> SceneDirectiveMap {
+         {"Camera", Camera},
+         {"Film", Film},
+         {"Integrator", Integrator},
+         {"LookAt", LookAt},
+         {"PixelFilter", PixelFilter},
+         {"Sampler", Sampler}
+      };
+
+      void LogBadArgument(const PBRTArgument &argument) {
+         Log.Log("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
+      }
+
+      void LogMissingArgument(const PBRTDirective &directive, const std::string& argument) {
+         Log.Log("Directive [" + directive.Name + "] w/ identifier [" + directive.Identifier + "] is missing argument [" + argument + "]");
+      }
+   }
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filename) {
 
@@ -193,17 +270,17 @@ namespace Polytope {
 
       unsigned int numSamples = 16;
 
-      for (PBRTDirective directive : sceneDirectives) {
+      for (const PBRTDirective& directive : sceneDirectives) {
          if (directive.Name == SamplerText) {
             if (directive.Identifier == "halton") {
-               Sampler = std::make_unique<HaltonSampler>();
+               _sampler = std::make_unique<HaltonSampler>();
                break;
             } else {
-               Log.Log("Sampler identifier specified [" + directive.Identifier + "] is unknown, using Halton");
-               Sampler = std::make_unique<HaltonSampler>();
+               LogBadIdentifier(directive);
+               _sampler = std::make_unique<HaltonSampler>();
             }
 
-            for (PBRTArgument arg : directive.Arguments) {
+            for (const PBRTArgument& arg : directive.Arguments) {
                if (arg.Type == IntegerText) {
                   if (arg.Name == "pixelsamples") {
                      numSamples = static_cast<unsigned int>(stoi(arg.Values[0]));
@@ -211,28 +288,30 @@ namespace Polytope {
                   } else {
                      LogBadArgument(arg);
                   }
+                  break;
                }
             }
+            break;
          }
       }
 
-      if (Sampler == nullptr) {
+      if (_sampler == nullptr) {
          Log.Log("No Sampler specified, using Halton.");
-         Sampler = std::make_unique<HaltonSampler>();
+         _sampler = std::make_unique<HaltonSampler>();
       }
 
       // filter
 
       bool createBoxFilter = false;
 
-      for (PBRTDirective directive : sceneDirectives) {
+      for (const PBRTDirective& directive : sceneDirectives) {
          if (directive.Name == PixelFilterText) {
             if (directive.Identifier == "box") {
                createBoxFilter = true;
                unsigned int xWidth = 0;
                unsigned int yWidth = 0;
 
-               for (PBRTArgument arg : directive.Arguments) {
+               for (const PBRTArgument& arg : directive.Arguments) {
                   if (arg.Type == IntegerText) {
                      if (arg.Name == "xwidth") {
                         xWidth = static_cast<unsigned int>(stoi(arg.Values[0]));
@@ -241,11 +320,13 @@ namespace Polytope {
                      } else {
                         LogBadArgument(arg);
                      }
+                     break;
                   }
                }
             } else {
                LogBadIdentifier(directive);
             }
+            break;
          }
       }
 
@@ -253,14 +334,14 @@ namespace Polytope {
 
       Polytope::Bounds bounds;
 
-      for (PBRTDirective directive : sceneDirectives) {
+      for (const PBRTDirective& directive : sceneDirectives) {
          if (directive.Name == FilmText) {
             if (directive.Identifier == "image") {
                unsigned int x = 0;
                unsigned int y = 0;
                std::string filename;
 
-               for (PBRTArgument arg : directive.Arguments) {
+               for (const PBRTArgument& arg : directive.Arguments) {
                   if (arg.Type == IntegerText) {
                      if (arg.Name == "xresolution") {
                         x = static_cast<unsigned int>(stoi(arg.Values[0]));
@@ -283,10 +364,11 @@ namespace Polytope {
                // TODO
 
                if (createBoxFilter) {
-                  Filter = std::make_unique<BoxFilter>(bounds);
+                  _filter = std::make_unique<BoxFilter>(bounds);
                }
-               Film = std::make_unique<PNGFilm>(bounds, filename, std::move(Filter));
+               _film = std::make_unique<PNGFilm>(bounds, filename, std::move(_filter));
             }
+            break;
          }
       }
 
@@ -297,7 +379,7 @@ namespace Polytope {
       {
          Transform currentTransform;
 
-         for (PBRTDirective directive : sceneDirectives) {
+         for (const PBRTDirective& directive : sceneDirectives) {
             if (directive.Name == LookAtText) {
                if (directive.Arguments.size() == 1) {
                   if (directive.Arguments[0].Values.size() == 9) {
@@ -335,7 +417,7 @@ namespace Polytope {
                if (directive.Identifier == "perspective") {
                   float fov = 50;
 
-                  for (PBRTArgument arg : directive.Arguments) {
+                  for (const PBRTArgument& arg : directive.Arguments) {
                      if (arg.Type == FloatText) {
                         if (arg.Name == "fov") {
                            fov = static_cast<float>(stof(arg.Values[0]));
@@ -349,7 +431,38 @@ namespace Polytope {
 
                   camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
                }
+               break;
             }
+         }
+      }
+
+      // integrator
+
+      for (const PBRTDirective& directive : sceneDirectives) {
+         if (directive.Name == IntegratorText) {
+            if (directive.Identifier == "path") {
+               unsigned int maxDepth = 5;
+
+               bool missingDepth = false;
+
+               for (const PBRTArgument& arg : directive.Arguments) {
+                  if (arg.Type == IntegerText) {
+                     if (arg.Name == "maxdepth") {
+                        maxDepth = static_cast<unsigned int>(stoi(arg.Values[0]));
+                        missingDepth = true;
+                        break;
+                     } else {
+                        LogBadArgument(arg);
+                     }
+                  }
+               }
+
+               if (missingDepth) {
+                  LogMissingArgument(directive, "maxdepth");
+               }
+               _integrator = std::make_unique<PathTraceIntegrator>(maxDepth);
+            }
+            break;
          }
       }
 
@@ -369,9 +482,9 @@ namespace Polytope {
       const std::shared_ptr<SpectralPowerDistribution> lightMarker = std::make_shared<SpectralPowerDistribution>();
       const std::shared_ptr<Transform> transformMarker = std::make_shared<Transform>();
 
-      Scene = new NaiveScene(std::move(camera));
+      _scene = new NaiveScene(std::move(camera));
 
-      for (const PBRTDirective &directive : worldDirectives) {
+      for (const PBRTDirective& directive : worldDirectives) {
          Log.Log(std::string("Checking directive [") + directive.Name + "]");
          if (directive.Name == MakeNamedMaterialText) {
             std::string materialName = directive.Identifier;
@@ -492,7 +605,7 @@ namespace Polytope {
          }
 
          else if (directive.Name == AreaLightSourceText) {
-            for (const PBRTArgument &argument : directive.Arguments) {
+            for (const PBRTArgument& argument : directive.Arguments) {
                if (argument.Name == "L") {
                   if (activeLight == nullptr) {
                      activeLight = std::make_shared<SpectralPowerDistribution>();
@@ -566,9 +679,9 @@ namespace Polytope {
                   if (activeLight != nullptr) {
                      ShapeLight *sphereLight = new ShapeLight(*activeLight);
                      sphere->Light = sphereLight;
-                     Scene->Lights.push_back(sphereLight);
+                     _scene->Lights.push_back(sphereLight);
                   }
-                  Scene->Shapes.push_back(sphere);
+                  _scene->Shapes.push_back(sphere);
                }
             }
             else {
@@ -593,18 +706,17 @@ namespace Polytope {
       }
 
       return std::make_unique<TileRunner>(
-            std::move(Sampler),
-            Scene,
-            std::move(Integrator),
-            std::move(Film),
-            Bounds,
-            numSamples
+         std::move(_sampler),
+         _scene,
+         std::move(_integrator),
+         std::move(_film),
+         _bounds,
+         numSamples
       );
    }
 
-   void PBRTFileParser::LogBadArgument(const PBRTArgument &argument) {
-      Log.Log("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
-   }
+
+
 
    void PBRTFileParser::LogBadIdentifier(const PBRTDirective &directive) {
       Log.Log("Unknown directive/identifier combination: [" + directive.Name + "] / [" + directive.Identifier + "].");
@@ -628,23 +740,23 @@ namespace Polytope {
 
    void PBRTFileParser::CreateSampler(std::vector<std::string> &directive)  {
       if (directive[1] == "\"halton\"") {
-         Sampler = std::make_unique<HaltonSampler>();
+         _sampler = std::make_unique<HaltonSampler>();
       }
       else {
          throw std::invalid_argument("Given sampler [" + directive[1] + "] not supported");
       }
 
-      numSamples = std::stoi(directive[4]);
+      _numSamples = std::stoi(directive[4]);
    }
 
    void PBRTFileParser::CreateIntegrator(std::vector<std::string> &directive) {
       if (directive[1] == "\"path\"") {
-         Sampler = std::make_unique<HaltonSampler>();
+         _sampler = std::make_unique<HaltonSampler>();
       }
       else {
          throw std::invalid_argument("Given sampler [" + directive[1] + "] not supported");
       }
 
-      numSamples = std::stoi(directive[4]);
+      _numSamples = std::stoi(directive[4]);
    }
 }

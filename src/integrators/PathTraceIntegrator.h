@@ -13,9 +13,10 @@ namespace Polytope {
    public:
       PathTraceIntegrator(AbstractScene *scene, int maxDepth)
             : AbstractIntegrator(scene, maxDepth) { }
+      explicit PathTraceIntegrator(int maxDepth)
+         : AbstractIntegrator(maxDepth) { }
 
       Sample GetSample(Ray &ray, int depth, int x, int y) override;
-
 
    };
 

@@ -38,9 +38,11 @@ namespace Polytope {
       Polytope::Options options = Polytope::Options();
 
       if (OptionExists("--help")) {
-
-         std::cout << "Polytope help text blah blah blah" << std::endl;
+         options.help = true;
+         return options;
       }
+
+      Log.WithTime("Polytope started.");
 
       std::string option = "-threads";
 

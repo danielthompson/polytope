@@ -21,7 +21,7 @@ namespace Tests {
 
       const std::string twoballs = "Integrator \"path\" \"integer maxdepth\" [ 7 ] \n"
                                    "LookAt 0 0 0 0 0 -1 0 1 0 \n"
-                                   "Sampler \"random\" \"integer pixelsamples\" [ 64 ] \n"
+                                   "_sampler \"random\" \"integer pixelsamples\" [ 64 ] \n"
                                    "PixelFilter \"box\" \"float xwidth\" [ 1.000000 ] \"float ywidth\" [ 1.000000 ] \n"
                                    "Film \"image\" \"integer xresolution\" [ 640 ] \"integer yresolution\" [ 640 ] \"string input_filename\" [ \"two-balls.png\" ] \n"
                                    "Camera \"perspective\" \"float fov\" [ 50 ] \n"
@@ -48,7 +48,7 @@ namespace Tests {
       TEST(FileParser, Sampler1) {
 
          PBRTFileParser fp = PBRTFileParser();
-         std::string desc = R"(Sampler "random" "integer pixelsamples" [ 64 ] )";
+         std::string desc = R"(_sampler "random" "integer pixelsamples" [ 64 ] )";
          std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(desc);
 
          ASSERT_NE(nullptr, runner);
@@ -61,26 +61,26 @@ namespace Tests {
          ASSERT_NE(nullptr, result);
       }
 
-//      TEST(FileParser, ExampleFile) {
-//
-//         PBRTFileParser fp = PBRTFileParser();
-//         std::string file = "../scenes/example.pbrt";
-//         std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseFile(file);
-//
-//         ASSERT_NE(nullptr, runner);
-//         ASSERT_NE(nullptr, runner->Sampler);
-//
-//         std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
-//
-//         Polytope::HaltonSampler *result = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
-//
-//         ASSERT_NE(nullptr, result);
-//      }
+      TEST(FileParser, ExampleFile) {
+
+         PBRTFileParser fp = PBRTFileParser();
+         std::string file = "../scenes/example.pbrt";
+         std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseFile(file);
+
+         ASSERT_NE(nullptr, runner);
+         ASSERT_NE(nullptr, runner->Sampler);
+
+         std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
+
+         Polytope::HaltonSampler *result = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
+
+         ASSERT_NE(nullptr, result);
+      }
 
       TEST(FileParser, Sampler2) {
 
          PBRTFileParser fp = PBRTFileParser();
-         std::string desc = R"(Sampler "halton" "integer pixelsamples" [ 64 ] )";
+         std::string desc = R"(_sampler "halton" "integer pixelsamples" [ 64 ] )";
          std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(desc);
 
          ASSERT_NE(nullptr, runner);

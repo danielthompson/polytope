@@ -9,7 +9,6 @@
 #include "../utilities/Common.h"
 #include "../utilities/GlobalDefines.h"
 
-
 // TODO include linux / osx defines
 
 namespace Polytope {
