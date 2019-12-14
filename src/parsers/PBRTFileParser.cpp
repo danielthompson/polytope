@@ -103,6 +103,9 @@ namespace Polytope {
       unsigned int stoui(const std::string& text) {
          return static_cast<unsigned int>(stoi(text));
       }
+
+      // defaults
+      const float CameraDefaultFov = 90.f;
    }
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filepath) {
@@ -436,12 +439,16 @@ namespace Polytope {
             }
          }
 
-         CameraSettings settings = CameraSettings(bounds, 50);
+         CameraSettings settings = CameraSettings(bounds, CameraDefaultFov);
+
+         bool foundCamera = false;
 
          for (const PBRTDirective &directive : sceneDirectives) {
             if (directive.Name == CameraText) {
                if (directive.Identifier == "perspective") {
-                  float fov = 50;
+                  float fov = CameraDefaultFov;
+
+                  foundCamera = true;
 
                   for (const PBRTArgument& arg : directive.Arguments) {
                      if (arg.Type == FloatText) {
@@ -457,8 +464,8 @@ namespace Polytope {
                   settings.FieldOfView = fov;
 
                   camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
+                  break;
                }
-               break;
             }
          }
       }
