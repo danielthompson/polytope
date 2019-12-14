@@ -100,6 +100,10 @@ namespace Polytope {
          Log.Log("Directive [" + directive.Name + "] w/ identifier [" + directive.Identifier + "] is missing argument [" + argument + "]");
       }
 
+      void LogMissingDirective(const std::string& name, std::string& defaultOption) {
+         Log.WithTime("Directive [" + name + "] is missing, defaulting to " + defaultOption + ".");
+      }
+
       unsigned int stoui(const std::string& text) {
          return static_cast<unsigned int>(stoi(text));
       }
@@ -467,6 +471,14 @@ namespace Polytope {
                   break;
                }
             }
+         }
+
+         if (!foundCamera) {
+            std::ostringstream stringstream;
+            stringstream << "PerspectiveCamera with FOV = " << CameraDefaultFov;
+            std::string cameraDefaultString = stringstream.str();
+            LogMissingDirective(CameraText, cameraDefaultString);
+            camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
          }
       }
 
