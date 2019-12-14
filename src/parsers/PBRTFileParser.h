@@ -37,10 +37,10 @@ namespace Polytope {
       // constructors
       explicit PBRTFileParser() = default;
 
-      std::unique_ptr<AbstractRunner> ParseFile(const std::string &filename) noexcept(false);
+      std::unique_ptr<AbstractRunner> ParseFile(const std::string &filepath) noexcept(false);
       std::unique_ptr<AbstractRunner> ParseString(const std::string &text) noexcept(false);
 
-      std::string Filename;
+
 
       std::unique_ptr<AbstractRunner> Runner;
    private:

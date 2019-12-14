@@ -22,6 +22,8 @@
 namespace Polytope {
 
    namespace {
+      std::string _inputFilename = "";
+
       // datatypes
 
       const std::string IntegerText = "integer";
@@ -97,19 +99,40 @@ namespace Polytope {
       void LogMissingArgument(const PBRTDirective &directive, const std::string& argument) {
          Log.Log("Directive [" + directive.Name + "] w/ identifier [" + directive.Identifier + "] is missing argument [" + argument + "]");
       }
+
+      unsigned int stoui(const std::string& text) {
+         return static_cast<unsigned int>(stoi(text));
+      }
    }
 
-   std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filename) {
+   std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filepath) {
 
       std::string cwd = GetCurrentWorkingDirectory();
-      Log.WithTime("Trying to open [" + cwd + "//" + filename + "]...");
+      std::string absolutePath = cwd + "//" + filepath;
+
+      Log.WithTime("Trying to open [" + absolutePath + "]...");
       std::vector<std::vector<std::string>> tokens;
       {
-         std::unique_ptr<std::istream> stream = std::make_unique<std::ifstream>(filename);
-         Log.WithTime("Created stream on [" + cwd + "//" + filename + "]...");
+         Log.WithTime("Creating stream on [" + absolutePath + "]...");
+         std::unique_ptr<std::istream> stream = std::make_unique<std::ifstream>(filepath);
+
+         if (!stream->good()) {
+            throw std::invalid_argument("Couldn't open stream on [" + absolutePath + "].");
+         }
 
          tokens = Scan(std::move(stream));
       }
+
+      // determine the name of the file from the given path
+
+      const auto lastPos = filepath.find_last_of('/');
+      if (lastPos == std::string::npos) {
+         _inputFilename = filepath;
+      }
+      else {
+         _inputFilename = filepath.substr(lastPos + 1);
+      }
+
       return Parse(tokens);
    }
 
@@ -122,53 +145,46 @@ namespace Polytope {
 
       std::vector<std::vector<std::string>> tokens;
 
-      // scan
+      int sourceLineNumber = 0;
+      int targetLineNumber = -1;
+      std::string line;
+      while (getline(*stream, line)) {
+         tokens.emplace_back();
+         std::string word;
+         std::istringstream iss(line, std::istringstream::in);
 
-      if (stream->good()) {
-         int sourceLineNumber = 0;
-         int targetLineNumber = -1;
-         std::string line;
-         while (getline(*stream, line)) {
-            tokens.emplace_back();
-            std::string word;
-            std::istringstream iss(line, std::istringstream::in);
+         while (iss >> word) {
+            // strip out comments
+            if (word.find('#') == 0)
+               break;
 
-            while (iss >> word) {
-               // strip out comments
-               if (word.find('#') == 0)
-                  break;
+            if (std::find(Directives.begin(), Directives.end(), word) != Directives.end()) {
+               // if this is a directive, then we move on to a new line
+               targetLineNumber++;
+            }
 
-               if (std::find(Directives.begin(), Directives.end(), word) != Directives.end()) {
-                  // if this is a directive, then we move on to a new line
-                  targetLineNumber++;
-               }
+            // split brackets, if needed
 
-               // split brackets, if needed
+            if (word.size() > 1) {
+               const unsigned long lastIndex = word.size() - 1;
 
-               if (word.size() > 1) {
-                  const unsigned long lastIndex = word.size() - 1;
-
-                  if (word[0] == '[') {
-                     tokens[targetLineNumber].push_back("[");
-                     tokens[targetLineNumber].push_back(word.substr(1, lastIndex));
-                  } else if (word[lastIndex] == ']') {
-                     tokens[targetLineNumber].push_back(word.substr(0, lastIndex - 1));
-                     tokens[targetLineNumber].push_back("]");
-                  } else {
-                     tokens[targetLineNumber].push_back(word);
-                  }
+               if (word[0] == '[') {
+                  tokens[targetLineNumber].push_back("[");
+                  tokens[targetLineNumber].push_back(word.substr(1, lastIndex));
+               } else if (word[lastIndex] == ']') {
+                  tokens[targetLineNumber].push_back(word.substr(0, lastIndex - 1));
+                  tokens[targetLineNumber].push_back("]");
                } else {
                   tokens[targetLineNumber].push_back(word);
                }
-
+            } else {
+               tokens[targetLineNumber].push_back(word);
             }
-
-            sourceLineNumber++;
 
          }
 
-      } else {
-         throw std::invalid_argument("Couldn't open file " + Filename);
+         sourceLineNumber++;
+
       }
 
       return tokens;
@@ -283,7 +299,7 @@ namespace Polytope {
             for (const PBRTArgument& arg : directive.Arguments) {
                if (arg.Type == IntegerText) {
                   if (arg.Name == "pixelsamples") {
-                     numSamples = static_cast<unsigned int>(stoi(arg.Values[0]));
+                     numSamples = stoui(arg.Values[0]);
                      break;
                   } else {
                      LogBadArgument(arg);
@@ -314,9 +330,9 @@ namespace Polytope {
                for (const PBRTArgument& arg : directive.Arguments) {
                   if (arg.Type == IntegerText) {
                      if (arg.Name == "xwidth") {
-                        xWidth = static_cast<unsigned int>(stoi(arg.Values[0]));
+                        xWidth = stoui(arg.Values[0]);
                      } else if (arg.Name == "ywidth") {
-                        yWidth = static_cast<unsigned int>(stoi(arg.Values[0]));
+                        yWidth = stoui(arg.Values[0]);
                      } else {
                         LogBadArgument(arg);
                      }
@@ -339,14 +355,25 @@ namespace Polytope {
             if (directive.Identifier == "image") {
                unsigned int x = 0;
                unsigned int y = 0;
+
+               const auto dotIndex = _inputFilename.find_last_of('.');
                std::string filename;
+               if (dotIndex == std::string::npos)
+                  filename = _inputFilename;
+               else
+                  filename = _inputFilename.substr(0, dotIndex) + ".png";
+
+               bool foundX = false;
+               bool foundY = false;
 
                for (const PBRTArgument& arg : directive.Arguments) {
                   if (arg.Type == IntegerText) {
                      if (arg.Name == "xresolution") {
-                        x = static_cast<unsigned int>(stoi(arg.Values[0]));
+                        x = stoui(arg.Values[0]);
+                        foundX = true;
                      } else if (arg.Name == "yresolution") {
-                        y = static_cast<unsigned int>(stoi(arg.Values[0]));
+                        y = stoui(arg.Values[0]);
+                        foundY = true;
                      } else {
                         LogBadArgument(arg);
                      }
@@ -359,9 +386,8 @@ namespace Polytope {
                   }
                }
 
-               //bounds = Polytope::Bounds(x, y);
-
-               // TODO
+               bounds.x = foundX ? x : 640;
+               bounds.y = foundY ? y : 480;
 
                if (createBoxFilter) {
                   _filter = std::make_unique<BoxFilter>(bounds);
@@ -420,6 +446,7 @@ namespace Polytope {
                   for (const PBRTArgument& arg : directive.Arguments) {
                      if (arg.Type == FloatText) {
                         if (arg.Name == "fov") {
+                           // TODO remove static_cast?
                            fov = static_cast<float>(stof(arg.Values[0]));
                         } else {
                            LogBadArgument(arg);
@@ -448,7 +475,7 @@ namespace Polytope {
                for (const PBRTArgument& arg : directive.Arguments) {
                   if (arg.Type == IntegerText) {
                      if (arg.Name == "maxdepth") {
-                        maxDepth = static_cast<unsigned int>(stoi(arg.Values[0]));
+                        maxDepth = stoui(arg.Values[0]);
                         missingDepth = false;
                         break;
                      } else {
