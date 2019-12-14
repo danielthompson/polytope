@@ -28,7 +28,6 @@ namespace Polytope {
    class PBRTGraphicsState {
    public:
       std::unique_ptr<Material> material;
-
    };
 
    class PBRTFileParser {
@@ -40,22 +39,11 @@ namespace Polytope {
       std::unique_ptr<AbstractRunner> ParseFile(const std::string &filepath) noexcept(false);
       std::unique_ptr<AbstractRunner> ParseString(const std::string &text) noexcept(false);
 
-
-
       std::unique_ptr<AbstractRunner> Runner;
    private:
 
       std::unique_ptr<AbstractRunner> Parse(std::vector<std::vector<std::string>> tokens) noexcept(false);
       std::vector<std::vector<std::string>> Scan(std::unique_ptr<std::istream> stream);
-
-      bool IsQuoted(std::string token);
-      bool StartQuoted(std::string token);
-      bool EndQuoted(std::string token);
-      void LogBadIdentifier(const PBRTDirective &directive);
-      void LogOther(const PBRTDirective &directive, const std::string &error);
-
-      void CreateSampler(std::vector<std::string> &directive);
-      void CreateIntegrator(std::vector<std::string> &directive);
 
       std::unique_ptr<AbstractSampler> _sampler;
       AbstractScene *_scene = nullptr;

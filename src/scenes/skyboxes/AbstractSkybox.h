@@ -7,11 +7,12 @@
 
 #include "../../shading/SpectralPowerDistribution.h"
 
-class AbstractSkybox {
+namespace Polytope {
+   class AbstractSkybox {
 
-public:
-   virtual Polytope::SpectralPowerDistribution GetSpd(Polytope::Vector &v) const;
-};
-
+   public:
+      virtual Polytope::SpectralPowerDistribution GetSpd(const Polytope::Vector &v) const = 0;
+   };
+}
 
 #endif //POLYTOPE_ABSTRACTSKYBOX_H

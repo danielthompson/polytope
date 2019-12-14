@@ -6,7 +6,6 @@
 
 #include "../src/parsers/PBRTFileParser.h"
 #include "../src/samplers/HaltonSampler.h"
-#include "../src/samplers/GridSampler.h"
 #include "../src/utilities/Logger.h"
 #include "../src/films/PNGFilm.h"
 #include "../src/filters/BoxFilter.h"
@@ -126,8 +125,6 @@ namespace Tests {
          std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
          Polytope::HaltonSampler *actualSampler = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
          ASSERT_NE(nullptr, actualSampler);
-
-         ASSERT_NE(nullptr, runner->Film);
 
          // filter
          std::unique_ptr<Polytope::AbstractFilter> filter = std::move(runner->Film->Filter);

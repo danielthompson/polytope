@@ -13,6 +13,7 @@
 #include "../shapes/AbstractShape.h"
 #include "../structures/Intersection.h"
 #include "../lights/AbstractLight.h"
+#include "skyboxes/AbstractSkybox.h"
 
 namespace Polytope {
 
@@ -36,13 +37,13 @@ namespace Polytope {
       // data
 
       std::unique_ptr<AbstractCamera> Camera{};
-      std::string ImplementationType = "Base _scene";
+      std::string ImplementationType = "Base Scene";
       std::vector<AbstractShape*> Shapes{};
       std::vector<AbstractLight*> Lights{};
+      std::unique_ptr<AbstractSkybox> Skybox {};
 
    protected:
       Intersection GetNearestShapeIteratively(std::vector<AbstractShape*> &shapes, Ray &ray) const;
-
    };
 
 }

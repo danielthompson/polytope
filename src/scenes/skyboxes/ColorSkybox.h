@@ -7,15 +7,16 @@
 
 #include "AbstractSkybox.h"
 
-class ColorSkybox : AbstractSkybox {
-public:
-   explicit ColorSkybox(const Polytope::SpectralPowerDistribution& spd) : spd(spd) {  }
+namespace Polytope {
+   class ColorSkybox : public AbstractSkybox {
+   public:
+      explicit ColorSkybox(const Polytope::SpectralPowerDistribution &spd) : spd(spd) {}
 
-   Polytope::SpectralPowerDistribution GetSpd(const Polytope::Vector &v) const;
+      Polytope::SpectralPowerDistribution GetSpd(const Polytope::Vector &v) const override;
 
-private:
-   Polytope::SpectralPowerDistribution spd;
-};
-
+   private:
+      Polytope::SpectralPowerDistribution spd;
+   };
+}
 
 #endif //POLYTOPE_COLORSKYBOX_H
