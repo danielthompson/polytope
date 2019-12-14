@@ -78,6 +78,36 @@ namespace Tests {
          ASSERT_NE(nullptr, actualCamera);
          ASSERT_EQ(640, actualCamera->Settings.Bounds.x);
          ASSERT_EQ(640, actualCamera->Settings.Bounds.y);
+
+         ASSERT_NE(nullptr, actualCamera->CameraToWorld.Matrix.Matrix);
+
+         const auto actualMatrix = actualCamera->CameraToWorld.Matrix.Matrix;
+
+         ASSERT_EQ(1, actualMatrix[0][0]);
+         ASSERT_EQ(0, actualMatrix[0][1]);
+         ASSERT_EQ(0, actualMatrix[0][2]);
+         ASSERT_EQ(0, actualMatrix[0][3]);
+
+         ASSERT_EQ(0, actualMatrix[1][0]);
+         ASSERT_EQ(1, actualMatrix[1][1]);
+         ASSERT_EQ(0, actualMatrix[1][2]);
+         ASSERT_EQ(0, actualMatrix[1][3]);
+
+         ASSERT_EQ(0, actualMatrix[2][0]);
+         ASSERT_EQ(0, actualMatrix[2][1]);
+         ASSERT_EQ(1, actualMatrix[2][2]);
+         ASSERT_EQ(0, actualMatrix[2][3]);
+
+         ASSERT_EQ(0, actualMatrix[3][0]);
+         ASSERT_EQ(0, actualMatrix[3][1]);
+         ASSERT_EQ(0, actualMatrix[3][2]);
+         ASSERT_EQ(1, actualMatrix[3][3]);
+
+         ASSERT_EQ(50, actualCamera->Settings.FieldOfView);
+
+         //ASSERT_NE(nullptr, actualCamera->CameraToWorld.Matrix);
+
+         //AactualCamera->CameraToWorld.Matrix.Matrix
       }
    }
 }
