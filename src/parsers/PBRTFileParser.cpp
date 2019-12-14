@@ -351,7 +351,7 @@ namespace Polytope {
                         LogBadArgument(arg);
                      }
                   } else if (arg.Type == StringText) {
-                     if (arg.Name == "input_filename") {
+                     if (arg.Name == "filename") {
                         filename = arg.Values[0];
                      } else {
                         LogBadArgument(arg);
@@ -443,13 +443,13 @@ namespace Polytope {
             if (directive.Identifier == "path") {
                unsigned int maxDepth = 5;
 
-               bool missingDepth = false;
+               bool missingDepth = true;
 
                for (const PBRTArgument& arg : directive.Arguments) {
                   if (arg.Type == IntegerText) {
                      if (arg.Name == "maxdepth") {
                         maxDepth = static_cast<unsigned int>(stoi(arg.Values[0]));
-                        missingDepth = true;
+                        missingDepth = false;
                         break;
                      } else {
                         LogBadArgument(arg);

@@ -47,21 +47,6 @@ namespace Tests {
                                    "\tTransformEnd\n"
                                    "WorldEnd";
 
-      TEST(FileParser, Sampler1) {
-
-         PBRTFileParser fp = PBRTFileParser();
-         std::string desc = R"(_sampler "random" "integer pixelsamples" [ 64 ] )";
-         std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(desc);
-
-         ASSERT_NE(nullptr, runner);
-         ASSERT_NE(nullptr, runner->Sampler);
-
-         std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
-
-         Polytope::HaltonSampler *result = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
-
-         ASSERT_NE(nullptr, result);
-      }
 
       TEST(FileParser, EmptyWorld) {
 
@@ -72,6 +57,7 @@ namespace Tests {
          // ensure nothing is null
          ASSERT_NE(nullptr, runner);
          ASSERT_NE(nullptr, runner->Sampler);
+         ASSERT_NE(nullptr, runner->Film);
          ASSERT_NE(nullptr, runner->Film->Filter);
          ASSERT_NE(nullptr, runner->Integrator);
          ASSERT_NE(nullptr, runner->Integrator->Scene);
@@ -94,45 +80,11 @@ namespace Tests {
          std::unique_ptr<Polytope::AbstractFilm> film = std::move(runner->Film);
          Polytope::PNGFilm *actualFilm = dynamic_cast<Polytope::PNGFilm *>(film.get());
          ASSERT_NE(nullptr, actualFilm);
+         ASSERT_EQ("minimum.png", actualFilm->Filename);
+
 
          // ensure the scene is a naive scene
          // TODO std::unique_ptr<Polytope::AbstractScene> scene = std::move(runner->Integrator->Scene);
-
-
-      }
-
-      TEST(FileParser, Sampler2) {
-
-         PBRTFileParser fp = PBRTFileParser();
-         std::string desc = R"(_sampler "halton" "integer pixelsamples" [ 64 ] )";
-         std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(desc);
-
-         ASSERT_NE(nullptr, runner);
-         ASSERT_NE(nullptr, runner->Sampler);
-
-         std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
-
-         Polytope::HaltonSampler *result = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
-
-         ASSERT_NE(nullptr, result);
-
-      }
-
-      TEST(FileParser, Sampler3) {
-
-         PBRTFileParser fp = PBRTFileParser();
-
-         std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseString(twoballs);
-
-         ASSERT_NE(nullptr, runner);
-         ASSERT_NE(nullptr, runner->Sampler);
-
-         std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
-
-         Polytope::HaltonSampler *result = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
-
-         ASSERT_NE(nullptr, result);
-
       }
    }
 }
