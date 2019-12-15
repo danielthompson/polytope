@@ -35,16 +35,16 @@ namespace Polytope {
 
       // methods
       virtual void Run() = 0;
-      void Trace(int x, int y);
+      void Trace(int x, int y) const;
 
-      void Output();
+      void Output() const;
 
       std::thread Spawn() {
          return std::thread(&AbstractRunner::Run, this);
       }
 
       // destructors
-      virtual ~AbstractRunner() { }
+      virtual ~AbstractRunner() = default;
 
       // data
       const unsigned int NumSamples;

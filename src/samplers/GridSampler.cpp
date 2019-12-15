@@ -11,7 +11,7 @@ namespace Polytope {
       return Point2f(x + 0.5f, y + 0.5f);
    }
 
-   void GridSampler::GetSamples(Point2f points[], const int number, const int x, const int y) const {
+   void GridSampler::GetSamples(Point2f points[], const unsigned int number, const int x, const int y) const {
       switch (number) {
          case 1: {
             points[0].x = 0.5f;

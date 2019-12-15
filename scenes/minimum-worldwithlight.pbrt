@@ -1,4 +1,4 @@
-
+Sampler "halton" "integer pixelsamples" 1
 WorldBegin
 	LightSource "infinite" "rgb L" [.4 .45 .5]
 WorldEnd

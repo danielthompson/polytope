@@ -12,7 +12,14 @@ namespace Polytope {
       Intersection intersection = Scene->GetNearestShape(ray, x, y);
 
       if (!intersection.Hits) {
-         return Sample(SpectralPowerDistribution());
+
+         SpectralPowerDistribution spd;
+
+         if (Scene->Skybox != nullptr) {
+            spd = Scene->Skybox->GetSpd(ray.Direction);
+         }
+
+         return Sample(spd);
       }
 
       if (intersection.Shape->IsLight()) {

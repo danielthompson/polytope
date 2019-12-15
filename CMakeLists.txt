@@ -9,7 +9,7 @@ project(${PROJECT_NAME})
 
 set(CMAKE_CXX_STANDARD 14)
 
-SET(CMAKE_CXX_FLAGS "-O0 -g -Wno-error=unused-function")
+SET(CMAKE_CXX_FLAGS "-O0 -g -Wno-error=unused-function -pthread")
 
 # see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 SET(COVERAGE OFF CACHE BOOL "Coverage")
@@ -117,7 +117,7 @@ add_library(polytope_lib
         src/utilities/OptionsParser.h
         )
 
-add_executable(${PROJECT_NAME} src/Main.cpp)
+add_executable(${PROJECT_NAME} src/Main.cpp src/platforms/win32-cygwin.h)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be
 # used elsewhere.

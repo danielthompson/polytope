@@ -3,13 +3,56 @@
 //
 
 #include <iostream>
+#include <sstream>
 #include "Tracer.h"
 #include "utilities/OptionsParser.h"
 #include "utilities/Common.h"
 
+#ifdef __CYGWIN__
+#include "platforms/win32-cygwin.h"
+#endif
+
 Polytope::Logger Log;
 
+void segfaultHandler(int signalNumber) {
+   Log.WithTime("Detected a segfault. Stacktrace to be implemented...");
+#ifdef __CYGWIN__
+   //printStack();
+#endif
+   exit(signalNumber);
+}
+
+void signalHandler(int signalNumber) {
+   std::ostringstream oss;
+   oss << "Received interrupt signal " << signalNumber << ", aborting.";
+   Log.WithTime(oss.str());
+   exit(signalNumber);
+}
+
+bool hasAbortedOnce = false;
+
+void userAbortHandler(int signalNumber) {
+   if (hasAbortedOnce) {
+      Log.WithTime("Aborting at user request.");
+      exit(signalNumber);
+   }
+   else {
+      Log.WithTime("Detected Ctrl-C keypress. Ignoring since it's the first time. Press Ctrl-C again to really quit.");
+      hasAbortedOnce = true;
+   }
+}
+
 int main(int argc, char* argv[]) {
+
+//   signal(SIGSEGV, segfaultHandler);
+//
+//   signal(SIGINT, userAbortHandler);
+//
+//   signal(SIGABRT, signalHandler);
+//   signal(SIGFPE, signalHandler);
+//   signal(SIGILL, signalHandler);
+//   signal(SIGTERM, signalHandler);
+
 
    try {
       Log = Polytope::Logger();

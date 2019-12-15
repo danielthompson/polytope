@@ -27,7 +27,7 @@ namespace Polytope {
       const auto totalRunTimeStart = std::chrono::system_clock::now();
 
       constexpr unsigned int width = 640;
-      constexpr unsigned int height = 640;
+      constexpr unsigned int height = 480;
 
       const Polytope::Bounds bounds(width, height);
 
@@ -110,7 +110,6 @@ namespace Polytope {
       const std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
 
       Log.WithTime("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
-      Log.WithTime("Exiting Polytope.");
    }
 
    void Tracer::Compile(AbstractScene *scene) {

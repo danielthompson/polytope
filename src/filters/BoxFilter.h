@@ -23,7 +23,7 @@ namespace Polytope {
 
       // methods
 
-      void SetSamples(const unsigned int samples);
+      void SetSamples(unsigned int samples);
 
       SpectralPowerDistribution Output(const Point2i &pixel) override;
 
@@ -33,11 +33,7 @@ namespace Polytope {
 
    private:
       std::vector<std::vector<Sample>> _data;
-
-      //static std::mutex _mutex;
    };
-
 }
-
 
 #endif //POLYTOPE_BOXFILTER_H

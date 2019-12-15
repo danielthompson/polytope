@@ -10,7 +10,7 @@ namespace Polytope {
       return Point2f(x + 0.5f, y + 0.5f);
    }
 
-   void HaltonSampler::GetSamples(Point2f points[], const int number, const int x, const int y) const {
+   void HaltonSampler::GetSamples(Point2f points[], const unsigned int number, const int x, const int y) const {
       const int base0 = 2;
       const int base1 = 3;
 

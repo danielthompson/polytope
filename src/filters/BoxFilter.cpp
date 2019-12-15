@@ -2,8 +2,10 @@
 // Created by Daniel on 16-Mar-18.
 //
 
+#include <sstream>
 #include "BoxFilter.h"
 #include "../structures/Point2.h"
+#include "../utilities/Common.h"
 
 namespace Polytope {
 
@@ -13,9 +15,18 @@ namespace Polytope {
       const int x = static_cast<int>(location.x);
       const int y = static_cast<int>(location.y);
 
-      const unsigned int index = y * Bounds.x + x;
+      const int index = y * Bounds.x + x;
 
       // std::lock_guard<std::mutex> lock(_mutex);
+
+      const auto vectorSize = _data.size();
+
+      if (vectorSize <= index) {
+         std::ostringstream oss;
+         oss << "Attempting to write a sample for (" << x << ", " << y << ") to index " <<  index << " but size is " << vectorSize << "... :/";
+         Log.WithTime(oss.str());
+      }
+
       _data[index].push_back(sample);
    }
 
@@ -27,8 +38,8 @@ namespace Polytope {
 
       // std::lock_guard<std::mutex> lock(_mutex);
 
-      for (unsigned int i = 0; i < samples.size(); i++) {
-         _data[index].push_back(samples[i]);
+      for (const auto &sample : samples) {
+         _data[index].push_back(sample);
       }
    }
 

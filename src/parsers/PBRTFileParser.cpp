@@ -96,6 +96,7 @@ namespace Polytope {
       const std::string AreaLightSourceText = "AreaLightSource";
       const std::string AttributeBeginText = "AttributeBegin";
       const std::string AttributeEndText = "AttributeEnd";
+      const std::string LightSourceText = "LightSource";
       const std::string MakeNamedMaterialText = "MakeNamedMaterial";
       const std::string NamedMaterialText = "NamedMaterial";
       const std::string ShapeText = "Shape";
@@ -112,6 +113,7 @@ namespace Polytope {
          CameraText,
          FilmText,
          IntegratorText,
+         LightSourceText,
          LookAtText, // done
          MakeNamedMaterialText,
          NamedMaterialText, // done
@@ -172,7 +174,9 @@ namespace Polytope {
       }
 
       // defaults
-      const float CameraDefaultFov = 90.f;
+      const float DefaultCameraFOV = 90.f;
+      const unsigned int DefaultBoundsX = 640;
+      const unsigned int DefaultBoundsY = 480;
    }
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filepath) {
@@ -242,7 +246,7 @@ namespace Polytope {
                   tokens[targetLineNumber].push_back("[");
                   tokens[targetLineNumber].push_back(word.substr(1, lastIndex));
                } else if (word[lastIndex] == ']') {
-                  tokens[targetLineNumber].push_back(word.substr(0, lastIndex - 1));
+                  tokens[targetLineNumber].push_back(word.substr(0, lastIndex));
                   tokens[targetLineNumber].push_back("]");
                } else {
                   tokens[targetLineNumber].push_back(word);
@@ -354,10 +358,13 @@ namespace Polytope {
 
       // sampler
 
+      bool missingSampler = true;
+
       unsigned int numSamples = 16;
 
       for (const PBRTDirective& directive : sceneDirectives) {
          if (directive.Name == SamplerText) {
+            missingSampler = false;
             if (directive.Identifier == "halton") {
                _sampler = std::make_unique<HaltonSampler>();
                break;
@@ -381,47 +388,18 @@ namespace Polytope {
          }
       }
 
-      if (_sampler == nullptr) {
+      if (missingSampler) {
          std::string defaultOption = "Halton";
          LogMissingDirective(SamplerText, defaultOption);
-         _sampler = std::make_unique<HaltonSampler>();
       }
 
-      // filter
-
-      bool createBoxFilter = false;
-
-      for (const PBRTDirective& directive : sceneDirectives) {
-         if (directive.Name == PixelFilterText) {
-            if (directive.Identifier == "box") {
-               createBoxFilter = true;
-               unsigned int xWidth = 0;
-               unsigned int yWidth = 0;
-
-               for (const PBRTArgument& arg : directive.Arguments) {
-                  if (arg.Type == IntegerText) {
-                     if (arg.Name == "xwidth") {
-                        xWidth = stoui(arg.Values[0]);
-                     } else if (arg.Name == "ywidth") {
-                        yWidth = stoui(arg.Values[0]);
-                     } else {
-                        LogBadArgument(arg);
-                     }
-                     break;
-                  }
-               }
-            } else {
-               LogBadIdentifier(directive);
-            }
-            break;
-         }
+      if (_sampler == nullptr) {
+         _sampler = std::make_unique<HaltonSampler>();
       }
 
       // film
 
-      bool filmMissing = true;
-
-      Polytope::Bounds bounds;
+      bool missingFilm = true;
 
       for (const PBRTDirective& directive : sceneDirectives) {
          if (directive.Name == FilmText) {
@@ -459,30 +437,67 @@ namespace Polytope {
                   }
                }
 
-               bounds.x = foundX ? x : 640;
-               bounds.y = foundY ? y : 480;
+               _bounds.x = foundX ? x : DefaultBoundsX;
+               _bounds.y = foundY ? y : DefaultBoundsY;
 
-               filmMissing = false;
+               missingFilm = false;
 
-               if (createBoxFilter) {
-                  _filter = std::make_unique<BoxFilter>(bounds);
-               }
-               _film = std::make_unique<PNGFilm>(bounds, filename, std::move(_filter));
+               _film = std::make_unique<PNGFilm>(_bounds, filename, std::move(_filter));
             }
             break;
          }
       }
 
-      if (filmMissing) {
+      if (missingFilm) {
          std::string defaultOption = "PNGFilm with 640x480 and output filename polytope.png";
          LogMissingDirective(FilmText, defaultOption);
       }
 
       if (_film == nullptr) {
          std::string filename = "polytope.png";
-         bounds.x = 640;
-         bounds.y = 480;
-         _film = std::make_unique<PNGFilm>(bounds, filename, std::move(_filter));
+         _bounds.x = DefaultBoundsX;
+         _bounds.y = DefaultBoundsY;
+         _film = std::make_unique<PNGFilm>(_bounds, filename, std::move(_filter));
+      }
+
+      // filter
+
+      bool missingFilter = true;
+
+      for (const PBRTDirective& directive : sceneDirectives) {
+         if (directive.Name == PixelFilterText) {
+            missingFilter = false;
+            if (directive.Identifier == "box") {
+               unsigned int xWidth = 0;
+               unsigned int yWidth = 0;
+
+               for (const PBRTArgument& arg : directive.Arguments) {
+                  if (arg.Type == IntegerText) {
+                     if (arg.Name == "xwidth") {
+                        xWidth = stoui(arg.Values[0]);
+                     } else if (arg.Name == "ywidth") {
+                        yWidth = stoui(arg.Values[0]);
+                     } else {
+                        LogBadArgument(arg);
+                     }
+                     break;
+                  }
+               }
+            } else {
+               LogBadIdentifier(directive);
+            }
+            break;
+         }
+      }
+
+      if (missingFilter) {
+         std::string defaultOption = "Box";
+         LogMissingDirective(PixelFilterText, defaultOption);
+      }
+
+      if (_filter == nullptr) {
+         _filter = std::make_unique<BoxFilter>(_bounds);
+         _film->Filter = std::move(_filter);
       }
 
       // camera
@@ -523,14 +538,14 @@ namespace Polytope {
             }
          }
 
-         CameraSettings settings = CameraSettings(bounds, CameraDefaultFov);
+         CameraSettings settings = CameraSettings(_bounds, DefaultCameraFOV);
 
          bool foundCamera = false;
 
          for (const PBRTDirective &directive : sceneDirectives) {
             if (directive.Name == CameraText) {
                if (directive.Identifier == "perspective") {
-                  float fov = CameraDefaultFov;
+                  float fov = DefaultCameraFOV;
 
                   foundCamera = true;
 
@@ -555,7 +570,7 @@ namespace Polytope {
 
          if (!foundCamera) {
             std::ostringstream stringstream;
-            stringstream << "PerspectiveCamera with FOV = " << CameraDefaultFov;
+            stringstream << "PerspectiveCamera with FOV = " << DefaultCameraFOV;
             std::string cameraDefaultString = stringstream.str();
             LogMissingDirective(CameraText, cameraDefaultString);
             camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
@@ -738,7 +753,7 @@ namespace Polytope {
                         const float g = stof(argument.Values[1]);
                         const float b = stof(argument.Values[2]);
 
-                        const Polytope::SpectralPowerDistribution spd(r, g, b);
+                        const Polytope::SpectralPowerDistribution spd(r * 255, g * 255, b * 255);
 
                         _scene->Skybox = std::make_unique<ColorSkybox>(spd);
                         break;

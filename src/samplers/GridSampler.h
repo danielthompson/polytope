@@ -16,7 +16,7 @@ namespace Polytope {
 
       ~GridSampler() override = default;
 
-      void GetSamples(Point2f points[], int number, int x, int y) const override;
+      void GetSamples(Point2f points[], unsigned int number, int x, int y) const override;
    };
 
 }
