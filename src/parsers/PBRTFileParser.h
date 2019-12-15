@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include "../runners/AbstractRunner.h"
+#include "AbstractFileParser.h"
 
 namespace Polytope {
 
@@ -30,7 +31,7 @@ namespace Polytope {
       std::unique_ptr<Material> material;
    };
 
-   class PBRTFileParser {
+   class PBRTFileParser : public AbstractFileParser {
    public:
 
       // constructors
@@ -50,7 +51,6 @@ namespace Polytope {
       std::unique_ptr<AbstractIntegrator> _integrator;
       std::unique_ptr<AbstractFilm> _film;
       std::unique_ptr<AbstractFilter> _filter;
-      unsigned int _numSamples = 0;
       Polytope::Bounds _bounds;
    };
 }

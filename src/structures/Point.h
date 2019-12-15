@@ -11,11 +11,11 @@ namespace Polytope {
 
    class Point {
    public:
-
+      float x, y, z;
       // constructors
 
       Point() : x(0), y(0), z(0) { };
-      Point(float x, float y, float z)  : x(x), y(y), z(z) {}
+      Point(const float x, const float y, const float z)  : x(x), y(y), z(z) {}
       Point(const Point &p) : x(p.x), y(p.y), z(p.z) { }
 
       // operators
@@ -40,15 +40,21 @@ namespace Polytope {
          return *this;
       }
 
-
-      // methods
-
       float Dot(const Point &p) const;
+   };
 
-      // data
+   class Point3i {
+   public:
+      int x, y, z;
+      Point3i() : x(0), y(0), z(0) { };
+      Point3i(const int x, const int y, const int z) : x(x), y(y), z(z) { };
+   };
 
-      float x, y, z;
-
+   class Point3ui {
+   public:
+      unsigned int x, y, z;
+      Point3ui() : x(0), y(0), z(0) { };
+      Point3ui(const unsigned int x, const unsigned int y, const unsigned int z) : x(x), y(y), z(z) { };
    };
 }
 

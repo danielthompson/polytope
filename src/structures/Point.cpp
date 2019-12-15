@@ -2,7 +2,7 @@
 // Created by Daniel Thompson on 2/18/18.
 //
 
-#include <assert.h>
+#include <cassert>
 #include "Point.h"
 
 namespace Polytope {
