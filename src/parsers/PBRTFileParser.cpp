@@ -19,6 +19,7 @@
 #include "../scenes/NaiveScene.h"
 #include "../utilities/Common.h"
 #include "../scenes/skyboxes/ColorSkybox.h"
+#include "OBJFileParser.h"
 
 namespace Polytope {
 
@@ -91,6 +92,16 @@ namespace Polytope {
             {"WorldEnd", WorldEnd}
       };
 
+      enum ShapeIdentifier {
+         Sphere,
+         TriangleMesh
+      };
+
+      const std::map<std::string, ShapeIdentifier> ShapeIdentifierMap{
+            {"sphere", Sphere},
+            {"trianglemesh", TriangleMesh}
+      };
+
       // TODO get rid of this junk in favor of using WorldDirectiveMap
 
       const std::string AreaLightSourceText = "AreaLightSource";
@@ -141,17 +152,12 @@ namespace Polytope {
          return (token[0] != '"' && token[token.size() - 1] == '"');
       }
 
-      void LogBadIdentifier(const PBRTDirective &directive) {
-         Log.WithTime("Unknown directive/identifier combination: [" + directive.Name + "] / [" + directive.Identifier + "].");
-      }
+
 
       void LogOther(const PBRTDirective &directive, const std::string &error) {
          Log.WithTime(directive.Name + ": " + error);
       }
 
-      void LogBadArgument(const PBRTArgument &argument) {
-         Log.WithTime("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
-      }
 
       void LogMissingArgument(const PBRTDirective &directive, const std::string& argument) {
          Log.WithTime("Directive [" + directive.Name + "] w/ identifier [" + directive.Identifier + "] is missing argument [" + argument + "]");
@@ -163,6 +169,14 @@ namespace Polytope {
 
       void LogUnknownDirective(const PBRTDirective &directive) {
          Log.WithTime("Directive [" + directive.Name + "] found, but is unknown. Ignoring.");
+      }
+
+      void LogUnknownIdentifier(const PBRTDirective &directive) {
+         Log.WithTime("Directive [" + directive.Name + "] has unknown identifier [" + directive.Identifier + "].");
+      }
+
+      void LogUnknownArgument(const PBRTArgument &argument) {
+         Log.WithTime("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
       }
 
       void LogUnimplementedDirective(const PBRTDirective &directive) {
@@ -355,7 +369,7 @@ namespace Polytope {
                _sampler = std::make_unique<HaltonSampler>();
                break;
             } else {
-               LogBadIdentifier(directive);
+               LogUnknownIdentifier(directive);
                _sampler = std::make_unique<HaltonSampler>();
             }
 
@@ -365,7 +379,7 @@ namespace Polytope {
                      numSamples = stoui(arg.Values[0]);
                      break;
                   } else {
-                     LogBadArgument(arg);
+                     LogUnknownArgument(arg);
                   }
                   break;
                }
@@ -412,13 +426,13 @@ namespace Polytope {
                         y = stoui(arg.Values[0]);
                         foundY = true;
                      } else {
-                        LogBadArgument(arg);
+                        LogUnknownArgument(arg);
                      }
                   } else if (arg.Type == StringText) {
                      if (arg.Name == "filename") {
                         filename = arg.Values[0];
                      } else {
-                        LogBadArgument(arg);
+                        LogUnknownArgument(arg);
                      }
                   }
                }
@@ -464,13 +478,13 @@ namespace Polytope {
                      } else if (arg.Name == "ywidth") {
                         yWidth = stoui(arg.Values[0]);
                      } else {
-                        LogBadArgument(arg);
+                        LogUnknownArgument(arg);
                      }
                      break;
                   }
                }
             } else {
-               LogBadIdentifier(directive);
+               LogUnknownIdentifier(directive);
             }
             break;
          }
@@ -541,7 +555,7 @@ namespace Polytope {
                            // TODO remove static_cast?
                            fov = static_cast<float>(stof(arg.Values[0]));
                         } else {
-                           LogBadArgument(arg);
+                           LogUnknownArgument(arg);
                         }
                      }
                   }
@@ -583,7 +597,7 @@ namespace Polytope {
                         missingDepth = false;
                         break;
                      } else {
-                        LogBadArgument(arg);
+                        LogUnknownArgument(arg);
                      }
                   }
                }
@@ -608,7 +622,6 @@ namespace Polytope {
       if (_integrator == nullptr) {
          _integrator = std::make_unique<PathTraceIntegrator>(5);
       }
-
 
       // world
 
@@ -639,6 +652,21 @@ namespace Polytope {
          }
 
          switch (name) {
+            case (AreaLightSource): {
+               // lights with geometry
+               for (const PBRTArgument& argument : directive.Arguments) {
+                  if (argument.Name == "L") {
+                     if (activeLight == nullptr) {
+                        activeLight = std::make_shared<SpectralPowerDistribution>();
+                     }
+                     activeLight->r = stof(argument.Values[0]);
+                     activeLight->g = stof(argument.Values[1]);
+                     activeLight->b = stof(argument.Values[2]);
+                     break;
+                  }
+               }
+               break;
+            }
             case (AttributeBegin): {
                // push onto material stack
                materialStack.push(materialMarker);
@@ -775,16 +803,66 @@ namespace Polytope {
                namedMaterials.push_back(std::make_shared<Material>(std::move(brdf), reflectanceSpectrum, materialName));
                break;
             }
-            case (AreaLightSource): {
-               // lights with geometry
-               for (const PBRTArgument& argument : directive.Arguments) {
-                  if (argument.Name == "L") {
-                     if (activeLight == nullptr) {
-                        activeLight = std::make_shared<SpectralPowerDistribution>();
+            case (NamedMaterial): {
+               std::string materialName = directive.Identifier;
+               bool found = false;
+               for (const auto &material : namedMaterials) {
+                  if (material->Name == materialName) {
+                     activeMaterial = material;
+                     found = true;
+                     break;
+                  }
+               }
+               if (!found) {
+                  LogOther(directive, "Specified material [" + materialName + "] not found. Have you defined it yet?");
+               }
+               break;
+            }
+            case (Shape): {
+               ShapeIdentifier identifier;
+               try {
+                  identifier = ShapeIdentifierMap.at(directive.Identifier);
+               }
+               catch (...) {
+                  LogUnknownIdentifier(directive);
+                  continue;
+               }
+               switch (identifier) {
+                  case ShapeIdentifier::TriangleMesh: {
+                     // make sure it has a filename argument
+                     bool filenameMissing = true;
+                     std::string objFilename;
+                     for (const PBRTArgument& argument : directive.Arguments) {
+                        if (argument.Name == "filename") {
+                           filenameMissing = false;
+                           objFilename = argument.Values[0];
+                        }
                      }
-                     activeLight->r = stof(argument.Values[0]);
-                     activeLight->g = stof(argument.Values[1]);
-                     activeLight->b = stof(argument.Values[2]);
+                     if (filenameMissing) {
+                        LogMissingArgument(directive, "filename");
+                        break;
+                     }
+
+                     OBJFileParser parser;
+                     const std::unique_ptr<Polytope::TriangleMesh> mesh = parser.ParseFile(objFilename);
+                     _scene->Shapes.push_back(mesh.get());
+                     break;
+                  }
+                  case ShapeIdentifier::Sphere: {
+                     PBRTArgument argument = directive.Arguments[0];
+                     if (argument.Type == FloatText) {
+                        float radius = std::stof(argument.Values[0]);
+                        AbstractShape *sphere = new Polytope::Sphere(*activeTransform, activeMaterial);
+                        if (activeLight != nullptr) {
+                           ShapeLight *sphereLight = new ShapeLight(*activeLight);
+                           sphere->Light = sphereLight;
+                           _scene->Lights.push_back(sphereLight);
+                        }
+                        _scene->Shapes.push_back(sphere);
+                     }
+                  }
+                  default: {
+                     LogUnimplementedDirective(directive);
                      break;
                   }
                }
@@ -840,40 +918,6 @@ namespace Polytope {
                break;
             }
             // TODO - other transform directives
-            case (Shape): {
-               if (directive.Identifier == "sphere") {
-                  PBRTArgument argument = directive.Arguments[0];
-                  if (argument.Type == FloatText) {
-                     float radius = std::stof(argument.Values[0]);
-                     AbstractShape *sphere = new Sphere(*activeTransform, activeMaterial);
-                     if (activeLight != nullptr) {
-                        ShapeLight *sphereLight = new ShapeLight(*activeLight);
-                        sphere->Light = sphereLight;
-                        _scene->Lights.push_back(sphereLight);
-                     }
-                     _scene->Shapes.push_back(sphere);
-                  }
-               }
-               else {
-                  LogBadIdentifier(directive);
-               }
-               break;
-            }
-            case (NamedMaterial): {
-               std::string materialName = directive.Identifier;
-               bool found = false;
-               for (const auto &material : namedMaterials) {
-                  if (material->Name == materialName) {
-                     activeMaterial = material;
-                     found = true;
-                     break;
-                  }
-               }
-               if (!found) {
-                  LogOther(directive, "Specified material [" + materialName + "] not found. Have you defined it yet?");
-               }
-               break;
-            }
             default: {
                LogUnimplementedDirective(directive);
                break;
