@@ -32,6 +32,15 @@ namespace Polytope {
       std::vector<Point3ui> Faces;
 
    };
+
+   class TriangleMeshTemp {
+   public:
+      std::vector<Point> Vertices;
+      std::vector<Point3ui> Faces;
+
+      Transform ObjectToWorld;
+      std::shared_ptr<Material> Material;
+   };
 }
 
 

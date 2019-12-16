@@ -12,7 +12,7 @@ namespace Polytope {
 
    class OBJFileParser : public AbstractFileParser {
    public:
-      std::unique_ptr<TriangleMesh> ParseFile(const std::string &filepath);
+      void ParseFile(const std::shared_ptr<TriangleMesh>& mesh, const std::string &filepath) const;
    };
 
 }

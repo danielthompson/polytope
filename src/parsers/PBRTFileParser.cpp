@@ -94,12 +94,20 @@ namespace Polytope {
 
       enum ShapeIdentifier {
          Sphere,
-         TriangleMesh
+         OBJMesh
       };
 
       const std::map<std::string, ShapeIdentifier> ShapeIdentifierMap{
             {"sphere", Sphere},
-            {"trianglemesh", TriangleMesh}
+            {"objmesh", OBJMesh}
+      };
+
+      enum OBJMeshArgument {
+         Filename
+      };
+
+      const std::map<std::string, OBJMeshArgument> OBJMeshArgumentMap {
+            {"filename", Filename}
       };
 
       // TODO get rid of this junk in favor of using WorldDirectiveMap
@@ -177,6 +185,10 @@ namespace Polytope {
 
       void LogUnknownArgument(const PBRTArgument &argument) {
          Log.WithTime("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
+      }
+
+      void LogWrongArgumentType(const PBRTDirective &directive, const PBRTArgument &argument) {
+         Log.WithTime("Directive [" + directive.Name + "] w/ identifier [" + directive.Identifier + "] found has argument [" + argument.Name + "] with wrong type [" + argument.Type + "].");
       }
 
       void LogUnimplementedDirective(const PBRTDirective &directive) {
@@ -828,14 +840,30 @@ namespace Polytope {
                   continue;
                }
                switch (identifier) {
-                  case ShapeIdentifier::TriangleMesh: {
+                  case ShapeIdentifier::OBJMesh: {
                      // make sure it has a filename argument
                      bool filenameMissing = true;
                      std::string objFilename;
                      for (const PBRTArgument& argument : directive.Arguments) {
-                        if (argument.Name == "filename") {
-                           filenameMissing = false;
-                           objFilename = argument.Values[0];
+                        OBJMeshArgument arg;
+                        try {
+                           arg = OBJMeshArgumentMap.at(argument.Name);
+                        }
+                        catch (...) {
+                           LogUnknownArgument(argument);
+                           continue;
+                        }
+                        switch (arg) {
+                           case Filename: {
+                              filenameMissing = false;
+                              objFilename = argument.Values[0];
+                              if (argument.Type != StringText) {
+                                 LogWrongArgumentType(directive, argument);
+                              }
+                           }
+                           default:
+                              LogUnknownArgument(argument);
+                              continue;
                         }
                      }
                      if (filenameMissing) {
@@ -843,8 +871,9 @@ namespace Polytope {
                         break;
                      }
 
-                     OBJFileParser parser;
-                     const std::unique_ptr<Polytope::TriangleMesh> mesh = parser.ParseFile(objFilename);
+                     const std::shared_ptr<Polytope::TriangleMesh> mesh = std::make_shared<TriangleMesh>(*activeTransform, activeMaterial);
+                     const OBJFileParser parser;
+                     parser.ParseFile(mesh, objFilename);
                      _scene->Shapes.push_back(mesh.get());
                      break;
                   }

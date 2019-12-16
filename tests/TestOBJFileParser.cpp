@@ -13,9 +13,12 @@ namespace Tests {
    namespace Parse {
       TEST(FileParser, Teapot) {
 
-         Polytope::OBJFileParser fp = Polytope::OBJFileParser();
-         std::string file = "../scenes/teapot.obj";
-         std::unique_ptr<Polytope::TriangleMesh> mesh = fp.ParseFile(file);
+         const Polytope::OBJFileParser parser;
+         const std::string file = "../scenes/teapot.obj";
+         const Polytope::Transform identity;
+         std::shared_ptr<Polytope::TriangleMesh> mesh = std::make_shared<Polytope::TriangleMesh>(identity, nullptr);
+
+         parser.ParseFile(mesh, file);
 
          // ensure nothing is null
          ASSERT_NE(nullptr, mesh);
@@ -25,9 +28,11 @@ namespace Tests {
          // check a random-ish vertex for correctness
          const Polytope::Point secondToLastVertex = mesh->Vertices[3642];
 
-         ASSERT_EQ(3.428125, secondToLastVertex.x);
-         ASSERT_EQ(2.477344, secondToLastVertex.y);
-         ASSERT_EQ(0.000000, secondToLastVertex.z);
+         // EXPECT_FLOAT_EQ allows 4 ulps difference
+
+         EXPECT_FLOAT_EQ(3.428125, secondToLastVertex.x);
+         EXPECT_FLOAT_EQ(2.477344, secondToLastVertex.y);
+         EXPECT_FLOAT_EQ(0.000000, secondToLastVertex.z);
 
          // faces
          ASSERT_EQ(6320, mesh->Faces.size());
@@ -35,9 +40,9 @@ namespace Tests {
          // check a random-ish face for correctness
          const Polytope::Point3ui secondToLastFace = mesh->Faces[6318];
 
-         ASSERT_EQ(3022, secondToLastFace.x);
-         ASSERT_EQ(3021, secondToLastFace.y);
-         ASSERT_EQ(3001, secondToLastFace.z);
+         EXPECT_EQ(3022, secondToLastFace.x);
+         EXPECT_EQ(3021, secondToLastFace.y);
+         EXPECT_EQ(3001, secondToLastFace.z);
 
       }
    }
