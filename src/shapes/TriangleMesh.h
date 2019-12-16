@@ -15,33 +15,13 @@ namespace Polytope {
       TriangleMesh(const Transform &objectToWorld, const std::shared_ptr<Polytope::Material> &material)
       : AbstractShape(objectToWorld, material) {}
 
-      bool Hits(Ray &worldSpaceRay) const override {
-         return false;
-      }
+      bool Hits(Ray &worldSpaceRay) const override;
+      void Intersect(const Ray &worldSpaceRay, Intersection *intersection) override;
+      Point GetRandomPointOnSurface() override;
 
-      void Intersect(const Ray &worldSpaceRay, Intersection *intersection) override {
-
-      }
-
-      Point GetRandomPointOnSurface() override {
-         return Point();
-      }
-
-   public:
       std::vector<Point> Vertices;
       std::vector<Point3ui> Faces;
-
-   };
-
-   class TriangleMeshTemp {
-   public:
-      std::vector<Point> Vertices;
-      std::vector<Point3ui> Faces;
-
-      Transform ObjectToWorld;
-      std::shared_ptr<Material> Material;
    };
 }
-
 
 #endif //POLYTOPE_TRIANGLEMESH_H
