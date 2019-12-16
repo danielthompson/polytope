@@ -53,6 +53,7 @@ namespace Polytope {
             unsigned int parsedValue = stou(value);
             options.threads = parsedValue;
             Log.WithTime("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
+            options.threadsSpecified = true;
          }
          catch (...) {
             options.valid = false;
@@ -69,6 +70,7 @@ namespace Polytope {
             unsigned int parsedValue = stou(value);
             options.samples = parsedValue;
             Log.WithTime("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
+            options.samplesSpecified = true;
          }
          catch (...) {
             options.valid = false;
@@ -84,6 +86,7 @@ namespace Polytope {
          try {
             options.input_filename = value;
             Log.WithTime("Parsed [" + option + "] = [" + value + "].");
+            options.inputSpecified = true;
          }
          catch (...) {
             options.valid = false;
@@ -99,6 +102,7 @@ namespace Polytope {
          try {
             options.output_filename = value;
             Log.WithTime("Parsed [" + option + "] = [" + value + "].");
+            options.outputSpecified = true;
          }
          catch (...) {
             options.valid = false;

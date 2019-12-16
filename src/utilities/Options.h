@@ -10,9 +10,17 @@ namespace Polytope {
    class Options {
    public:
       unsigned int threads = 0;
+      bool threadsSpecified = false;
+
       unsigned int samples = 16;
+      bool samplesSpecified = false;
+
       std::string input_filename = "";
+      bool inputSpecified = false;
+
       std::string output_filename = "test.png";
+      bool outputSpecified = false;
+
       bool valid = true;
       bool help = false;
    };
