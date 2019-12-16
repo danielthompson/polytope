@@ -36,7 +36,7 @@ namespace Polytope {
 
       unsigned int usingThreads = concurrentThreadsSupported;
 
-      if (Options.threads > 0 && Options.threads <= concurrentThreadsSupported) {
+      if (Options.threadsSpecified && Options.threads > 0 && Options.threads <= concurrentThreadsSupported) {
          usingThreads = Options.threads;
       }
 
@@ -44,8 +44,7 @@ namespace Polytope {
 
       {
          std::unique_ptr<AbstractRunner> runner;
-         if (Options.input_filename.empty()) {
-
+         if (Options.inputSpecified) {
             Log.WithTime("No input file specified, using default scene.");
             SceneBuilder sceneBuilder = SceneBuilder(bounds);
             AbstractScene *scene = sceneBuilder.Default();
@@ -65,7 +64,12 @@ namespace Polytope {
             // load file
             PBRTFileParser parser = PBRTFileParser();
             runner = parser.ParseFile(Options.input_filename);
+            if (Options.samplesSpecified) {
+               runner->Film->Filter->
+            }
          }
+
+
 
          Log.WithTime(
                std::string("Image is [") + std::to_string(width) + std::string("] x [") + std::to_string(height) +

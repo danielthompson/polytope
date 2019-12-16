@@ -74,8 +74,5 @@ namespace Polytope {
             _data[index].reserve(samples);
          }
       }
-
    }
-
-
 }
