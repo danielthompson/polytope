@@ -31,6 +31,10 @@ namespace Tests {
 
          ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, -10), Polytope::Vector(0, 0, -1));
          EXPECT_FALSE(tm.Hits(ray));
+
+         // parallel
+         ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, -10), Polytope::Vector(0, 1, 0));
+         EXPECT_FALSE(tm.Hits(ray));
       }
 
       TEST(TriangleMesh, Intersects) {
@@ -79,6 +83,14 @@ namespace Tests {
 
          {
             Polytope::Ray ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, -10), Polytope::Vector(0, 0, -1));
+            Polytope::Intersection intersection;
+            tm.Intersect(ray, &intersection);
+            EXPECT_FALSE(intersection.Hits);
+         }
+
+         // parallel
+         {
+            Polytope::Ray ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, 0.5f), Polytope::Vector(0, 1, 0));
             Polytope::Intersection intersection;
             tm.Intersect(ray, &intersection);
             EXPECT_FALSE(intersection.Hits);
