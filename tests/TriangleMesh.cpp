@@ -41,7 +41,12 @@ namespace Tests {
          tm.Vertices.emplace_back(Polytope::Point(0, 1, 0));
          tm.Vertices.emplace_back(Polytope::Point(1, 0, 0));
 
+         tm.Vertices.emplace_back(Polytope::Point(0, 0, 1));
+         tm.Vertices.emplace_back(Polytope::Point(0, 1, 1));
+         tm.Vertices.emplace_back(Polytope::Point(1, 0, 1));
+
          tm.Faces.emplace_back(Polytope::Point3ui(0, 1, 2));
+         tm.Faces.emplace_back(Polytope::Point3ui(3, 4, 5));
 
          // hits, from either direction
 
@@ -62,7 +67,7 @@ namespace Tests {
             EXPECT_TRUE(intersection.Hits);
             EXPECT_EQ(&tm, intersection.Shape);
             EXPECT_EQ(Polytope::Normal(0, 0, 1), intersection.Normal);
-            EXPECT_EQ(Polytope::Point(0.2f, 0.2f, 0), intersection.Location);
+            EXPECT_EQ(Polytope::Point(0.2f, 0.2f, 1), intersection.Location);
          }
 
          {
