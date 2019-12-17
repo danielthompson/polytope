@@ -1,4 +1,3 @@
-#include <iostream>
 #include "gtest/gtest.h"
 
 #include "../src/structures/Point.h"
@@ -9,7 +8,7 @@ namespace Tests {
 
    namespace TriangleMesh {
 
-      TEST(TriangleMesh, Intersection) {
+      TEST(TriangleMesh, Hit) {
          Polytope::Transform identity;
          Polytope::TriangleMesh tm(identity, nullptr);
 
@@ -19,14 +18,19 @@ namespace Tests {
 
          tm.Faces.emplace_back(Polytope::Point3ui(0, 1, 2));
 
-         Polytope::Ray hitRay(Polytope::Point(0.2f, 0.2f, -10), Polytope::Vector(0, 0, -1));
-         bool actualHit = tm.Hits(hitRay);
+         // hits, from either direction
 
-         Polytope::Ray missRay(Polytope::Point(0.2f, 0.2f, 10), Polytope::Vector(0, 0, -1));
-         bool actualMiss = tm.Hits(missRay);
+         Polytope::Ray ray(Polytope::Point(0.2f, 0.2f, -10), Polytope::Vector(0, 0, 1));
+         EXPECT_TRUE(tm.Hits(ray));
 
-         EXPECT_TRUE(actualHit);
-         EXPECT_FALSE(actualMiss);
+         ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, 10), Polytope::Vector(0, 0, -1));
+         EXPECT_TRUE(tm.Hits(ray));
+
+         ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, 10), Polytope::Vector(0, 0, 1));
+         EXPECT_FALSE(tm.Hits(ray));
+
+         ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, -10), Polytope::Vector(0, 0, -1));
+         EXPECT_FALSE(tm.Hits(ray));
       }
    }
 }

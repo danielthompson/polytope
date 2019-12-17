@@ -13,20 +13,28 @@ namespace Polytope {
       Ray objectSpaceRay = WorldToObject.Apply(worldSpaceRay);
 
       for (const Point3ui &face : Faces) {
-         Polytope::Point vertex0 = Vertices[face.x];
-         Polytope::Point vertex1 = Vertices[face.y];
-         Polytope::Point vertex2 = Vertices[face.z];
+         const Polytope::Point vertex0 = Vertices[face.x];
+         const Polytope::Point vertex1 = Vertices[face.y];
+         const Polytope::Point vertex2 = Vertices[face.z];
 
          // step 1 - intersect with plane
 
-         Polytope::Vector v0 = vertex0 - vertex1;
-         Polytope::Vector v1 = vertex2 - vertex1;
+         const Polytope::Vector v0 = vertex0 - vertex1;
+         const Polytope::Vector v1 = vertex1 - vertex2;
 
-         Polytope::Vector planeNormal = v0.Cross(v1);
+         const Polytope::Vector planeNormal = v0.Cross(v1);
 
-         float t = -(objectSpaceRay.Origin.Dot(planeNormal)) - 
+         const float divisor = planeNormal.Dot(objectSpaceRay.Direction);
+         if (divisor == 0.0f) {
+            // parallel
+            continue;
+         }
+
+         const float t = planeNormal.Dot(vertex0 - objectSpaceRay.Origin) / divisor;
+
+         if (t > 0)
+            return true;
       }
-
 
       return false;
    }
