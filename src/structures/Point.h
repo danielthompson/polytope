@@ -41,6 +41,7 @@ namespace Polytope {
       }
 
       float Dot(const Point &p) const;
+      float Dot(const Vector &v) const;
    };
 
    class Point3i {

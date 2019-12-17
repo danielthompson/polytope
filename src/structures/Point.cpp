@@ -21,6 +21,10 @@ namespace Polytope {
       return p.x * x + p.y * y + p.z * z;
    }
 
+   float Point::Dot(const Vector &v) const {
+      return v.x * x + v.y * y + v.z * z;
+   }
+
    float Point::operator[](const int index) const {
       assert(index >= 0);
       assert(index <= 2);

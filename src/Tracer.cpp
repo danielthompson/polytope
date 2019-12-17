@@ -64,12 +64,8 @@ namespace Polytope {
             // load file
             PBRTFileParser parser = PBRTFileParser();
             runner = parser.ParseFile(Options.input_filename);
-            if (Options.samplesSpecified) {
-               runner->Film->Filter->
-            }
+            // TODO let options override parsed
          }
-
-
 
          Log.WithTime(
                std::string("Image is [") + std::to_string(width) + std::string("] x [") + std::to_string(height) +
