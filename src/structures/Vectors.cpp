@@ -8,18 +8,10 @@
 
 namespace Polytope {
    void Normal::Normalize() {
-      float lengthDivisor = 1.0f / Length();
+      const float lengthDivisor = 1.0f / std::sqrt(x * x + y * y + z * z);
       x *= lengthDivisor;
       y *= lengthDivisor;
       z *= lengthDivisor;
-   }
-
-   float Normal::Length() {
-      return std::sqrt(x * x + y * y + z * z);
-   }
-
-   float Normal::LengthSquared() {
-      return (x * x + y * y + z * z);
    }
 
    Normal Normal::operator*(const float t) const {
@@ -36,20 +28,16 @@ namespace Polytope {
       z = -z;
    }
 
-   Vector::Vector(float x, float y, float z) : x(x), y(y), z(z) {}
-
-   Vector::Vector(const Vector &v) : x(v.x), y(v.y), z(v.z) { }
+   Vector::Vector(const float x, const float y, const float z) : x(x), y(y), z(z) {}
 
    Vector::Vector(const Normal &n) : x(n.x), y(n.y), z(n.z) { }
 
    bool Vector::operator==(const Vector &rhs) const {
-      return x == rhs.x &&
-             y == rhs.y &&
-             z == rhs.z;
+      return x == rhs.x && y == rhs.y && z == rhs.z;
    }
 
    bool Vector::operator!=(const Vector &rhs) const {
-      return !(rhs == *this);
+      return x != rhs.x || y != rhs.y || z != rhs.z;
    }
 
    float Vector::Dot(const Vector &v) const {
@@ -151,5 +139,19 @@ namespace Polytope {
 
    Point Point::operator+(const Polytope::Vector &rhs) const {
       return Point(x + rhs.x, y + rhs.y, z + rhs.z);
+   }
+
+   Point &Point::operator+=(const Vector &rhs) {
+      x += rhs.x;
+      y += rhs.y;
+      z += rhs.z;
+      return *this;
+   }
+
+   Point &Point::operator+=(const Normal &rhs) {
+      x += rhs.x;
+      y += rhs.y;
+      z += rhs.z;
+      return *this;
    }
 }

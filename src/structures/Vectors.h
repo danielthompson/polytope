@@ -8,43 +8,27 @@
 namespace Polytope {
    class Normal {
    public:
+      float x, y, z;
 
-      // constructors
-
-      Normal() {x = y = z = 0;}
+      Normal() : x(0), y(0), z(0) { };
       Normal(const float x, const float y, const float z) : x(x), y(y), z(z) { }
-
-      // operators
+      Normal(const Normal &n) = default;
 
       bool operator==(const Normal &rhs) const;
-      Normal operator*(float t) const;
-
-      // methods
-
-      float Length();
-      float LengthSquared();
+      Normal operator*(const float t) const;
 
       void Flip();
-
       void Normalize();
-
-      // data
-
-      float x, y, z;
    };
 
    class Vector {
    public:
-
-      // constructors
+      float x, y, z;
 
       Vector() : x(0), y(0), z(0) { };
-      Vector(float x, float y, float z);
-      Vector(const Vector &v);
-
+      Vector(const float x, const float y, const float z);
+      Vector(const Vector &v) = default;
       explicit Vector(const Normal &n);
-
-      // operators
 
       bool operator==(const Vector &rhs) const;
       bool operator!=(const Vector &rhs) const;
@@ -54,8 +38,6 @@ namespace Polytope {
       Vector operator+(const Vector &rhs) const;
       Vector operator-() const;
 
-      // methods
-
       float Dot(const Vector &v) const;
       float Dot(const Normal &n) const;
       float Length() const;
@@ -63,42 +45,24 @@ namespace Polytope {
       void Normalize();
       Vector Cross(const Vector &rhs) const;
       Vector Cross(const Normal &rhs) const;
-
-      // data
-
-      float x, y, z;
    };
 
    class Point {
    public:
       float x, y, z;
-      // constructors
 
       Point() : x(0), y(0), z(0) { };
       Point(const float x, const float y, const float z)  : x(x), y(y), z(z) {}
       Point(const Point &p) : x(p.x), y(p.y), z(p.z) { }
-
-      // operators
 
       bool operator==(const Point &rhs) const;
       bool operator!=(const Point &rhs) const;
       Vector operator-(const Point &rhs) const;
       Point operator+(const Point &rhs) const;
       Point operator+(const Vector &rhs) const;
-      float operator[] (int index) const;
-      Point &operator+=(const Vector &rhs) {
-         x += rhs.x;
-         y += rhs.y;
-         z += rhs.z;
-         return *this;
-      }
-
-      Point &operator+=(const Normal &rhs) {
-         x += rhs.x;
-         y += rhs.y;
-         z += rhs.z;
-         return *this;
-      }
+      float operator[] (const int index) const;
+      Point &operator+=(const Vector &rhs);
+      Point &operator+=(const Normal &rhs);
 
       float Dot(const Point &p) const;
       float Dot(const Vector &v) const;
