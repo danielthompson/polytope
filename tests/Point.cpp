@@ -25,6 +25,16 @@ namespace Tests {
          }
       }
 
+      namespace AtOperator {
+         TEST(Equality, At1) {
+            Point p = Point(1.0f, 2.0f, 3.0f);
+
+            EXPECT_EQ(1.0f, p[0]);
+            EXPECT_EQ(2.0f, p[1]);
+            EXPECT_EQ(3.0f, p[2]);
+         }
+      }
+
       namespace Dot {
          TEST(Dot, Dot1) {
             Point p1 = Point(1, 2, 3);

@@ -26,6 +26,16 @@ namespace Tests {
          }
       }
 
+      namespace AtOperator {
+         TEST(Equality, At1) {
+            Vector v = Vector(1.0f, 2.0f, 3.0f);
+
+            EXPECT_EQ(1.0f, v[0]);
+            EXPECT_EQ(2.0f, v[1]);
+            EXPECT_EQ(3.0f, v[2]);
+         }
+      }
+
       namespace Dot {
          TEST(Dot, Dot1) {
             Vector p1 = Vector(1, 2, 3);
