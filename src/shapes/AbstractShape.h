@@ -11,6 +11,7 @@
 #include "../shading/Material.h"
 #include "../lights/AbstractLight.h"
 #include "../lights/ShapeLight.h"
+#include "../structures/Vectors.h"
 
 namespace Polytope {
 

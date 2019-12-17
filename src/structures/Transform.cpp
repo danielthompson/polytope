@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "Transform.h"
+#include "Vectors.h"
 
 namespace Polytope {
 
@@ -146,17 +147,17 @@ namespace Polytope {
       ApplyInPlace(ray.Origin);
 
       ApplyInPlace(ray.Direction);
-      ray.Direction.Normalize();
+//      ray.Direction.Normalize();
 
       ApplyInPlace(ray.DirectionInverse);
-      ray.DirectionInverse.Normalize();
+//      ray.DirectionInverse.Normalize();
    }
 
    Ray Transform::Apply(const Ray &ray) const {
       Point p = (*this).Apply(ray.Origin);
       Vector v = (*this).Apply(ray.Direction);
 
-      v.Normalize();
+      //v.Normalize();
       Ray r(p, v);
 
       //std::cout << "o.x: " << r.Origin.x << ", o.y: " << r.Origin.y << ", o.z: " << r.Origin.z << std::endl;

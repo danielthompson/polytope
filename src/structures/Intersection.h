@@ -6,10 +6,7 @@
 #define POLYTOPE_INTERSECTION_H
 
 #include <memory>
-#include "Point.h"
-#include "Normal.h"
-
-
+#include "Vectors.h"
 
 namespace Polytope {
 

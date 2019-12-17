@@ -93,11 +93,7 @@ add_library(polytope_lib
         src/structures/Intersection.h
         src/structures/Matrix4x4.cpp
         src/structures/Matrix4x4.h
-        src/structures/Normal.cpp
-        src/structures/Normal.h
-        src/structures/Point.cpp
-        src/structures/Point.h
-        src/structures/Point2.cpp
+      src/structures/Point2.cpp
         src/structures/Point2.h
         src/structures/Ray.cpp
         src/structures/Ray.h
@@ -105,9 +101,7 @@ add_library(polytope_lib
         src/structures/Sample.h
         src/structures/Transform.cpp
         src/structures/Transform.h
-        src/structures/Vector.cpp
-        src/structures/Vector.h
-        src/utilities/Common.h
+      src/utilities/Common.h
         src/utilities/GeometryCalculations.h
         src/utilities/GlobalDefines.h
         src/utilities/Logger.cpp
@@ -120,7 +114,7 @@ add_library(polytope_lib
         src/shapes/TriangleMesh.cpp
         src/shapes/TriangleMesh.h
         src/parsers/AbstractFileParser.cpp
-        src/parsers/AbstractFileParser.h)
+        src/parsers/AbstractFileParser.h src/structures/Vectors.cpp src/structures/Vectors.h)
 
 add_executable(${PROJECT_NAME} src/Main.cpp src/platforms/win32-cygwin.h)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its

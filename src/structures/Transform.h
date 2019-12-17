@@ -6,10 +6,9 @@
 #define POLYTOPE_TRANSFORM_H
 
 #include "Matrix4x4.h"
-#include "Point.h"
-#include "Vector.h"
+#include "Vectors.h"
 #include "Ray.h"
-#include "Normal.h"
+#include "Vectors.h"
 
 namespace Polytope {
 

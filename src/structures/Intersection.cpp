@@ -3,6 +3,7 @@
 //
 
 #include "Intersection.h"
+#include "Vectors.h"
 
 namespace Polytope {
 

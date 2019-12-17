@@ -6,7 +6,7 @@
 
 #include "../src/utilities/Logger.h"
 #include "../src/parsers/OBJFileParser.h"
-
+#include "../src/structures/Vectors.h"
 
 namespace Tests {
 

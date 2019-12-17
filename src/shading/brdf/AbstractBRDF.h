@@ -5,8 +5,8 @@
 #ifndef POLYTOPE_ABSTRACTBRDF_H
 #define POLYTOPE_ABSTRACTBRDF_H
 
-#include "../../structures/Vector.h"
-#include "../../structures/Normal.h"
+#include "../../structures/Vectors.h"
+#include "../../structures/Vectors.h"
 
 namespace Polytope {
 

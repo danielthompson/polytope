@@ -6,6 +6,7 @@
 #define POLYTOPE_POINTLIGHT_H
 
 #include "AbstractLight.h"
+#include "../structures/Vectors.h"
 
 namespace Polytope {
 

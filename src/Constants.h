@@ -9,8 +9,8 @@
 #include <limits>
 #include <random>
 
-#include "structures/Vector.h"
-#include "structures/Normal.h"
+#include "structures/Vectors.h"
+#include "structures/Vectors.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

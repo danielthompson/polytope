@@ -6,6 +6,7 @@
 #include <iostream>
 #include "PerspectiveCamera.h"
 #include "../Constants.h"
+#include "../structures/Vectors.h"
 
 
 namespace Polytope {

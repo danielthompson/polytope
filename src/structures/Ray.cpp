@@ -3,6 +3,7 @@
 //
 
 #include "Ray.h"
+#include "Vectors.h"
 
 namespace Polytope {
 

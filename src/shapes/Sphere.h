@@ -7,7 +7,7 @@
 
 
 #include "AbstractShape.h"
-#include "../structures/Point.h"
+#include "../structures/Vectors.h"
 #include "../structures/Transform.h"
 
 namespace Polytope {

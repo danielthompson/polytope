@@ -8,6 +8,7 @@
 #include "AbstractShape.h"
 #include "../shading/Material.h"
 #include "../structures/Transform.h"
+#include "../structures/Vectors.h"
 
 namespace Polytope {
    class TriangleMesh : public AbstractShape {

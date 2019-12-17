@@ -1,7 +1,7 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "../src/structures/Point.h"
+#include "../src/structures/Vectors.h"
 #include "../src/Constants.h"
 
 namespace Tests {

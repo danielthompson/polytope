@@ -7,7 +7,7 @@
 #include <random>
 #include "Sphere.h"
 #include "../Constants.h"
-#include "../structures/Normal.h"
+#include "../structures/Vectors.h"
 
 namespace Polytope {
 
@@ -160,5 +160,4 @@ namespace Polytope {
       float s = sqrt(1.0f / d2);
       return Point(x * s, y * s, z * s);
    }
-
 }

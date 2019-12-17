@@ -5,8 +5,7 @@
 #ifndef POLYTOPE_RAY_H
 #define POLYTOPE_RAY_H
 
-#include "Point.h"
-#include "Vector.h"
+#include "Vectors.h"
 #include "../Constants.h"
 
 namespace Polytope {

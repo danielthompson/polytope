@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_ABSTRACTCAMERA_H
 #define POLYTOPE_ABSTRACTCAMERA_H
 
-#include "../structures/Vector.h"
+#include "../structures/Vectors.h"
 #include "../structures/Point2.h"
 #include "../structures/Transform.h"
 #include "CameraSettings.h"

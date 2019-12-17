@@ -20,6 +20,7 @@
 #include "../utilities/Common.h"
 #include "../scenes/skyboxes/ColorSkybox.h"
 #include "OBJFileParser.h"
+#include "../structures/Vectors.h"
 
 namespace Polytope {
 

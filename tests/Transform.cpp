@@ -5,7 +5,7 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "../src/structures/Vector.h"
+#include "../src/structures/Vectors.h"
 #include "../src/structures/Transform.h"
 
 namespace Tests {

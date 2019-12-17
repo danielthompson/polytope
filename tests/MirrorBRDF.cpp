@@ -5,8 +5,8 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "../src/structures/Vector.h"
-#include "../src/structures/Normal.h"
+#include "../src/structures/Vectors.h"
+#include "../src/structures/Vectors.h"
 #include "../src/shading/brdf/MirrorBRDF.h"
 
 
