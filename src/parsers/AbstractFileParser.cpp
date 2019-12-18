@@ -8,7 +8,7 @@
 namespace Polytope {
    std::unique_ptr<std::istream> AbstractFileParser::OpenStream(const std::string &filepath) const {
       std::string cwd = GetCurrentWorkingDirectory();
-      std::string absolutePath = cwd + "//" + filepath;
+      std::string absolutePath = cwd + UnixPathSeparator + filepath;
 
       Log.WithTime("Trying to open [" + absolutePath + "].");
       std::unique_ptr<std::istream> stream = std::make_unique<std::ifstream>(filepath);

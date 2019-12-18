@@ -2,11 +2,10 @@
 // Created by Daniel on 07-Apr-18.
 //
 
-#include <algorithm>
-#include <fstream>
 #include <sstream>
 #include <stack>
 #include <map>
+#include <algorithm>
 #include "PBRTFileParser.h"
 #include "../integrators/PathTraceIntegrator.h"
 #include "../samplers/HaltonSampler.h"
@@ -26,6 +25,7 @@ namespace Polytope {
 
    namespace {
       std::string _inputFilename = "";
+      std::string _basePathFromCWD = "";
 
       // datatypes
 
@@ -113,41 +113,8 @@ namespace Polytope {
 
       // TODO get rid of this junk in favor of using WorldDirectiveMap
 
-      const std::string AreaLightSourceText = "AreaLightSource";
       const std::string AttributeBeginText = "AttributeBegin";
-      const std::string AttributeEndText = "AttributeEnd";
-      const std::string LightSourceText = "LightSource";
-      const std::string MakeNamedMaterialText = "MakeNamedMaterial";
-      const std::string NamedMaterialText = "NamedMaterial";
-      const std::string ShapeText = "Shape";
-      const std::string TransformBeginText = "TransformBegin";
-      const std::string TransformEndText = "TransformEnd";
-      const std::string TranslateText = "Translate";
       const std::string WorldBeginText = "WorldBegin";
-      const std::string WorldEndText = "WorldEnd";
-
-      const std::vector<std::string> Directives {
-         AreaLightSourceText,
-         AttributeBeginText, // done
-         AttributeEndText, // done
-         CameraText,
-         FilmText,
-         IntegratorText,
-         LightSourceText,
-         LookAtText, // done
-         MakeNamedMaterialText,
-         NamedMaterialText, // done
-         PixelFilterText,
-         SamplerText,
-         ShapeText,
-         TransformBeginText, // done
-         TransformEndText, // done
-         TranslateText, // done
-         WorldBeginText, // done
-         WorldEndText // done
-      };
-
-
 
       bool IsQuoted(const std::string &token) {
          return (token[0] == '"' && token[token.size() - 1] == '"');
@@ -161,12 +128,9 @@ namespace Polytope {
          return (token[0] != '"' && token[token.size() - 1] == '"');
       }
 
-
-
       void LogOther(const PBRTDirective &directive, const std::string &error) {
          Log.WithTime(directive.Name + ": " + error);
       }
-
 
       void LogMissingArgument(const PBRTDirective &directive, const std::string& argument) {
          Log.WithTime("Directive [" + directive.Name + "] w/ identifier [" + directive.Identifier + "] is missing argument [" + argument + "]");
@@ -201,22 +165,35 @@ namespace Polytope {
       }
 
       // defaults
-      const float DefaultCameraFOV = 90.f;
-      const unsigned int DefaultBoundsX = 640;
-      const unsigned int DefaultBoundsY = 480;
+      constexpr float DefaultCameraFOV = 90.f;
+      constexpr unsigned int DefaultBoundsX = 640;
+      constexpr unsigned int DefaultBoundsY = 480;
+      constexpr unsigned int DefaultSamples = 16;
    }
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filepath) {
 
+      std::string unixifiedFilePath = filepath;
+
+      std::string::size_type n = 0;
+      while (( n = unixifiedFilePath.find(WindowsPathSeparator, n ) ) != std::string::npos) {
+         unixifiedFilePath.replace( n, unixifiedFilePath.size(), UnixPathSeparator);
+         n += unixifiedFilePath.size();
+      }
+
+      //std::replace(unixifiedFilePath.begin(), unixifiedFilePath.end(), WindowsPathSeparator, UnixPathSeparator);
+
       std::vector<std::vector<std::string>> tokens = Scan(OpenStream(filepath));
 
       // determine the name of the file from the given path
+      const size_t lastPos = unixifiedFilePath.find_last_of(UnixPathSeparator);
 
-      const auto lastPos = filepath.find_last_of('/');
       if (lastPos == std::string::npos) {
          _inputFilename = filepath;
+         _basePathFromCWD = "";
       }
       else {
+         _basePathFromCWD = filepath.substr(0, lastPos + 1);
          _inputFilename = filepath.substr(lastPos + 1);
       }
 
@@ -245,7 +222,9 @@ namespace Polytope {
             if (word.find('#') == 0)
                break;
 
-            if (std::find(Directives.begin(), Directives.end(), word) != Directives.end()) {
+            // check if this is a directive
+            if (WorldDirectiveMap.count(word) > 0 || SceneDirectiveMap.count(word) > 0) {
+            //if (std::find(Directives.begin(), Directives.end(), word) != Directives.end()) {
                // if this is a directive, then we move on to a new line
                targetLineNumber++;
             }
@@ -373,7 +352,7 @@ namespace Polytope {
 
       bool missingSampler = true;
 
-      unsigned int numSamples = 16;
+      unsigned int numSamples = DefaultSamples;
 
       for (const PBRTDirective& directive : sceneDirectives) {
          if (directive.Name == SamplerText) {
@@ -524,21 +503,21 @@ namespace Polytope {
             if (directive.Name == LookAtText) {
                if (directive.Arguments.size() == 1) {
                   if (directive.Arguments[0].Values.size() == 9) {
-                     float eyeX = stof(directive.Arguments[0].Values[0]);
-                     float eyeY = stof(directive.Arguments[0].Values[1]);
-                     float eyeZ = stof(directive.Arguments[0].Values[2]);
+                     const float eyeX = stof(directive.Arguments[0].Values[0]);
+                     const float eyeY = stof(directive.Arguments[0].Values[1]);
+                     const float eyeZ = stof(directive.Arguments[0].Values[2]);
 
-                     Point eye = Point(eyeX, eyeY, eyeZ);
+                     const Point eye = Point(eyeX, eyeY, eyeZ);
 
-                     float lookAtX = stof(directive.Arguments[0].Values[3]);
-                     float lookAtY = stof(directive.Arguments[0].Values[4]);
-                     float lookAtZ = stof(directive.Arguments[0].Values[5]);
+                     const float lookAtX = stof(directive.Arguments[0].Values[3]);
+                     const float lookAtY = stof(directive.Arguments[0].Values[4]);
+                     const float lookAtZ = stof(directive.Arguments[0].Values[5]);
 
-                     Point lookAt = Point(lookAtX, lookAtY, lookAtZ);
+                     const Point lookAt = Point(lookAtX, lookAtY, lookAtZ);
 
-                     float upX = stof(directive.Arguments[0].Values[6]);
-                     float upY = stof(directive.Arguments[0].Values[7]);
-                     float upZ = stof(directive.Arguments[0].Values[8]);
+                     const float upX = stof(directive.Arguments[0].Values[6]);
+                     const float upY = stof(directive.Arguments[0].Values[7]);
+                     const float upZ = stof(directive.Arguments[0].Values[8]);
 
                      Vector up = Vector(upX, upY, upZ);
 
@@ -861,6 +840,7 @@ namespace Polytope {
                               if (argument.Type != StringText) {
                                  LogWrongArgumentType(directive, argument);
                               }
+                              break;
                            }
                            default:
                               LogUnknownArgument(argument);
@@ -874,6 +854,7 @@ namespace Polytope {
 
                      const std::shared_ptr<Polytope::TriangleMesh> mesh = std::make_shared<TriangleMesh>(*activeTransform, activeMaterial);
                      const OBJFileParser parser;
+                     const std::string absoluteObjFilepath = GetCurrentWorkingDirectory() + _basePathFromCWD + objFilename;
                      parser.ParseFile(mesh, objFilename);
                      _scene->Shapes.push_back(mesh.get());
                      break;

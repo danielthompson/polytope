@@ -47,7 +47,7 @@ namespace Polytope {
       virtual ~AbstractRunner() = default;
 
       // data
-      const unsigned int NumSamples;
+      unsigned int NumSamples;
       std::unique_ptr<AbstractSampler> Sampler;
       std::unique_ptr<AbstractFilm> Film;
       AbstractScene *Scene;

@@ -84,5 +84,4 @@ namespace Polytope {
 
 }
 
-
 #endif //POLYTOPE_VECTORS_H

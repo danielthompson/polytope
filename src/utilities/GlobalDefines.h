@@ -49,4 +49,7 @@ std::string GetCurrentWorkingDirectory() {
 #endif
 }
 
+std::string WindowsPathSeparator = "\\";
+std::string UnixPathSeparator = "/";
+
 #endif // POLYTOPE_GLOBAL_DEFINES_H

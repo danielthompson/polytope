@@ -11,4 +11,7 @@ extern Polytope::Logger Log;
 
 std::string GetCurrentWorkingDirectory();
 
+extern std::string WindowsPathSeparator;
+extern std::string UnixPathSeparator;
+
 #endif //POLYTOPE_COMMON_H

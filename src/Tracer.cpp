@@ -44,7 +44,7 @@ namespace Polytope {
 
       {
          std::unique_ptr<AbstractRunner> runner;
-         if (Options.inputSpecified) {
+         if (!Options.inputSpecified) {
             Log.WithTime("No input file specified, using default scene.");
             SceneBuilder sceneBuilder = SceneBuilder(bounds);
             AbstractScene *scene = sceneBuilder.Default();
@@ -64,12 +64,16 @@ namespace Polytope {
             // load file
             PBRTFileParser parser = PBRTFileParser();
             runner = parser.ParseFile(Options.input_filename);
-            // TODO let options override parsed
+
+            // override parsed with options here
+            if (Options.samplesSpecified) {
+               runner->NumSamples = Options.samples;
+            }
          }
 
          Log.WithTime(
                std::string("Image is [") + std::to_string(width) + std::string("] x [") + std::to_string(height) +
-               std::string("], ") + std::to_string(Options.samples) + " spp.");
+               std::string("], ") + std::to_string(runner->NumSamples) + " spp.");
 
          Log.WithTime("Rendering...");
 

@@ -177,8 +177,6 @@ namespace Polytope {
               || lengthZ < .999 || lengthZ > 1.001);
    }
 
-
-
    Transform Transform::Translate(const Vector &delta) {
       Matrix4x4 matrix = Matrix4x4(
             1, 0, 0, delta.x,
@@ -295,7 +293,7 @@ namespace Polytope {
 
       left.Normalize();
 
-      Vector newUp = dir.Cross(left);
+      const Vector newUp = dir.Cross(left);
 
       m[0][0] = left.x;
       m[1][0] = left.y;
@@ -313,7 +311,7 @@ namespace Polytope {
       m[3][2] = 0;
 
       Matrix4x4 matrix = Matrix4x4(m);
-      Matrix4x4 inverse = matrix.Inverse();
+      const Matrix4x4 inverse = matrix.Inverse();
 
       return Transform(inverse, matrix);
    }

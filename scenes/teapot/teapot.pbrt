@@ -1,0 +1,15 @@
+Integrator "path" "integer maxdepth" [ 7 ] 
+LookAt 0 0 0 # eye
+       0 0 -1 # look at point
+       0 1 0 # up	   
+Sampler "halton" "integer pixelsamples" [ 64 ]
+PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
+Film "image" "integer xresolution" [ 640 ] "integer yresolution" [ 640 ] "string filename" [ "teapot.png" ]
+Camera "perspective" "float fov" [ 50 ] 
+WorldBegin
+    Material "lambert" "string type" [ "matte" ]  "rgb Kd" [ 0.164705 0.631372 0.596078 ]
+    TransformBegin
+        Translate 0 0 -300
+        Shape "objmesh" "string filename" [ teapot.obj ]
+    TransformEnd
+WorldEnd
