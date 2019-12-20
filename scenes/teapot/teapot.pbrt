@@ -5,12 +5,12 @@ LookAt 0 0 0 # eye
 Sampler "halton" "integer pixelsamples" [ 1 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
 Film "image" "integer xresolution" [ 256 ] "integer yresolution" [ 256 ] "string filename" [ "teapot.png" ]
-Camera "perspective" "float fov" [ 50 ]
+Camera "perspective" "float fov" [ 10 ]
 WorldBegin
     LightSource "infinite" "rgb L" [.4 .45 .5]
     Material "matte" "rgb Kd" [ 0.164705 0.631372 0.596078 ]
     TransformBegin
-        Translate 0 0 -200
+        Translate 0 0 -10
         Shape "objmesh" "string filename" [ teapot.obj ]
     TransformEnd
 WorldEnd

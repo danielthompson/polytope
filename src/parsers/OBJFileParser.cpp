@@ -11,7 +11,7 @@ namespace Polytope {
 
       std::unique_ptr<std::istream> stream = OpenStream(filepath);
 
-      Polytope::Point min, max;
+      Polytope::Point min(FloatMax, FloatMax, FloatMax), max(-FloatMax, -FloatMax, -FloatMax);
 
       std::string line;
       while (getline(*stream, line)) {
@@ -46,8 +46,9 @@ namespace Polytope {
                   const unsigned int v2 = stoui(word);
                   Point3ui face(v0, v1, v2);
                   mesh->Faces.push_back(face);
-                  
-                  const Point p0 = mesh->Vertices[v0];
+
+                  // TODO move the computed points to world space once at the end instead of each time through the loop!
+                  const Point p0 = mesh->ObjectToWorld.Apply(mesh->Vertices[v0]);
                   min.x = p0.x < min.x ? p0.x : min.x;
                   min.y = p0.y < min.y ? p0.y : min.y;
                   min.z = p0.z < min.z ? p0.z : min.z;
@@ -55,8 +56,10 @@ namespace Polytope {
                   max.x = p0.x > max.x ? p0.x : max.x;
                   max.y = p0.y > max.y ? p0.y : max.y;
                   max.z = p0.z > max.z ? p0.z : max.z;
-                  
-                  const Point p1 = mesh->Vertices[v1];
+
+                  // TODO move the computed points to world space once at the end instead of each time through the loop!
+                  const Point p1 = mesh->ObjectToWorld.Apply(mesh->Vertices[v1]);
+
                   min.x = p1.x < min.x ? p1.x : min.x;
                   min.y = p1.y < min.y ? p1.y : min.y;
                   min.z = p1.z < min.z ? p1.z : min.z;
@@ -64,8 +67,9 @@ namespace Polytope {
                   max.x = p1.x > max.x ? p1.x : max.x;
                   max.y = p1.y > max.y ? p1.y : max.y;
                   max.z = p1.z > max.z ? p1.z : max.z;
-                  
-                  const Point p2 = mesh->Vertices[v2];
+
+                  // TODO move the computed points to world space once at the end instead of each time through the loop!
+                  const Point p2 = mesh->ObjectToWorld.Apply(mesh->Vertices[v2]);
                   min.x = p2.x < min.x ? p2.x : min.x;
                   min.y = p2.y < min.y ? p2.y : min.y;
                   min.z = p2.z < min.z ? p2.z : min.z;
@@ -84,6 +88,8 @@ namespace Polytope {
             }
          }
       }
+
+
 
       mesh->BoundingBox->p0 = min;
       mesh->BoundingBox->p1 = max;
