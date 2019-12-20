@@ -16,7 +16,7 @@ namespace Tests {
          const Polytope::OBJFileParser parser;
          const std::string file = "../scenes/teapot.obj";
          const Polytope::Transform identity;
-         std::shared_ptr<Polytope::TriangleMesh> mesh = std::make_shared<Polytope::TriangleMesh>(identity, nullptr);
+         Polytope::TriangleMesh* mesh = new Polytope::TriangleMesh(identity, nullptr);
 
          parser.ParseFile(mesh, file);
 

@@ -51,6 +51,8 @@ namespace Polytope {
    bool TriangleMesh::Hits(Ray &worldSpaceRay) const {
       Ray objectSpaceRay = WorldToObject.Apply(worldSpaceRay);
 
+      float minT = Infinity;
+
       for (const Point3ui &face : Faces) {
          const Point vertex0 = Vertices[face.x];
          const Point vertex1 = Vertices[face.y];
@@ -71,11 +73,18 @@ namespace Polytope {
 
          const float t = planeNormal.Dot(vertex0 - objectSpaceRay.Origin) / divisor;
 
-         if (t > 0)
-            return true;
+         if (t > 0 && t < minT) {
+            minT = t;
+
+         }
       }
 
-      return false;
+      if (minT == Infinity)
+         return false;
+
+      worldSpaceRay.MinT = minT < worldSpaceRay.MinT ? minT : worldSpaceRay.MinT;
+
+      return true;
    }
 
    Point TriangleMesh::GetRandomPointOnSurface() {

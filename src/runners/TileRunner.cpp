@@ -3,6 +3,7 @@
 //
 
 #include "TileRunner.h"
+#include "../utilities/Common.h"
 
 namespace Polytope {
 
@@ -111,6 +112,8 @@ namespace Polytope {
                Trace(x, y);
             }
          }
+
+         Log.WithTime("Finished tile");
 
          tile.x = -1;
          tile.y = -1;

@@ -15,6 +15,12 @@
 
 namespace Polytope {
 
+   class BoundingBox {
+   public:
+      Point p0, p1;
+      void Intersect(Ray &worldSpaceRay, Intersection* intersection) const;
+   };
+
    class AbstractShape {
    protected:
 
@@ -48,6 +54,7 @@ namespace Polytope {
       Transform ObjectToWorld;
       Transform WorldToObject;
       std::shared_ptr<Polytope::Material> Material;
+      std::unique_ptr<Polytope::BoundingBox> BoundingBox;
 
       // TODO change to weak to break cycles?
       ShapeLight *Light = nullptr;

@@ -23,7 +23,7 @@ namespace Polytope {
       // constructors
 
       explicit AbstractScene(std::unique_ptr<AbstractCamera> camera)
-            : Camera(std::move(camera)) {} ;
+            : Camera(std::move(camera)), Shapes(0), Lights(0) {} ;
 
       // methods
 
@@ -38,9 +38,9 @@ namespace Polytope {
 
       std::unique_ptr<AbstractCamera> Camera{};
       std::string ImplementationType = "Base Scene";
-      std::vector<AbstractShape*> Shapes{};
-      std::vector<AbstractLight*> Lights{};
-      std::unique_ptr<AbstractSkybox> Skybox {};
+      std::vector<AbstractShape*> Shapes;
+      std::vector<AbstractLight*> Lights;
+      std::unique_ptr<AbstractSkybox> Skybox;
 
    protected:
       Intersection GetNearestShapeIteratively(std::vector<AbstractShape*> &shapes, Ray &ray) const;

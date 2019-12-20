@@ -48,6 +48,11 @@ namespace Polytope {
    constexpr float Infinity = std::numeric_limits<float>::infinity();
    constexpr float DenormMin = std::numeric_limits<float>::denorm_min();
 
+   constexpr float FloatMin = std::numeric_limits<float>::min();
+   constexpr float FloatMax = std::numeric_limits<float>::max();
+
+   constexpr float MachineEpsilon = std::numeric_limits<float>::epsilon() * 0.5f;
+
    const float Root3 = std::sqrt(3.0f);
 
    inline bool WithinEpsilon(float number, float target, float epsilon) {
@@ -90,6 +95,11 @@ namespace Polytope {
       const float y = r * std::sin(theta);
 
       return Vector(x, y, std::sqrt(std::max(0.0f, 1.0f - u0)));
+   }
+
+   // source - http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#x1-ErrorPropagation
+   inline float Gamma(const int n) {
+      return (n * MachineEpsilon) / (1 - n * MachineEpsilon);
    }
 }
 

@@ -15,16 +15,22 @@ namespace Polytope {
 
       bool test = false;
 
-      for (int i = 0; i < shapes.size(); i++) {
+      unsigned int i = -1;
 
-         AbstractShape *shape = shapes[i];
-
+      for (auto shape : shapes) {
+         i++;
+         if (shape->BoundingBox) {
+            Intersection boundingBoxIntersection;
+            float priorMinT = ray.MinT;
+            shape->BoundingBox->Intersect(ray, &boundingBoxIntersection);
+            ray.MinT = priorMinT;
+            if (!boundingBoxIntersection.Hits) {
+               continue;
+            }
+         }
          bool hits = shape->Hits(ray);
-
          test = (hits && ray.MinT >= Epsilon && ray.MinT < closestT);
-
          nearestShapeIndex = test ? i : nearestShapeIndex;
-
          closestT = test ? ray.MinT : closestT;
       }
 
