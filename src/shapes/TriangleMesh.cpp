@@ -80,7 +80,7 @@ namespace Polytope {
             if (objectSpaceRay.Direction.Dot(n) > 0) {
                n.Flip();
             }
-            intersection->Normal = n;
+            intersection->Normal = ObjectToWorld.Apply(n);
             intersection->Shape = this;
          }
          faceIndex++;
