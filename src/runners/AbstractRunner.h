@@ -34,13 +34,13 @@ namespace Polytope {
               Bounds(bounds) { }
 
       // methods
-      virtual void Run() = 0;
+      virtual void Run(int threadId) = 0;
       void Trace(int x, int y) const;
 
       void Output() const;
 
-      std::thread Spawn() {
-         return std::thread(&AbstractRunner::Run, this);
+      std::thread Spawn(const int id) {
+         return std::thread(&AbstractRunner::Run, this, id);
       }
 
       // destructors

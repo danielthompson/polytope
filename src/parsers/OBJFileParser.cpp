@@ -39,6 +39,7 @@ namespace Polytope {
                case 'f': {
                   // parse vertex indices
                   iss >> word;
+                  // TODO error handling for non-existent face
                   const unsigned int v0 = stoui(word);
                   iss >> word;
                   const unsigned int v1 = stoui(word);

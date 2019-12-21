@@ -17,6 +17,8 @@ namespace Polytope {
 
    class BoundingBox {
    public:
+      BoundingBox() = default;
+      BoundingBox(const Point &min, const Point &max) : p0(min), p1(max) { }
       Point p0, p1;
       void Intersect(Ray &worldSpaceRay, Intersection* intersection) const;
    };

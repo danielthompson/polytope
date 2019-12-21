@@ -21,7 +21,7 @@ namespace Polytope {
             Polytope::Bounds bounds,
             unsigned int numSamples);
 
-      void Run() override;
+      void Run(int threadId) override;
    };
 }
 

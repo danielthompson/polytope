@@ -6,7 +6,7 @@
 
 namespace Polytope {
 
-   void Polytope::PixelRunner::Run() {
+   void Polytope::PixelRunner::Run(int threadId) {
       for (int y = 0; y < Bounds.y; y++) {
          for (int x = 0; x < Bounds.x; x++) {
             Trace(x, y);

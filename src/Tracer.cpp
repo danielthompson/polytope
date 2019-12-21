@@ -85,10 +85,11 @@ namespace Polytope {
          std::vector<std::thread> threads;
          for (int i = 0; i < usingThreads; i++) {
 
-            threads.emplace_back(runner->Spawn());
+            Log.WithTime(std::string("Starting thread " + std::to_string(i) + std::string("...")));
+            threads.emplace_back(runner->Spawn(i));
             const std::thread::id threadID = threads[i].get_id();
             threadMap[threadID] = i;
-            Log.WithTime(std::string("Started thread " + std::to_string(i) + std::string(".")));
+
          }
 
          for (int i = 0; i < usingThreads; i++) {

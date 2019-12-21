@@ -49,9 +49,8 @@ namespace Polytope {
       float tNear = (p0.x - worldSpaceRay.Origin.x) * worldSpaceRay.DirectionInverse.x;
       float tFar = (p1.x - worldSpaceRay.Origin.x) * worldSpaceRay.DirectionInverse.x;
 
-      float swap = tNear;
-      tNear = tNear > tFar ? tFar : tNear;
-      tFar = swap > tFar ? swap : tFar;
+      if (tNear > tFar)
+            std::swap(tNear, tFar);
 
       tFar *= gammaMultiplier;
 
@@ -69,9 +68,8 @@ namespace Polytope {
       tNear = (p0.y - worldSpaceRay.Origin.y) * worldSpaceRay.DirectionInverse.y;
       tFar = (p1.y - worldSpaceRay.Origin.y) * worldSpaceRay.DirectionInverse.y;
 
-      swap = tNear;
-      tNear = tNear > tFar ? tFar : tNear;
-      tFar = swap > tFar ? swap : tFar;
+      if (tNear > tFar)
+         std::swap(tNear, tFar);
 
       tFar *= gammaMultiplier;
 
@@ -90,9 +88,8 @@ namespace Polytope {
       tNear = (p0.z - worldSpaceRay.Origin.z) * worldSpaceRay.DirectionInverse.z;
       tFar = (p1.z - worldSpaceRay.Origin.z) * worldSpaceRay.DirectionInverse.z;
 
-      swap = tNear;
-      tNear = tNear > tFar ? tFar : tNear;
-      tFar = swap > tFar ? swap : tFar;
+      if (tNear > tFar)
+         std::swap(tNear, tFar);
 
       tFar *= gammaMultiplier;
 

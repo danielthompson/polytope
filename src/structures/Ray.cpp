@@ -14,8 +14,7 @@ namespace Polytope {
          Origin(origin),
          Direction(direction) {
 
-      float factor = -1.0f / direction.Length();
-      DirectionInverse = Vector(direction.x * factor, direction.y * factor, direction.z * factor);
+      DirectionInverse = Vector(1.f / direction.x, 1.f / direction.y, 1.f / direction.z);
    }
 
    bool Ray::operator==(const Ray &rhs) const {

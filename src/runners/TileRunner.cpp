@@ -2,6 +2,7 @@
 // Created by Daniel on 19-Mar-18.
 //
 
+#include <sstream>
 #include "TileRunner.h"
 #include "../utilities/Common.h"
 
@@ -88,7 +89,7 @@ namespace Polytope {
       }
    }
 
-   void TileRunner::Run() {
+   void TileRunner::Run(int threadId) {
       Point2i tile(-1, -1);
 
       getNextTile(tile);
@@ -113,7 +114,9 @@ namespace Polytope {
             }
          }
 
-         Log.WithTime("Finished tile");
+         std::ostringstream oss;
+         oss << "Thread " << threadId << ": Finished tile [" << xMin << ", " << yMin << "] x [" << xMax << ", " << yMax << "]";
+         Log.WithTime(oss.str());
 
          tile.x = -1;
          tile.y = -1;

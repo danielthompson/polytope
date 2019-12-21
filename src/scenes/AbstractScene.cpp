@@ -15,19 +15,19 @@ namespace Polytope {
 
       bool test = false;
 
-      unsigned int i = -1;
+      int i = -1;
 
       for (auto shape : shapes) {
          i++;
-         if (shape->BoundingBox) {
-            Intersection boundingBoxIntersection;
-            float priorMinT = ray.MinT;
-            shape->BoundingBox->Intersect(ray, &boundingBoxIntersection);
-            ray.MinT = priorMinT;
-            if (!boundingBoxIntersection.Hits) {
-               continue;
-            }
-         }
+//         if (shape->BoundingBox) {
+//            Intersection boundingBoxIntersection;
+//            float priorMinT = ray.MinT;
+//            shape->BoundingBox->Intersect(ray, &boundingBoxIntersection);
+//            ray.MinT = priorMinT;
+//            if (!boundingBoxIntersection.Hits) {
+//               continue;
+//            }
+//         }
          bool hits = shape->Hits(ray);
          test = (hits && ray.MinT >= Epsilon && ray.MinT < closestT);
          nearestShapeIndex = test ? i : nearestShapeIndex;
