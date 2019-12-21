@@ -37,39 +37,36 @@ namespace Polytope {
         Light(light),
         BoundingBox(std::make_unique<Polytope::BoundingBox>()) { };
 
-   void BoundingBox::Intersect(Ray &worldSpaceRay, Intersection* intersection) const {
+
+   bool BoundingBox::Hits(const Ray &worldSpaceRay) const {
       float maxBoundFarT = FloatMax;
       float minBoundNearT = 0;
 
       const float gammaMultiplier = 1 + 2 * Gamma(3);
-      
-      intersection->Hits = true;
 
       // X
       float tNear = (p0.x - worldSpaceRay.Origin.x) * worldSpaceRay.DirectionInverse.x;
       float tFar = (p1.x - worldSpaceRay.Origin.x) * worldSpaceRay.DirectionInverse.x;
 
-      if (tNear > tFar)
-            std::swap(tNear, tFar);
+      float swap = tNear;
+      tNear = tNear > tFar ? tFar : tNear;
+      tFar = swap > tFar ? swap : tFar;
 
       tFar *= gammaMultiplier;
 
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
       if (minBoundNearT > maxBoundFarT) {
-         intersection->Hits = false;
-         return;
+         return false;
       }
-
-      worldSpaceRay.MinT = minBoundNearT;
-      //intersection.TMax = maxBoundFarT;
 
       // Y
       tNear = (p0.y - worldSpaceRay.Origin.y) * worldSpaceRay.DirectionInverse.y;
       tFar = (p1.y - worldSpaceRay.Origin.y) * worldSpaceRay.DirectionInverse.y;
 
-      if (tNear > tFar)
-         std::swap(tNear, tFar);
+      swap = tNear;
+      tNear = tNear > tFar ? tFar : tNear;
+      tFar = swap > tFar ? swap : tFar;
 
       tFar *= gammaMultiplier;
 
@@ -77,30 +74,23 @@ namespace Polytope {
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
 
       if (minBoundNearT > maxBoundFarT) {
-         intersection->Hits = false;
-         return;
+         return false;
       }
-
-      worldSpaceRay.MinT = minBoundNearT;
-      //intersection.TMax = maxBoundFarT;
 
       // z
       tNear = (p0.z - worldSpaceRay.Origin.z) * worldSpaceRay.DirectionInverse.z;
       tFar = (p1.z - worldSpaceRay.Origin.z) * worldSpaceRay.DirectionInverse.z;
 
-      if (tNear > tFar)
-         std::swap(tNear, tFar);
+      swap = tNear;
+      tNear = tNear > tFar ? tFar : tNear;
+      tFar = swap > tFar ? swap : tFar;
 
       tFar *= gammaMultiplier;
 
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
 
-      if (minBoundNearT > maxBoundFarT) {
-         intersection->Hits = false;
-         return;
-      }
+      return minBoundNearT <= maxBoundFarT;
 
-      worldSpaceRay.MinT = minBoundNearT;
    }
 }

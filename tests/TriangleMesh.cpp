@@ -3,6 +3,7 @@
 #include "../src/structures/Vectors.h"
 #include "../src/Constants.h"
 #include "../src/shapes/TriangleMesh.h"
+#include "../src/structures/Intersection.h"
 
 namespace Tests {
 
@@ -16,25 +17,44 @@ namespace Tests {
          tm.Vertices.emplace_back(Polytope::Point(0, 1, 0));
          tm.Vertices.emplace_back(Polytope::Point(1, 0, 0));
 
-         tm.Faces.emplace_back(Polytope::Point3ui(0, 1, 2));
+         tm.Faces.emplace_back(Polytope::Point3ui(1, 2, 3));
 
          // hits, from either direction
 
-         Polytope::Ray ray(Polytope::Point(0.2f, 0.2f, -10), Polytope::Vector(0, 0, 1));
-         EXPECT_TRUE(tm.Hits(ray));
+         {
+            Polytope::Intersection intersection;
+            Polytope::Ray ray(0.2f, 0.2f, -10, 0, 0, 1);
+            tm.Intersect(ray, &intersection);
+            EXPECT_TRUE(intersection.Hits);
+         }
 
-         ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, 10), Polytope::Vector(0, 0, -1));
-         EXPECT_TRUE(tm.Hits(ray));
+         {
+            Polytope::Intersection intersection;
+            Polytope::Ray ray(0.2f, 0.2f, 10, 0, 0, -1);
+            tm.Intersect(ray, &intersection);
+            EXPECT_TRUE(intersection.Hits);
+         }
 
-         ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, 10), Polytope::Vector(0, 0, 1));
-         EXPECT_FALSE(tm.Hits(ray));
+         {
+            Polytope::Intersection intersection;
+            Polytope::Ray ray(0.2f, 0.2f, 10, 0, 0, 1);
+            tm.Intersect(ray, &intersection);
+            EXPECT_FALSE(intersection.Hits);
+         }
 
-         ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, -10), Polytope::Vector(0, 0, -1));
-         EXPECT_FALSE(tm.Hits(ray));
+         {
+            Polytope::Intersection intersection;
+            Polytope::Ray ray(0.2f, 0.2f, -10, 0, 0, -1);
+            tm.Intersect(ray, &intersection);
+            EXPECT_FALSE(intersection.Hits);
+         }
 
-         // parallel
-         ray = Polytope::Ray(Polytope::Point(0.2f, 0.2f, -10), Polytope::Vector(0, 1, 0));
-         EXPECT_FALSE(tm.Hits(ray));
+         {
+            Polytope::Intersection intersection;
+            Polytope::Ray ray(0.2f, 0.2f, -10, 0, 1, 0);
+            tm.Intersect(ray, &intersection);
+            EXPECT_FALSE(intersection.Hits);
+         }
       }
 
       TEST(TriangleMesh, Intersects) {
@@ -49,8 +69,8 @@ namespace Tests {
          tm.Vertices.emplace_back(Polytope::Point(0, 1, 1));
          tm.Vertices.emplace_back(Polytope::Point(1, 0, 1));
 
-         tm.Faces.emplace_back(Polytope::Point3ui(0, 1, 2));
-         tm.Faces.emplace_back(Polytope::Point3ui(3, 4, 5));
+         tm.Faces.emplace_back(Polytope::Point3ui(1, 2, 3));
+         tm.Faces.emplace_back(Polytope::Point3ui(4, 5, 6));
 
          // hits, from either direction
 

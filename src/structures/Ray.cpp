@@ -12,10 +12,13 @@ namespace Polytope {
 
    Ray::Ray(const Point &origin, const Vector &direction) :
          Origin(origin),
-         Direction(direction) {
+         Direction(direction),
+         DirectionInverse(1.f / direction.x, 1.f / direction.y, 1.f / direction.z) { }
 
-      DirectionInverse = Vector(1.f / direction.x, 1.f / direction.y, 1.f / direction.z);
-   }
+   Ray::Ray(const float ox, const float oy, const float oz, const float dx, const float dy, const float dz) :
+      Origin(ox, oy, oz),
+      Direction(dx, dy, dz),
+      DirectionInverse(1.f / dx, 1.f / dy, 1.f / dz) { }
 
    bool Ray::operator==(const Ray &rhs) const {
       return Origin == rhs.Origin &&

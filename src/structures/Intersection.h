@@ -22,7 +22,7 @@ namespace Polytope {
       // data
 
       AbstractShape *Shape = nullptr;
-      int face;
+      unsigned int faceIndex;
       Point Location;
       Polytope::Normal Normal;
       Vector Tangent1;

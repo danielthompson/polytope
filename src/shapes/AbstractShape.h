@@ -20,7 +20,7 @@ namespace Polytope {
       BoundingBox() = default;
       BoundingBox(const Point &min, const Point &max) : p0(min), p1(max) { }
       Point p0, p1;
-      void Intersect(Ray &worldSpaceRay, Intersection* intersection) const;
+      bool Hits(const Ray &worldSpaceRay) const;
    };
 
    class AbstractShape {
@@ -44,12 +44,12 @@ namespace Polytope {
 
       // methods
       virtual bool Hits(Ray &worldSpaceRay) const = 0;
-      virtual void Intersect(const Ray &worldSpaceRay, Intersection *intersection) = 0;
+      virtual void Intersect(Ray &worldSpaceRay, Intersection *intersection) = 0;
 
       virtual Point GetRandomPointOnSurface() = 0;
 
       bool IsLight() const {
-         return (Light != nullptr);
+         return (Light);
       }
 
       // data

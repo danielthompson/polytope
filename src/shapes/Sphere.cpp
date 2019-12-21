@@ -86,7 +86,7 @@ namespace Polytope {
       return true;
    }
 
-   void Sphere::Intersect(const Ray &worldSpaceRay, Intersection *intersection) {
+   void Sphere::Intersect(Ray &worldSpaceRay, Intersection *intersection) {
       // TODO
 
       // we need to find the normal, for which we need the intersection point in object space

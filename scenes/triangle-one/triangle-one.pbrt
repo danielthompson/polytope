@@ -8,9 +8,9 @@ Film "image" "integer xresolution" [ 512 ] "integer yresolution" [ 512 ] "string
 Camera "perspective" "float fov" [ 50 ]
 WorldBegin
     LightSource "infinite" "rgb L" [.4 .45 .5]
-    Material "matte" "rgb Kd" [ 0.164705 0.631372 0.596078 ]
+    Material "matte" "rgb Kd" [ 1 1 1 ]
     TransformBegin
         Translate 0 0 -50
-        # Shape "objmesh" "string filename" [ triangle-one.obj ]
+        Shape "objmesh" "string filename" [ triangle-one.obj ]
     TransformEnd
 WorldEnd

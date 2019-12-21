@@ -6,9 +6,13 @@
 
 namespace Polytope {
    bool TriangleMesh::Hits(Ray &worldSpaceRay) const {
+      return false;
+   }
+
+   void Polytope::TriangleMesh::Intersect(Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) {
       Ray objectSpaceRay = WorldToObject.Apply(worldSpaceRay);
 
-      float minT = Infinity;
+      //float minT = Infinity;
 
       unsigned int faceIndex = 0;
 
@@ -33,7 +37,7 @@ namespace Polytope {
 
          const float t = planeNormal.Dot(vertex0 - objectSpaceRay.Origin) / divisor;
 
-         if (t <= 0 || t >= minT)
+         if (t <= 0 || t >= worldSpaceRay.MinT)
             continue;
 
          const Polytope::Point hitPoint = objectSpaceRay.GetPointAtT(t);
@@ -66,64 +70,22 @@ namespace Polytope {
          bool inside = pos0 && pos1 && pos2;
 
          if (inside) {
-            minT = t;
+            worldSpaceRay.MinT = t;
+            intersection->faceIndex = faceIndex;
+            intersection->Hits = true;
+            intersection->Location = ObjectToWorld.Apply(hitPoint);
+
+            // flip normal if needed
+            Polytope::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
+            if (objectSpaceRay.Direction.Dot(n) > 0) {
+               n.Flip();
+            }
+            intersection->Normal = n;
+            intersection->Shape = this;
          }
          faceIndex++;
       }
-
-      if (minT == Infinity)
-         return false;
-
-      worldSpaceRay.MinT = minT < worldSpaceRay.MinT ? minT : worldSpaceRay.MinT;
-
-      return true;
    }
-
-   void Polytope::TriangleMesh::Intersect(const Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) {
-      Ray objectSpaceRay = WorldToObject.Apply(worldSpaceRay);
-
-      float minT = Infinity;
-
-      for (const Point3ui &face : Faces) {
-         const Point vertex0 = Vertices[face.x];
-         const Point vertex1 = Vertices[face.y];
-         const Point vertex2 = Vertices[face.z];
-
-         // step 1 - intersect with plane
-
-         const Polytope::Vector v0 = vertex0 - vertex1;
-         const Polytope::Vector v1 = vertex1 - vertex2;
-
-         Polytope::Vector planeNormal = v0.Cross(v1);
-         planeNormal.Normalize();
-
-         const float divisor = planeNormal.Dot(objectSpaceRay.Direction);
-         if (divisor == 0.0f) {
-            // parallel
-            continue;
-         }
-
-         const float t = planeNormal.Dot(vertex0 - objectSpaceRay.Origin) / divisor;
-
-         if (t < minT && t > 0) {
-            minT = t;
-            intersection->Normal = Polytope::Normal(planeNormal.x, planeNormal.y, planeNormal.z);
-         }
-      }
-
-      if (minT != Infinity) {
-         intersection->Hits = true;
-         intersection->Shape = this;
-         Point worldSpacePoint = worldSpaceRay.GetPointAtT(minT);
-         intersection->Location = worldSpacePoint;
-
-         // flip normal if needed
-         if (objectSpaceRay.Direction.Dot(intersection->Normal) > 0)
-            intersection->Normal.Flip();
-      }
-   }
-
-
 
    Point TriangleMesh::GetRandomPointOnSurface() {
       // TODO

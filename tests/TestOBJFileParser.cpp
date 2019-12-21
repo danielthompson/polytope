@@ -14,7 +14,7 @@ namespace Tests {
       TEST(FileParser, Teapot) {
 
          const Polytope::OBJFileParser parser;
-         const std::string file = "../scenes/teapot.obj";
+         const std::string file = "../scenes/teapot/teapot.obj";
          const Polytope::Transform identity;
          Polytope::TriangleMesh* mesh = new Polytope::TriangleMesh(identity, nullptr);
 
@@ -43,6 +43,8 @@ namespace Tests {
          EXPECT_EQ(3022, secondToLastFace.x);
          EXPECT_EQ(3021, secondToLastFace.y);
          EXPECT_EQ(3001, secondToLastFace.z);
+
+         delete mesh;
       }
    }
 }

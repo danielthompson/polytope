@@ -21,7 +21,7 @@ namespace Polytope {
 
       // methods
       bool Hits(Ray &worldSpaceRay) const override;
-      void Intersect(const Ray &worldSpaceRay, Intersection *intersection) override;
+      void Intersect(Ray &worldSpaceRay, Intersection *intersection) override;
       Point GetRandomPointOnSurface() override;
 
    private:

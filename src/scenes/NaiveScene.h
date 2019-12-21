@@ -19,12 +19,6 @@ namespace Polytope {
 
       // methods
       Intersection GetNearestShape(Ray &ray, int x, int y) override {
-
-         if (x == 180 && y == 230) {
-            x++;
-            x--;
-         }
-
          return GetNearestShapeIteratively(Shapes, ray);
       }
 
