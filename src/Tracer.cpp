@@ -72,8 +72,12 @@ namespace Polytope {
          }
 
          Log.WithTime(
-               std::string("Image is [") + std::to_string(width) + std::string("] x [") + std::to_string(height) +
-               std::string("], ") + std::to_string(runner->NumSamples) + " spp.");
+               std::string("Image is [") +
+               std::to_string(runner->Bounds.x) +
+               std::string("] x [") +
+               std::to_string(runner->Bounds.y) +
+               std::string("], ") +
+               std::to_string(runner->NumSamples) + " spp.");
 
          Log.WithTime("Rendering...");
 

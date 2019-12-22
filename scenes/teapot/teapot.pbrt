@@ -7,8 +7,8 @@ PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
 Film "image" "integer xresolution" [ 512 ] "integer yresolution" [ 512 ] "string filename" [ "teapot.png" ]
 Camera "perspective" "float fov" [ 25 ]
 WorldBegin
-    LightSource "infinite" "rgb L" [.8 .9 1]
-    Material "matte" "rgb Kd" [ 1 1 1 ]
+    LightSource "infinite" "rgb L" [1 1 1]
+    Material "matte" "rgb Kd" [ .8  .5  .5 ]
     TransformBegin
         Translate 0 -1.25 -25
         Shape "objmesh" "string filename" [ teapot.obj ]

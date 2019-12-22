@@ -178,7 +178,7 @@ namespace Polytope {
       constexpr float DefaultCameraFOV = 90.f;
       constexpr unsigned int DefaultBoundsX = 640;
       constexpr unsigned int DefaultBoundsY = 360;
-      constexpr unsigned int DefaultSamples = 1;
+      constexpr unsigned int DefaultSamples = 8;
    }
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filepath) {
@@ -369,7 +369,6 @@ namespace Polytope {
             missingSampler = false;
             if (directive.Identifier == "halton") {
                _sampler = std::make_unique<HaltonSampler>();
-               break;
             } else {
                LogUnknownIdentifier(directive);
                _sampler = std::make_unique<HaltonSampler>();
