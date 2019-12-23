@@ -87,8 +87,6 @@ add_library(polytope_lib
         src/shading/brdf/MirrorBRDF.h
         src/shapes/AbstractShape.cpp
         src/shapes/AbstractShape.h
-        src/shapes/Sphere.cpp
-        src/shapes/Sphere.h
         src/structures/Intersection.cpp
         src/structures/Intersection.h
         src/structures/Matrix4x4.cpp
@@ -116,7 +114,9 @@ add_library(polytope_lib
         src/parsers/AbstractFileParser.cpp
         src/parsers/AbstractFileParser.h
       src/structures/Vectors.cpp
-      src/structures/Vectors.h)
+      src/structures/Vectors.h
+        src/structures/BoundingBox.cpp
+        src/structures/BoundingBox.h)
 
 add_executable(${PROJECT_NAME} src/Main.cpp src/platforms/win32-cygwin.h)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its

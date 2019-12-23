@@ -5,6 +5,7 @@
 #include <sstream>
 #include "OBJFileParser.h"
 #include "../utilities/Common.h"
+#include "../structures/BoundingBox.h"
 
 namespace Polytope {
    void OBJFileParser::ParseFile(TriangleMesh* mesh, const std::string &filepath) const {
@@ -106,8 +107,10 @@ namespace Polytope {
       float dz = -zcentroid;
 
       Transform t = Transform::Translate(dx, dy, dz);
-      mesh->ObjectToWorld = t * mesh->ObjectToWorld;
-      mesh->WorldToObject = mesh->ObjectToWorld.Invert();
+      const auto newt = t * *(mesh->ObjectToWorld.get());
+
+      mesh->ObjectToWorld = std::make_shared<Polytope::Transform>(t * *(mesh->ObjectToWorld.get()));
+      mesh->WorldToObject = std::make_shared<Polytope::Transform>(t * mesh->ObjectToWorld->Invert());
 
       // object space bounding box with centroid at origin
       min.x += dx;
@@ -121,7 +124,7 @@ namespace Polytope {
       BoundingBox bb(min, max);
 
       mesh->ObjectToWorld->ApplyInPlace(bb);
-      mesh->BoundingBox.p0 = bb.p0;
-      mesh->BoundingBox.p1 = bb.p1;
+      mesh->BoundingBox->p0 = bb.p0;
+      mesh->BoundingBox->p1 = bb.p1;
    }
 }

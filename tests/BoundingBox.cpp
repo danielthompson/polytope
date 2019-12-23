@@ -2,7 +2,6 @@
 
 #include "../src/structures/Vectors.h"
 #include "../src/shapes/AbstractShape.h"
-#include "../src/structures/Intersection.h"
 
 namespace Tests {
 

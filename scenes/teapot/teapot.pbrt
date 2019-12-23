@@ -11,7 +11,7 @@ WorldBegin
     Material "matte" "rgb Kd" [ .8  .5  .5 ]
     TransformBegin
         # Translate 0 0 -25
-        Rotate 135 0 1 0
+        # Rotate 135 0 1 0
         Shape "objmesh" "string filename" [ teapot.obj ]
     TransformEnd
 WorldEnd

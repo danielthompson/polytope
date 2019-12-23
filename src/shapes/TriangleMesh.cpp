@@ -10,7 +10,7 @@ namespace Polytope {
    }
 
    void Polytope::TriangleMesh::Intersect(Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) {
-      Ray objectSpaceRay = WorldToObject.Apply(worldSpaceRay);
+      Ray objectSpaceRay = WorldToObject->Apply(worldSpaceRay);
 
       //float minT = Infinity;
 
@@ -73,14 +73,14 @@ namespace Polytope {
             worldSpaceRay.MinT = t;
             intersection->faceIndex = faceIndex;
             intersection->Hits = true;
-            intersection->Location = ObjectToWorld.Apply(hitPoint);
+            intersection->Location = ObjectToWorld->Apply(hitPoint);
 
             // flip normal if needed
             Polytope::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
             if (objectSpaceRay.Direction.Dot(n) > 0) {
                n.Flip();
             }
-            intersection->Normal = ObjectToWorld.Apply(n);
+            intersection->Normal = ObjectToWorld->Apply(n);
             intersection->Shape = this;
          }
          faceIndex++;

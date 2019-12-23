@@ -12,6 +12,8 @@ namespace Polytope {
 
    public:
       virtual Polytope::SpectralPowerDistribution GetSpd(const Polytope::Vector &v) const = 0;
+
+      virtual ~AbstractSkybox() { }
    };
 }
 

@@ -8,7 +8,6 @@
 #include "../shading/Material.h"
 #include "../shading/brdf/MirrorBRDF.h"
 #include "../shading/brdf/LambertBRDF.h"
-#include "../shapes/Sphere.h"
 #include "../shading/SpectralPowerDistribution.h"
 #include "../lights/AbstractLight.h"
 #include "../lights/PointLight.h"
@@ -37,7 +36,7 @@ namespace Polytope {
             Transform::Translate(100, 0, -400)
             * Transform::Scale(50);
 
-      scene->Shapes.push_back(new Sphere(objectToWorld, material));
+      //scene->Shapes.push_back(new Sphere(objectToWorld, material));
 
       // yellow ball
 
@@ -46,13 +45,13 @@ namespace Polytope {
             Transform::Translate(-100, 0, -200)
             * Transform::Scale(50);
 
-      scene->Shapes.push_back(new Sphere(objectToWorld, material));
+      //scene->Shapes.push_back(new Sphere(objectToWorld, material));
 
       objectToWorld =
             Transform::Translate(0, -50050, 0)
             * Transform::Scale(50000);
 
-      scene->Shapes.push_back(new Sphere(objectToWorld, material));
+      //scene->Shapes.push_back(new Sphere(objectToWorld, material));
 
 
       // white light
@@ -77,15 +76,15 @@ namespace Polytope {
          Transform::Translate(0, 0, -300)
          * Transform::Scale(25);
 
-      Sphere *sphere = new Sphere(objectToWorld, material);
+      //Sphere *sphere = new Sphere(objectToWorld, material);
 
-      ShapeLight *sphereLight = new ShapeLight(lightSPD);
+      //ShapeLight *sphereLight = new ShapeLight(lightSPD);
 
-      sphere->Light = sphereLight;
-
-      scene->Lights.push_back(sphereLight);
-
-      scene->Shapes.push_back(sphere);
+//      sphere->Light = sphereLight;
+//
+//      scene->Lights.push_back(sphereLight);
+//
+//      scene->Shapes.push_back(sphere);
 
       // skybox
 

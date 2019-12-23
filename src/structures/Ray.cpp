@@ -36,30 +36,11 @@ namespace Polytope {
       return Origin + (Direction * t);
    }
 
-   float Ray::GetTAtPoint(const Point &p) const {
-      float tX, tY, tZ;
-
-      if (Direction.x != 0) {
-         tX = (p.x - Origin.x) / Direction.x;
-         return tX;
-      }
-
-      if (Direction.y != 0) {
-         tY = (p.y - Origin.y) / Direction.y;
-         return tY;
-      }
-
-      if (Direction.z != 0) {
-         tZ = (p.z - Origin.z) / Direction.z;
-         return tZ;
-      }
-   }
-
    void Ray::OffsetOriginForward(const float t) {
       Origin += (Direction * t);
    }
 
-   void Ray::OffsetOrigin(Normal &normal, const float t) {
+   void Ray::OffsetOrigin(const Normal &normal, const float t) {
       Origin += normal * t;
    }
 }

@@ -15,7 +15,6 @@
 #include "../filters/BoxFilter.h"
 #include "../cameras/PerspectiveCamera.h"
 #include "../shading/brdf/LambertBRDF.h"
-#include "../shapes/Sphere.h"
 #include "../scenes/NaiveScene.h"
 #include "../utilities/Common.h"
 #include "../scenes/skyboxes/ColorSkybox.h"
@@ -909,7 +908,9 @@ namespace Polytope {
                         break;
                      }
 
-                     Polytope::TriangleMesh* mesh = new TriangleMesh(*activeTransform, activeMaterial);
+                     std::shared_ptr<Polytope::Transform> activeInverse = std::make_shared<Polytope::Transform>(activeTransform->Invert());
+
+                     Polytope::TriangleMesh* mesh = new TriangleMesh(activeTransform, activeInverse, activeMaterial);
 
                      const OBJFileParser parser;
                      const std::string absoluteObjFilepath = GetCurrentWorkingDirectory() + UnixPathSeparator + _basePathFromCWD + objFilename;
@@ -919,19 +920,19 @@ namespace Polytope {
                      _scene->Shapes.push_back(mesh);
                      break;
                   }
-                  case ShapeIdentifier::Sphere: {
-                     PBRTArgument argument = directive.Arguments[0];
-                     if (argument.Type == FloatText) {
-                        float radius = std::stof(argument.Values[0]);
-                        AbstractShape *sphere = new Polytope::Sphere(*activeTransform, activeMaterial);
-                        if (activeLight != nullptr) {
-                           ShapeLight *sphereLight = new ShapeLight(*activeLight);
-                           sphere->Light = sphereLight;
-                           _scene->Lights.push_back(sphereLight);
-                        }
-                        _scene->Shapes.push_back(sphere);
-                     }
-                  }
+//                  case ShapeIdentifier::Sphere: {
+//                     PBRTArgument argument = directive.Arguments[0];
+//                     if (argument.Type == FloatText) {
+//                        float radius = std::stof(argument.Values[0]);
+//                        AbstractShape *sphere = new Polytope::Sphere(*activeTransform, activeMaterial);
+//                        if (activeLight != nullptr) {
+//                           ShapeLight *sphereLight = new ShapeLight(*activeLight);
+//                           sphere->Light = sphereLight;
+//                           _scene->Lights.push_back(sphereLight);
+//                        }
+//                        _scene->Shapes.push_back(sphere);
+//                     }
+//                  }
                   default: {
                      LogUnimplementedDirective(directive);
                      break;

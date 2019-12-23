@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Transform.h"
 #include "Vectors.h"
+#include "BoundingBox.h"
 
 namespace Polytope {
 

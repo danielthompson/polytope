@@ -5,9 +5,10 @@
 #ifndef POLYTOPE_TRANSFORM_H
 #define POLYTOPE_TRANSFORM_H
 
-#include "Matrix4x4.h"
 #include "Vectors.h"
 #include "Ray.h"
+#include "BoundingBox.h"
+#include "Matrix4x4.h"
 #include "Vectors.h"
 #include "../shapes/AbstractShape.h"
 

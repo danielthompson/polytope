@@ -13,8 +13,11 @@
 namespace Polytope {
    class TriangleMesh : public AbstractShape {
    public:
-      TriangleMesh(const Transform &objectToWorld, const std::shared_ptr<Polytope::Material> &material)
-      : AbstractShape(objectToWorld, material) {}
+      TriangleMesh(
+         const std::shared_ptr<Polytope::Transform> &objectToWorld,
+         const std::shared_ptr<Polytope::Transform> &worldToObject,
+         const std::shared_ptr<Polytope::Material> &material)
+      : AbstractShape(objectToWorld, worldToObject, material) {}
 
       bool Hits(Ray &worldSpaceRay) const override;
       void Intersect(Ray &worldSpaceRay, Intersection *intersection) override;

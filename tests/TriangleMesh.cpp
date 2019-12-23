@@ -10,8 +10,8 @@ namespace Tests {
    namespace TriangleMesh {
 
       TEST(TriangleMesh, Hits) {
-         Polytope::Transform identity;
-         Polytope::TriangleMesh tm(identity, nullptr);
+         std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
+         Polytope::TriangleMesh tm(identity, identity, nullptr);
 
          tm.Vertices.emplace_back(Polytope::Point(0, 0, 0));
          tm.Vertices.emplace_back(Polytope::Point(0, 1, 0));
@@ -58,8 +58,8 @@ namespace Tests {
       }
 
       TEST(TriangleMesh, Intersects) {
-         Polytope::Transform identity;
-         Polytope::TriangleMesh tm(identity, nullptr);
+         std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
+         Polytope::TriangleMesh tm(identity, identity, nullptr);
 
          tm.Vertices.emplace_back(Polytope::Point(0, 0, 0));
          tm.Vertices.emplace_back(Polytope::Point(0, 1, 0));
