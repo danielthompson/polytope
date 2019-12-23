@@ -71,6 +71,7 @@ namespace Polytope {
          MakeNamedMaterial,
          Material,
          NamedMaterial,
+         Rotate,
          Shape,
          TransformBegin,
          TransformEnd,
@@ -87,6 +88,7 @@ namespace Polytope {
             {"MakeNamedMaterial", MakeNamedMaterial},
             {"Material", Material},
             {"NamedMaterial", NamedMaterial},
+            {"Rotate", Rotate},
             {"Shape", Shape},
             {"TransformBegin", TransformBegin},
             {"TransformEnd", TransformEnd},
@@ -634,7 +636,7 @@ namespace Polytope {
 
       std::shared_ptr<Polytope::Material> activeMaterial;
       std::shared_ptr<SpectralPowerDistribution> activeLight;
-      std::shared_ptr<Transform> activeTransform;
+      std::shared_ptr<Transform> activeTransform = std::make_shared<Transform>();
 
       const std::shared_ptr<Polytope::Material> materialMarker = std::make_shared<Polytope::Material>(AttributeBeginText);
       const std::shared_ptr<SpectralPowerDistribution> lightMarker = std::make_shared<SpectralPowerDistribution>();
@@ -653,7 +655,7 @@ namespace Polytope {
          }
 
          switch (name) {
-            case (WorldDirectiveName::AreaLightSource): {
+            case WorldDirectiveName::AreaLightSource: {
                // lights with geometry
                for (const PBRTArgument& argument : directive.Arguments) {
                   if (argument.Name == "L") {
@@ -668,7 +670,7 @@ namespace Polytope {
                }
                break;
             }
-            case (WorldDirectiveName::AttributeBegin): {
+            case WorldDirectiveName::AttributeBegin: {
                // push onto material stack
                materialStack.push(materialMarker);
                if (activeMaterial != nullptr) {
@@ -688,7 +690,7 @@ namespace Polytope {
                }
                break;
             }
-            case (WorldDirectiveName::AttributeEnd): {
+            case WorldDirectiveName::AttributeEnd: {
                // pop material stack
                if (!materialStack.empty()) {
                   std::shared_ptr<Polytope::Material> stackValue = materialStack.top();
@@ -759,7 +761,7 @@ namespace Polytope {
                }
                break;
             }
-            case (WorldDirectiveName::LightSource): {
+            case WorldDirectiveName::LightSource: {
                // lights without geometry
                if (directive.Identifier == "infinite") {
                   for (const PBRTArgument& argument : directive.Arguments) {
@@ -780,7 +782,7 @@ namespace Polytope {
                }
                break;
             }
-            case (WorldDirectiveName::MakeNamedMaterial): {
+            case WorldDirectiveName::MakeNamedMaterial: {
                const std::string materialName = directive.Identifier;
                std::shared_ptr<AbstractBRDF> brdf;
                Polytope::ReflectanceSpectrum reflectanceSpectrum;
@@ -804,7 +806,7 @@ namespace Polytope {
                namedMaterials.push_back(std::make_shared<Polytope::Material>(std::move(brdf), reflectanceSpectrum, materialName));
                break;
             }
-            case (WorldDirectiveName::Material): {
+            case WorldDirectiveName::Material: {
                MaterialIdentifier identifier;
                try {
                   identifier = MaterialIdentifierMap.at(directive.Identifier);
@@ -831,7 +833,7 @@ namespace Polytope {
                }
                break;
             }
-            case (WorldDirectiveName::NamedMaterial): {
+            case WorldDirectiveName::NamedMaterial: {
                std::string materialName = directive.Identifier;
                bool found = false;
                for (const auto &material : namedMaterials) {
@@ -844,6 +846,25 @@ namespace Polytope {
                if (!found) {
                   LogOther(directive, "Specified material [" + materialName + "] not found. Have you defined it yet?");
                }
+               break;
+            }
+            case WorldDirectiveName::Rotate: {
+               // TODO need to ensure just 1 argument with 4 values
+               PBRTArgument argument = directive.Arguments[0];
+               const float angle = std::stof(argument.Values[0]) * PIOver180;
+               const float x = std::stof(argument.Values[1]);
+               const float y = std::stof(argument.Values[2]);
+               const float z = std::stof(argument.Values[3]);
+
+               // todo implement rotate...
+               Transform t = Transform::Rotate(angle, x, y, z);
+
+               if (activeTransform == nullptr) {
+                  activeTransform = std::make_shared<Transform>();
+               }
+
+               Transform *active = activeTransform.get();
+               *active = t * *active;
                break;
             }
             case (WorldDirectiveName::Shape): {

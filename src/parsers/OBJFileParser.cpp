@@ -49,7 +49,8 @@ namespace Polytope {
                   mesh->Faces.push_back(face);
 
                   // TODO move the computed points to world space once at the end instead of each time through the loop!
-                  const Point p0 = mesh->ObjectToWorld.Apply(mesh->Vertices[v0]);
+//                  const Point p0 = mesh->ObjectToWorld.Apply(mesh->Vertices[v0]);
+                  const Point p0 = mesh->Vertices[v0];
                   min.x = p0.x < min.x ? p0.x : min.x;
                   min.y = p0.y < min.y ? p0.y : min.y;
                   min.z = p0.z < min.z ? p0.z : min.z;
@@ -59,7 +60,8 @@ namespace Polytope {
                   max.z = p0.z > max.z ? p0.z : max.z;
 
                   // TODO move the computed points to world space once at the end instead of each time through the loop!
-                  const Point p1 = mesh->ObjectToWorld.Apply(mesh->Vertices[v1]);
+//                  const Point p1 = mesh->ObjectToWorld.Apply(mesh->Vertices[v1]);
+                  const Point p1 = mesh->Vertices[v1];
 
                   min.x = p1.x < min.x ? p1.x : min.x;
                   min.y = p1.y < min.y ? p1.y : min.y;
@@ -70,7 +72,8 @@ namespace Polytope {
                   max.z = p1.z > max.z ? p1.z : max.z;
 
                   // TODO move the computed points to world space once at the end instead of each time through the loop!
-                  const Point p2 = mesh->ObjectToWorld.Apply(mesh->Vertices[v2]);
+//                  const Point p2 = mesh->ObjectToWorld.Apply(mesh->Vertices[v2]);
+                  const Point p2 = mesh->Vertices[v2];
                   min.x = p2.x < min.x ? p2.x : min.x;
                   min.y = p2.y < min.y ? p2.y : min.y;
                   min.z = p2.z < min.z ? p2.z : min.z;
@@ -90,7 +93,24 @@ namespace Polytope {
          }
       }
 
+      float xlen = (max.x - min.x) * 0.5f;
+      float ylen = (max.y - min.y) * 0.5f;
+      float zlen = (max.z - min.z) * 0.5f;
 
+      float xcentroid = min.x + xlen;
+      float ycentroid = min.y + ylen;
+      float zcentroid = min.z + zlen;
+
+      float dx = -xcentroid;
+      float dy = -ycentroid;
+      float dz = -zcentroid;
+
+      Transform t = Transform::Translate(dx, dy, dz);
+      mesh->ObjectToWorld = t * mesh->ObjectToWorld;
+      mesh->WorldToObject = mesh->ObjectToWorld.Invert();
+
+      min = mesh->ObjectToWorld.Apply(min);
+      max = mesh->ObjectToWorld.Apply(max);
 
       mesh->BoundingBox->p0 = min;
       mesh->BoundingBox->p1 = max;

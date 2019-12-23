@@ -9,35 +9,6 @@ namespace Polytope {
 
    //using Polytope::Transform;
 
-   AbstractShape::AbstractShape(
-         const Transform &objectToWorld,
-         std::shared_ptr<Polytope::Material> material)
-      : ObjectToWorld(objectToWorld),
-        WorldToObject(objectToWorld.Invert()),
-        Material(std::move(material)),
-        BoundingBox(std::make_unique<Polytope::BoundingBox>()) { }
-
-   AbstractShape::AbstractShape(
-         const Transform &objectToWorld,
-         const Transform &worldToObject,
-         std::shared_ptr<Polytope::Material> material)
-      : ObjectToWorld(objectToWorld),
-        WorldToObject(worldToObject),
-        Material(std::move(material)),
-        BoundingBox(std::make_unique<Polytope::BoundingBox>()) {   }
-
-   AbstractShape::AbstractShape(
-         const Transform &objectToWorld,
-         const Transform &worldToObject,
-         std::shared_ptr<Polytope::Material> material,
-         ShapeLight *light)
-      : ObjectToWorld(objectToWorld),
-        WorldToObject(worldToObject),
-        Material(std::move(material)),
-        Light(light),
-        BoundingBox(std::make_unique<Polytope::BoundingBox>()) { };
-
-
    bool BoundingBox::Hits(const Ray &worldSpaceRay) const {
       float maxBoundFarT = FloatMax;
       float minBoundNearT = 0;
@@ -93,4 +64,46 @@ namespace Polytope {
       return minBoundNearT <= maxBoundFarT;
 
    }
+
+   BoundingBox BoundingBox::Union(const BoundingBox &b) const {
+      Polytope::Point min, max;
+      min.x = p0.x < b.p0.x ? p0.x : b.p0.x;
+      min.y = p0.y < b.p0.y ? p0.y : b.p0.y;
+      min.z = p0.z < b.p0.z ? p0.z : b.p0.z;
+
+      max.x = p1.x > b.p1.x ? p1.x : b.p1.x;
+      max.y = p1.y > b.p1.y ? p1.y : b.p1.y;
+      max.z = p1.z > b.p1.z ? p1.z : b.p1.z;
+
+      return BoundingBox(min, max);
+   }
+
+   AbstractShape::AbstractShape(
+         const Transform &objectToWorld,
+         std::shared_ptr<Polytope::Material> material)
+      : ObjectToWorld(objectToWorld),
+        WorldToObject(objectToWorld.Invert()),
+        Material(std::move(material)),
+        BoundingBox(std::make_unique<Polytope::BoundingBox>()) { }
+
+   AbstractShape::AbstractShape(
+         const Transform &objectToWorld,
+         const Transform &worldToObject,
+         std::shared_ptr<Polytope::Material> material)
+      : ObjectToWorld(objectToWorld),
+        WorldToObject(worldToObject),
+        Material(std::move(material)),
+        BoundingBox(std::make_unique<Polytope::BoundingBox>()) {   }
+
+   AbstractShape::AbstractShape(
+         const Transform &objectToWorld,
+         const Transform &worldToObject,
+         std::shared_ptr<Polytope::Material> material,
+         ShapeLight *light)
+      : ObjectToWorld(objectToWorld),
+        WorldToObject(worldToObject),
+        Material(std::move(material)),
+        Light(light),
+        BoundingBox(std::make_unique<Polytope::BoundingBox>()) { };
+
 }

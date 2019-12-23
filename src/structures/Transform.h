@@ -47,6 +47,8 @@ namespace Polytope {
 
       bool HasScale() const;
 
+      static Transform Rotate(float angle, float x, float y, float z);
+
       static Transform Translate(const Vector &delta);
       static Transform Translate(float x, float y, float z);
 

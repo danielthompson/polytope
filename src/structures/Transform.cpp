@@ -177,6 +177,22 @@ namespace Polytope {
               || lengthZ < .999 || lengthZ > 1.001);
    }
 
+   Transform Transform::Rotate(const float angle, const float x, const float y, const float z) {
+      const float sin = std::sin(angle);
+      const float cos = std::cos(angle);
+      const float oneMinusCos = (1 - cos);
+      Matrix4x4 matrix = Matrix4x4(
+            cos + x * x * oneMinusCos,     x * y * oneMinusCos - z * sin, x * z * oneMinusCos + y * sin, 0,
+            y * x * oneMinusCos + z * sin, cos + y * y * oneMinusCos,     y * z * oneMinusCos - x * sin, 0,
+            z * x * oneMinusCos - y * sin, z * y * oneMinusCos + x * sin, cos + z * z * oneMinusCos,     0,
+            0,                             0,                             0,                             1
+            );
+
+      Transform transform = Transform(matrix);
+
+      return transform;
+   }
+
    Transform Transform::Translate(const Vector &delta) {
       Matrix4x4 matrix = Matrix4x4(
             1, 0, 0, delta.x,
@@ -275,7 +291,7 @@ namespace Polytope {
 
       m[0][3] = eye.x;
       m[1][3] = eye.y;
-      m[2][3] = eye.z;
+      m[2][3] = -eye.z;
       m[3][3] = 1;
 
       Vector dir = eye - lookAt;
@@ -315,5 +331,7 @@ namespace Polytope {
 
       return Transform(inverse, matrix);
    }
+
+
 
 }

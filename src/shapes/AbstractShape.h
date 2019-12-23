@@ -21,6 +21,7 @@ namespace Polytope {
       BoundingBox(const Point &min, const Point &max) : p0(min), p1(max) { }
       Point p0, p1;
       bool Hits(const Ray &worldSpaceRay) const;
+      BoundingBox Union(const BoundingBox &b) const;
    };
 
    class AbstractShape {
