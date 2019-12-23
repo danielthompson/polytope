@@ -9,6 +9,7 @@
 #include "Vectors.h"
 #include "Ray.h"
 #include "Vectors.h"
+#include "../shapes/AbstractShape.h"
 
 namespace Polytope {
 
@@ -44,6 +45,9 @@ namespace Polytope {
 
       void ApplyInPlace(Ray &ray) const;
       Ray Apply(const Ray &ray) const;
+
+      void ApplyInPlace(BoundingBox &bb) const;
+      BoundingBox Apply(const BoundingBox &bb) const;
 
       bool HasScale() const;
 

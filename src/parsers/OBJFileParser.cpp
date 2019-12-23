@@ -109,10 +109,19 @@ namespace Polytope {
       mesh->ObjectToWorld = t * mesh->ObjectToWorld;
       mesh->WorldToObject = mesh->ObjectToWorld.Invert();
 
-      min = mesh->ObjectToWorld.Apply(min);
-      max = mesh->ObjectToWorld.Apply(max);
+      // object space bounding box with centroid at origin
+      min.x += dx;
+      min.y += dy;
+      min.z += dz;
 
-      mesh->BoundingBox->p0 = min;
-      mesh->BoundingBox->p1 = max;
+      max.x += dx;
+      max.y += dy;
+      max.z += dz;
+
+      BoundingBox bb(min, max);
+
+      mesh->ObjectToWorld->ApplyInPlace(bb);
+      mesh->BoundingBox.p0 = bb.p0;
+      mesh->BoundingBox.p1 = bb.p1;
    }
 }

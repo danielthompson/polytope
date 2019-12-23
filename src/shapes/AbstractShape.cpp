@@ -78,6 +78,42 @@ namespace Polytope {
       return BoundingBox(min, max);
    }
 
+   BoundingBox BoundingBox::Union(const Point &p) const {
+      Polytope::Point min = p0, max = p1;
+
+      if (p.x < min.x)
+         min.x = p.x;
+      if (p.y < min.y)
+         min.y = p.y;
+      if (p.z < min.z)
+         min.z = p.z;
+
+      if (p.x > max.x)
+         max.x = p.x;
+      if (p.y > max.y)
+         max.y = p.y;
+      if (p.z > max.z)
+         max.z = p.z;
+
+      return BoundingBox(min, max);
+   }
+
+   void BoundingBox::UnionInPlace(const Point &p) {
+      if (p.x < p0.x)
+         p0.x = p.x;
+      if (p.y < p0.y)
+         p0.y = p.y;
+      if (p.z < p0.z)
+         p0.z = p.z;
+
+      if (p.x > p1.x)
+         p1.x = p.x;
+      if (p.y > p1.y)
+         p1.y = p.y;
+      if (p.z > p1.z)
+         p1.z = p.z;
+   }
+
    AbstractShape::AbstractShape(
          const Transform &objectToWorld,
          std::shared_ptr<Polytope::Material> material)

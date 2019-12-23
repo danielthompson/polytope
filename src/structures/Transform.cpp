@@ -167,6 +167,30 @@ namespace Polytope {
 
    }
 
+   void Transform::ApplyInPlace(BoundingBox &bb) const {
+      Point p0 = Point(bb.p0.x, bb.p0.y, bb.p0.z);
+      Point p1 = Point(bb.p0.x, bb.p0.y, bb.p1.z);
+      Point p2 = Point(bb.p0.x, bb.p1.y, bb.p0.z);
+      Point p3 = Point(bb.p0.x, bb.p1.y, bb.p1.z);
+      Point p4 = Point(bb.p1.x, bb.p0.y, bb.p0.z);
+      Point p5 = Point(bb.p1.x, bb.p0.y, bb.p1.z);
+      Point p6 = Point(bb.p1.x, bb.p1.y, bb.p0.z);
+      Point p7 = Point(bb.p1.x, bb.p1.y, bb.p1.z);
+
+      bb.UnionInPlace(p0);
+      bb.UnionInPlace(p1);
+      bb.UnionInPlace(p2);
+      bb.UnionInPlace(p3);
+      bb.UnionInPlace(p4);
+      bb.UnionInPlace(p5);
+      bb.UnionInPlace(p6);
+      bb.UnionInPlace(p7);
+   }
+
+   BoundingBox Transform::Apply(const BoundingBox &bb) const {
+      return BoundingBox();
+   }
+
    bool Transform::HasScale() const {
       float lengthX = Apply(xDir).LengthSquared();
       float lengthY = Apply(yDir).LengthSquared();
@@ -331,6 +355,7 @@ namespace Polytope {
 
       return Transform(inverse, matrix);
    }
+
 
 
 
