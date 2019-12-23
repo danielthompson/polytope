@@ -15,17 +15,13 @@ namespace Polytope {
    class AbstractCamera {
    public:
 
-      // methods
       AbstractCamera(const CameraSettings &settings, const Transform &cameraToWorld);
+      virtual ~AbstractCamera() = default;
 
       virtual Ray GetRay(Point2f pixel) = 0;
 
-      virtual ~AbstractCamera() = default;
-
-      // data
       const CameraSettings Settings;
       const Transform CameraToWorld;
-
 
    protected:
       const Vector DefaultDirection = Vector(0, 0, -1);

@@ -35,12 +35,9 @@ add_library(polytope_lib
         src/films/AbstractFilm.h
         src/films/PNGFilm.cpp
         src/films/PNGFilm.h
-        src/filters/AbstractFilter.cpp
         src/filters/AbstractFilter.h
         src/filters/BoxFilter.cpp
         src/filters/BoxFilter.h
-        src/integrators/AbstractIntegrator.cpp
-        src/integrators/AbstractIntegrator.cpp
         src/integrators/AbstractIntegrator.h
         src/integrators/AbstractIntegrator.h
         src/integrators/DebugIntegrator.cpp

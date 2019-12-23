@@ -6,12 +6,12 @@
 
 namespace Polytope {
 
-   Sample DebugIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
+   Sample DebugIntegrator::GetSample(Ray &ray, const int depth, const int x, const int y) {
 
-      Intersection closestStateToRay = Scene->GetNearestShape(ray, x, y);
+      const Intersection closestStateToRay = Scene->GetNearestShape(ray, x, y);
 
       if (closestStateToRay.Hits) {
-         ReflectanceSpectrum refl = closestStateToRay.Shape->Material->ReflectanceSpectrum;
+         const ReflectanceSpectrum refl = closestStateToRay.Shape->Material->ReflectanceSpectrum;
          return Sample(SpectralPowerDistribution(refl.r, refl.g, refl.b));
       }
 

@@ -14,25 +14,16 @@ namespace Polytope {
 
    class AbstractFilm {
    public:
-
-      // constructors
-      AbstractFilm(const Polytope::Bounds bounds, std::unique_ptr<AbstractFilter> filter)
-            : Bounds(bounds), Filter(std::move(filter)) { };
-
-      // methods
-      virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
-      virtual void Output() = 0;
-
-      // destructors
-      virtual ~AbstractFilm() = default;;
-
-      // data
       const Polytope::Bounds Bounds;
       std::unique_ptr<AbstractFilter> Filter;
 
+      AbstractFilm(const Polytope::Bounds bounds, std::unique_ptr<AbstractFilter> filter)
+            : Bounds(bounds), Filter(std::move(filter)) { };
+      virtual ~AbstractFilm() = default;
+
+      virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
+      virtual void Output() = 0;
    };
-
 }
-
 
 #endif //POLYTOPE_ABSTRACTFILM_H

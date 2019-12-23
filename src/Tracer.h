@@ -17,7 +17,7 @@ namespace Polytope {
    public:
 
       Tracer(Polytope::Options options)
-            : Options(options) { }
+            : Options(std::move(options)) { }
 
       // methods
       void Run();

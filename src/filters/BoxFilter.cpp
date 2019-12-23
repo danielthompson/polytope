@@ -43,12 +43,7 @@ namespace Polytope {
       }
    }
 
-   SpectralPowerDistribution BoxFilter::Output(const Point2i &pixel) {
-
-      if (pixel.x == 487 && pixel.y == 299) {
-         int j = 0;
-      }
-
+   SpectralPowerDistribution BoxFilter::Output(const Point2i &pixel) const {
       const unsigned int index = pixel.y * Bounds.x + pixel.x;
 
       const unsigned long numSamples = _data[index].size();

@@ -17,20 +17,16 @@ namespace Polytope {
     */
    class AbstractFilter {
    public:
+      const Polytope::Bounds Bounds;
 
-      // constructors
       explicit AbstractFilter(const Polytope::Bounds &bounds) : Bounds(bounds) { }
+      virtual ~AbstractFilter() { }
 
-      // methods
       virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
       virtual void AddSamples(const Point2f &location, const std::vector<Sample> &samples) = 0;
 
-      virtual SpectralPowerDistribution Output(const Point2i &pixel) = 0;
+      virtual SpectralPowerDistribution Output(const Point2i &pixel) const = 0;
 
-      // destructors
-      virtual ~AbstractFilter() { }
-
-      const Polytope::Bounds Bounds;
    };
 
 }
