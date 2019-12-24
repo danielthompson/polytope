@@ -63,6 +63,8 @@ namespace Polytope {
 
       static Transform LookAt(const Point &eye, const Point &lookAt, Vector &up);
 
+      static Transform LookAtLeftHanded(const Point &eye, const Point &lookAt, Vector &up);
+
       // data
 
       Matrix4x4 Matrix;

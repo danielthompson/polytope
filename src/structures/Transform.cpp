@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <w32api/d2d1_1helper.h>
 #include "Transform.h"
 #include "Vectors.h"
 #include "BoundingBox.h"
@@ -316,10 +317,10 @@ namespace Polytope {
 
       m[0][3] = eye.x;
       m[1][3] = eye.y;
-      m[2][3] = -eye.z;
+      m[2][3] = eye.z;
       m[3][3] = 1;
 
-      Vector dir = eye - lookAt;
+      Vector dir = lookAt - eye;
       dir.Normalize();
 
       up.Normalize();
@@ -357,7 +358,55 @@ namespace Polytope {
       return Transform(inverse, matrix);
    }
 
+   Transform Transform::LookAtLeftHanded(const Point &eye, const Point &lookAt, Vector &up) {
 
+      // need to flip the z-coordinate, since polytope is right-handed internally
+      const Point fixedEye(eye.x, eye.y, -eye.z);
+      const Point fixedLookAt(lookAt.x, lookAt.y, lookAt.z);
+      Vector fixedUp(up.x, up.y, -up.z);
 
+      float m[4][4];
 
+      m[0][3] = fixedEye.x;
+      m[1][3] = fixedEye.y;
+      m[2][3] = fixedEye.z;
+      m[3][3] = 1;
+
+      Vector dir = fixedLookAt - fixedEye;
+      dir.Normalize();
+
+      fixedUp.Normalize();
+      Vector left = fixedUp.Cross(dir);
+
+      if (left.Length() == 0) {
+
+         std::cout << "Bad Transform::LookAt() call - left vector is 0. Up and viewing direction are pointing in the same direction. Using identity.";
+         return Transform();
+
+      }
+
+      left.Normalize();
+
+      const Vector newUp = dir.Cross(left);
+
+      m[0][0] = left.x;
+      m[1][0] = left.y;
+      m[2][0] = left.z;
+      m[3][0] = 0;
+
+      m[0][1] = newUp.x;
+      m[1][1] = newUp.y;
+      m[2][1] = newUp.z;
+      m[3][1] = 0;
+
+      m[0][2] = dir.x;
+      m[1][2] = dir.y;
+      m[2][2] = dir.z;
+      m[3][2] = 0;
+
+      Matrix4x4 matrix = Matrix4x4(m);
+      const Matrix4x4 inverse = matrix.Inverse();
+
+      return Transform(inverse, matrix);
+   }
 }
