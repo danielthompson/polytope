@@ -49,8 +49,6 @@ namespace Polytope {
                   Point3ui face(v0, v1, v2);
                   mesh->Faces.push_back(face);
 
-                  // TODO move the computed points to world space once at the end instead of each time through the loop!
-//                  const Point p0 = mesh->ObjectToWorld.Apply(mesh->Vertices[v0]);
                   const Point p0 = mesh->Vertices[v0];
                   min.x = p0.x < min.x ? p0.x : min.x;
                   min.y = p0.y < min.y ? p0.y : min.y;
@@ -60,8 +58,6 @@ namespace Polytope {
                   max.y = p0.y > max.y ? p0.y : max.y;
                   max.z = p0.z > max.z ? p0.z : max.z;
 
-                  // TODO move the computed points to world space once at the end instead of each time through the loop!
-//                  const Point p1 = mesh->ObjectToWorld.Apply(mesh->Vertices[v1]);
                   const Point p1 = mesh->Vertices[v1];
 
                   min.x = p1.x < min.x ? p1.x : min.x;
@@ -72,8 +68,6 @@ namespace Polytope {
                   max.y = p1.y > max.y ? p1.y : max.y;
                   max.z = p1.z > max.z ? p1.z : max.z;
 
-                  // TODO move the computed points to world space once at the end instead of each time through the loop!
-//                  const Point p2 = mesh->ObjectToWorld.Apply(mesh->Vertices[v2]);
                   const Point p2 = mesh->Vertices[v2];
                   min.x = p2.x < min.x ? p2.x : min.x;
                   min.y = p2.y < min.y ? p2.y : min.y;
@@ -107,10 +101,9 @@ namespace Polytope {
       float dz = -zcentroid;
 
       Transform t = Transform::Translate(dx, dy, dz);
-      const auto newt = t * *(mesh->ObjectToWorld.get());
+      const auto newt = t * *(mesh->ObjectToWorld);
 
-      mesh->ObjectToWorld = std::make_shared<Polytope::Transform>(t * *(mesh->ObjectToWorld.get()));
-      mesh->WorldToObject = std::make_shared<Polytope::Transform>(t * mesh->ObjectToWorld->Invert());
+      mesh->ObjectToWorld = std::make_shared<Polytope::Transform>(t * *(mesh->ObjectToWorld));
 
       // object space bounding box with centroid at origin
       min.x += dx;
@@ -124,6 +117,7 @@ namespace Polytope {
       BoundingBox bb(min, max);
 
       mesh->ObjectToWorld->ApplyInPlace(bb);
+      mesh->WorldToObject = std::make_shared<Polytope::Transform>(mesh->ObjectToWorld->Invert());
       mesh->BoundingBox->p0 = bb.p0;
       mesh->BoundingBox->p1 = bb.p1;
    }

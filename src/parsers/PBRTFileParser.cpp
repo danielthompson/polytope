@@ -866,7 +866,7 @@ namespace Polytope {
                *active = t * *active;
                break;
             }
-            case (WorldDirectiveName::Shape): {
+            case WorldDirectiveName::Shape: {
                ShapeIdentifier identifier;
                try {
                   identifier = ShapeIdentifierMap.at(directive.Identifier);
@@ -940,7 +940,7 @@ namespace Polytope {
                }
                break;
             }
-            case (WorldDirectiveName::TransformBegin): {
+            case WorldDirectiveName::TransformBegin: {
                // push onto transform stack
                transformStack.push(transformMarker);
                if (activeTransform != nullptr) {
@@ -973,7 +973,7 @@ namespace Polytope {
                }
                break;
             }
-            case (WorldDirectiveName::Translate): {
+            case WorldDirectiveName::Translate: {
                // need to ensure just one argument with 3 values
                PBRTArgument argument = directive.Arguments[0];
                float x = std::stof(argument.Values[0]);
