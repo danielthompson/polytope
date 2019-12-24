@@ -21,7 +21,7 @@ namespace Polytope {
 
       Transform identity = Transform();
 
-      AbstractScene *scene = new NaiveScene(std::make_unique<PerspectiveCamera>(settings, identity));
+      AbstractScene *scene = new NaiveScene(std::make_unique<PerspectiveCamera>(settings, identity, false));
 
       // Orange ball
 

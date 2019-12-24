@@ -11,8 +11,10 @@
 
 namespace Polytope {
 
-   PerspectiveCamera::PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld)
-         : AbstractCamera(settings, cameraToWorld) {
+   PerspectiveCamera::PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld,
+                                        const bool leftHanded)
+         : AbstractCamera(settings, cameraToWorld),
+         LeftHanded(leftHanded) {
       OneOverWidth = 1.0f / (float)Settings.Bounds.x;
       OneOverHeight = 1.0f / (float)Settings.Bounds.y;
       AspectRatio = (float) Settings.Bounds.x * OneOverHeight;
@@ -26,7 +28,9 @@ namespace Polytope {
       float pixelCameraX = (2 * pixelNDCx - 1) * AspectRatio * TanFOVOver2;
       float pixelCameraY = (1 - 2 * pixelNDCy) * TanFOVOver2;
 
-      Point imagePlanePixelInCameraSpace = Point(pixelCameraX, pixelCameraY, -1);
+      const float z = LeftHanded ? 1 : -1;
+
+      Point imagePlanePixelInCameraSpace = Point(pixelCameraX, pixelCameraY, z);
 
       Vector direction = Vector (imagePlanePixelInCameraSpace.x, imagePlanePixelInCameraSpace.y, imagePlanePixelInCameraSpace.z);
 

@@ -5,7 +5,6 @@
 #include <sstream>
 #include "OBJFileParser.h"
 #include "../utilities/Common.h"
-#include "../structures/BoundingBox.h"
 
 namespace Polytope {
    void OBJFileParser::ParseFile(TriangleMesh* mesh, const std::string &filepath) const {
@@ -88,6 +87,7 @@ namespace Polytope {
          }
       }
 
+      // length of the bounding box in object space
       const float xlen = (max.x - min.x) * 0.5f;
       const float ylen = (max.y - min.y) * 0.5f;
       const float zlen = (max.z - min.z) * 0.5f;
@@ -100,22 +100,23 @@ namespace Polytope {
       const float dy = -ycentroid;
       const float dz = -zcentroid;
 
-      const Transform t = Transform::Translate(dx, dy, dz);
-
-      mesh->ObjectToWorld = std::make_shared<Polytope::Transform>(t * *(mesh->ObjectToWorld));
-
       // object space bounding box with centroid at origin
-      min.x += dx;
-      min.y += dy;
-      min.z += dz;
-
-      max.x += dx;
-      max.y += dy;
-      max.z += dz;
+//      min.x += dx;
+//      min.y += dy;
+//      min.z += dz;
+//
+//      max.x += dx;
+//      max.y += dy;
+//      max.z += dz;
 
       BoundingBox bb(min, max);
 
+      // move shape centroid to origin in object space
+      const Transform t = Transform::Translate(dx, dy, dz);
+//      mesh->ObjectToWorld = std::make_shared<Polytope::Transform>(t * *(mesh->ObjectToWorld) );
+      mesh->ObjectToWorld = std::make_shared<Polytope::Transform>(*(mesh->ObjectToWorld) * t);
       mesh->ObjectToWorld->ApplyInPlace(bb);
+
       mesh->WorldToObject = std::make_shared<Polytope::Transform>(mesh->ObjectToWorld->Invert());
       mesh->BoundingBox->p0 = bb.p0;
       mesh->BoundingBox->p1 = bb.p1;

@@ -564,7 +564,7 @@ namespace Polytope {
 
                   settings.FieldOfView = fov;
 
-                  camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
+                  camera = std::make_unique<PerspectiveCamera>(settings, currentTransform, true);
                   break;
                }
             }
@@ -575,7 +575,7 @@ namespace Polytope {
             stringstream << "PerspectiveCamera with FOV = " << DefaultCameraFOV;
             std::string cameraDefaultString = stringstream.str();
             LogMissingDirective(CameraText, cameraDefaultString);
-            camera = std::make_unique<PerspectiveCamera>(settings, currentTransform);
+            camera = std::make_unique<PerspectiveCamera>(settings, currentTransform, true);
          }
       }
 

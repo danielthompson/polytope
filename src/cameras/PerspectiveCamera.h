@@ -11,7 +11,7 @@
 namespace Polytope {
    class PerspectiveCamera : public AbstractCamera {
    public:
-      PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld);
+      PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld, bool leftHanded);
 
       Ray GetRay(Point2f pixel) override;
 
@@ -20,6 +20,7 @@ namespace Polytope {
       float OneOverHeight;
       float AspectRatio;
       float TanFOVOver2;
+      bool LeftHanded = false;
    };
 
 }

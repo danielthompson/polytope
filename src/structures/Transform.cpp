@@ -3,7 +3,6 @@
 //
 
 #include <iostream>
-#include <w32api/d2d1_1helper.h>
 #include "Transform.h"
 #include "Vectors.h"
 #include "BoundingBox.h"
@@ -170,17 +169,20 @@ namespace Polytope {
    }
 
    void Transform::ApplyInPlace(BoundingBox &bb) const {
-      Point p0 = Point(bb.p0.x, bb.p0.y, bb.p0.z);
-      Point p1 = Point(bb.p0.x, bb.p0.y, bb.p1.z);
-      Point p2 = Point(bb.p0.x, bb.p1.y, bb.p0.z);
-      Point p3 = Point(bb.p0.x, bb.p1.y, bb.p1.z);
-      Point p4 = Point(bb.p1.x, bb.p0.y, bb.p0.z);
-      Point p5 = Point(bb.p1.x, bb.p0.y, bb.p1.z);
-      Point p6 = Point(bb.p1.x, bb.p1.y, bb.p0.z);
-      Point p7 = Point(bb.p1.x, bb.p1.y, bb.p1.z);
+      Point p0 = Apply(Point(bb.p0.x, bb.p0.y, bb.p0.z));
+      Point p1 = Apply(Point(bb.p0.x, bb.p0.y, bb.p1.z));
+      Point p2 = Apply(Point(bb.p0.x, bb.p1.y, bb.p0.z));
+      Point p3 = Apply(Point(bb.p0.x, bb.p1.y, bb.p1.z));
+      Point p4 = Apply(Point(bb.p1.x, bb.p0.y, bb.p0.z));
+      Point p5 = Apply(Point(bb.p1.x, bb.p0.y, bb.p1.z));
+      Point p6 = Apply(Point(bb.p1.x, bb.p1.y, bb.p0.z));
+      Point p7 = Apply(Point(bb.p1.x, bb.p1.y, bb.p1.z));
 
-      bb.UnionInPlace(p0);
-      bb.UnionInPlace(p1);
+      bb.p0 = p0;
+      bb.p1 = p1;
+
+//      bb.UnionInPlace(p0);
+//      bb.UnionInPlace(p1);
       bb.UnionInPlace(p2);
       bb.UnionInPlace(p3);
       bb.UnionInPlace(p4);
