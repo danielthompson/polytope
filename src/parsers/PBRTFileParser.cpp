@@ -851,9 +851,15 @@ namespace Polytope {
                // TODO need to ensure just 1 argument with 4 values
                PBRTArgument argument = directive.Arguments[0];
                const float angle = std::stof(argument.Values[0]) * PIOver180;
-               const float x = std::stof(argument.Values[1]);
-               const float y = std::stof(argument.Values[2]);
-               const float z = std::stof(argument.Values[3]);
+               float x = std::stof(argument.Values[1]);
+               float y = std::stof(argument.Values[2]);
+               float z = std::stof(argument.Values[3]);
+
+               // normalize
+               const float oneOverLength = 1.f / std::sqrt(x * x + y * y + z * z);
+               x *= oneOverLength;
+               y *= oneOverLength;
+               z *= oneOverLength;
 
                // todo implement rotate...
                Transform t = Transform::Rotate(angle, x, y, z);

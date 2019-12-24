@@ -100,20 +100,11 @@ namespace Polytope {
       const float dy = -ycentroid;
       const float dz = -zcentroid;
 
-      // object space bounding box with centroid at origin
-//      min.x += dx;
-//      min.y += dy;
-//      min.z += dz;
-//
-//      max.x += dx;
-//      max.y += dy;
-//      max.z += dz;
-
+      // object space bounding box
       BoundingBox bb(min, max);
 
-      // move shape centroid to origin in object space
+      // move shape centroid to origin in object space and fix bounding box
       const Transform t = Transform::Translate(dx, dy, dz);
-//      mesh->ObjectToWorld = std::make_shared<Polytope::Transform>(t * *(mesh->ObjectToWorld) );
       mesh->ObjectToWorld = std::make_shared<Polytope::Transform>(*(mesh->ObjectToWorld) * t);
       mesh->ObjectToWorld->ApplyInPlace(bb);
 
