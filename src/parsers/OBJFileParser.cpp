@@ -20,7 +20,7 @@ namespace Polytope {
          std::istringstream iss(line, std::istringstream::in);
 
          if (iss >> word) {
-            char firstChar = word[0];
+            const char firstChar = word[0];
             switch (firstChar) {
                case '#': {
                   continue;
@@ -28,12 +28,12 @@ namespace Polytope {
                case 'v': {
                   // parse vertex coordinates
                   iss >> word;
-                  float x = stof(word);
+                  const float x = stof(word);
                   iss >> word;
-                  float y = stof(word);
+                  const float y = stof(word);
                   iss >> word;
-                  float z = stof(word);
-                  Point p(x, y, z);
+                  const float z = stof(word);
+                  const Point p(x, y, z);
                   mesh->Vertices.push_back(p);
                   continue;
                }
@@ -88,20 +88,19 @@ namespace Polytope {
          }
       }
 
-      float xlen = (max.x - min.x) * 0.5f;
-      float ylen = (max.y - min.y) * 0.5f;
-      float zlen = (max.z - min.z) * 0.5f;
+      const float xlen = (max.x - min.x) * 0.5f;
+      const float ylen = (max.y - min.y) * 0.5f;
+      const float zlen = (max.z - min.z) * 0.5f;
 
-      float xcentroid = min.x + xlen;
-      float ycentroid = min.y + ylen;
-      float zcentroid = min.z + zlen;
+      const float xcentroid = min.x + xlen;
+      const float ycentroid = min.y + ylen;
+      const float zcentroid = min.z + zlen;
 
-      float dx = -xcentroid;
-      float dy = -ycentroid;
-      float dz = -zcentroid;
+      const float dx = -xcentroid;
+      const float dy = -ycentroid;
+      const float dz = -zcentroid;
 
-      Transform t = Transform::Translate(dx, dy, dz);
-      const auto newt = t * *(mesh->ObjectToWorld);
+      const Transform t = Transform::Translate(dx, dy, dz);
 
       mesh->ObjectToWorld = std::make_shared<Polytope::Transform>(t * *(mesh->ObjectToWorld));
 
