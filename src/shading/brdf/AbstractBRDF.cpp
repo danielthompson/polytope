@@ -13,7 +13,7 @@ namespace Polytope {
 
       const Vector hemi = CosineSampleHemisphere(u0, u1);
 
-      pdf = OneOverPi;
+      pdf = 1;
 
       return hemi;
    }

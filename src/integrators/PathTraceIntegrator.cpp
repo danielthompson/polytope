@@ -33,15 +33,13 @@ namespace Polytope {
       } else {
 
          // indirect lighting
-
          float pdf = 0.0f;
-         Vector outgoingDirection = intersection.LocalToWorld(
-               intersection.Shape->Material->BRDF->getVectorInPDF(
-                  intersection.WorldToLocal(ray.Direction), pdf
-               )
-            );
 
-         Ray bounceRay = Ray(intersection.Location, outgoingDirection);
+         Polytope::Vector localIncoming = intersection.WorldToLocal(ray.Direction);
+         Polytope::Vector localOutgoing = intersection.Shape->Material->BRDF->getVectorInPDF(localIncoming, pdf);
+         Vector worldOutgoing = intersection.LocalToWorld(localOutgoing);
+
+         Ray bounceRay = Ray(intersection.Location, worldOutgoing);
 
          // fuzz fix/hack
          bounceRay.OffsetOrigin(intersection.Normal, Polytope::OffsetEpsilon);
@@ -52,7 +50,6 @@ namespace Polytope {
 
          // compute the interaction of the incoming SPD with the object's SRC
          SpectralPowerDistribution reflectedSPD = incomingSPD * intersection.Shape->Material->ReflectanceSpectrum;
-
 
          return Sample(reflectedSPD);
       }

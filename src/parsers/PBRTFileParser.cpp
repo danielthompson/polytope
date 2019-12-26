@@ -19,6 +19,7 @@
 #include "../utilities/Common.h"
 #include "../scenes/skyboxes/ColorSkybox.h"
 #include "../structures/Vectors.h"
+#include "../samplers/CenterSampler.h"
 
 namespace Polytope {
 

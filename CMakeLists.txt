@@ -165,6 +165,7 @@ add_executable(runUnitTests
         tests/TriangleMesh.cpp
       tests/Vector.cpp
       tests/BoundingBox.cpp
+      tests/IntersectionTests.cpp
         )
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/

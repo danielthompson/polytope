@@ -82,6 +82,26 @@ namespace Polytope {
             }
             intersection->Normal = ObjectToWorld->Apply(n);
             intersection->Shape = this;
+
+            const float edge0dot = std::abs(edge0.Dot(edge1));
+            const float edge1dot = std::abs(edge1.Dot(edge2));
+            const float edge2dot = std::abs(edge2.Dot(edge0));
+
+            if (edge0dot > edge1dot && edge0dot > edge2dot) {
+               intersection->Tangent1 = edge0;
+               intersection->Tangent2 = edge1;
+            }
+            else if (edge1dot > edge0dot && edge1dot > edge2dot) {
+               intersection->Tangent1 = edge1;
+               intersection->Tangent2 = edge2;
+            }
+            else {
+               intersection->Tangent1 = edge2;
+               intersection->Tangent2 = edge0;
+            }
+
+            intersection->Tangent1.Normalize();
+            intersection->Tangent2.Normalize();
          }
          faceIndex++;
       }

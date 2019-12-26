@@ -35,7 +35,7 @@ namespace Tests {
          ASSERT_NE(nullptr, runner->Integrator);
          ASSERT_NE(nullptr, runner->Integrator->Scene);
          ASSERT_NE(nullptr, runner->Integrator->Scene->Camera);
-         ASSERT_EQ(7, runner->Integrator->MaxDepth);
+         EXPECT_EQ(7, runner->Integrator->MaxDepth);
          ASSERT_NE(nullptr, runner->Scene);
 
          // sampler
@@ -54,9 +54,9 @@ namespace Tests {
          std::unique_ptr<Polytope::AbstractFilm> film = std::move(runner->Film);
          Polytope::PNGFilm *actualFilm = dynamic_cast<Polytope::PNGFilm *>(film.get());
          ASSERT_NE(nullptr, actualFilm);
-         ASSERT_EQ("minimum.png", actualFilm->Filename);
-         ASSERT_EQ(640, actualFilm->Bounds.x);
-         ASSERT_EQ(640, actualFilm->Bounds.y);
+         EXPECT_EQ("minimum.png", actualFilm->Filename);
+         EXPECT_EQ(640, actualFilm->Bounds.x);
+         EXPECT_EQ(640, actualFilm->Bounds.y);
 
          // integrator
          std::unique_ptr<Polytope::AbstractIntegrator> integrator = std::move(runner->Integrator);
@@ -67,41 +67,41 @@ namespace Tests {
          Polytope::AbstractScene* scene = actualIntegrator->Scene;
          Polytope::NaiveScene* actualScene = dynamic_cast<Polytope::NaiveScene *>(scene);
          ASSERT_NE(nullptr, actualScene);
-         ASSERT_EQ(0, actualScene->Lights.size());
-         ASSERT_EQ(0, actualScene->Shapes.size());
+         EXPECT_EQ(0, actualScene->Lights.size());
+         EXPECT_EQ(0, actualScene->Shapes.size());
 
          // camera
          std::unique_ptr<Polytope::AbstractCamera> camera = std::move(scene->Camera);
          Polytope::PerspectiveCamera* actualCamera = dynamic_cast<Polytope::PerspectiveCamera *>(camera.get());
          ASSERT_NE(nullptr, actualCamera);
-         ASSERT_EQ(640, actualCamera->Settings.Bounds.x);
-         ASSERT_EQ(640, actualCamera->Settings.Bounds.y);
+         EXPECT_EQ(640, actualCamera->Settings.Bounds.x);
+         EXPECT_EQ(640, actualCamera->Settings.Bounds.y);
 
          ASSERT_NE(nullptr, actualCamera->CameraToWorld.Matrix.Matrix);
 
          const auto actualMatrix = actualCamera->CameraToWorld.Matrix.Matrix;
 
-         ASSERT_EQ(1, actualMatrix[0][0]);
-         ASSERT_EQ(0, actualMatrix[0][1]);
-         ASSERT_EQ(0, actualMatrix[0][2]);
-         ASSERT_EQ(0, actualMatrix[0][3]);
+         EXPECT_EQ(-1, actualMatrix[0][0]);
+         EXPECT_EQ(0, actualMatrix[0][1]);
+         EXPECT_EQ(0, actualMatrix[0][2]);
+         EXPECT_EQ(0, actualMatrix[0][3]);
 
-         ASSERT_EQ(0, actualMatrix[1][0]);
-         ASSERT_EQ(1, actualMatrix[1][1]);
-         ASSERT_EQ(0, actualMatrix[1][2]);
-         ASSERT_EQ(0, actualMatrix[1][3]);
+         EXPECT_EQ(0, actualMatrix[1][0]);
+         EXPECT_EQ(1, actualMatrix[1][1]);
+         EXPECT_EQ(0, actualMatrix[1][2]);
+         EXPECT_EQ(0, actualMatrix[1][3]);
 
-         ASSERT_EQ(0, actualMatrix[2][0]);
-         ASSERT_EQ(0, actualMatrix[2][1]);
-         ASSERT_EQ(1, actualMatrix[2][2]);
-         ASSERT_EQ(0, actualMatrix[2][3]);
+         EXPECT_EQ(0, actualMatrix[2][0]);
+         EXPECT_EQ(0, actualMatrix[2][1]);
+         EXPECT_EQ(-1, actualMatrix[2][2]);
+         EXPECT_EQ(0, actualMatrix[2][3]);
 
-         ASSERT_EQ(0, actualMatrix[3][0]);
-         ASSERT_EQ(0, actualMatrix[3][1]);
-         ASSERT_EQ(0, actualMatrix[3][2]);
-         ASSERT_EQ(1, actualMatrix[3][3]);
+         EXPECT_EQ(0, actualMatrix[3][0]);
+         EXPECT_EQ(0, actualMatrix[3][1]);
+         EXPECT_EQ(0, actualMatrix[3][2]);
+         EXPECT_EQ(1, actualMatrix[3][3]);
 
-         ASSERT_EQ(50, actualCamera->Settings.FieldOfView);
+         EXPECT_EQ(50, actualCamera->Settings.FieldOfView);
       }
 
       TEST(FileParser, EmptyWorldMissingCamera) {
@@ -134,56 +134,56 @@ namespace Tests {
          std::unique_ptr<Polytope::AbstractFilm> film = std::move(runner->Film);
          Polytope::PNGFilm *actualFilm = dynamic_cast<Polytope::PNGFilm *>(film.get());
          ASSERT_NE(nullptr, actualFilm);
-         ASSERT_EQ("minimum.png", actualFilm->Filename);
-         ASSERT_EQ(640, actualFilm->Bounds.x);
-         ASSERT_EQ(640, actualFilm->Bounds.y);
+         EXPECT_EQ("minimum.png", actualFilm->Filename);
+         EXPECT_EQ(640, actualFilm->Bounds.x);
+         EXPECT_EQ(640, actualFilm->Bounds.y);
 
          // integrator
          std::unique_ptr<Polytope::AbstractIntegrator> integrator = std::move(runner->Integrator);
          Polytope::PathTraceIntegrator *actualIntegrator = dynamic_cast<Polytope::PathTraceIntegrator *>(integrator.get());
          ASSERT_NE(nullptr, actualIntegrator);
-         ASSERT_EQ(7, actualIntegrator->MaxDepth);
+         EXPECT_EQ(7, actualIntegrator->MaxDepth);
 
 
          // integrator's scene
          Polytope::AbstractScene* scene = actualIntegrator->Scene;
          Polytope::NaiveScene* actualScene = dynamic_cast<Polytope::NaiveScene *>(scene);
          ASSERT_NE(nullptr, actualScene);
-         ASSERT_EQ(0, actualScene->Lights.size());
-         ASSERT_EQ(0, actualScene->Shapes.size());
+         EXPECT_EQ(0, actualScene->Lights.size());
+         EXPECT_EQ(0, actualScene->Shapes.size());
 
          // camera
          std::unique_ptr<Polytope::AbstractCamera> camera = std::move(scene->Camera);
          Polytope::PerspectiveCamera* actualCamera = dynamic_cast<Polytope::PerspectiveCamera *>(camera.get());
          ASSERT_NE(nullptr, actualCamera);
-         ASSERT_EQ(640, actualCamera->Settings.Bounds.x);
-         ASSERT_EQ(640, actualCamera->Settings.Bounds.y);
+         EXPECT_EQ(640, actualCamera->Settings.Bounds.x);
+         EXPECT_EQ(640, actualCamera->Settings.Bounds.y);
 
          ASSERT_NE(nullptr, actualCamera->CameraToWorld.Matrix.Matrix);
 
          const auto actualMatrix = actualCamera->CameraToWorld.Matrix.Matrix;
 
-         ASSERT_EQ(1, actualMatrix[0][0]);
-         ASSERT_EQ(0, actualMatrix[0][1]);
-         ASSERT_EQ(0, actualMatrix[0][2]);
-         ASSERT_EQ(0, actualMatrix[0][3]);
+         EXPECT_EQ(-1, actualMatrix[0][0]);
+         EXPECT_EQ(0, actualMatrix[0][1]);
+         EXPECT_EQ(0, actualMatrix[0][2]);
+         EXPECT_EQ(0, actualMatrix[0][3]);
 
-         ASSERT_EQ(0, actualMatrix[1][0]);
-         ASSERT_EQ(1, actualMatrix[1][1]);
-         ASSERT_EQ(0, actualMatrix[1][2]);
-         ASSERT_EQ(0, actualMatrix[1][3]);
+         EXPECT_EQ(0, actualMatrix[1][0]);
+         EXPECT_EQ(1, actualMatrix[1][1]);
+         EXPECT_EQ(0, actualMatrix[1][2]);
+         EXPECT_EQ(0, actualMatrix[1][3]);
 
-         ASSERT_EQ(0, actualMatrix[2][0]);
-         ASSERT_EQ(0, actualMatrix[2][1]);
-         ASSERT_EQ(1, actualMatrix[2][2]);
-         ASSERT_EQ(0, actualMatrix[2][3]);
+         EXPECT_EQ(0, actualMatrix[2][0]);
+         EXPECT_EQ(0, actualMatrix[2][1]);
+         EXPECT_EQ(-1, actualMatrix[2][2]);
+         EXPECT_EQ(0, actualMatrix[2][3]);
 
-         ASSERT_EQ(0, actualMatrix[3][0]);
-         ASSERT_EQ(0, actualMatrix[3][1]);
-         ASSERT_EQ(0, actualMatrix[3][2]);
-         ASSERT_EQ(1, actualMatrix[3][3]);
+         EXPECT_EQ(0, actualMatrix[3][0]);
+         EXPECT_EQ(0, actualMatrix[3][1]);
+         EXPECT_EQ(0, actualMatrix[3][2]);
+         EXPECT_EQ(1, actualMatrix[3][3]);
 
-         ASSERT_EQ(90, actualCamera->Settings.FieldOfView);
+         EXPECT_EQ(90, actualCamera->Settings.FieldOfView);
       }
    }
 }
