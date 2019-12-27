@@ -92,9 +92,10 @@ namespace Polytope {
       const float theta = TwoPI * u1;
 
       const float x = r * std::cos(theta);
-      const float y = r * std::sin(theta);
+      const float y = std::sqrt(std::max(0.0f, 1.0f - u0));
+      const float z = r * std::sin(theta);
 
-      return Vector(x, y, std::sqrt(std::max(0.0f, 1.0f - u0)));
+      return Vector(x, y, z);
    }
 
    // source - http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#x1-ErrorPropagation

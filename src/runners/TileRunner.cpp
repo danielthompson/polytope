@@ -9,8 +9,8 @@
 namespace Polytope {
 
    namespace {
-      constexpr unsigned int _xTileWidth = 32;
-      constexpr unsigned int _yTileWidth = 32;
+      constexpr unsigned int _xTileWidth = 16;
+      constexpr unsigned int _yTileWidth = 16;
 
       unsigned int _xTilePointer = 0;
       unsigned int _yTilePointer = 0;
