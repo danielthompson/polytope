@@ -104,8 +104,8 @@ add_library(polytope_lib
         src/utilities/Options.h
         src/utilities/OptionsParser.cpp
         src/utilities/OptionsParser.h
-      src/parsers/OBJFileParser.cpp
-        src/parsers/OBJFileParser.h
+      src/parsers/mesh/OBJFileParser.cpp
+      src/parsers/mesh/OBJFileParser.h
         src/shapes/TriangleMesh.cpp
         src/shapes/TriangleMesh.h
         src/parsers/AbstractFileParser.cpp
@@ -113,7 +113,7 @@ add_library(polytope_lib
       src/structures/Vectors.cpp
       src/structures/Vectors.h
         src/structures/BoundingBox.cpp
-        src/structures/BoundingBox.h)
+        src/structures/BoundingBox.h src/parsers/mesh/PLYParser.cpp src/parsers/mesh/PLYParser.h src/parsers/mesh/AbstractMeshParser.h)
 
 add_executable(${PROJECT_NAME} src/Main.cpp src/platforms/win32-cygwin.h)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
@@ -162,10 +162,11 @@ add_executable(runUnitTests
       tests/MirrorBRDF.cpp
       tests/TestPBRTFileParser.cpp
       tests/TestOBJFileParser.cpp
-        tests/TriangleMesh.cpp
+      tests/TriangleMesh.cpp
       tests/Vector.cpp
       tests/BoundingBox.cpp
       tests/IntersectionTests.cpp
+      tests/TestPLYFileParser.cpp
         )
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/

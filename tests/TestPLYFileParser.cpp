@@ -5,16 +5,16 @@
 #include "gtest/gtest.h"
 
 #include "../src/utilities/Logger.h"
-#include "../src/parsers/mesh/OBJFileParser.h"
+#include "../src/parsers/mesh/PLYParser.h"
 #include "../src/structures/Vectors.h"
 
 namespace Tests {
 
    namespace Parse {
-      TEST(OBJParser, Teapot) {
+      TEST(PLYParser, Teapot) {
 
-         const Polytope::OBJFileParser parser;
-         const std::string file = "../scenes/teapot/teapot.obj";
+         const Polytope::PLYParser parser;
+         const std::string file = "../scenes/teapot/teapot.ply";
          const std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
          Polytope::TriangleMesh* mesh = new Polytope::TriangleMesh(identity, identity, nullptr);
 

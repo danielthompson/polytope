@@ -7,7 +7,7 @@
 #include <map>
 #include <algorithm>
 #include "PBRTFileParser.h"
-#include "OBJFileParser.h"
+#include "mesh/OBJFileParser.h"
 #include "../integrators/PathTraceIntegrator.h"
 #include "../samplers/HaltonSampler.h"
 #include "../runners/TileRunner.h"
