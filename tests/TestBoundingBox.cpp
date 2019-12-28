@@ -70,7 +70,7 @@ namespace Tests {
             EXPECT_EQ(actual.p1.z, 1);
          }
 
-         TEST(BoundingBox, UnionWithPoint) {
+         TEST(BoundingBox, UnionWithPoint1) {
             Point min(0.0f, 0.0f, 0.0f);
             Point max(1.0f, 1.0f, 1.0f);
 
@@ -83,6 +83,44 @@ namespace Tests {
             EXPECT_EQ(actual.p0.x, 0);
             EXPECT_EQ(actual.p0.y, 0);
             EXPECT_EQ(actual.p0.z, 0);
+
+            EXPECT_EQ(actual.p1.x, 1);
+            EXPECT_EQ(actual.p1.y, 1);
+            EXPECT_EQ(actual.p1.z, 1);
+         }
+
+         TEST(BoundingBox, UnionWithPoint2) {
+            Point min(0.0f, 0.0f, 0.0f);
+            Point max(1.0f, 1.0f, 1.0f);
+
+            BoundingBox b(min, max);
+
+            Point p(1.25f, 1.5f, 1.75f);
+
+            BoundingBox actual = b.Union(p);
+
+            EXPECT_EQ(actual.p0.x, 0);
+            EXPECT_EQ(actual.p0.y, 0);
+            EXPECT_EQ(actual.p0.z, 0);
+
+            EXPECT_EQ(actual.p1.x, 1.25);
+            EXPECT_EQ(actual.p1.y, 1.5);
+            EXPECT_EQ(actual.p1.z, 1.75);
+         }
+
+         TEST(BoundingBox, UnionWithPoint3) {
+            Point min(0.0f, 0.0f, 0.0f);
+            Point max(1.0f, 1.0f, 1.0f);
+
+            BoundingBox b(min, max);
+
+            Point p(-1.25f, -1.5f, -1.75f);
+
+            BoundingBox actual = b.Union(p);
+
+            EXPECT_EQ(actual.p0.x, -1.25);
+            EXPECT_EQ(actual.p0.y, -1.5);
+            EXPECT_EQ(actual.p0.z, -1.75);
 
             EXPECT_EQ(actual.p1.x, 1);
             EXPECT_EQ(actual.p1.y, 1);
