@@ -12,8 +12,8 @@ namespace Tests {
       using Polytope::Intersection;
       using Polytope::BoundingBox;
 
-      namespace Intersect {
-         TEST(BoundingBox, Intersect) {
+      namespace Hit {
+         TEST(BoundingBox, Hits1) {
             Point min(0.0f, 0.0f, 0.0f);
             Point max(1.0f, 1.0f, 1.0f);
 
@@ -24,12 +24,9 @@ namespace Tests {
 
             Ray ray(origin, direction);
 
-            Intersection intersection;
-            // TODO fix
-//            b.Intersect(ray, &intersection);
-//
-//            EXPECT_TRUE(intersection.Hits);
-//            EXPECT_EQ(ray.MinT, 9);
+            bool actual = b.Hits(ray);
+
+            EXPECT_TRUE(actual);
          }
       }
 
