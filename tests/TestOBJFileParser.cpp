@@ -40,9 +40,9 @@ namespace Tests {
          // check a random-ish face for correctness
          const Polytope::Point3ui secondToLastFace = mesh->Faces[6318];
 
-         EXPECT_EQ(3022, secondToLastFace.x);
-         EXPECT_EQ(3021, secondToLastFace.y);
-         EXPECT_EQ(3001, secondToLastFace.z);
+         EXPECT_EQ(3021, secondToLastFace.x);
+         EXPECT_EQ(3020, secondToLastFace.y);
+         EXPECT_EQ(3000, secondToLastFace.z);
          delete mesh;
       }
    }

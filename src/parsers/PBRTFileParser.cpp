@@ -20,6 +20,7 @@
 #include "../scenes/skyboxes/ColorSkybox.h"
 #include "../structures/Vectors.h"
 #include "../samplers/CenterSampler.h"
+#include "mesh/PLYParser.h"
 
 namespace Polytope {
 
@@ -98,13 +99,15 @@ namespace Polytope {
       };
 
       enum ShapeIdentifier {
-         Sphere,
-         OBJMesh
+         OBJMesh,
+         PLYMesh,
+         Sphere
       };
 
       const std::map<std::string, ShapeIdentifier> ShapeIdentifierMap {
+            {"objmesh", OBJMesh},
+            {"plymesh", PLYMesh},
             {"sphere", Sphere},
-            {"objmesh", OBJMesh}
       };
 
       enum MaterialIdentifier {
@@ -121,6 +124,14 @@ namespace Polytope {
 
       const std::map<std::string, OBJMeshArgument> OBJMeshArgumentMap {
             {"filename", Filename}
+      };
+
+      enum class PLYMeshArgument {
+         Filename
+      };
+
+      const std::map<std::string, PLYMeshArgument> PLYMeshArgumentMap {
+            {"filename", PLYMeshArgument::Filename}
       };
 
       // TODO get rid of this junk in favor of using WorldDirectiveMap
@@ -920,6 +931,50 @@ namespace Polytope {
                      Polytope::TriangleMesh* mesh = new TriangleMesh(activeTransform, activeInverse, activeMaterial);
 
                      const OBJFileParser parser;
+                     const std::string absoluteObjFilepath = GetCurrentWorkingDirectory() + UnixPathSeparator + _basePathFromCWD + objFilename;
+                     parser.ParseFile(mesh, absoluteObjFilepath);
+                     //mesh->ObjectToWorld = *activeTransform;
+                     mesh->Material = activeMaterial;
+                     _scene->Shapes.push_back(mesh);
+                     break;
+                  }
+                  case ShapeIdentifier::PLYMesh: {
+                     // make sure it has a filename argument
+                     bool filenameMissing = true;
+                     std::string objFilename;
+                     for (const PBRTArgument& argument : directive.Arguments) {
+                        PLYMeshArgument arg;
+                        try {
+                           arg = PLYMeshArgumentMap.at(argument.Name);
+                        }
+                        catch (...) {
+                           LogUnknownArgument(argument);
+                           continue;
+                        }
+                        switch (arg) {
+                           case PLYMeshArgument::Filename: {
+                              filenameMissing = false;
+                              objFilename = argument.Values[0];
+                              if (argument.Type != StringText) {
+                                 LogWrongArgumentType(directive, argument);
+                              }
+                              break;
+                           }
+                           default:
+                              LogUnknownArgument(argument);
+                              continue;
+                        }
+                     }
+                     if (filenameMissing) {
+                        LogMissingArgument(directive, "filename");
+                        break;
+                     }
+
+                     std::shared_ptr<Polytope::Transform> activeInverse = std::make_shared<Polytope::Transform>(activeTransform->Invert());
+
+                     Polytope::TriangleMesh* mesh = new TriangleMesh(activeTransform, activeInverse, activeMaterial);
+
+                     const PLYParser parser;
                      const std::string absoluteObjFilepath = GetCurrentWorkingDirectory() + UnixPathSeparator + _basePathFromCWD + objFilename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
                      //mesh->ObjectToWorld = *activeTransform;

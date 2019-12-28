@@ -11,7 +11,8 @@ WorldBegin
     Material "matte" "rgb Kd" [ .8  .5  .5 ]
     TransformBegin
         # Translate 0 0 -25
-        Rotate 90 0 1 1
-        Shape "objmesh" "string filename" [ teapot.obj ]
+        Rotate -90 1 0 0
+        # Shape "objmesh" "string filename" [ teapot.obj ]
+        Shape "plymesh" "string filename" [ teapot.PLY ]
     TransformEnd
 WorldEnd

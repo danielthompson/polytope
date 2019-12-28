@@ -40,11 +40,12 @@ namespace Polytope {
                   // parse vertex indices
                   iss >> word;
                   // TODO error handling for non-existent face
-                  const unsigned int v0 = stoui(word);
+                  // obj faces are 1-indexed, but polytope is internally 0-indexed
+                  const unsigned int v0 = stoui(word) - 1;
                   iss >> word;
-                  const unsigned int v1 = stoui(word);
+                  const unsigned int v1 = stoui(word) - 1;
                   iss >> word;
-                  const unsigned int v2 = stoui(word);
+                  const unsigned int v2 = stoui(word) - 1;
                   Point3ui face(v0, v1, v2);
                   mesh->Faces.push_back(face);
 

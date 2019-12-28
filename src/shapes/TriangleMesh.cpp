@@ -17,9 +17,9 @@ namespace Polytope {
       unsigned int faceIndex = 0;
 
       for (const Point3ui &face : Faces) {
-         const Point vertex0 = Vertices[face.x - 1];
-         const Point vertex1 = Vertices[face.y - 1];
-         const Point vertex2 = Vertices[face.z - 1];
+         const Point vertex0 = Vertices[face.x];
+         const Point vertex1 = Vertices[face.y];
+         const Point vertex2 = Vertices[face.z];
 
          // step 1 - intersect with plane
 
