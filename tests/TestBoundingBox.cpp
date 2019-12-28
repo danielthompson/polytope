@@ -48,7 +48,7 @@ namespace Tests {
             EXPECT_EQ(actual.p1.z, max.z);
          }
 
-         TEST(BoundingBox, Union) {
+         TEST(BoundingBox, UnionWithBox) {
             Point min(0.0f, 0.0f, 0.0f);
             Point max(1.0f, 1.0f, 1.0f);
 
@@ -66,6 +66,25 @@ namespace Tests {
             EXPECT_EQ(actual.p0.z, 0);
 
             EXPECT_EQ(actual.p1.x, 1.25);
+            EXPECT_EQ(actual.p1.y, 1);
+            EXPECT_EQ(actual.p1.z, 1);
+         }
+
+         TEST(BoundingBox, UnionWithPoint) {
+            Point min(0.0f, 0.0f, 0.0f);
+            Point max(1.0f, 1.0f, 1.0f);
+
+            BoundingBox b(min, max);
+
+            Point p(0.25f, 0.25f, 0.25f);
+
+            BoundingBox actual = b.Union(p);
+
+            EXPECT_EQ(actual.p0.x, 0);
+            EXPECT_EQ(actual.p0.y, 0);
+            EXPECT_EQ(actual.p0.z, 0);
+
+            EXPECT_EQ(actual.p1.x, 1);
             EXPECT_EQ(actual.p1.y, 1);
             EXPECT_EQ(actual.p1.z, 1);
          }
