@@ -81,13 +81,13 @@ add_library(polytope_lib
         src/shading/brdf/LambertBRDF.cpp
         src/shading/brdf/LambertBRDF.h
         src/shading/brdf/MirrorBRDF.cpp
-        src/shading/brdf/MirrorBRDF.h
+      src/shading/brdf/MirrorBRDF.h
         src/shapes/AbstractShape.cpp
         src/shapes/AbstractShape.h
         src/structures/Intersection.cpp
         src/structures/Intersection.h
         src/structures/Matrix4x4.cpp
-        src/structures/Matrix4x4.h
+      src/structures/Matrix4x4.h
       src/structures/Point2.cpp
         src/structures/Point2.h
         src/structures/Ray.cpp
@@ -104,8 +104,8 @@ add_library(polytope_lib
         src/utilities/Options.h
         src/utilities/OptionsParser.cpp
         src/utilities/OptionsParser.h
-      src/parsers/mesh/OBJFileParser.cpp
-      src/parsers/mesh/OBJFileParser.h
+      src/parsers/mesh/OBJParser.cpp
+      src/parsers/mesh/OBJParser.h
         src/shapes/TriangleMesh.cpp
         src/shapes/TriangleMesh.h
         src/parsers/AbstractFileParser.cpp
@@ -113,7 +113,7 @@ add_library(polytope_lib
       src/structures/Vectors.cpp
       src/structures/Vectors.h
         src/structures/BoundingBox.cpp
-        src/structures/BoundingBox.h src/parsers/mesh/PLYParser.cpp src/parsers/mesh/PLYParser.h src/parsers/mesh/AbstractMeshParser.h)
+      src/structures/BoundingBox.h src/parsers/mesh/PLYParser.cpp src/parsers/mesh/PLYParser.h src/parsers/mesh/AbstractMeshParser.h)
 
 add_executable(${PROJECT_NAME} src/Main.cpp src/platforms/win32-cygwin.h)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
@@ -157,16 +157,16 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 ##############
 add_executable(runUnitTests
       tests/Matrix4x4.cpp
-      tests/Point.cpp
+      tests/TestPoint.cpp
       tests/Transform.cpp
-      tests/MirrorBRDF.cpp
+      tests/TestMirrorBRDF.cpp
       tests/TestPBRTFileParser.cpp
-      tests/TestOBJFileParser.cpp
+      tests/TestOBJParser.cpp
       tests/TriangleMesh.cpp
       tests/Vector.cpp
-      tests/BoundingBox.cpp
-      tests/IntersectionTests.cpp
-      tests/TestPLYFileParser.cpp
+      tests/TestBoundingBox.cpp
+      tests/TestIntersectionTests.cpp
+      tests/TestPLYParser.cpp
         )
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/

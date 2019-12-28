@@ -5,7 +5,7 @@
 #include "gtest/gtest.h"
 
 #include "../src/utilities/Logger.h"
-#include "../src/parsers/mesh/OBJFileParser.h"
+#include "../src/parsers/mesh/OBJParser.h"
 #include "../src/structures/Vectors.h"
 
 namespace Tests {
@@ -13,7 +13,7 @@ namespace Tests {
    namespace Parse {
       TEST(OBJParser, Teapot) {
 
-         const Polytope::OBJFileParser parser;
+         const Polytope::OBJParser parser;
          const std::string file = "../scenes/teapot/teapot.obj";
          const std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
          Polytope::TriangleMesh* mesh = new Polytope::TriangleMesh(identity, identity, nullptr);

@@ -7,7 +7,7 @@
 #include <map>
 #include <algorithm>
 #include "PBRTFileParser.h"
-#include "mesh/OBJFileParser.h"
+#include "mesh/OBJParser.h"
 #include "../integrators/PathTraceIntegrator.h"
 #include "../samplers/HaltonSampler.h"
 #include "../runners/TileRunner.h"
@@ -930,7 +930,7 @@ namespace Polytope {
 
                      Polytope::TriangleMesh* mesh = new TriangleMesh(activeTransform, activeInverse, activeMaterial);
 
-                     const OBJFileParser parser;
+                     const OBJParser parser;
                      const std::string absoluteObjFilepath = GetCurrentWorkingDirectory() + UnixPathSeparator + _basePathFromCWD + objFilename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
                      //mesh->ObjectToWorld = *activeTransform;

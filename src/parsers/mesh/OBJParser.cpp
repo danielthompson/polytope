@@ -3,11 +3,11 @@
 //
 
 #include <sstream>
-#include "OBJFileParser.h"
+#include "OBJParser.h"
 #include "../../utilities/Common.h"
 
 namespace Polytope {
-   void OBJFileParser::ParseFile(TriangleMesh* mesh, const std::string &filepath) const {
+   void OBJParser::ParseFile(TriangleMesh* mesh, const std::string &filepath) const {
 
       std::unique_ptr<std::istream> stream = OpenStream(filepath);
 
