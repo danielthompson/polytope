@@ -113,7 +113,10 @@ add_library(polytope_lib
       src/structures/Vectors.cpp
       src/structures/Vectors.h
         src/structures/BoundingBox.cpp
-      src/structures/BoundingBox.h src/parsers/mesh/PLYParser.cpp src/parsers/mesh/PLYParser.h src/parsers/mesh/AbstractMeshParser.h)
+      src/structures/BoundingBox.h
+        src/parsers/mesh/PLYParser.cpp
+        src/parsers/mesh/PLYParser.h
+        src/parsers/mesh/AbstractMeshParser.h)
 
 add_executable(${PROJECT_NAME} src/Main.cpp src/platforms/win32-cygwin.h)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
@@ -156,17 +159,17 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 # Unit Tests
 ##############
 add_executable(runUnitTests
-      tests/Matrix4x4.cpp
-      tests/TestPoint.cpp
-      tests/Transform.cpp
-      tests/TestMirrorBRDF.cpp
-      tests/TestPBRTFileParser.cpp
-      tests/TestOBJParser.cpp
-      tests/TriangleMesh.cpp
-      tests/Vector.cpp
       tests/TestBoundingBox.cpp
       tests/TestIntersectionTests.cpp
+      tests/TestMatrix4x4.cpp
+      tests/TestMirrorBRDF.cpp
+      tests/TestOBJParser.cpp
+      tests/TestPBRTFileParser.cpp
       tests/TestPLYParser.cpp
+      tests/TestPoint.cpp
+      tests/TestTransform.cpp
+      tests/TestTriangleMesh.cpp
+      tests/TestVector.cpp
         )
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
