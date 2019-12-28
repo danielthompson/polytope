@@ -90,7 +90,7 @@ namespace Polytope {
                iss >> word;
                if (!(word == "x" || word == "y" || word == "z")) {
                   Log.WithTime("unknown property name :/");
-                  return;
+                  //return;
                }
             }
             else if (inFace) {

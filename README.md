@@ -6,18 +6,19 @@ Hobby ray/path tracer in C++.
 [![Build Status](https://travis-ci.org/danielthompson/polytope.svg?branch=master)](https://travis-ci.org/danielthompson/polytope) [![Coverage Status](https://coveralls.io/repos/github/danielthompson/polytope/badge.svg?branch=master)](https://coveralls.io/github/danielthompson/polytope?branch=master)
 
 #### Goals
-* Ray tracer
 * Path tracer
-* OpenGL visualization
-* Realtime CUDA view
+* Support a variety of materials and reflection / transmission models
 * Acceleration structures
   * BVH
   * kd-tree
-
+* Import a variety of scene / object description grammars
+  * pbrt
+  * obj
+  * ply
+* Rasterization output path with OpenGL (or Vulkan)
+* Stream processing, perhaps with CUDA and/or ISPC
 
 #### What's a polytope?
-
-A cool sciency word I found on Wikipedia.
 
 > _In elementary geometry, a polytope is a geometric object with "flat" sides. It is a generalisation in any number of dimensions of the three-dimensional polyhedron. Polytopes may exist in any general number of dimensions n as an n-dimensional polytope or n-polytope._ 
 > 
@@ -25,9 +26,9 @@ A cool sciency word I found on Wikipedia.
 
 #### Does polytope render polytopes?
 
-Sort of. It will render a specific subset (triangles) of 2-polytopes (polygons), and a specific subset (cuboids, triangle meshes) of 3-polytopes (polyhedra). 
+Polytope represents all shapes internally as triangle meshes, which are 3-polytopes. Input grammars that specify other types of geometry (implicit surfaces, etc) are tesselated on import to triangle meshes.
 
-It will also render a bunch of non-polytopes, like spheres, disks, cylinders, tori, quadrics, etc.
+So, yes.
 
 #### Attribution
 
