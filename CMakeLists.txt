@@ -116,7 +116,7 @@ add_library(polytope_lib
       src/structures/BoundingBox.h
         src/parsers/mesh/PLYParser.cpp
         src/parsers/mesh/PLYParser.h
-        src/parsers/mesh/AbstractMeshParser.h)
+        src/parsers/mesh/AbstractMeshParser.h src/shapes/SphereTesselator.cpp src/shapes/SphereTesselator.h)
 
 add_executable(${PROJECT_NAME} src/Main.cpp src/platforms/win32-cygwin.h)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
@@ -170,7 +170,7 @@ add_executable(runUnitTests
       tests/TestTransform.cpp
       tests/TestTriangleMesh.cpp
       tests/TestVector.cpp
-        )
+        tests/TestSphereTesselator.cpp)
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 # if (COVERAGE)
