@@ -7,20 +7,24 @@
 namespace Polytope {
 
    void SphereTesselator::Create(unsigned int meridians, unsigned int parallels, TriangleMesh *mesh) {
+
+      std::vector<unsigned int> parallelStartIndices;
+
       // north pole
       mesh->Vertices.emplace_back(0, 1, 0);
+      parallelStartIndices.push_back(0);
 
       // TODO make these in radians to begin with
       const float meridianAngleStep = 360 / (float)meridians;
       const float parallelAngleStep = 180 / (float)(parallels + 1);
-
-      bool first = true;
 
       for (unsigned int i = 0; i < parallels; i++) {
          const float verticalAngleInDegrees = 90 - parallelAngleStep * ((float)(i + 1));
          const float verticalAngleInRadians = verticalAngleInDegrees * PIOver180;
          const float y = std::sin(verticalAngleInRadians);
          const float xzRadiusAtY = std::cos(verticalAngleInRadians);
+         const unsigned int parallelStartIndex = i * meridians + 1;
+         parallelStartIndices.push_back(parallelStartIndex);
          for (unsigned int j = 0; j < meridians; j++) {
             const float horizontalAngleInDegrees = meridianAngleStep * j;
             const float horizontalAngleInRadians = horizontalAngleInDegrees * PIOver180;
@@ -28,16 +32,36 @@ namespace Polytope {
             const float z = std::sin(horizontalAngleInRadians) * xzRadiusAtY;
             mesh->Vertices.emplace_back(x, y, z);
          }
-         // top band
-         if (first) {
-            for (unsigned int v = 0; v < meridians - 1; v++)
-            mesh->Faces.emplace_back(v + 1, v + 2, 0);
-
-            first = false;
-         }
       }
 
       // south pole
       mesh->Vertices.emplace_back(0, -1, 0);
+
+      // faces
+
+      // top band
+      for (unsigned int v = 1; v < meridians; v++) {
+         // obj face indexes start at 1
+         mesh->Faces.emplace_back(v + 1, v + 2, 1);
+      }
+      // last face in the top band
+      mesh->Faces.emplace_back(meridians + 1, 2, 1);
+
+      // middle bands
+      for (unsigned int p = 1; p < parallels; p++) {
+         const unsigned int topStartIndex = parallelStartIndices[p];
+         const unsigned int bottomStartIndex = parallelStartIndices[p + 1];
+         for (unsigned int m = 0; m < meridians; m++) {
+            // obj face indexes start at 1
+            const unsigned int topLeftIndex = topStartIndex + m + 1;
+            const unsigned int topRightIndex = topStartIndex + m + 2;
+            const unsigned int bottomLeftIndex = bottomStartIndex + m + 1;
+            const unsigned int bottomRightIndex = bottomStartIndex + m + 2;
+            mesh->Faces.emplace_back(bottomRightIndex, bottomLeftIndex, topLeftIndex);
+            mesh->Faces.emplace_back(topLeftIndex, topRightIndex, bottomRightIndex);
+         }
+      }
+
+      // bottom band
    }
 }

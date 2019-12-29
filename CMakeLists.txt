@@ -116,7 +116,7 @@ add_library(polytope_lib
       src/structures/BoundingBox.h
         src/parsers/mesh/PLYParser.cpp
         src/parsers/mesh/PLYParser.h
-        src/parsers/mesh/AbstractMeshParser.h src/shapes/SphereTesselator.cpp src/shapes/SphereTesselator.h)
+        src/parsers/mesh/AbstractMeshParser.h src/shapes/SphereTesselator.cpp src/shapes/SphereTesselator.h src/exporters/OBJExporter.cpp src/exporters/OBJExporter.h)
 
 add_executable(${PROJECT_NAME} src/Main.cpp src/platforms/win32-cygwin.h)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its

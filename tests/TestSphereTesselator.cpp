@@ -2,65 +2,40 @@
 // Created by Daniel Thompson on 12/28/19.
 //
 
+#include <fstream>
 #include "gtest/gtest.h"
 #include "../src/shapes/TriangleMesh.h"
 #include "../src/shapes/SphereTesselator.h"
+#include "../src/exporters/OBJExporter.h"
 
 namespace Tests {
-   namespace Equality {
+   class SphereTesselatorTests : public ::testing::Test {
+   protected:
+      void CreateTest(Polytope::TriangleMesh* mesh, const int meridians, const int parallels) {
+         Polytope::SphereTesselator tesselator;
+         tesselator.Create(meridians, parallels, mesh);
 
-      using Polytope::SphereTesselator;
-      using Polytope::Transform;
-      using Polytope::TriangleMesh;
+         EXPECT_EQ(mesh->Vertices.size(), 8);
+         EXPECT_EQ(mesh->Faces.size(), 6);
 
-      TEST(SphereTesselator, Create1) {
+         Polytope::OBJExporter exporter;
 
-         std::shared_ptr<Transform> identity = std::make_shared<Transform>();
-         TriangleMesh mesh = TriangleMesh(identity, identity, nullptr);
-
-         SphereTesselator tesselator;
-         tesselator.Create(3, 1, &mesh);
-
-         EXPECT_EQ(mesh.Vertices.size(), 5);
-         EXPECT_EQ(mesh.Faces.size(), 6);
-
-         for (const auto &point : mesh.Vertices) {
-            std::cout << point.x << " " << point.y << " " << point.z << std::endl;
-         }
-
+         std::stringstream stringstream;
+         stringstream << "sphere" << meridians << "x" << parallels << ".obj";
+         std::ofstream filestream;
+         filestream.open (stringstream.str());
+         exporter.Export(filestream, mesh, false);
+         filestream.close();
       }
+   };
 
-      TEST(SphereTesselator, Create2) {
-
-         std::shared_ptr<Transform> identity = std::make_shared<Transform>();
-         TriangleMesh mesh = TriangleMesh(identity, identity, nullptr);
-
-         SphereTesselator tesselator;
-         tesselator.Create(3, 2, &mesh);
-
-         EXPECT_EQ(mesh.Vertices.size(), 8);
-         EXPECT_EQ(mesh.Faces.size(), 6);
-
-         for (const auto &point : mesh.Vertices) {
-            std::cout << point.x << " " << point.y << " " << point.z << std::endl;
-         }
-      }
-
-      TEST(SphereTesselator, Create3) {
-
-         std::shared_ptr<Transform> identity = std::make_shared<Transform>();
-         TriangleMesh mesh = TriangleMesh(identity, identity, nullptr);
-
-         SphereTesselator tesselator;
-         tesselator.Create(12, 12, &mesh);
-
-         EXPECT_EQ(mesh.Vertices.size(), 8);
-         EXPECT_EQ(mesh.Faces.size(), 6);
-
-         for (const auto &point : mesh.Vertices) {
-            std::cout << point.x << " " << point.y << " " << point.z << std::endl;
+   TEST_F(SphereTesselatorTests, Create1) {
+      std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
+      Polytope::TriangleMesh mesh = Polytope::TriangleMesh(identity, identity, nullptr);
+      for (unsigned int meridians = 3; meridians < 15; meridians += 3) {
+         for (unsigned int parallels = 1; parallels < 15; parallels += 3) {
+            CreateTest(&mesh, meridians, parallels);
          }
       }
    }
 }
-
