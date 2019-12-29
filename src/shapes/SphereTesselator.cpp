@@ -37,31 +37,48 @@ namespace Polytope {
       // south pole
       mesh->Vertices.emplace_back(0, -1, 0);
 
+      const int numVertices = mesh->Vertices.size();
+
       // faces
 
       // top band
       for (unsigned int v = 1; v < meridians; v++) {
          // obj face indexes start at 1
-         mesh->Faces.emplace_back(v + 1, v + 2, 1);
+         mesh->Faces.emplace_back(v + 2, v + 1, 1);
       }
       // last face in the top band
-      mesh->Faces.emplace_back(meridians + 1, 2, 1);
+      mesh->Faces.emplace_back(2, meridians + 1, 1);
 
       // middle bands
       for (unsigned int p = 1; p < parallels; p++) {
          const unsigned int topStartIndex = parallelStartIndices[p];
          const unsigned int bottomStartIndex = parallelStartIndices[p + 1];
-         for (unsigned int m = 0; m < meridians; m++) {
+         for (unsigned int m = 1; m < meridians; m++) {
             // obj face indexes start at 1
+            const unsigned int topRightIndex = topStartIndex + m ;
             const unsigned int topLeftIndex = topStartIndex + m + 1;
-            const unsigned int topRightIndex = topStartIndex + m + 2;
-            const unsigned int bottomLeftIndex = bottomStartIndex + m + 1;
-            const unsigned int bottomRightIndex = bottomStartIndex + m + 2;
-            mesh->Faces.emplace_back(bottomRightIndex, bottomLeftIndex, topLeftIndex);
-            mesh->Faces.emplace_back(topLeftIndex, topRightIndex, bottomRightIndex);
+            const unsigned int bottomLeftIndex = bottomStartIndex + m;
+            const unsigned int bottomRightIndex = bottomStartIndex + m + 1;
+            mesh->Faces.emplace_back(bottomRightIndex, bottomLeftIndex, topRightIndex);
+            mesh->Faces.emplace_back(topRightIndex, topLeftIndex, bottomRightIndex);
          }
+         // final meridian
+         const unsigned int topLeftIndex = topStartIndex + 1;
+         const unsigned int topRightIndex = topStartIndex  + meridians;
+         const unsigned int bottomLeftIndex = bottomStartIndex + 1;
+         const unsigned int bottomRightIndex = bottomStartIndex  + meridians;
+         mesh->Faces.emplace_back(bottomLeftIndex, bottomRightIndex, topRightIndex);
+         mesh->Faces.emplace_back(topRightIndex, topLeftIndex, bottomLeftIndex);
       }
 
+      const int bottomStartIndex = parallelStartIndices[parallels];
+
       // bottom band
+      for (unsigned int v = 1; v < meridians; v++) {
+         // obj face indexes start at 1
+         mesh->Faces.emplace_back(v + bottomStartIndex, v + 1 + bottomStartIndex, numVertices);
+      }
+      // last face in the bottom band
+      mesh->Faces.emplace_back(numVertices - 1, bottomStartIndex + 1, numVertices);
    }
 }

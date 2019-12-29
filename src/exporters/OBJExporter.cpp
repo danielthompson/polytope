@@ -2,6 +2,7 @@
 // Created by Daniel Thompson on 12/29/19.
 //
 
+#include <iostream>
 #include "OBJExporter.h"
 
 namespace Polytope {

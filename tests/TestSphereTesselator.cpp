@@ -11,17 +11,19 @@
 namespace Tests {
    class SphereTesselatorTests : public ::testing::Test {
    protected:
-      void CreateTest(Polytope::TriangleMesh* mesh, const int meridians, const int parallels) {
+      void CreateTest(Polytope::TriangleMesh* mesh, const unsigned int meridians, const unsigned int parallels) {
          Polytope::SphereTesselator tesselator;
          tesselator.Create(meridians, parallels, mesh);
 
-         EXPECT_EQ(mesh->Vertices.size(), 8);
-         EXPECT_EQ(mesh->Faces.size(), 6);
-
          Polytope::OBJExporter exporter;
 
+         const unsigned int expectedVertices = 2 + meridians * parallels;
+         const unsigned int expectedFaces = 2 * meridians * parallels;
+         EXPECT_EQ(mesh->Vertices.size(), expectedVertices);
+         EXPECT_EQ(mesh->Faces.size(), expectedFaces);
+
          std::stringstream stringstream;
-         stringstream << "sphere" << meridians << "x" << parallels << ".obj";
+         stringstream << "tests/sphere" << meridians << "x" << parallels << ".obj";
          std::ofstream filestream;
          filestream.open (stringstream.str());
          exporter.Export(filestream, mesh, false);
@@ -31,11 +33,21 @@ namespace Tests {
 
    TEST_F(SphereTesselatorTests, Create1) {
       std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
-      Polytope::TriangleMesh mesh = Polytope::TriangleMesh(identity, identity, nullptr);
-      for (unsigned int meridians = 3; meridians < 15; meridians += 3) {
-         for (unsigned int parallels = 1; parallels < 15; parallels += 3) {
+
+
+//      const int meridians = 3;
+//      const int parallels = 1;
+
+      for (unsigned int meridians = 3; meridians <= 30; meridians += 3) {
+         for (unsigned int parallels = 3; parallels <= 30; parallels += 3) {
+            Polytope::TriangleMesh mesh = Polytope::TriangleMesh(identity, identity, nullptr);
             CreateTest(&mesh, meridians, parallels);
          }
       }
+
+//      CreateTest(&mesh, 4, 4);
+//      CreateTest(&mesh, 20, 1);
+
+
    }
 }
