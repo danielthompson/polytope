@@ -14,6 +14,8 @@ namespace Polytope {
       const float meridianAngleStep = 360 / (float)meridians;
       const float parallelAngleStep = 180 / (float)(parallels + 1);
 
+      bool first = true;
+
       for (unsigned int i = 0; i < parallels; i++) {
          const float verticalAngleInDegrees = 90 - parallelAngleStep * ((float)(i + 1));
          const float verticalAngleInRadians = verticalAngleInDegrees * PIOver180;
@@ -25,6 +27,13 @@ namespace Polytope {
             const float x = std::cos(horizontalAngleInRadians) * xzRadiusAtY;
             const float z = std::sin(horizontalAngleInRadians) * xzRadiusAtY;
             mesh->Vertices.emplace_back(x, y, z);
+         }
+         // top band
+         if (first) {
+            for (unsigned int v = 0; v < meridians - 1; v++)
+            mesh->Faces.emplace_back(v + 1, v + 2, 0);
+
+            first = false;
          }
       }
 
