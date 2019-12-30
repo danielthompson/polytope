@@ -20,7 +20,11 @@ namespace Polytope {
       : AbstractShape(objectToWorld, worldToObject, material) {}
 
       bool Hits(Ray &worldSpaceRay) const override;
+      void CutY(float y);
       void Intersect(Ray &worldSpaceRay, Intersection *intersection) override;
+
+      float SignedDistance(const Point &p, const Point &plane, const Normal &normal);
+
       Point GetRandomPointOnSurface() override;
 
       std::vector<Point> Vertices;

@@ -111,4 +111,29 @@ namespace Polytope {
       // TODO
       return Point();
    }
+
+
+
+   void TriangleMesh::CutY(const float y) {
+      for (const auto &face : Faces) {
+
+         // step 1 - determine the signed distance to the plane for all 3 points
+
+         const Point v0 = Vertices[face.x];
+         const Point v1 = Vertices[face.y];
+         const Point v2 = Vertices[face.z];
+
+         // if all on the same side, do nothing
+         if ((v0.y < y && v1.y < y && v2.y < y)
+         || (v0.y == y && v1.y == y && v2.y == y)
+         || (v0.y > y && v1.y > y && v2.y > y))
+            return;
+
+
+      }
+   }
+
+   float TriangleMesh::SignedDistance(const Point &p, const Point &plane, const Normal &normal) {
+
+   }
 }
