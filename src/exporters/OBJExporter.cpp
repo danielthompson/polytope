@@ -23,7 +23,8 @@ namespace Polytope {
       stream << std::endl;
 
       for (const Point3ui &face : mesh->Faces) {
-         stream << "f " << face.x << " " << face.y << " " << face.z << std::endl;
+         // obj facex are 1-indexed
+         stream << "f " << (face.x + 1) << " " << (face.y + 1) << " " << (face.z + 1) << std::endl;
       }
    }
 }
