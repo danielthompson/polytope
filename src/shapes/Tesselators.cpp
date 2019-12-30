@@ -96,6 +96,24 @@ namespace Polytope {
          mesh->Faces.emplace_back(0, m, m + 1);
       }
       mesh->Faces.emplace_back(0, meridians, 1);
+   }
 
+   void ConeTesselator::Create(unsigned int meridians, TriangleMesh *mesh) {
+      // center
+      mesh->Vertices.emplace_back(0, 1, 0);
+
+      const float meridianAngleStep = -TwoPI / (float)meridians;
+
+      for (unsigned int m = 0; m < meridians; m++) {
+         const float angle = meridianAngleStep * m;
+         const float x = std::cos(angle);
+         const float z = std::sin(angle);
+         mesh->Vertices.emplace_back(x, 0, z);
+      }
+
+      for (unsigned int m = 1; m < meridians; m++) {
+         mesh->Faces.emplace_back(0, m, m + 1);
+      }
+      mesh->Faces.emplace_back(0, meridians, 1);
    }
 }

@@ -17,6 +17,11 @@ namespace Polytope {
    public:
       void Create(unsigned int meridians, TriangleMesh* mesh);
    };
+
+   class ConeTesselator {
+   public:
+      void Create(unsigned int meridians, TriangleMesh* mesh);
+   };
 }
 
 

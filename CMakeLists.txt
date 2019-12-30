@@ -170,7 +170,7 @@ add_executable(runUnitTests
       tests/TestTransform.cpp
       tests/TestTriangleMesh.cpp
       tests/TestVector.cpp
-        tests/TestSphereTesselator.cpp)
+      tests/TestTesselators.cpp)
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 # if (COVERAGE)
