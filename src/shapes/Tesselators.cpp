@@ -92,8 +92,10 @@ namespace Polytope {
          mesh->Vertices.emplace_back(x, 0, z);
       }
 
-      for (unsigned int m = 1; m <= meridians; m++) {
-         mesh->Faces.emplace_back(0, m + 1, m);
+      for (unsigned int m = 1; m < meridians; m++) {
+         mesh->Faces.emplace_back(0, m, m + 1);
       }
+      mesh->Faces.emplace_back(0, meridians, 1);
+
    }
 }
