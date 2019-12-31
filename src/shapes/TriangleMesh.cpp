@@ -114,8 +114,6 @@ namespace Polytope {
       return Point();
    }
 
-
-
    void TriangleMesh::SplitY(const float y) {
       const Point pointOnPlane(0, y, 0);
       const Normal normal(0, 1, 0);
@@ -136,32 +134,64 @@ namespace Polytope {
          const float d1 = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, v1);
          const float d2 = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, v2);
 
+         // step 1.25 - skip if no split required
+         if ((d0 >= 0 && d1 >= 0 && d2 >= 0)
+         || (d0 <= 0 && d1 <= 0 && d2 <= 0))
+            continue;
+
+         // step 1.5a - determine odd man out
+
+         Point odd, even1, even2;
+         unsigned int oddIndex, even1Index, even2Index;
+         if ((d0 <= 0 && d1 >= 0 && d2 >= 0) || ((d0 >= 0 && d1 <= 0 && d2 <= 0))) {
+            odd = v0;
+            oddIndex = face.x;
+            even1 = v1;
+            even1Index = face.y;
+            even2 = v2;
+            even2Index = face.z;
+         }
+         else if ((d1 <= 0 && d2 >= 0 && d0 >= 0) || ((d1 >= 0 && d2 <= 0 && d0 <= 0))) {
+            odd = v1;
+            oddIndex = face.y;
+            even1 = v2;
+            even1Index = face.z;
+            even2 = v0;
+            even2Index = face.x;
+         }
+         else {
+            odd = v2;
+            oddIndex = face.z;
+            even1 = v0;
+            even1Index = face.x;
+            even2 = v1;
+            even2Index = face.y;
+         }
+
          // step 2 - determine if any faces need to be split
 
-         // if d0 is the odd man out
-         if ((d0 < 0 && d1 > 0 && d2 > 0) || ((d0 > 0 && d1 < 0 && d2 < 0))) {
-            faceIndicesToDelete.push_back(i);
-            const unsigned int vertexIndexStart = Vertices.size() - 1;
+         faceIndicesToDelete.push_back(i);
+         const unsigned int vertexIndexStart = Vertices.size();
 
-            // calculate first intersection point
-            const Vector e0 = v1 - v0;
-            const float t0 = (y - v0.y) / e0.y;
-            const Point i0 = v0 + e0 * t0;
-            Vertices.push_back(i0);
+         // calculate first intersection point
+         const Vector e0 = even1 - odd;
+         const float t0 = (y - odd.y) / e0.y;
+         const Point i0 = odd + e0 * t0;
+         Vertices.push_back(i0);
 
-            // calculate second intersection point
-            const Vector e1 = v2 - v0;
-            const float t1 = (y - v0.y) / e1.y;
-            const Point i1 = v0 + e1 * t1;
-            Vertices.push_back(i1);
+         // calculate second intersection point
+         const Vector e1 = even2 - odd;
+         const float t1 = (y - odd.y) / e1.y;
+         const Point i1 = odd + e1 * t1;
+         Vertices.push_back(i1);
 
-            // add top face
-            newFaces.emplace_back(face.x, vertexIndexStart + 1, vertexIndexStart + 2);
+         // add top face
+         newFaces.emplace_back(oddIndex, vertexIndexStart, vertexIndexStart + 1);
 
-            // add bottom faces
-            newFaces.emplace_back(vertexIndexStart + 1, face.y, face.z);
-            newFaces.emplace_back(vertexIndexStart + 1, face.z, vertexIndexStart + 2);
-         }
+         // add bottom faces
+         newFaces.emplace_back(vertexIndexStart, even1Index, even2Index);
+         newFaces.emplace_back(vertexIndexStart, even2Index, vertexIndexStart + 1);
+
       }
 
       if (!faceIndicesToDelete.empty()) {
