@@ -2,6 +2,8 @@
 // Created by Daniel on 15-Dec-19.
 //
 
+#include <algorithm>
+#include <vector>
 #include "TriangleMesh.h"
 
 namespace Polytope {
@@ -114,26 +116,67 @@ namespace Polytope {
 
 
 
-   void TriangleMesh::CutY(const float y) {
-      for (const auto &face : Faces) {
+   void TriangleMesh::SplitY(const float y) {
+      const Point pointOnPlane(0, y, 0);
+      const Normal normal(0, 1, 0);
 
-         // step 1 - determine the signed distance to the plane for all 3 points
+      std::vector<Point3ui> newFaces;
+      std::vector<int> faceIndicesToDelete;
 
+      for (unsigned int i = 0; i < Faces.size(); i++) {
+
+         const Point3ui face = Faces[i];
          const Point v0 = Vertices[face.x];
          const Point v1 = Vertices[face.y];
          const Point v2 = Vertices[face.z];
 
-         // if all on the same side, do nothing
-         if ((v0.y < y && v1.y < y && v2.y < y)
-         || (v0.y == y && v1.y == y && v2.y == y)
-         || (v0.y > y && v1.y > y && v2.y > y))
-            return;
+         // step 1 - determine the signed distance to the plane for all 3 points
 
+         const float d0 = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, v0);
+         const float d1 = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, v1);
+         const float d2 = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, v2);
 
+         // step 2 - determine if any faces need to be split
+
+         // if d0 is the odd man out
+         if ((d0 < 0 && d1 > 0 && d2 > 0) || ((d0 > 0 && d1 < 0 && d2 < 0))) {
+            faceIndicesToDelete.push_back(i);
+            const unsigned int vertexIndexStart = Vertices.size() - 1;
+
+            // calculate first intersection point
+            const Vector e0 = v1 - v0;
+            const float t0 = (y - v0.y) / e0.y;
+            const Point i0 = v0 + e0 * t0;
+            Vertices.push_back(i0);
+
+            // calculate second intersection point
+            const Vector e1 = v2 - v0;
+            const float t1 = (y - v0.y) / e1.y;
+            const Point i1 = v0 + e1 * t1;
+            Vertices.push_back(i1);
+
+            // add top face
+            newFaces.emplace_back(face.x, vertexIndexStart + 1, vertexIndexStart + 2);
+
+            // add bottom faces
+            newFaces.emplace_back(vertexIndexStart + 1, face.y, face.z);
+            newFaces.emplace_back(vertexIndexStart + 1, face.z, vertexIndexStart + 2);
+         }
       }
-   }
 
-   float TriangleMesh::SignedDistance(const Point &p, const Point &plane, const Normal &normal) {
+      if (!faceIndicesToDelete.empty()) {
+         std::sort(faceIndicesToDelete.begin(), faceIndicesToDelete.end());
 
+         // delete old faces
+
+         for (auto i = faceIndicesToDelete.size(); i > 0; i--) {
+            Faces.erase(Faces.begin() + i - 1);
+         }
+
+         // add new faces
+         for (const Point3ui &newFace : newFaces) {
+            Faces.push_back(newFace);
+         }
+      }
    }
 }

@@ -20,6 +20,10 @@
 #define M_SQRT2 1.41421356237309504880
 #endif
 
+#ifndef M_SQRT3
+#define M_SQRT3 1.73205080757
+#endif
+
 namespace Polytope {
 
    constexpr float Epsilon = .00001f;
@@ -44,6 +48,7 @@ namespace Polytope {
    constexpr float OneOver255 = 1.0f / 255.0f;
 
    constexpr float Root2 = float(M_SQRT2);
+   constexpr float Root3 = float(M_SQRT3);
 
    constexpr float Infinity = std::numeric_limits<float>::infinity();
    constexpr float DenormMin = std::numeric_limits<float>::denorm_min();
@@ -52,8 +57,6 @@ namespace Polytope {
    constexpr float FloatMax = std::numeric_limits<float>::max();
 
    constexpr float MachineEpsilon = std::numeric_limits<float>::epsilon() * 0.5f;
-
-   const float Root3 = std::sqrt(3.0f);
 
    inline bool WithinEpsilon(float number, float target, float epsilon) {
 
@@ -96,6 +99,19 @@ namespace Polytope {
       const float z = r * std::sin(theta);
 
       return Vector(x, y, z);
+   }
+
+   inline float SignedDistanceFromPlane(const Point &pointOnPlane, const Normal &normal, const Point &p) {
+//      const float a = normal.x;
+//      const float b = normal.y;
+//      const float c = normal.z;
+//      const float d = -(a * pointOnPlane.x + b * pointOnPlane.y + c * pointOnPlane.z);
+//      // normal should already be normalized
+////      const float sqrt = std::sqrt(a * a + b * b + c * c);
+//      const float dist = (normal.x * p.x + normal.y * p.y + normal.z * p.z + d);// / sqrt;
+//      return dist;
+
+      return (p - pointOnPlane).Dot(normal);
    }
 
    // source - http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#x1-ErrorPropagation

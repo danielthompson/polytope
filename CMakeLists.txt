@@ -160,6 +160,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 ##############
 add_executable(runUnitTests
       tests/TestBoundingBox.cpp
+      tests/TestCommon.cpp
       tests/TestIntersectionTests.cpp
       tests/TestMatrix4x4.cpp
       tests/TestMirrorBRDF.cpp
@@ -171,7 +172,7 @@ add_executable(runUnitTests
       tests/TestTriangleMesh.cpp
       tests/TestVector.cpp
       tests/TestTesselators.cpp
-      tests/TestTriangleCutting.cpp)
+      tests/TestTriangleSplitting.cpp)
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 # if (COVERAGE)
