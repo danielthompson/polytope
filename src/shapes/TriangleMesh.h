@@ -20,7 +20,10 @@ namespace Polytope {
       : AbstractShape(objectToWorld, worldToObject, material) {}
 
       bool Hits(Ray &worldSpaceRay) const override;
+      void SplitX(float x);
       void SplitY(float y);
+      void SplitZ(float z);
+      void Split(const Point &pointOnPlane, const Normal &normal);
       void Intersect(Ray &worldSpaceRay, Intersection *intersection) override;
 
       Point GetRandomPointOnSurface() override;

@@ -114,15 +114,29 @@ namespace Polytope {
       return Point();
    }
 
+   void TriangleMesh::SplitX(const float x) {
+      const Point pointOnPlane(x, 0, 0);
+      const Normal normal(1, 0, 0);
+      Split(pointOnPlane, normal);
+   }
+
    void TriangleMesh::SplitY(const float y) {
       const Point pointOnPlane(0, y, 0);
       const Normal normal(0, 1, 0);
+      Split(pointOnPlane, normal);
+   }
 
+   void TriangleMesh::SplitZ(const float z) {
+      const Point pointOnPlane(0, 0, z);
+      const Normal normal(0, 0, 1);
+      Split(pointOnPlane, normal);
+   }
+
+   void TriangleMesh::Split(const Point &pointOnPlane, const Normal &normal) {
       std::vector<Point3ui> newFaces;
       std::vector<int> faceIndicesToDelete;
 
       for (unsigned int i = 0; i < Faces.size(); i++) {
-
          const Point3ui face = Faces[i];
          const Point v0 = Vertices[face.x];
          const Point v1 = Vertices[face.y];
@@ -134,12 +148,25 @@ namespace Polytope {
          const float d1 = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, v1);
          const float d2 = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, v2);
 
-         // step 1.25 - skip if no split required
+         // step 2 - skip if no split required
+
          if ((d0 >= 0 && d1 >= 0 && d2 >= 0)
          || (d0 <= 0 && d1 <= 0 && d2 <= 0))
             continue;
 
-         // step 1.5a - determine odd man out
+         // TODO - add optimization for the case in which the splitting plane happens to exactly
+         // intersect an existing vertex, i.e.
+         //
+         //  |\
+         //  | \
+         //  |  \
+         // -|--->---
+         //  |  /
+         //  | /
+         //  |/
+         // In such a case, there should be only 2 new faces, not three
+
+         // step 3 - determine odd man out
 
          Point odd, even1, even2;
          unsigned int oddIndex, even1Index, even2Index;
@@ -168,22 +195,29 @@ namespace Polytope {
             even2Index = face.y;
          }
 
-         // step 2 - determine if any faces need to be split
+         // step 4 - determine intersection points
 
          faceIndicesToDelete.push_back(i);
          const unsigned int vertexIndexStart = Vertices.size();
+         const float numerator = (pointOnPlane - odd).Dot(normal);
 
          // calculate first intersection point
-         const Vector e0 = even1 - odd;
-         const float t0 = (y - odd.y) / e0.y;
-         const Point i0 = odd + e0 * t0;
-         Vertices.push_back(i0);
+         {
+            const Vector edge = even1 - odd;
+            const float t = numerator / edge.Dot(normal);
+            const Point intersectionPoint = odd + edge * t;
+            Vertices.push_back(intersectionPoint);
+         }
 
          // calculate second intersection point
-         const Vector e1 = even2 - odd;
-         const float t1 = (y - odd.y) / e1.y;
-         const Point i1 = odd + e1 * t1;
-         Vertices.push_back(i1);
+         {
+            const Vector edge = even2 - odd;
+            const float t = numerator / edge.Dot(normal);
+            const Point intersectionPoint = odd + edge * t;
+            Vertices.push_back(intersectionPoint);
+         }
+
+         // step 5 - add new faces
 
          // add top face
          newFaces.emplace_back(oddIndex, vertexIndexStart, vertexIndexStart + 1);
@@ -191,16 +225,15 @@ namespace Polytope {
          // add bottom faces
          newFaces.emplace_back(vertexIndexStart, even1Index, even2Index);
          newFaces.emplace_back(vertexIndexStart, even2Index, vertexIndexStart + 1);
-
       }
 
       if (!faceIndicesToDelete.empty()) {
-         std::sort(faceIndicesToDelete.begin(), faceIndicesToDelete.end());
+         std::sort(faceIndicesToDelete.rbegin(), faceIndicesToDelete.rend());
 
          // delete old faces
 
-         for (auto i = faceIndicesToDelete.size(); i > 0; i--) {
-            Faces.erase(Faces.begin() + i - 1);
+         for (const int i : faceIndicesToDelete) {
+            Faces.erase(Faces.begin() + i);
          }
 
          // add new faces
