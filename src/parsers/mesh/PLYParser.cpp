@@ -217,5 +217,7 @@ namespace Polytope {
       mesh->WorldToObject = std::make_shared<Polytope::Transform>(mesh->ObjectToWorld->Invert());
       mesh->BoundingBox->p0 = bb.p0;
       mesh->BoundingBox->p1 = bb.p1;
+
+      mesh->Bound();
    }
 }

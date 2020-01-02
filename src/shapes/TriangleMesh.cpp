@@ -11,14 +11,10 @@ namespace Polytope {
       return false;
    }
 
-   void Polytope::TriangleMesh::Intersect(Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) {
-      Ray objectSpaceRay = WorldToObject->Apply(worldSpaceRay);
-
-      //float minT = Infinity;
-
+   void TriangleMesh::IntersectFaces(Ray &worldSpaceRay, Ray &objectSpaceRay, Intersection *intersection, const std::vector<Point3ui> &faces) {
       unsigned int faceIndex = 0;
 
-      for (const Point3ui &face : Faces) {
+      for (const Point3ui &face : faces) {
          const Point vertex0 = Vertices[face.x];
          const Point vertex1 = Vertices[face.y];
          const Point vertex2 = Vertices[face.z];
@@ -106,6 +102,24 @@ namespace Polytope {
             intersection->Tangent2.Normalize();
          }
          faceIndex++;
+      }
+   }
+
+   void Polytope::TriangleMesh::Intersect(Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) {
+      Ray objectSpaceRay = WorldToObject->Apply(worldSpaceRay);
+
+      std::vector<Point3ui> faces;
+
+      if (root != nullptr) {
+         if (root->low->bbox.Hits(objectSpaceRay)) {
+            IntersectFaces(worldSpaceRay, objectSpaceRay, intersection, root->low->faces);
+         }
+         if (root->high->bbox.Hits(objectSpaceRay)) {
+            IntersectFaces(worldSpaceRay, objectSpaceRay, intersection, root->high->faces);
+         }
+      }
+      else {
+         IntersectFaces(worldSpaceRay, objectSpaceRay, intersection, Faces);
       }
    }
 
@@ -241,5 +255,74 @@ namespace Polytope {
             Faces.push_back(newFace);
          }
       }
+   }
+
+   float TriangleMesh::GetExtentX() {
+
+      float min = Polytope::FloatMax;
+      float max = -Polytope::FloatMax;
+
+      for (const Point3ui &face : Faces) {
+         if (Vertices[face.x].x < min)
+            min = Vertices[face.x].x;
+         if (Vertices[face.y].x < min)
+            min = Vertices[face.y].x;
+         if (Vertices[face.z].x < min)
+            min = Vertices[face.z].x;
+
+         if (Vertices[face.x].x > max)
+            max = Vertices[face.x].x;
+         if (Vertices[face.y].x > max)
+            max = Vertices[face.y].x;
+         if (Vertices[face.z].x > max)
+            max = Vertices[face.z].x;
+      }
+
+      return max - min;
+   }
+
+   float TriangleMesh::GetExtentY() {
+
+   }
+
+   float TriangleMesh::GetExtentZ() {
+
+   }
+
+   void TriangleMesh::Bound() {
+      root = new BVHNode();
+      root->high = new BVHNode();
+      root->low = new BVHNode();
+
+      // determine split
+      const float extentX = GetExtentX();
+      const float extentY = GetExtentY();
+      const float extentZ = GetExtentZ();
+
+      float splitx = BoundingBox->p0.x + extentX * 0.5f;
+
+      // perform split
+      SplitX(splitx);
+
+      for (const Point3ui &face : Faces) {
+         const Point v0 = Vertices[face.x];
+         const Point v1 = Vertices[face.y];
+         const Point v2 = Vertices[face.z];
+
+         // add all faces at or below split to low child
+         if (v0.x <= splitx && v1.x <= splitx && v2.x <= splitx) {
+            root->low->faces.push_back(face);
+         }
+         else { // add all faces above split to high child
+            root->high->faces.push_back(face);
+         }
+      }
+
+      // set child bounding boxes
+      root->low->bbox.p0 = BoundingBox->p0;
+      root->low->bbox.p1 = Point(splitx, BoundingBox->p1.y, BoundingBox->p1.z);
+
+      root->high->bbox.p0 = Point(splitx, BoundingBox->p0.y, BoundingBox->p0.z);
+      root->high->bbox.p1 = BoundingBox->p1;
    }
 }

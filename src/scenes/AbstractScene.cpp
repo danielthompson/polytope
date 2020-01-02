@@ -13,9 +13,9 @@ namespace Polytope {
       Intersection intersection;
 
       for (auto shape : shapes) {
-         if (shape->BoundingBox &&!shape->BoundingBox->Hits(ray)) {
-            continue;
-         }
+//         if (shape->BoundingBox &&!shape->BoundingBox->Hits(ray)) {
+//            continue;
+//         }
 
          shape->Intersect(ray, &intersection);
       }

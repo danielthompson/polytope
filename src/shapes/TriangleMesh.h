@@ -11,6 +11,14 @@
 #include "../structures/Vectors.h"
 
 namespace Polytope {
+   class BVHNode {
+   public:
+      BVHNode* high;
+      BVHNode* low;
+      std::vector<Point3ui> faces;
+      BoundingBox bbox;
+   };
+
    class TriangleMesh : public AbstractShape {
    public:
       TriangleMesh(
@@ -24,13 +32,22 @@ namespace Polytope {
       void SplitY(float y);
       void SplitZ(float z);
       void Split(const Point &pointOnPlane, const Normal &normal);
+      void Bound();
       void Intersect(Ray &worldSpaceRay, Intersection *intersection) override;
+      void IntersectFaces(Ray &worldSpaceRay, Ray &objectSpaceRay, Intersection *intersection, const std::vector<Point3ui> &faces);
+      float GetExtentX();
+      float GetExtentY();
+      float GetExtentZ();
+
 
       Point GetRandomPointOnSurface() override;
 
       std::vector<Point> Vertices;
       std::vector<Point3ui> Faces;
+      BVHNode* root;
    };
+
+
 }
 
 #endif //POLYTOPE_TRIANGLEMESH_H

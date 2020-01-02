@@ -64,7 +64,8 @@ add_library(polytope_lib
         src/samplers/HaltonSampler.h
         src/scenes/AbstractScene.cpp
         src/scenes/AbstractScene.h
-        src/scenes/NaiveScene.cpp
+      src/scenes/BVHScene.h
+      src/scenes/NaiveScene.cpp
         src/scenes/NaiveScene.h
         src/scenes/SceneBuilder.cpp
         src/scenes/SceneBuilder.h
@@ -116,7 +117,11 @@ add_library(polytope_lib
       src/structures/BoundingBox.h
         src/parsers/mesh/PLYParser.cpp
         src/parsers/mesh/PLYParser.h
-        src/parsers/mesh/AbstractMeshParser.h src/shapes/Tesselators.cpp src/shapes/Tesselators.h src/exporters/OBJExporter.cpp src/exporters/OBJExporter.h)
+        src/parsers/mesh/AbstractMeshParser.h
+      src/shapes/Tesselators.cpp
+      src/shapes/Tesselators.h
+      src/exporters/OBJExporter.cpp
+      src/exporters/OBJExporter.h src/scenes/BVHScene.cpp)
 
 add_executable(${PROJECT_NAME} src/Main.cpp src/platforms/win32-cygwin.h)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
