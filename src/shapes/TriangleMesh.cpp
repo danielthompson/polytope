@@ -310,75 +310,21 @@ namespace Polytope {
       }
    }
 
-   float TriangleMesh::GetExtentX() {
+   void TriangleMesh::Bound() {
+      if (root == nullptr)
+         root = new BVHNode();
 
-      float min = Polytope::FloatMax;
-      float max = -Polytope::FloatMax;
+      const float extentX = GetExtent(Axis::x, Faces, Vertices);
+      const float extentY = GetExtent(Axis::y, Faces, Vertices);
+      const float extentZ = GetExtent(Axis::z, Faces, Vertices);
 
-      for (const Point3ui &face : Faces) {
-         if (Vertices[face.x].x < min)
-            min = Vertices[face.x].x;
-         if (Vertices[face.y].x < min)
-            min = Vertices[face.y].x;
-         if (Vertices[face.z].x < min)
-            min = Vertices[face.z].x;
+      Axis splitAxis = Axis::x;
+      if (extentY > extentX && extentY > extentZ)
+         splitAxis = Axis::y;
+      else if (extentZ > extentX && extentZ > extentY)
+         splitAxis = Axis::z;
 
-         if (Vertices[face.x].x > max)
-            max = Vertices[face.x].x;
-         if (Vertices[face.y].x > max)
-            max = Vertices[face.y].x;
-         if (Vertices[face.z].x > max)
-            max = Vertices[face.z].x;
-      }
-
-      return max - min;
-   }
-
-   float TriangleMesh::GetExtentY() {
-      float min = Polytope::FloatMax;
-      float max = -Polytope::FloatMax;
-
-      for (const Point3ui &face : Faces) {
-         if (Vertices[face.x].y < min)
-            min = Vertices[face.x].y;
-         if (Vertices[face.y].y < min)
-            min = Vertices[face.y].y;
-         if (Vertices[face.z].y < min)
-            min = Vertices[face.z].y;
-
-         if (Vertices[face.x].y > max)
-            max = Vertices[face.x].y;
-         if (Vertices[face.y].y > max)
-            max = Vertices[face.y].y;
-         if (Vertices[face.z].y > max)
-            max = Vertices[face.z].y;
-      }
-
-      return max - min;
-   }
-   
-
-   float TriangleMesh::GetExtentZ() {
-      float min = Polytope::FloatMax;
-      float max = -Polytope::FloatMax;
-
-      for (const Point3ui &face : Faces) {
-         if (Vertices[face.x].z < min)
-            min = Vertices[face.x].z;
-         if (Vertices[face.y].z < min)
-            min = Vertices[face.y].z;
-         if (Vertices[face.z].z < min)
-            min = Vertices[face.z].z;
-
-         if (Vertices[face.x].z > max)
-            max = Vertices[face.x].z;
-         if (Vertices[face.y].z > max)
-            max = Vertices[face.y].z;
-         if (Vertices[face.z].z > max)
-            max = Vertices[face.z].z;
-      }
-
-      return max - min;
+      Bound(root, Faces, splitAxis);
    }
 
    void TriangleMesh::Bound(BVHNode *node, const std::vector<Point3ui> &faces, Axis axis) {
@@ -443,7 +389,7 @@ namespace Polytope {
       {
          const float extentX = GetExtent(Axis::x, node->low->faces, Vertices);
          const float extentY = GetExtent(Axis::y, node->low->faces, Vertices);
-         const float extentZ = GetExtent(Axis::y, node->low->faces, Vertices);
+         const float extentZ = GetExtent(Axis::z, node->low->faces, Vertices);
 
          Axis splitAxis = Axis::x;
          if (extentY > extentX && extentY > extentZ)
@@ -462,7 +408,7 @@ namespace Polytope {
       {
          const float extentX = GetExtent(Axis::x, node->high->faces, Vertices);
          const float extentY = GetExtent(Axis::y, node->high->faces, Vertices);
-         const float extentZ = GetExtent(Axis::y, node->high->faces, Vertices);
+         const float extentZ = GetExtent(Axis::z, node->high->faces, Vertices);
 
          Axis splitAxis = Axis::x;
          if (extentY > extentX && extentY > extentZ)
@@ -476,22 +422,5 @@ namespace Polytope {
 
          Bound(node->high, node->high->faces, splitAxis);
       }
-   }
-
-   void TriangleMesh::Bound() {
-      if (root == nullptr)
-         root = new BVHNode();
-
-      const float extentX = GetExtent(Axis::x, Faces, Vertices);
-      const float extentY = GetExtent(Axis::y, Faces, Vertices);
-      const float extentZ = GetExtent(Axis::y, Faces, Vertices);
-
-      Axis splitAxis = Axis::x;
-      if (extentY > extentX && extentY > extentZ)
-         splitAxis = Axis::y;
-      else if (extentZ > extentX && extentZ > extentY)
-         splitAxis = Axis::z;
-
-      Bound(root, Faces, splitAxis);
    }
 }

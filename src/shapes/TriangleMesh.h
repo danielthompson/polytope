@@ -36,9 +36,6 @@ namespace Polytope {
       void Intersect(Ray &ray, Intersection *intersection) override;
       void IntersectFaces(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces);
       void IntersectNode(Ray &ray, Intersection *intersection, BVHNode* node);
-      float GetExtentX();
-      float GetExtentY();
-      float GetExtentZ();
 
       Point GetRandomPointOnSurface() override;
 
