@@ -19,8 +19,7 @@ namespace Polytope {
    class Transform;
 
    class AbstractShape {
-   protected:
-
+   public:
       AbstractShape(
          std::shared_ptr<Polytope::Transform> objectToWorld,
          std::shared_ptr<Polytope::Transform> worldToObject,
@@ -31,7 +30,7 @@ namespace Polytope {
             std::shared_ptr<Polytope::Material> material,
             ShapeLight *light);
 
-   public:
+
 
       // methods
       virtual bool Hits(Polytope::Ray &worldSpaceRay) const = 0;

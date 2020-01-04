@@ -33,18 +33,22 @@ namespace Polytope {
       void SplitZ(float z);
       void Split(const Point &pointOnPlane, const Normal &normal);
       void Bound();
-      void Intersect(Ray &worldSpaceRay, Intersection *intersection) override;
-      void IntersectFaces(Ray &worldSpaceRay, Ray &objectSpaceRay, Intersection *intersection, const std::vector<Point3ui> &faces);
+      void Intersect(Ray &ray, Intersection *intersection) override;
+      void IntersectFaces(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces);
+      void IntersectNode(Ray &ray, Intersection *intersection, BVHNode* node);
       float GetExtentX();
       float GetExtentY();
       float GetExtentZ();
-
 
       Point GetRandomPointOnSurface() override;
 
       std::vector<Point> Vertices;
       std::vector<Point3ui> Faces;
       BVHNode* root;
+
+   private:
+      void Bound(BVHNode* node, const std::vector<Point3ui> &faces, Axis axis);
+      void Split(Axis axis, float split);
    };
 
 

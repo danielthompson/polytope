@@ -131,7 +131,8 @@ namespace Polytope {
          iss >> word;
          const float z = stof(word);
          const Point p(x, y, z);
-         mesh->Vertices.push_back(p);
+         const Point worldPoint = mesh->ObjectToWorld->Apply(p);
+         mesh->Vertices.push_back(worldPoint);
       }
 
       // data - faces
@@ -193,30 +194,8 @@ namespace Polytope {
          max.z = p2.z > max.z ? p2.z : max.z;
       }
 
-      // length of the bounding box in object space
-      const float xlen = (max.x - min.x) * 0.5f;
-      const float ylen = (max.y - min.y) * 0.5f;
-      const float zlen = (max.z - min.z) * 0.5f;
-
-      const float xcentroid = min.x + xlen;
-      const float ycentroid = min.y + ylen;
-      const float zcentroid = min.z + zlen;
-
-      const float dx = -xcentroid;
-      const float dy = -ycentroid;
-      const float dz = -zcentroid;
-
-      // object space bounding box
-      BoundingBox bb(min, max);
-
-      // move shape centroid to origin in object space and fix bounding box
-      const Transform t = Transform::Translate(dx, dy, dz);
-      mesh->ObjectToWorld = std::make_shared<Polytope::Transform>(*(mesh->ObjectToWorld) * t);
-      mesh->ObjectToWorld->ApplyInPlace(bb);
-
-      mesh->WorldToObject = std::make_shared<Polytope::Transform>(mesh->ObjectToWorld->Invert());
-      mesh->BoundingBox->p0 = bb.p0;
-      mesh->BoundingBox->p1 = bb.p1;
+      mesh->BoundingBox->p0 = min;
+      mesh->BoundingBox->p1 = max;
 
       mesh->Bound();
    }

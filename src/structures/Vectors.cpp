@@ -58,6 +58,14 @@ namespace Polytope {
       return z;
    }
 
+   float Point::operator[](const Axis axis) const {
+      if (axis == Axis::x)
+         return x;
+      if (axis == Axis::y)
+         return y;
+      return z;
+   }
+
    float Vector::Length() const {
       return std::sqrt(x * x + y * y + z * z);
    }

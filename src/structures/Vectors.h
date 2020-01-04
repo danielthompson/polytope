@@ -6,6 +6,12 @@
 #define POLYTOPE_VECTORS_H
 
 namespace Polytope {
+   enum class Axis {
+      x = 0,
+      y,
+      z
+   };
+
    class Normal {
    public:
       float x, y, z;
@@ -61,6 +67,7 @@ namespace Polytope {
       Point operator+(const Point &rhs) const;
       Point operator+(const Vector &rhs) const;
       float operator[] (const int index) const;
+      float operator[] (const Axis axis) const;
       Point &operator+=(const Vector &rhs);
       Point &operator+=(const Normal &rhs);
 
