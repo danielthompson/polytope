@@ -4,9 +4,19 @@
 
 #include <iostream>
 #include <sstream>
-#include "Tracer.h"
+#include <map>
+
+#include <GLFW/glfw3.h>
+
 #include "utilities/OptionsParser.h"
 #include "utilities/Common.h"
+#include "scenes/SceneBuilder.h"
+#include "integrators/PathTraceIntegrator.h"
+#include "samplers/HaltonSampler.h"
+#include "filters/BoxFilter.h"
+#include "runners/TileRunner.h"
+#include "films/PNGFilm.h"
+#include "parsers/PBRTFileParser.h"
 
 #ifdef __CYGWIN__
 #include "platforms/win32-cygwin.h"
@@ -44,16 +54,6 @@ void userAbortHandler(int signalNumber) {
 
 int main(int argc, char* argv[]) {
 
-//   signal(SIGSEGV, segfaultHandler);
-//
-//   signal(SIGINT, userAbortHandler);
-//
-//   signal(SIGABRT, signalHandler);
-//   signal(SIGFPE, signalHandler);
-//   signal(SIGILL, signalHandler);
-//   signal(SIGTERM, signalHandler);
-
-
    try {
       Log = Polytope::Logger();
 
@@ -85,14 +85,135 @@ File options:
                      defaults to the input file name (with .png extension).
 
 Other:
+   -gl               Render the scene with OpenGL, for reference.
    --help            Print this help text and exit.)");
          std::cout << std::endl;
          exit(0);
       }
 
+      const auto totalRunTimeStart = std::chrono::system_clock::now();
 
-      Polytope::Tracer tracer = Polytope::Tracer(options);
-      tracer.Run();
+      constexpr unsigned int width = 640;
+      constexpr unsigned int height = 480;
+
+      const Polytope::Bounds bounds(width, height);
+
+      const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
+      Log.WithTime("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
+
+      unsigned int usingThreads = concurrentThreadsSupported;
+
+      if (options.threadsSpecified && options.threads > 0 && options.threads <= concurrentThreadsSupported) {
+         usingThreads = options.threads;
+      }
+
+      Log.WithTime("Using " + std::to_string(usingThreads) + " threads.");
+
+      {
+         std::unique_ptr<Polytope::AbstractRunner> runner;
+         if (!options.inputSpecified) {
+            Log.WithTime("No input file specified, using default scene.");
+            Polytope::SceneBuilder sceneBuilder = Polytope::SceneBuilder(bounds);
+            Polytope::AbstractScene *scene = sceneBuilder.Default();
+
+            // TODO fix
+            // Compile(scene);
+
+            std::unique_ptr<Polytope::AbstractSampler> sampler = std::make_unique<Polytope::HaltonSampler>();
+            std::unique_ptr<Polytope::AbstractIntegrator> integrator = std::make_unique<Polytope::PathTraceIntegrator>(scene, 5);
+
+            std::unique_ptr<Polytope::BoxFilter> filter = std::make_unique<Polytope::BoxFilter>(bounds);
+            filter->SetSamples(options.samples);
+            std::unique_ptr<Polytope::AbstractFilm> film = std::make_unique<Polytope::PNGFilm>(bounds, options.output_filename, std::move(filter));
+
+            runner = std::make_unique<Polytope::TileRunner>(std::move(sampler), scene, std::move(integrator), std::move(film), bounds, options.samples);
+
+         }
+         else {
+            // load file
+            Polytope::PBRTFileParser parser = Polytope::PBRTFileParser();
+            runner = parser.ParseFile(options.input_filename);
+
+            // override parsed with options here
+            if (options.samplesSpecified) {
+               runner->NumSamples = options.samples;
+            }
+         }
+
+         Log.WithTime(
+               std::string("Image is [") +
+               std::to_string(runner->Bounds.x) +
+               std::string("] x [") +
+               std::to_string(runner->Bounds.y) +
+               std::string("], ") +
+               std::to_string(runner->NumSamples) + " spp.");
+
+         if (options.gl) {
+            Log.WithTime("Rasterizing with OpenGL...");
+            if (!glfwInit())
+            {
+               // Initialization failed
+               Log.WithTime("GLFW init failed :(");
+            }
+            Log.WithTime("GLFW init succeeded.");
+
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            GLFWwindow* window = glfwCreateWindow(640, 480, "My Title", NULL, NULL);
+            if (!window)
+            {
+               // Window or OpenGL context creation failed
+               Log.WithTime("GLFW create window failed :(");
+            }
+
+            glfwMakeContextCurrent(window);
+
+
+         }
+         else {
+            Log.WithTime("Rendering...");
+
+            const auto renderingStart = std::chrono::system_clock::now();
+
+            //   runner->Run();
+
+            std::map<std::thread::id, int> threadMap;
+            std::vector<std::thread> threads;
+            for (int i = 0; i < usingThreads; i++) {
+
+               Log.WithTime(std::string("Starting thread " + std::to_string(i) + std::string("...")));
+               threads.emplace_back(runner->Spawn(i));
+               const std::thread::id threadID = threads[i].get_id();
+               threadMap[threadID] = i;
+
+            }
+
+            for (int i = 0; i < usingThreads; i++) {
+               threads[i].join();
+               Log.WithTime(std::string("Joined thread " + std::to_string(i) + std::string(".")));
+            }
+
+            const auto renderingEnd = std::chrono::system_clock::now();
+
+            const std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
+            Log.WithTime("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
+
+            Log.WithTime("Outputting to film...");
+            const auto outputStart = std::chrono::system_clock::now();
+            runner->Output();
+            const auto outputEnd = std::chrono::system_clock::now();
+
+            const std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
+            Log.WithTime("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
+         }
+
+
+      }
+
+      const auto totalRunTimeEnd = std::chrono::system_clock::now();
+      const std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
+
+      Log.WithTime("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
 
       Log.WithTime("Exiting Polytope.");
    }

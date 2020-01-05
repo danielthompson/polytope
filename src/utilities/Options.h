@@ -21,6 +21,8 @@ namespace Polytope {
       std::string output_filename = "polytope.png";
       bool outputSpecified = false;
 
+      bool gl = false;
+
       bool valid = true;
       bool help = false;
    };

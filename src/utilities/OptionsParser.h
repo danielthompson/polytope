@@ -5,6 +5,7 @@
 #ifndef POLYTOPE_OPTIONSPARSER_H
 #define POLYTOPE_OPTIONSPARSER_H
 
+#include <vector>
 #include "Options.h"
 
 namespace Polytope {

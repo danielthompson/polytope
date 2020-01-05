@@ -25,9 +25,7 @@ add_library(polytope_lib
         lib/lodepng.cpp
         lib/lodepng.h
         src/Constants.h
-        src/Tracer.cpp
-        src/Tracer.h
-        src/cameras/AbstractCamera.cpp
+      src/cameras/AbstractCamera.cpp
         src/cameras/AbstractCamera.h
         src/cameras/CameraSettings.h
         src/cameras/PerspectiveCamera.cpp
@@ -138,6 +136,10 @@ if (UNIX AND NOT APPLE)
    set(THREADS_PREFER_PTHREAD_FLAG ON)
    find_package(Threads REQUIRED)
    target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+
+   find_package(glfw3 3.2 REQUIRED)
+
+   target_link_libraries(polytope_lib glfw)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC polytope_lib)

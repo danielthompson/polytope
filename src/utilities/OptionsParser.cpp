@@ -94,6 +94,12 @@ namespace Polytope {
          }
       }
 
+      option = "-gl";
+      if (OptionExists("-gl")) {
+         options.gl = true;
+         return options;
+      }
+
       option = "-outputfile";
 
       if (OptionExists(option)) {
