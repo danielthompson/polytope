@@ -25,7 +25,7 @@ namespace Polytope {
          const std::shared_ptr<Polytope::Transform> &objectToWorld,
          const std::shared_ptr<Polytope::Transform> &worldToObject,
          const std::shared_ptr<Polytope::Material> &material)
-      : AbstractShape(objectToWorld, worldToObject, material) {}
+      : AbstractShape(objectToWorld, worldToObject, material), root(nullptr) {}
 
       bool Hits(Ray &worldSpaceRay) const override;
       void SplitX(float x);

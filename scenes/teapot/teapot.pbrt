@@ -13,6 +13,6 @@ WorldBegin
         # Translate 0 0 -25
         # Rotate 90 1 0 0
         # Shape "objmesh" "string filename" [ teapot.obj ]
-        Shape "plymesh" "string filename" [ teapot.PLY ]
+        Shape "plymesh" "string filename" [ teapot.ply ]
     TransformEnd
 WorldEnd
