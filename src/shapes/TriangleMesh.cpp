@@ -423,4 +423,39 @@ namespace Polytope {
          Bound(node->high, node->high->faces, splitAxis);
       }
    }
+
+   void TriangleMesh::CalculateVertexNormals() {
+
+      Normals = std::vector<Normal>(Vertices.size(), Normal(0, 0, 0));
+
+      for (const Point3ui &face : Faces) {
+         const Point vertex0 = Vertices[face.x];
+         const Point vertex1 = Vertices[face.y];
+         const Point vertex2 = Vertices[face.z];
+
+         // step 1 - intersect with plane
+
+         const Polytope::Vector edge0 = vertex1 - vertex0;
+         const Polytope::Vector edge1 = vertex2 - vertex1;
+
+         Polytope::Vector planeNormal = edge0.Cross(edge1);
+         planeNormal.Normalize();
+
+         Normals[face.x].x += planeNormal.x;
+         Normals[face.x].y += planeNormal.y;
+         Normals[face.x].z += planeNormal.z;
+
+         Normals[face.y].x += planeNormal.x;
+         Normals[face.y].y += planeNormal.y;
+         Normals[face.y].z += planeNormal.z;
+
+         Normals[face.z].x += planeNormal.x;
+         Normals[face.z].y += planeNormal.y;
+         Normals[face.z].z += planeNormal.z;
+      }
+
+      for (Normal &normal : Normals) {
+         normal.Normalize();
+      }
+   }
 }

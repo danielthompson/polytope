@@ -37,10 +37,13 @@ namespace Polytope {
       void IntersectFaces(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces);
       void IntersectNode(Ray &ray, Intersection *intersection, BVHNode* node);
 
+      void CalculateVertexNormals();
+
       Point GetRandomPointOnSurface() override;
 
       std::vector<Point> Vertices;
       std::vector<Point3ui> Faces;
+      std::vector<Normal> Normals;
       BVHNode* root;
 
    private:
