@@ -132,12 +132,17 @@ if (COVERAGE)
 endif()
 
 # link in pthreads on linux
-if (UNIX AND NOT APPLE)
-   set(THREADS_PREFER_PTHREAD_FLAG ON)
-   find_package(Threads REQUIRED)
-   target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+if (UNIX)
+   if (APPLE)
+      find_package(glfw3 3.3 REQUIRED)
+   else()
+      set(THREADS_PREFER_PTHREAD_FLAG ON)
+      find_package(Threads REQUIRED)
+      target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
-   find_package(glfw3 3.2 REQUIRED)
+      find_package(glfw3 3.2 REQUIRED)
+   endif()
+
    target_link_libraries(polytope PRIVATE glfw)
 
    find_package(glbinding REQUIRED)
@@ -145,7 +150,6 @@ if (UNIX AND NOT APPLE)
 
    find_package(glm REQUIRED)
    target_link_libraries(polytope PRIVATE glm)
-
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC polytope_lib)
