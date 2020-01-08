@@ -23,6 +23,10 @@ namespace Polytope {
       const CameraSettings Settings;
       const Transform CameraToWorld;
 
+      Point eye;
+      Point lookAt;
+      Vector up;
+
    protected:
       const Vector DefaultDirection = Vector(0, 0, -1);
       const Point DefaultOrigin = Point(0, 0, 0);

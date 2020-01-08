@@ -216,9 +216,6 @@ Other:
    }
 }
 
-
-
-
 static const char* vertex_shader_text =
       "#version 110\n"
       "uniform mat4 MVP;\n"
@@ -366,12 +363,12 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
    // Read the Vertex Shader code from the file
    std::string VertexShaderCode;
    std::ifstream VertexShaderStream(vertex_file_path, std::ios::in);
-   if(VertexShaderStream.is_open()){
+   if (VertexShaderStream.is_open()){
       std::stringstream sstr;
       sstr << VertexShaderStream.rdbuf();
       VertexShaderCode = sstr.str();
       VertexShaderStream.close();
-   }else{
+   } else{
       printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", vertex_file_path);
       getchar();
       return 0;
@@ -447,14 +444,54 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 
 float currentXpos, currentYpos;
 
+glm::vec3 eye, lookAt, up;
+
+float fov;
+
 glm::mat4 viewMatrix;
+glm::mat4 projectionMatrix;
+
+bool leftPressed = false;
+bool rightPressed = false;
 
 static void cursor_position_callback(GLFWwindow* window, const double xpos, const double ypos)
 {
+   if (!rightPressed)
+      return;
+
    const float xDiff = currentXpos - xpos;
    const float yDiff = currentYpos - ypos;
 
+   const float thetaX = xDiff;
+   const float thetaY = yDiff;
+
+   const float dist = std::abs(glm::distance(eye, lookAt));
+
+   eye[0] = lookAt[0] + dist * std::cos(glm::radians(thetaX));
+   //eye[1] = lookAt[1] + dist * std::tan(glm::radians(thetaY));
+   eye[2] = lookAt[2] + dist * std::sin(glm::radians(thetaX));
+
 }
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+   if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+      rightPressed = true;
+   if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+      rightPressed = false;
+}
+
+void scroll_callback(GLFWwindow* window, const double xoffset, const double yoffset)
+{
+   fov -= (float)yoffset;
+   if (fov < 0) {
+      fov = 0;
+   }
+   else if (fov > 180) {
+      fov = 180;
+   }
+}
+
 
 void glfw(Polytope::AbstractScene* scene)
 {
@@ -477,7 +514,7 @@ void glfw(Polytope::AbstractScene* scene)
       glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
       glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-      window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+      window = glfwCreateWindow(1920, 1200, "Simple example", NULL, NULL);
       if (!window) {
          fprintf(stderr, "Failed to open GLFW window :/");
          glfwTerminate();
@@ -490,16 +527,19 @@ void glfw(Polytope::AbstractScene* scene)
       glbinding::initialize(glfwGetProcAddress);
       glfwSwapInterval(1);
 
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-      if (glfwRawMouseMotionSupported()) {
-         Log.WithTime("GLFW: Raw mouse motion is supported, enabling...");
-         glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-      }
-      else {
-         Log.WithTime("GLFW: Raw mouse motion is not supported :/");
-      }
+      //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      // not supported on osx in 3.3
+      // not supported in 3.2, which is latest available in ubuntu 18.04 LTS
+//      if (glfwRawMouseMotionSupported()) {
+//         Log.WithTime("GLFW: Raw mouse motion is supported, enabling...");
+//         glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+//      }
+//      else {
+//         Log.WithTime("GLFW: Raw mouse motion is not supported :/");
+//      }
       glfwSetCursorPosCallback(window, cursor_position_callback);
-
+      glfwSetMouseButtonCallback(window, mouse_button_callback);
+      glfwSetScrollCallback(window, scroll_callback);
    }
    // end GLFW init
 
@@ -518,10 +558,6 @@ void glfw(Polytope::AbstractScene* scene)
    for (unsigned int i = 0; i < mesh->Faces.size(); i++) {
 
       const Polytope::Point3ui face = mesh->Faces[i];
-      flatIndexVector[3 * i] = face.x;
-      flatIndexVector[3 * i + 1] = face.y;
-      flatIndexVector[3 * i + 2] = face.z;
-
       flatVertexVector[9 * i] = mesh->Vertices[face.x].x;
       flatVertexVector[9 * i + 1] = mesh->Vertices[face.x].y;
       flatVertexVector[9 * i + 2] = mesh->Vertices[face.x].z;
@@ -533,6 +569,10 @@ void glfw(Polytope::AbstractScene* scene)
       flatVertexVector[9 * i + 6] = mesh->Vertices[face.z].x;
       flatVertexVector[9 * i + 7] = mesh->Vertices[face.z].y;
       flatVertexVector[9 * i + 8] = mesh->Vertices[face.z].z;
+
+      flatIndexVector[3 * i] = i;//face.x;
+      flatIndexVector[3 * i + 1] = i + 1;//face.y;
+      flatIndexVector[3 * i + 2] = i + 2;//face.z;
    }
 
    // buffer for vertex indices
@@ -555,7 +595,8 @@ void glfw(Polytope::AbstractScene* scene)
    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
    // projection matrix - 45deg fov, 4:3 ratio, display range - 0.1 <-> 100 units
-   glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+   fov = scene->Camera->Settings.FieldOfView;
+   projectionMatrix = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 100.0f);
 
    // camera matrix
 //   glm::mat4 previousView = glm::lookAt(
@@ -564,20 +605,29 @@ void glfw(Polytope::AbstractScene* scene)
 //         glm::vec3(0, 1, 0)
 //         );
 
-   viewMatrix = MakeMat4(scene->Camera->CameraToWorld);
+   //viewMatrix = MakeMat4(scene->Camera->CameraToWorld);
+
+   eye = glm::vec3(scene->Camera->eye.x, scene->Camera->eye.y, scene->Camera->eye.z);
+   lookAt = glm::vec3(scene->Camera->lookAt.x, scene->Camera->lookAt.y, -scene->Camera->lookAt.z);
+   up = glm::vec3(scene->Camera->up.x, scene->Camera->up.y, scene->Camera->up.z);
+
+   // camera matrix
+
 
    // model - identity, since model will be at the origin for now
    glm::mat4 model = glm::mat4(1.0f);
 
-
-
    // get uniform handle
    GLuint matrixID = glGetUniformLocation(programID, "mvp");
+   GLuint colorInId = glGetUniformLocation(programID, "colorIn");
 
    glEnable(GL_DEPTH_TEST);
    glDepthFunc(GL_LESS);
 
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+   glEnable( GL_PROGRAM_POINT_SIZE );
 
    do {
       // clear the screen
@@ -586,7 +636,10 @@ void glfw(Polytope::AbstractScene* scene)
       glUseProgram(programID);
 
       // calculate new mvp
-      glm::mat4 mvp = projection * viewMatrix * model;
+      projectionMatrix = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 100.0f);
+
+      viewMatrix = glm::lookAt(eye, lookAt, up);
+      glm::mat4 mvp = projectionMatrix * viewMatrix * model;
       
       // send transformation matrix to the currently bound shader, in the "mvp" uniform
       glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
@@ -617,7 +670,14 @@ void glfw(Polytope::AbstractScene* scene)
 
       // draw the triangle
       // starting from vertex 0; 3 vertices total -> 1 triangle
+
+      glUniform4f(colorInId, 0.8f, 0.6f, 0.6f, 0.125f);
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       glDrawElements(GL_TRIANGLES, flatIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
+
+//      glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 1.0f);
+//      glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+//      glDrawElements(GL_TRIANGLES, flatIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
 
       glDisableVertexAttribArray(0);
 

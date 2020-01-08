@@ -276,6 +276,8 @@ namespace Polytope {
 
       }
 
+      Log.WithTime("Scanned file.");
+
       return tokens;
    }
 
@@ -411,6 +413,8 @@ namespace Polytope {
          _sampler = std::make_unique<HaltonSampler>();
       }
 
+      Log.WithTime("Made sampler.");
+
       // film
 
       bool missingFilm = true;
@@ -474,6 +478,8 @@ namespace Polytope {
          _film = std::make_unique<PNGFilm>(_bounds, filename, std::move(_filter));
       }
 
+      Log.WithTime("Made film.");
+
       // filter
 
       bool missingFilter = true;
@@ -514,11 +520,18 @@ namespace Polytope {
          _film->Filter = std::move(_filter);
       }
 
+      Log.WithTime("Made filter.");
+
       // camera
 
       std::unique_ptr<AbstractCamera> camera;
 
       {
+         Point eye;
+         Point lookAt;
+         Vector up;
+
+
          Transform currentTransform;
 
          for (const PBRTDirective& directive : sceneDirectives) {
@@ -529,28 +542,31 @@ namespace Polytope {
                      const float eyeY = stof(directive.Arguments[0].Values[1]);
                      const float eyeZ = stof(directive.Arguments[0].Values[2]);
 
-                     const Point eye = Point(eyeX, eyeY, eyeZ);
+                     eye = Point(eyeX, eyeY, eyeZ);
 
                      const float lookAtX = stof(directive.Arguments[0].Values[3]);
                      const float lookAtY = stof(directive.Arguments[0].Values[4]);
                      const float lookAtZ = stof(directive.Arguments[0].Values[5]);
 
-                     const Point lookAt = Point(lookAtX, lookAtY, lookAtZ);
+                     lookAt = Point(lookAtX, lookAtY, lookAtZ);
 
                      const float upX = stof(directive.Arguments[0].Values[6]);
                      const float upY = stof(directive.Arguments[0].Values[7]);
                      const float upZ = stof(directive.Arguments[0].Values[8]);
 
-                     Vector up = Vector(upX, upY, upZ);
+                     up = Vector(upX, upY, upZ);
 
                      Transform t = Transform::LookAt(eye, lookAt, up);
 
                      currentTransform = currentTransform * t;
                   }
                }
+
+               Log.WithTime("Found LookAt.");
                break;
             }
          }
+
 
          CameraSettings settings = CameraSettings(_bounds, DefaultCameraFOV);
 
@@ -577,6 +593,9 @@ namespace Polytope {
                   settings.FieldOfView = fov;
 
                   camera = std::make_unique<PerspectiveCamera>(settings, currentTransform, true);
+                  camera->eye = eye;
+                  camera->lookAt = lookAt;
+                  camera->up = up;
                   break;
                }
             }

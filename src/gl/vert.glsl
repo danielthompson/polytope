@@ -17,6 +17,7 @@ void main() {
     // gl_Position is built-in and *must* be assigned to in the vertex shader
 
     gl_Position = mvp * vec4(vertexPosition_modelspace, 1);
+    gl_PointSize = 2;
     //fragmentColor = vertexColor;
 
 }

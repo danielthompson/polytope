@@ -15,15 +15,13 @@ namespace Polytope {
 
       Ray GetRay(Point2f pixel) override;
 
-   private:
+   public:
       float OneOverWidth;
       float OneOverHeight;
       float AspectRatio;
       float TanFOVOver2;
       bool LeftHanded = false;
    };
-
 }
-
 
 #endif //POLYTOPE_PERSPECTIVECAMERA_H

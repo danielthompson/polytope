@@ -2,9 +2,12 @@
 
 //in vec3 fragmentColor;
 
-out vec3 color;
+uniform vec4 colorIn;
+
+out vec4 color;
 
 void main() {
 //    color = fragmentColor;
-    color = vec3(1, 0, 0);
+    color.xyz = colorIn.xyz;
+    color.a = colorIn[3];
 }
