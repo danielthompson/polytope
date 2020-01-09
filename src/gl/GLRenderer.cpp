@@ -435,11 +435,21 @@ namespace Polytope {
       glGenBuffers(1, &shapeVertexBuffer);
       glBindBuffer(GL_ARRAY_BUFFER, shapeVertexBuffer);
       glBufferData(GL_ARRAY_BUFFER, indices * 3 * sizeof(indices), &shapeVertexVector[0], GL_STATIC_DRAW);
+      glVertexAttribPointer(
+            0,        // attribute 0 - must match layout in shader
+            3,        // size
+            GL_FLOAT, // type
+            GL_FALSE, // normalized?
+            0,  // stride
+            (void*)0 // array buffer offset
+      );
+      glEnableVertexAttribArray(0);
 
       GLuint shapeNormalBuffer;
       glGenBuffers(1, &shapeNormalBuffer);
       glBindBuffer(GL_ARRAY_BUFFER, shapeNormalBuffer);
       glBufferData(GL_ARRAY_BUFFER, indices * 3 * sizeof(indices), &shapeNormalVector[0], GL_STATIC_DRAW);
+
 
       const unsigned int bbIndices = bbIndexVector.size();
       const unsigned int bbVertices = bbVertexVector.size();
@@ -459,6 +469,15 @@ namespace Polytope {
       glGenBuffers(1, &bbVertexBuffer);
       glBindBuffer(GL_ARRAY_BUFFER, bbVertexBuffer);
       glBufferData(GL_ARRAY_BUFFER, bbVertices * sizeof(uint32_t), &bbVertexVector[0], GL_STATIC_DRAW);
+      glVertexAttribPointer(
+            0,        // attribute 0 - must match layout in shader
+            3,        // size
+            GL_FLOAT, // type
+            GL_FALSE, // normalized?
+            0,  // stride
+            (void*)0 // array buffer offset
+      );
+      glEnableVertexAttribArray(0);
 
       glBindVertexArray(0);
 
@@ -523,75 +542,41 @@ namespace Polytope {
          // send transformation matrix to the currently bound shader, in the "mvp" uniform
          glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
 
-         glBindVertexArray(shapeVao);
-
-         // 1st attribute buffer - the vertices
-         glEnableVertexAttribArray(0);
-         glBindBuffer(GL_ARRAY_BUFFER, shapeVertexBuffer);
-         glVertexAttribPointer(
-               0,        // attribute 0 - must match layout in shader
-               3,        // size
-               GL_FLOAT, // type
-               GL_FALSE, // normalized?
-               0,  // stride
-               (void*)0 // array buffer offset
-         );
-         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, shapeIndexBuffer);
-
-         glEnable(GL_DEPTH_TEST);
-         glDisable(GL_BLEND);
-
-         //glFrontFace(GL_CW);
-         glUniform4f(colorInId, 0.4f, 0.5f, 0.5f, 0.25f);
-         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-         glDrawElements(GL_TRIANGLES, shapeIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
-
-         glDisable(GL_DEPTH_TEST);
-         glEnable(GL_BLEND);
-
-         //glFrontFace(GL_CCW);
-         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.0625f);
-         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-         glDrawElements(GL_TRIANGLES, shapeIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
-
-         //glDisableVertexAttribArray(0);
-
          // bounding boxes
 
          glBindVertexArray(bbVao);
 
-         // 1st attribute buffer - the vertices
-         glEnableVertexAttribArray(0);
-         glBindBuffer(GL_ARRAY_BUFFER, bbVertexBuffer);
-         glVertexAttribPointer(
-               0,        // attribute 0 - must match layout in shader
-               3,        // size
-               GL_FLOAT, // type
-               GL_FALSE, // normalized?
-               0,  // stride
-               (void*)0 // array buffer offset
-         );
-         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bbIndexBuffer);
-
          glEnable(GL_DEPTH_TEST);
-         glDisable(GL_BLEND);
+         glEnable(GL_BLEND);
 
-         //glFrontFace(GL_CW);
-         glUniform4f(colorInId, 0.4f, 0.5f, 0.5f, 0.25f);
+         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.0025f);
          glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
          glDrawElements(GL_TRIANGLES, bbIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
 
          glDisable(GL_DEPTH_TEST);
          glEnable(GL_BLEND);
 
-         //glFrontFace(GL_CCW);
          glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.0625f);
          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
          glDrawElements(GL_TRIANGLES, bbIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
 
-         glDisableVertexAttribArray(0);
+         // shapes
 
-         glBindVertexArray(0);
+         glBindVertexArray(shapeVao);
+
+         glDisable(GL_DEPTH_TEST);
+         glDisable(GL_BLEND);
+
+         glUniform4f(colorInId, 0.4f, 0.5f, 0.5f, 0.25f);
+         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+         glDrawElements(GL_TRIANGLES, shapeIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
+
+         glDisable(GL_DEPTH_TEST);
+         glEnable(GL_BLEND);
+
+         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.0625f);
+         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+         glDrawElements(GL_TRIANGLES, shapeIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
 
          // swap bufffers
          glfwSwapBuffers(window);
