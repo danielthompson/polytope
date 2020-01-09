@@ -6,7 +6,7 @@
 // vertexPosition_modelspace - position of the vertex for each run of the vertex shader
 // in - input data
 layout(location = 0) in vec3 vertexPosition_modelspace;
-//layout(location = 1) in vec3 vertexColor;
+//layout(location = 1) in vec3 vertexNormal;
 
 //out vec3 fragmentColor;
 

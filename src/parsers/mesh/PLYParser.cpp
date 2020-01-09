@@ -197,6 +197,7 @@ namespace Polytope {
       mesh->BoundingBox->p0 = min;
       mesh->BoundingBox->p1 = max;
 
-      //mesh->Bound();
+      mesh->Bound();
+      mesh->CalculateVertexNormals();
    }
 }

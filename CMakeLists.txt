@@ -119,9 +119,13 @@ add_library(polytope_lib
       src/shapes/Tesselators.cpp
       src/shapes/Tesselators.h
       src/exporters/OBJExporter.cpp
-      src/exporters/OBJExporter.h src/scenes/BVHScene.cpp)
+      src/exporters/OBJExporter.h
+      src/scenes/BVHScene.cpp)
 
-add_executable(${PROJECT_NAME} src/Main.cpp src/platforms/win32-cygwin.h)
+add_executable(${PROJECT_NAME} src/Main.cpp
+      src/platforms/win32-cygwin.h
+      src/gl/GLRenderer.cpp
+      src/gl/GLRenderer.h)
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be
 # used elsewhere.
