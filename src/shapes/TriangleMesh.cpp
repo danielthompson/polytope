@@ -329,8 +329,10 @@ namespace Polytope {
 
    void TriangleMesh::Bound(BVHNode *node, const std::vector<Point3ui> &faces, Axis axis) {
 
+      node->ShrinkBoundingBox(Vertices);
+
       // base case
-      if (faces.size() < 10) {
+      if (faces.size() < 3) {
          node->faces = faces;
          return;
       }
@@ -384,6 +386,10 @@ namespace Polytope {
             break;
       }
 
+      bool performBound = true;
+
+      Axis lowSplit = Axis::x, highSplit = Axis::x;
+
       // figure out next splitting axis for children
       // low
       {
@@ -391,37 +397,38 @@ namespace Polytope {
          const float extentY = GetExtent(Axis::y, node->low->faces, Vertices);
          const float extentZ = GetExtent(Axis::z, node->low->faces, Vertices);
 
-         Axis splitAxis = Axis::x;
          if (extentY > extentX && extentY > extentZ)
-            splitAxis = Axis::y;
+            lowSplit = Axis::y;
          else if (extentZ > extentX && extentZ > extentY)
-            splitAxis = Axis::z;
+            lowSplit = Axis::z;
 
          // bug out if we're not actually making any progress
-         if (node->low->faces.size() == node->faces.size() && axis == splitAxis)
-            return;
-
-         Bound(node->low, node->low->faces, splitAxis);
+         if (node->low->faces.size() == node->faces.size() && axis == lowSplit)
+            performBound = false;
       }
 
       // high
-      {
+      if (performBound) {
          const float extentX = GetExtent(Axis::x, node->high->faces, Vertices);
          const float extentY = GetExtent(Axis::y, node->high->faces, Vertices);
          const float extentZ = GetExtent(Axis::z, node->high->faces, Vertices);
 
-         Axis splitAxis = Axis::x;
          if (extentY > extentX && extentY > extentZ)
-            splitAxis = Axis::y;
+            highSplit = Axis::y;
          else if (extentZ > extentX && extentZ > extentY)
-            splitAxis = Axis::z;
+            highSplit = Axis::z;
 
          // bug out if we're not actually making any progress
-         if (node->high->faces.size() == node->faces.size() && axis == splitAxis)
-            return;
-
-         Bound(node->high, node->high->faces, splitAxis);
+         if (node->high->faces.size() == node->faces.size() && axis == highSplit)
+            performBound = false;
       }
+
+      if (performBound) {
+         Bound(node->low, node->low->faces, lowSplit);
+         Bound(node->high, node->high->faces, highSplit);
+      }
+
+
    }
 
    void TriangleMesh::CalculateVertexNormals() {
@@ -457,5 +464,76 @@ namespace Polytope {
       for (Normal &normal : Normals) {
          normal.Normalize();
       }
+   }
+
+   void BVHNode::ShrinkBoundingBox(const std::vector<Point> &vertices) {
+      float minx = Polytope::FloatMax;
+      float miny = Polytope::FloatMax;
+      float minz = Polytope::FloatMax;
+
+      float maxx = -Polytope::FloatMax;
+      float maxy = -Polytope::FloatMax;
+      float maxz = -Polytope::FloatMax;
+
+      for (const Point3ui face : faces) {
+         Point v0 = vertices[face.x];
+         if (v0.x > maxx)
+            maxx = v0.x;
+         if (v0.x < minx)
+            minx = v0.x;
+
+         if (v0.y > maxy)
+            maxy = v0.y;
+         if (v0.y < miny)
+            miny = v0.y;
+
+         if (v0.z > maxz)
+            maxz = v0.z;
+         if (v0.z < minz)
+            minz = v0.z;
+
+         Point v1 = vertices[face.y];
+
+         if (v1.x > maxx)
+            maxx = v1.x;
+         if (v1.x < minx)
+            minx = v1.x;
+
+         if (v1.y > maxy)
+            maxy = v1.y;
+         if (v1.y < miny)
+            miny = v1.y;
+
+         if (v1.z > maxz)
+            maxz = v1.z;
+         if (v1.z < minz)
+            minz = v1.z;
+
+         Point v2 = vertices[face.z];
+
+         if (v2.x > maxx)
+            maxx = v2.x;
+         if (v2.x < minx)
+            minx = v2.x;
+
+         if (v2.y > maxy)
+            maxy = v2.y;
+         if (v2.y < miny)
+            miny = v2.y;
+
+         if (v2.z > maxz)
+            maxz = v2.z;
+         if (v2.z < minz)
+            minz = v2.z;
+
+      }
+
+      bbox.p0.x = minx;
+      bbox.p0.y = miny;
+      bbox.p0.z = minz;
+
+      bbox.p1.x = maxx;
+      bbox.p1.y = maxy;
+      bbox.p1.z = maxz;
    }
 }

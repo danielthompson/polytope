@@ -171,8 +171,8 @@ namespace Polytope {
 
       const float distance = glm::distance(eye, lookAt);
 
-      const float dtheta = (currentXpos - (float)xpos) * .1f;
-      const float dphi = ((float)ypos - currentYpos) * .1f;
+      const float dtheta = (currentXpos - (float)xpos) * .25f;
+      const float dphi = ((float)ypos - currentYpos) * .25f;
 
       glm::vec3 dir = glm::normalize(eye - lookAt);
       glm::vec3 thetaDir = glm::rotate(dir, glm::radians(dtheta), up);
@@ -191,7 +191,7 @@ namespace Polytope {
 
    void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
    {
-      if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+      if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
          std::ostringstream str;
          if (action == GLFW_PRESS) {
             rightPressed = true;
@@ -238,9 +238,9 @@ namespace Polytope {
          glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
          glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-         glfwWindowHint(GLFW_SAMPLES, 4);
+         glfwWindowHint(GLFW_SAMPLES, 16);
 
-         window = glfwCreateWindow(1920, 1200, "Simple example", NULL, NULL);
+         window = glfwCreateWindow(720, 480, "Simple example", NULL, NULL);
          if (!window) {
             fprintf(stderr, "Failed to open GLFW window :/");
             glfwTerminate();
@@ -315,6 +315,8 @@ namespace Polytope {
       std::vector<unsigned int> bbIndexVector;
       std::vector<float> bbVertexVector;
 
+      std::vector<unsigned int> bbLinesIndexVector;
+
       std::queue<Polytope::BVHNode*> queue;
 
       if (mesh->root != nullptr) {
@@ -361,6 +363,48 @@ namespace Polytope {
             bbVertexVector.push_back(high.x);
             bbVertexVector.push_back(low.y);
             bbVertexVector.push_back(high.z);
+
+            // x lines
+
+            bbLinesIndexVector.push_back(index + 0);
+            bbLinesIndexVector.push_back(index + 1);
+
+            bbLinesIndexVector.push_back(index + 3);
+            bbLinesIndexVector.push_back(index + 2);
+
+            bbLinesIndexVector.push_back(index + 5);
+            bbLinesIndexVector.push_back(index + 6);
+
+            bbLinesIndexVector.push_back(index + 4);
+            bbLinesIndexVector.push_back(index + 7);
+
+            // y lines
+
+            bbLinesIndexVector.push_back(index + 0);
+            bbLinesIndexVector.push_back(index + 3);
+
+            bbLinesIndexVector.push_back(index + 1);
+            bbLinesIndexVector.push_back(index + 2);
+
+            bbLinesIndexVector.push_back(index + 4);
+            bbLinesIndexVector.push_back(index + 5);
+
+            bbLinesIndexVector.push_back(index + 7);
+            bbLinesIndexVector.push_back(index + 6);
+
+            // z lines
+
+            bbLinesIndexVector.push_back(index + 0);
+            bbLinesIndexVector.push_back(index + 4);
+
+            bbLinesIndexVector.push_back(index + 1);
+            bbLinesIndexVector.push_back(index + 7);
+
+            bbLinesIndexVector.push_back(index + 3);
+            bbLinesIndexVector.push_back(index + 5);
+
+            bbLinesIndexVector.push_back(index + 2);
+            bbLinesIndexVector.push_back(index + 6);
 
             bbIndexVector.push_back(index + 0);
             bbIndexVector.push_back(index + 1);
@@ -450,8 +494,8 @@ namespace Polytope {
       glBindBuffer(GL_ARRAY_BUFFER, shapeNormalBuffer);
       glBufferData(GL_ARRAY_BUFFER, indices * 3 * sizeof(indices), &shapeNormalVector[0], GL_STATIC_DRAW);
 
-
       const unsigned int bbIndices = bbIndexVector.size();
+      const unsigned int bbLineIndices = bbLinesIndexVector.size();
       const unsigned int bbVertices = bbVertexVector.size();
 
       glBindVertexArray(0);
@@ -463,7 +507,7 @@ namespace Polytope {
       GLuint bbIndexBuffer;
       glGenBuffers(1, &bbIndexBuffer);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bbIndexBuffer);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, bbIndices * sizeof(uint32_t), &bbIndexVector[0], GL_STATIC_DRAW);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, bbLineIndices * sizeof(uint32_t), &bbLinesIndexVector[0], GL_STATIC_DRAW);
 
       GLuint bbVertexBuffer;
       glGenBuffers(1, &bbVertexBuffer);
@@ -549,16 +593,12 @@ namespace Polytope {
          glEnable(GL_DEPTH_TEST);
          glEnable(GL_BLEND);
 
-         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.0025f);
-         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-         glDrawElements(GL_TRIANGLES, bbIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
+         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.5f);
+         //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+         glDrawElements(GL_LINES, bbLinesIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
 
          glDisable(GL_DEPTH_TEST);
          glEnable(GL_BLEND);
-
-         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.0625f);
-         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-         glDrawElements(GL_TRIANGLES, bbIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
 
          // shapes
 

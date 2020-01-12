@@ -13,10 +13,12 @@
 namespace Polytope {
    class BVHNode {
    public:
-      BVHNode* high;
-      BVHNode* low;
+      BVHNode* high = nullptr;
+      BVHNode* low = nullptr;
       std::vector<Point3ui> faces;
       BoundingBox bbox;
+
+      void ShrinkBoundingBox(const std::vector<Point> &vertices);
    };
 
    class TriangleMesh : public AbstractShape {
