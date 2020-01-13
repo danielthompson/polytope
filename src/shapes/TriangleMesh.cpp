@@ -144,6 +144,16 @@ namespace Polytope {
          return;
       }
 
+      // TODO avoid looking in far node if there's a hit in near node
+      // it ought to be possible to figure out which side of the split the ray's origin is on,
+      // which means the child bounding box on that same side is the nearer one.
+      // since we use mesh splitting, sibling boxes never overlap.
+      // => therefore, if there's a hit in the near one, a hit in the far one can't be closer.
+      // so we can avoid looking in the far one altogether.
+
+      // figure out near node
+      // check that one first
+
       // recursive case
       if (node->low->bbox.Hits(ray)) {
          IntersectNode(ray, intersection, node->low);
@@ -314,41 +324,47 @@ namespace Polytope {
       if (root == nullptr)
          root = new BVHNode();
 
-      const float extentX = GetExtent(Axis::x, Faces, Vertices);
-      const float extentY = GetExtent(Axis::y, Faces, Vertices);
-      const float extentZ = GetExtent(Axis::z, Faces, Vertices);
-
-      Axis splitAxis = Axis::x;
-      if (extentY > extentX && extentY > extentZ)
-         splitAxis = Axis::y;
-      else if (extentZ > extentX && extentZ > extentY)
-         splitAxis = Axis::z;
-
-      Bound(root, Faces, splitAxis);
+      Bound(root, Faces);
    }
 
-   void TriangleMesh::Bound(BVHNode *node, const std::vector<Point3ui> &faces, Axis axis) {
+   void TriangleMesh::Bound(BVHNode *node, const std::vector<Point3ui> &faces) {
 
-      node->ShrinkBoundingBox(Vertices);
+      node->ShrinkBoundingBox(Vertices, faces);
 
       // base case
-      if (faces.size() < 3) {
+      if (faces.size() < 50) {
          node->faces = faces;
          return;
       }
 
       // recursive case
 
-      node->high = new BVHNode();
-      node->low = new BVHNode();
+      // decide on split axis
 
-      // determine split
-      const float extent = GetExtent(axis, faces, Vertices);
+      // TODO - instead of just picking the widest extent and halving it,
+      // pick the axis with the most unique vertices in that axis, and split on the median.
 
-      const float split = BoundingBox->p0[axis] + extent * 0.5f;
+      const float extentX = GetExtent(Axis::x, faces, Vertices);
+      const float extentY = GetExtent(Axis::y, faces, Vertices);
+      const float extentZ = GetExtent(Axis::z, faces, Vertices);
+
+      float extent = extentX;
+      Axis splitAxis = Axis::x;
+      if (extentY > extentX && extentY > extentZ) {
+         splitAxis = Axis::y;
+         extent = extentY;
+      }
+      else if (extentZ > extentX && extentZ > extentY) {
+         splitAxis = Axis::z;
+         extent = extentZ;
+      }
+      const float split = node->bbox.p0[splitAxis] + extent * 0.5f;
 
       // perform split
-      Split(axis, split);
+      Split(splitAxis, split);
+
+      // put faces in high or low
+      std::vector<Point3ui> lowFaces, highFaces;
 
       for (const Point3ui &face : faces) {
          const Point v0 = Vertices[face.x];
@@ -356,79 +372,37 @@ namespace Polytope {
          const Point v2 = Vertices[face.z];
 
          // add all faces at or below split to low child
-         if (v0[axis] <= split && v1[axis] <= split && v2[axis] <= split) {
-            node->low->faces.push_back(face);
+         if (v0[splitAxis] <= split && v1[splitAxis] <= split && v2[splitAxis] <= split) {
+            lowFaces.push_back(face);
          }
          else { // add all faces above split to high child
-            node->high->faces.push_back(face);
+            highFaces.push_back(face);
          }
       }
 
-      // set child bounding boxes
-      node->low->bbox.p0 = BoundingBox->p0;
-      node->low->bbox.p1 = BoundingBox->p1;
+      // check to see whether we came up with a good split and should continue
 
-      node->high->bbox.p0 = BoundingBox->p0;
-      node->high->bbox.p1 = BoundingBox->p1;
+      bool continueRecursing = true;
+      if (faces.size() == lowFaces.size()
+      || faces.size() == highFaces.size()
+      || lowFaces.empty()
+      || highFaces.empty())
+         continueRecursing = false;
 
-      switch (axis) {
-         case Axis::x:
-            node->low->bbox.p1.x = split;
-            node->high->bbox.p0.x = split;
-            break;
-         case Axis::y:
-            node->low->bbox.p1.y = split;
-            node->high->bbox.p0.y = split;
-            break;
-         case Axis::z:
-            node->low->bbox.p1.z = split;
-            node->high->bbox.p0.z = split;
-            break;
+      if (continueRecursing) {
+         node->high = new BVHNode();
+         node->low = new BVHNode();
+
+         // set child bounding boxes
+         node->low->bbox.p0 = BoundingBox->p0;
+         node->low->bbox.p1 = BoundingBox->p1;
+
+         node->high->bbox.p0 = BoundingBox->p0;
+         node->high->bbox.p1 = BoundingBox->p1;
+
+         Bound(node->low, lowFaces);
+         Bound(node->high, highFaces);
       }
-
-      bool performBound = true;
-
-      Axis lowSplit = Axis::x, highSplit = Axis::x;
-
-      // figure out next splitting axis for children
-      // low
-      {
-         const float extentX = GetExtent(Axis::x, node->low->faces, Vertices);
-         const float extentY = GetExtent(Axis::y, node->low->faces, Vertices);
-         const float extentZ = GetExtent(Axis::z, node->low->faces, Vertices);
-
-         if (extentY > extentX && extentY > extentZ)
-            lowSplit = Axis::y;
-         else if (extentZ > extentX && extentZ > extentY)
-            lowSplit = Axis::z;
-
-         // bug out if we're not actually making any progress
-         if (node->low->faces.size() == node->faces.size() && axis == lowSplit)
-            performBound = false;
-      }
-
-      // high
-      if (performBound) {
-         const float extentX = GetExtent(Axis::x, node->high->faces, Vertices);
-         const float extentY = GetExtent(Axis::y, node->high->faces, Vertices);
-         const float extentZ = GetExtent(Axis::z, node->high->faces, Vertices);
-
-         if (extentY > extentX && extentY > extentZ)
-            highSplit = Axis::y;
-         else if (extentZ > extentX && extentZ > extentY)
-            highSplit = Axis::z;
-
-         // bug out if we're not actually making any progress
-         if (node->high->faces.size() == node->faces.size() && axis == highSplit)
-            performBound = false;
-      }
-
-      if (performBound) {
-         Bound(node->low, node->low->faces, lowSplit);
-         Bound(node->high, node->high->faces, highSplit);
-      }
-
-
    }
 
    void TriangleMesh::CalculateVertexNormals() {
@@ -466,7 +440,7 @@ namespace Polytope {
       }
    }
 
-   void BVHNode::ShrinkBoundingBox(const std::vector<Point> &vertices) {
+   void BVHNode::ShrinkBoundingBox(const std::vector<Point> &vertices, const std::vector<Point3ui> &nodeFaces) {
       float minx = Polytope::FloatMax;
       float miny = Polytope::FloatMax;
       float minz = Polytope::FloatMax;
@@ -475,7 +449,7 @@ namespace Polytope {
       float maxy = -Polytope::FloatMax;
       float maxz = -Polytope::FloatMax;
 
-      for (const Point3ui face : faces) {
+      for (const Point3ui face : nodeFaces) {
          Point v0 = vertices[face.x];
          if (v0.x > maxx)
             maxx = v0.x;

@@ -18,7 +18,7 @@ namespace Polytope {
       std::vector<Point3ui> faces;
       BoundingBox bbox;
 
-      void ShrinkBoundingBox(const std::vector<Point> &vertices);
+      void ShrinkBoundingBox(const std::vector<Point> &vertices, const std::vector<Point3ui> &nodeFaces);
    };
 
    class TriangleMesh : public AbstractShape {
@@ -49,7 +49,7 @@ namespace Polytope {
       BVHNode* root;
 
    private:
-      void Bound(BVHNode* node, const std::vector<Point3ui> &faces, Axis axis);
+      void Bound(BVHNode* node, const std::vector<Point3ui> &faces);
       void Split(Axis axis, float split);
    };
 

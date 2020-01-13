@@ -240,7 +240,7 @@ namespace Polytope {
 
          glfwWindowHint(GLFW_SAMPLES, 16);
 
-         window = glfwCreateWindow(720, 480, "Simple example", NULL, NULL);
+         window = glfwCreateWindow(1600, 1000, "Simple example", NULL, NULL);
          if (!window) {
             fprintf(stderr, "Failed to open GLFW window :/");
             glfwTerminate();

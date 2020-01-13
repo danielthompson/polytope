@@ -18,6 +18,9 @@ namespace Polytope {
       ~NaiveScene() override = default;
 
       Intersection GetNearestShape(Ray &ray, int x, int y) override {
+         bool debug = false;
+         if (x == 130 && y == 128)
+            debug = true;
          return GetNearestShapeIteratively(Shapes, ray);
       }
    };
