@@ -4,7 +4,10 @@
 
 #include <algorithm>
 #include <vector>
+#include <map>
+#include <queue>
 #include "TriangleMesh.h"
+#include "../utilities/Common.h"
 
 namespace Polytope {
 
@@ -99,9 +102,9 @@ namespace Polytope {
          bool inside = pos0 && pos1 && pos2;
 
          if (inside) {
+            intersection->Hits = true;
             ray.MinT = t;
             intersection->faceIndex = faceIndex;
-            intersection->Hits = true;
             intersection->Location = hitPoint;
 
             // flip normal if needed
@@ -136,13 +139,21 @@ namespace Polytope {
       }
    }
 
-   void TriangleMesh::IntersectNode(Ray &ray, Intersection *intersection, BVHNode* node) {
+   void TriangleMesh::IntersectNode(Ray &ray, Intersection *intersection, BVHNode* node, const unsigned int depth) {
+
+      bool debug = false;
 
       // base case
       if (node->low == nullptr) {
+         if (ray.x == 130 && ray.y == 128)
+            debug = true;
          IntersectFaces(ray, intersection, node->faces);
+
          return;
       }
+
+      if (ray.x == 130 && ray.y == 128)
+         debug = true;
 
       // TODO avoid looking in far node if there's a hit in near node
       // it ought to be possible to figure out which side of the split the ray's origin is on,
@@ -155,20 +166,31 @@ namespace Polytope {
       // check that one first
 
       // recursive case
-      if (node->low->bbox.Hits(ray)) {
-         IntersectNode(ray, intersection, node->low);
+
+      bool lowHits = node->low->bbox.Hits(ray);
+      bool highHits = node->high->bbox.Hits(ray);
+
+      if (!lowHits && !highHits && ray.x == 130 && ray.y == 128)
+         debug = true;
+
+      if (lowHits) {
+         IntersectNode(ray, intersection, node->low, depth + 1);
       }
-      if (root->high->bbox.Hits(ray)) {
-         IntersectNode(ray, intersection, node->high);
+      if (highHits) {
+         IntersectNode(ray, intersection, node->high, depth + 1);
       }
    }
 
    void Polytope::TriangleMesh::Intersect(Polytope::Ray &ray, Polytope::Intersection *intersection) {
       if (root != nullptr) {
-         IntersectNode(ray, intersection, root);
+         IntersectNode(ray, intersection, root, 0);
       }
       else {
          IntersectFaces(ray, intersection, Faces);
+      }
+
+      if (ray.x == 130 && ray.y == 128) {
+         bool debug = true;
       }
    }
 
@@ -305,34 +327,47 @@ namespace Polytope {
       }
 
       if (!faceIndicesToDelete.empty()) {
-         std::sort(faceIndicesToDelete.rbegin(), faceIndicesToDelete.rend());
+         std::sort(faceIndicesToDelete.begin(), faceIndicesToDelete.end());
 
          // delete old faces
 
-         for (const int i : faceIndicesToDelete) {
-            Faces.erase(Faces.begin() + i);
+         std::vector<Point3ui> newFaceVector;
+         newFaceVector.reserve(Faces.size() - faceIndicesToDelete.size() + newFaces.size());
+
+         unsigned int faceIndicesToDeleteIndex = 0;
+
+         for (unsigned int i = 0; i < Faces.size(); i++) {
+            if (i != faceIndicesToDelete[faceIndicesToDeleteIndex]) {
+               newFaceVector.push_back(Faces[i]);
+            }
+            else {
+               faceIndicesToDeleteIndex++;
+            }
          }
+
+         Faces = newFaceVector;
 
          // add new faces
          for (const Point3ui &newFace : newFaces) {
             Faces.push_back(newFace);
          }
       }
+
    }
 
    void TriangleMesh::Bound() {
       if (root == nullptr)
          root = new BVHNode();
 
-      Bound(root, Faces);
+      Bound(root, Faces, 0);
    }
 
-   void TriangleMesh::Bound(BVHNode *node, const std::vector<Point3ui> &faces) {
+   void TriangleMesh::Bound(BVHNode *node, const std::vector<Point3ui> &faces, const unsigned int depth) {
 
       node->ShrinkBoundingBox(Vertices, faces);
 
       // base case
-      if (faces.size() < 50) {
+      if (faces.size() < 30 || depth > 10) {
          node->faces = faces;
          return;
       }
@@ -383,8 +418,8 @@ namespace Polytope {
       // check to see whether we came up with a good split and should continue
 
       bool continueRecursing = true;
-      if (faces.size() == lowFaces.size()
-      || faces.size() == highFaces.size()
+      if (faces.size() <= lowFaces.size()
+      || faces.size() <= highFaces.size()
       || lowFaces.empty()
       || highFaces.empty())
          continueRecursing = false;
@@ -392,6 +427,8 @@ namespace Polytope {
       if (continueRecursing) {
          node->high = new BVHNode();
          node->low = new BVHNode();
+         node->high->parent = node;
+         node->low->parent = node;
 
          // set child bounding boxes
          node->low->bbox.p0 = BoundingBox->p0;
@@ -400,8 +437,11 @@ namespace Polytope {
          node->high->bbox.p0 = BoundingBox->p0;
          node->high->bbox.p1 = BoundingBox->p1;
 
-         Bound(node->low, lowFaces);
-         Bound(node->high, highFaces);
+         Bound(node->low, lowFaces, depth + 1);
+         Bound(node->high, highFaces, depth + 1);
+      }
+      else {
+         node->faces = faces;
       }
    }
 
@@ -438,6 +478,125 @@ namespace Polytope {
       for (Normal &normal : Normals) {
          normal.Normalize();
       }
+   }
+
+   unsigned int TriangleMesh::CountUniqueVertices() {
+      std::map<Polytope::Point, unsigned int> map;
+
+      for (const Point &point : Vertices) {
+         map[point]++;
+      }
+
+      return map.size();
+   }
+
+   void TriangleMesh::DeduplicateVertices() {
+
+   }
+
+   unsigned int TriangleMesh::RemoveDegenerateFaces() {
+      // remove any face which has two or more identical vertices
+
+      std::vector<unsigned int> faceIndicesToDelete;
+
+      unsigned int index = 0;
+
+      for (const Point3ui &face : Faces) {
+         Point v0 = Vertices[face.x];
+         Point v1 = Vertices[face.y];
+         Point v2 = Vertices[face.z];
+
+         unsigned int identicalVerts = 0;
+         if (v0 == v1)
+            identicalVerts++;
+
+         if (v1 == v2)
+            identicalVerts++;
+
+         if (v2 == v0)
+            identicalVerts++;
+
+         if (identicalVerts > 0)
+            faceIndicesToDelete.push_back(index);
+
+         index++;
+      }
+
+      std::sort(faceIndicesToDelete.rbegin(), faceIndicesToDelete.rend());
+
+      // delete old faces
+
+      for (const int i : faceIndicesToDelete) {
+         Faces.erase(Faces.begin() + i);
+      }
+
+      return faceIndicesToDelete.size();
+   }
+
+   unsigned int TriangleMesh::CountOrphanedVertices() {
+
+      /// 1 if the vertex appears in a face, 0 if it doesn't (i.e. if it's orphaned)
+      std::vector<bool> vertexState(Vertices.size(), true);
+      for (const Point3ui &face : Faces) {
+         vertexState[face.x] = false;
+         vertexState[face.y] = false;
+         vertexState[face.z] = false;
+      }
+
+      unsigned int sum = 0;
+      for (auto && i : vertexState) {
+         sum += i;
+      }
+
+      return sum;
+   }
+
+   bool TriangleMesh::Validate() {
+      // each node must have either both children non-null xor at least 1 face
+      if (root == nullptr)
+         return true;
+
+      std::queue<BVHNode *> q;
+      q.push(root);
+
+      bool valid = true;
+
+      while (!q.empty()) {
+         BVHNode* node = q.front();
+         q.pop();
+
+         bool lowNull = node->low == nullptr;
+         bool highNull = node->high == nullptr;
+
+         if (lowNull && !highNull) {
+            valid = false;
+            Log.WithTime("High child without low sibling :/");
+         }
+
+         if (!lowNull && highNull) {
+            valid = false;
+            Log.WithTime("Low child without high sibling :/");
+         }
+
+         if (lowNull && highNull && node->faces.empty()) {
+            valid = false;
+            Log.WithTime("Leaf node with empty faces :/");
+         }
+
+         if (!lowNull && !highNull && !node->faces.empty()) {
+            valid = false;
+            Log.WithTime("Interior node with faces :/");
+         }
+
+         if (!lowNull) {
+            q.push(node->low);
+         }
+         if (!highNull) {
+            q.push(node->high);
+         }
+      }
+
+      return valid;
    }
 
    void BVHNode::ShrinkBoundingBox(const std::vector<Point> &vertices, const std::vector<Point3ui> &nodeFaces) {

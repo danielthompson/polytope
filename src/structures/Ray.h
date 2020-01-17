@@ -18,6 +18,8 @@ namespace Polytope {
       float MinT = Infinity;
       float MaxT = Infinity;
 
+      int x, y;
+
       Ray() : MinT(Infinity), MaxT(Infinity) { };
       Ray(const Point &origin, const Vector &direction);
       Ray(float ox, float oy, float oz, float dx, float dy, float dz);

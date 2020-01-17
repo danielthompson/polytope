@@ -2,6 +2,8 @@
 // Created by daniel on 1/8/20.
 //
 
+
+
 #include "GLRenderer.h"
 #include "../shapes/TriangleMesh.h"
 #include "../utilities/Common.h"
@@ -19,47 +21,137 @@
 #include <fstream>
 #include <sstream>
 #include <queue>
+#include <utility>
 
 namespace Polytope {
+
+   using namespace gl;
 
    static void error_callback(int error, const char* description)
    {
       fprintf(stderr, "Error: %s\n", description);
    }
 
-   static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-   {
-      if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-         glfwSetWindowShouldClose(window, GLFW_TRUE);
+   Polytope::BVHNode* rootNode = nullptr;
+   Polytope::BVHNode* currentNode = nullptr;
+
+   GLuint bbSelectedNodeVaoHandle;
+   GLuint bbSelectedNodeIndexBufferHandle;
+   GLuint bbSelectedNodeVertexBufferHandle;
+
+   std::vector<unsigned int> bbSelectedIndexVector {
+      // x lines
+         0, 1,
+         3, 2,
+         5, 6,
+         4, 7,
+
+         // y lines
+         0, 3,
+         1, 2,
+         4, 5,
+         7, 6,
+
+         // z lines
+         0, 4,
+         1, 7,
+         3, 5,
+         2, 6,
+   };
+   std::vector<float> bbSelectedVertexVector(24, 0);
+
+   static void selectNode(BVHNode* node) {
+      const Point low = node->bbox.p0;
+      const Point high = node->bbox.p1;
+      
+      bbSelectedVertexVector[0] = low.x;
+      bbSelectedVertexVector[1] = low.y;
+      bbSelectedVertexVector[2] = low.z;
+
+      bbSelectedVertexVector[3] = high.x;
+      bbSelectedVertexVector[4] = low.y;
+      bbSelectedVertexVector[5] = low.z;
+
+      bbSelectedVertexVector[6] = high.x;
+      bbSelectedVertexVector[7] = high.y;
+      bbSelectedVertexVector[8] = low.z;
+
+      bbSelectedVertexVector[9] = low.x;
+      bbSelectedVertexVector[10] = high.y;
+      bbSelectedVertexVector[11] = low.z;
+
+      bbSelectedVertexVector[12] = low.x;
+      bbSelectedVertexVector[13] = low.y;
+      bbSelectedVertexVector[14] = high.z;
+
+      bbSelectedVertexVector[15] = low.x;
+      bbSelectedVertexVector[16] = high.y;
+      bbSelectedVertexVector[17] = high.z;
+
+      bbSelectedVertexVector[18] = high.x;
+      bbSelectedVertexVector[19] = high.y;
+      bbSelectedVertexVector[20] = high.z;
+
+      bbSelectedVertexVector[21] = high.x;
+      bbSelectedVertexVector[22] = low.y;
+      bbSelectedVertexVector[23] = high.z;
+
+      glBindVertexArray(bbSelectedNodeVaoHandle);
+      glBindBuffer(GL_ARRAY_BUFFER, bbSelectedNodeVertexBufferHandle);
+      glBufferData(GL_ARRAY_BUFFER, bbSelectedVertexVector.size() * sizeof(float), &bbSelectedVertexVector[0], GL_STATIC_DRAW);
+      glBindVertexArray(0);
    }
 
-   using namespace gl;
-
-
-   glm::mat4 MakeMat4(const Polytope::Transform &transform) {
-      float arr[16];
-      arr[0] = -transform.Matrix.Matrix[0][0];
-      arr[1] = transform.Matrix.Matrix[1][0];
-      arr[2] = -transform.Matrix.Matrix[2][0];
-      arr[3] = transform.Matrix.Matrix[3][0];
-
-      arr[4] = -transform.Matrix.Matrix[0][1];
-      arr[5] = transform.Matrix.Matrix[1][1];
-      arr[6] = -transform.Matrix.Matrix[2][1];
-      arr[7] = transform.Matrix.Matrix[3][1];
-
-      arr[8] = transform.Matrix.Matrix[0][2];
-      arr[9] = transform.Matrix.Matrix[1][2];
-      arr[10] = -transform.Matrix.Matrix[2][2];
-      arr[11] = transform.Matrix.Matrix[3][2];
-
-      arr[12] = transform.Matrix.Matrix[0][3];
-      arr[13] = transform.Matrix.Matrix[1][3];
-      arr[14] = -transform.Matrix.Matrix[2][3];
-      arr[15] = transform.Matrix.Matrix[3][3];
-
-      glm::mat4 mat = glm::make_mat4(arr);
-      return mat;
+   static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+   {
+      if (action == GLFW_PRESS) {
+         switch (key) {
+            case GLFW_KEY_ESCAPE: {
+               glfwSetWindowShouldClose(window, GLFW_TRUE);
+               break;
+            }
+            case GLFW_KEY_S: {
+               if (currentNode && currentNode->parent) {
+                  currentNode = currentNode->parent;
+                  Log.WithTime("Moving up to parent node.");
+                  selectNode(currentNode);
+               }
+               else {
+                  if (currentNode == rootNode)
+                     Log.WithTime("Can't move to parent (already at root).");
+                  else
+                     Log.WithTime("Can't move to parent, but not at root either (probably a bug). :/");
+               }
+               break;
+            }
+            case GLFW_KEY_Z: {
+               if (currentNode && currentNode->low) {
+                  currentNode = currentNode->low;
+                  Log.WithTime("Moving down to low node (left).");
+                  selectNode(currentNode);
+               }
+               break;
+            }
+            case GLFW_KEY_X: {
+               if (currentNode && currentNode->high) {
+                  currentNode = currentNode->high;
+                  Log.WithTime("Moving down to high node (right).");
+                  selectNode(currentNode);
+               }
+               break;
+            }
+            case GLFW_KEY_R: {
+               if (rootNode) {
+                  currentNode = rootNode;
+                  Log.WithTime("Resetting to root node.");
+               }
+               break;
+            }
+            default: {
+               // do nothing
+            }
+         }
+      }
    }
 
    GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path){
@@ -253,16 +345,6 @@ namespace Polytope {
          glbinding::initialize(glfwGetProcAddress);
          glfwSwapInterval(1);
 
-         //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-         // not supported on osx in 3.3
-         // not supported in 3.2, which is latest available in ubuntu 18.04 LTS
-//      if (glfwRawMouseMotionSupported()) {
-//         Log.WithTime("GLFW: Raw mouse motion is supported, enabling...");
-//         glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-//      }
-//      else {
-//         Log.WithTime("GLFW: Raw mouse motion is not supported :/");
-//      }
          glfwSetCursorPosCallback(window, cursor_position_callback);
          glfwSetMouseButtonCallback(window, mouse_button_callback);
          glfwSetScrollCallback(window, scroll_callback);
@@ -271,10 +353,11 @@ namespace Polytope {
 
       // actual drawing code
 
-
-
       Polytope::TriangleMesh* mesh = (Polytope::TriangleMesh *)(scene->Shapes[0]);
       const unsigned int indices = mesh->Faces.size() * 3;
+
+      rootNode = mesh->root;
+      currentNode = rootNode;
 
       std::vector<unsigned int> shapeIndexVector(indices, 0);
       std::vector<float> shapeVertexVector(indices * 3, 0.f);
@@ -314,18 +397,20 @@ namespace Polytope {
 
       std::vector<unsigned int> bbIndexVector;
       std::vector<float> bbVertexVector;
-
       std::vector<unsigned int> bbLinesIndexVector;
 
-      std::queue<Polytope::BVHNode*> queue;
+      std::queue<std::pair<Polytope::BVHNode*, unsigned int>> queue;
 
       if (mesh->root != nullptr) {
-         queue.push(mesh->root);
+         queue.push(std::make_pair(mesh->root, 0));
 
          unsigned int index = 0;
 
          while (!queue.empty()) {
-            const BVHNode* node = queue.front();
+            const auto pair = queue.front();
+
+            const BVHNode* node = pair.first;
+            const unsigned int nodeDepth = pair.second;
             queue.pop();
 
             const Point low = node->bbox.p0;
@@ -458,11 +543,13 @@ namespace Polytope {
 
             // enqueue children, if any
             if (node->high != nullptr)
-               queue.push(node->high);
+               queue.push(std::make_pair(node->high, nodeDepth + 1));
             if (node->low != nullptr)
-               queue.push(node->low);
+               queue.push(std::make_pair(node->low, nodeDepth + 1));
          }
       }
+
+      // selected BB stuff
 
       GLuint shapeVao;
       glGenVertexArrays(1, &shapeVao);
@@ -489,6 +576,8 @@ namespace Polytope {
       );
       glEnableVertexAttribArray(0);
 
+      selectNode(rootNode);
+
       GLuint shapeNormalBuffer;
       glGenBuffers(1, &shapeNormalBuffer);
       glBindBuffer(GL_ARRAY_BUFFER, shapeNormalBuffer);
@@ -500,19 +589,19 @@ namespace Polytope {
 
       glBindVertexArray(0);
 
-      GLuint bbVao;
-      glGenVertexArrays(1, &bbVao);
-      glBindVertexArray(bbVao);
+      GLuint bbVaoHandle;
+      glGenVertexArrays(1, &bbVaoHandle);
+      glBindVertexArray(bbVaoHandle);
 
-      GLuint bbIndexBuffer;
-      glGenBuffers(1, &bbIndexBuffer);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bbIndexBuffer);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, bbLineIndices * sizeof(uint32_t), &bbLinesIndexVector[0], GL_STATIC_DRAW);
+      GLuint bbIndexBufferHandle;
+      glGenBuffers(1, &bbIndexBufferHandle);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bbIndexBufferHandle);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, bbLinesIndexVector.size() * sizeof(float), &bbLinesIndexVector[0], GL_STATIC_DRAW);
 
-      GLuint bbVertexBuffer;
-      glGenBuffers(1, &bbVertexBuffer);
-      glBindBuffer(GL_ARRAY_BUFFER, bbVertexBuffer);
-      glBufferData(GL_ARRAY_BUFFER, bbVertices * sizeof(uint32_t), &bbVertexVector[0], GL_STATIC_DRAW);
+      GLuint bbVertexBufferHandle;
+      glGenBuffers(1, &bbVertexBufferHandle);
+      glBindBuffer(GL_ARRAY_BUFFER, bbVertexBufferHandle);
+      glBufferData(GL_ARRAY_BUFFER, bbVertexVector.size() * sizeof(float), &bbVertexVector[0], GL_STATIC_DRAW);
       glVertexAttribPointer(
             0,        // attribute 0 - must match layout in shader
             3,        // size
@@ -523,25 +612,52 @@ namespace Polytope {
       );
       glEnableVertexAttribArray(0);
 
+//      GLuint bbVertexColorBuffer;
+//      glGenBuffers(1, &bbVertexColorBuffer);
+//      glBindBuffer(GL_ARRAY_BUFFER, bbVertexColorBuffer);
+//      glBufferData(GL_ARRAY_BUFFER, bbVertexColorVector.size() * sizeof(float), &bbVertexColorVector[0], GL_STATIC_DRAW);
+//      glVertexAttribPointer(
+//            1,        // attribute 0 - must match layout in shader
+//            4,        // size
+//            GL_FLOAT, // type
+//            GL_FALSE, // normalized?
+//            0,  // stride
+//            (void*)0 // array buffer offset
+//      );
+//      glEnableVertexAttribArray(1);
+
+      glBindVertexArray(0);
+
+      glGenVertexArrays(1, &bbSelectedNodeVaoHandle);
+      glBindVertexArray(bbSelectedNodeVaoHandle);
+
+      glGenBuffers(1, &bbSelectedNodeIndexBufferHandle);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bbSelectedNodeIndexBufferHandle);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, bbSelectedIndexVector.size() * sizeof(float), &bbSelectedIndexVector[0], GL_STATIC_DRAW);
+
+      glGenBuffers(1, &bbSelectedNodeVertexBufferHandle);
+      glBindBuffer(GL_ARRAY_BUFFER, bbSelectedNodeVertexBufferHandle);
+      glBufferData(GL_ARRAY_BUFFER, bbSelectedVertexVector.size() * sizeof(float), &bbSelectedVertexVector[0], GL_STATIC_DRAW);
+      glVertexAttribPointer(
+            0,        // attribute 0 - must match layout in shader
+            3,        // size
+            GL_FLOAT, // type
+            GL_FALSE, // normalized?
+            0,  // stride
+            (void*)0 // array buffer offset
+      );
+      glEnableVertexAttribArray(0);
       glBindVertexArray(0);
 
       // Ensure we can capture the escape key being pressed below
       glfwSetInputMode(window, GLFW_STICKY_KEYS, (int)GL_TRUE);
 
-      GLuint programID = LoadShaders("../src/gl/vert.glsl", "../src/gl/frag.glsl");
+      GLuint shapeProgramHandle = LoadShaders("../src/gl/shape/vert.glsl", "../src/gl/shape/frag.glsl");
+      GLuint bboxProgramHandle = LoadShaders("../src/gl/bbox/vert.glsl", "../src/gl/bbox/frag.glsl");
 
       // projection matrix - 45deg fov, 4:3 ratio, display range - 0.1 <-> 100 units
       fov = scene->Camera->Settings.FieldOfView;
       projectionMatrix = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 100.0f);
-
-      // camera matrix
-//   glm::mat4 previousView = glm::lookAt(
-//         glm::vec3(0, 0, 35),
-//         glm::vec3(0, 0, -1),
-//         glm::vec3(0, 1, 0)
-//         );
-
-      //viewMatrix = MakeMat4(scene->Camera->CameraToWorld);
 
       eye = glm::vec3(scene->Camera->eye.x, scene->Camera->eye.y, scene->Camera->eye.z);
       lookAt = glm::vec3(scene->Camera->lookAt.x, scene->Camera->lookAt.y, -scene->Camera->lookAt.z);
@@ -553,8 +669,8 @@ namespace Polytope {
       glm::mat4 model = glm::mat4(1.0f);
 
       // get uniform handle
-      GLuint matrixID = glGetUniformLocation(programID, "mvp");
-      GLuint colorInId = glGetUniformLocation(programID, "colorIn");
+      GLuint matrixID = glGetUniformLocation(shapeProgramHandle, "mvp");
+      GLuint colorInId = glGetUniformLocation(shapeProgramHandle, "colorIn");
 
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);
@@ -562,18 +678,14 @@ namespace Polytope {
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-      //glEnable( GL_PROGRAM_POINT_SIZE );
-
       //glEnable(GL_CULL_FACE);
       glDepthFunc(GL_LESS);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-      glEnable( GL_MULTISAMPLE );
+      glEnable(GL_MULTISAMPLE);
 
       glClearColor(0.15f, 0.15f, 0.15f, 0.0f);
-
-      glUseProgram(programID);
-
+      glEnable(GL_BLEND);
       do {
          // clear the screen
          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -583,40 +695,69 @@ namespace Polytope {
 
          viewMatrix = glm::lookAt(eye, lookAt, up);
          glm::mat4 mvp = projectionMatrix * viewMatrix * model;
+
+         // bounding boxes
+         glUseProgram(bboxProgramHandle);
+         glBindVertexArray(bbVaoHandle);
+
          // send transformation matrix to the currently bound shader, in the "mvp" uniform
          glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
 
-         // bounding boxes
-
-         glBindVertexArray(bbVao);
-
          glEnable(GL_DEPTH_TEST);
-         glEnable(GL_BLEND);
+         //glEnable(GL_BLEND);
 
-         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.5f);
-         //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.06250f);
          glDrawElements(GL_LINES, bbLinesIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
 
-         glDisable(GL_DEPTH_TEST);
-         glEnable(GL_BLEND);
+         //glDisable(GL_DEPTH_TEST);
+         //glEnable(GL_BLEND);
 
          // shapes
-
+         glUseProgram(shapeProgramHandle);
          glBindVertexArray(shapeVao);
 
-         glDisable(GL_DEPTH_TEST);
+         // send transformation matrix to the currently bound shader, in the "mvp" uniform
+         glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
+
+         glEnable(GL_DEPTH_TEST);
          glDisable(GL_BLEND);
 
-         glUniform4f(colorInId, 0.4f, 0.5f, 0.5f, 0.25f);
+         glUniform4f(colorInId, 0.4f, 0.5f, 0.5f, 0.150f);
          glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
          glDrawElements(GL_TRIANGLES, shapeIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
 
          glDisable(GL_DEPTH_TEST);
          glEnable(GL_BLEND);
 
-         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.0625f);
+         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.06250f);
          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
          glDrawElements(GL_TRIANGLES, shapeIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
+
+         // bounding boxes - all
+         glUseProgram(bboxProgramHandle);
+         glBindVertexArray(bbVaoHandle);
+
+         // send transformation matrix to the currently bound shader, in the "mvp" uniform
+         glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
+
+         glDisable(GL_DEPTH_TEST);
+         //glEnable(GL_BLEND);
+
+         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.06250f);
+         glDrawElements(GL_LINES, bbLinesIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
+
+         // bounding boxes - selected
+
+         glBindVertexArray(bbSelectedNodeVaoHandle);
+
+         // send transformation matrix to the currently bound shader, in the "mvp" uniform
+         glUniformMatrix4fv(matrixID, 1, GL_FALSE, &mvp[0][0]);
+
+         glDisable(GL_DEPTH_TEST);
+         //glEnable(GL_BLEND);
+
+         glUniform4f(colorInId, 1.0f, 1.0f, 1.0f, 0.5f);
+         glDrawElements(GL_LINES, bbSelectedIndexVector.size(), GL_UNSIGNED_INT, (void*)0);
 
          // swap bufffers
          glfwSwapBuffers(window);

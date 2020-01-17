@@ -15,6 +15,7 @@ namespace Polytope {
    public:
       BVHNode* high = nullptr;
       BVHNode* low = nullptr;
+      BVHNode* parent = nullptr;
       std::vector<Point3ui> faces;
       BoundingBox bbox;
 
@@ -37,11 +38,25 @@ namespace Polytope {
       void Bound();
       void Intersect(Ray &ray, Intersection *intersection) override;
       void IntersectFaces(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces);
-      void IntersectNode(Ray &ray, Intersection *intersection, BVHNode* node);
+      void IntersectNode(Ray &ray, Intersection *intersection, BVHNode* node, unsigned int depth);
 
       void CalculateVertexNormals();
 
       Point GetRandomPointOnSurface() override;
+
+      unsigned int CountUniqueVertices();
+
+      void DeduplicateVertices();
+
+      bool Validate();
+
+      /// Removes all faces that have 2 or more identical vertices.
+      /// \return The number of faces removed.
+      unsigned int RemoveDegenerateFaces();
+
+      /// Removes all vertices that aren't associated with a face.
+      /// \return The number of vertices removes.
+      unsigned int CountOrphanedVertices();
 
       std::vector<Point> Vertices;
       std::vector<Point3ui> Faces;
@@ -49,7 +64,7 @@ namespace Polytope {
       BVHNode* root;
 
    private:
-      void Bound(BVHNode* node, const std::vector<Point3ui> &faces);
+      void Bound(BVHNode* node, const std::vector<Point3ui> &faces, unsigned int depth);
       void Split(Axis axis, float split);
    };
 

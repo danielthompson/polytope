@@ -162,4 +162,14 @@ namespace Polytope {
       z += rhs.z;
       return *this;
    }
+
+   bool Point::operator<(const Point &rhs) const {
+      if (x == rhs.x) {
+         if (y == rhs.y) {
+            return z < rhs.z;
+         }
+         return y < rhs.y;
+      }
+      return x < rhs.x;
+   }
 }

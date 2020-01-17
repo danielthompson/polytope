@@ -114,9 +114,9 @@ namespace Polytope {
             }
          }
 
-         std::ostringstream oss;
-         oss << "Thread " << threadId << ": Finished tile [" << xMin << ", " << yMin << "] x [" << xMax << ", " << yMax << "]";
-         Log.WithTime(oss.str());
+//         std::ostringstream oss;
+//         oss << "Thread " << threadId << ": Finished tile [" << xMin << ", " << yMin << "] x [" << xMax << ", " << yMax << "]";
+//         Log.WithTime(oss.str());
 
          tile.x = -1;
          tile.y = -1;

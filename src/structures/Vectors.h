@@ -61,6 +61,7 @@ namespace Polytope {
       Point(const float x, const float y, const float z)  : x(x), y(y), z(z) {}
       Point(const Point &p) : x(p.x), y(p.y), z(p.z) { }
 
+      bool operator<(const Point &rhs) const;
       bool operator==(const Point &rhs) const;
       bool operator!=(const Point &rhs) const;
       Vector operator-(const Point &rhs) const;

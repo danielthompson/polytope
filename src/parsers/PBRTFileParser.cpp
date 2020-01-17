@@ -996,6 +996,36 @@ namespace Polytope {
                      const PLYParser parser;
                      const std::string absoluteObjFilepath = GetCurrentWorkingDirectory() + UnixPathSeparator + _basePathFromCWD + objFilename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
+
+                     std::ostringstream oss;
+                     oss << "Vertex count: " << mesh->Vertices.size();
+                     Log.WithTime(oss.str());
+
+                     oss.str("");
+                     const unsigned int uniqueVertices = mesh->CountUniqueVertices();
+                     oss << "Unique vertex count: " << uniqueVertices;
+                     Log.WithTime(oss.str());
+
+                     oss.str("");
+                     const unsigned int redundantVertices = mesh->Vertices.size() - uniqueVertices;
+                     oss << "Redundant vertex count: " << redundantVertices;
+                     Log.WithTime(oss.str());
+
+                     oss.str("");
+                     const unsigned int orphanedVertices = mesh->CountOrphanedVertices();
+                     oss << "Orphaned vertex count: " << orphanedVertices;
+                     Log.WithTime(oss.str());
+
+                     oss.str("");
+                     const unsigned int degenerateFaceCount = mesh->RemoveDegenerateFaces();
+                     oss << "Degenerate faces removed: " << degenerateFaceCount;
+                     Log.WithTime(oss.str());
+
+                     oss.str("");
+                     const bool valid = mesh->Validate();
+                     oss << "Mesh valid: " << (valid ? "true" : "false");
+                     Log.WithTime(oss.str());
+
                      //mesh->ObjectToWorld = *activeTransform;
                      mesh->Material = activeMaterial;
                      _scene->Shapes.push_back(mesh);

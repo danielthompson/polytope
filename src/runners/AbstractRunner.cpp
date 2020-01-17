@@ -19,6 +19,8 @@ namespace Polytope {
          Point2f sampleLocation = points[i];
 
          Ray ray = Scene->Camera->GetRay(sampleLocation);
+         ray.x = x;
+         ray.y = y;
 
          Sample sample = Integrator->GetSample(ray, 0, x, y);
          Film->AddSample(sampleLocation, sample);

@@ -6,9 +6,6 @@
 // vertexPosition_modelspace - position of the vertex for each run of the vertex shader
 // in - input data
 layout(location = 0) in vec3 vertexPosition_modelspace;
-//layout(location = 1) in vec3 vertexNormal;
-
-//out vec3 fragmentColor;
 
 // fed in via glUniformMatrix4fv in main loop
 uniform mat4 mvp;
@@ -18,6 +15,4 @@ void main() {
 
     gl_Position = mvp * vec4(vertexPosition_modelspace, 1);
     gl_PointSize = 2;
-    //fragmentColor = vertexColor;
-
 }
