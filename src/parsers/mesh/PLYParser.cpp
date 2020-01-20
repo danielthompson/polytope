@@ -83,7 +83,7 @@ namespace Polytope {
          else if (word == "property") {
             if (inVertex) {
                iss >> word;
-               if (word != "float32") {
+               if (word != "float32" && word != "float") {
                   Log.WithTime("unknown property datatype :/");
                   return;
                }
@@ -134,6 +134,11 @@ namespace Polytope {
          const Point worldPoint = mesh->ObjectToWorld->Apply(p);
          mesh->Vertices.push_back(worldPoint);
       }
+
+      std::ostringstream str;
+      str << "Parsed " << mesh->Vertices.size() << " vertices.";
+      Log.WithTime(str.str());
+      str.str("");
 
       // data - faces
 
@@ -192,12 +197,21 @@ namespace Polytope {
          max.x = p2.x > max.x ? p2.x : max.x;
          max.y = p2.y > max.y ? p2.y : max.y;
          max.z = p2.z > max.z ? p2.z : max.z;
+
+         bool debug = false;
+         if (min.y == 0)
+            debug = true;
       }
+
+      str << "Parsed " << mesh->Faces.size() << " faces.";
+      Log.WithTime(str.str());
 
       mesh->BoundingBox->p0 = min;
       mesh->BoundingBox->p1 = max;
 
       mesh->Bound();
+      Log.WithTime("Created BVH.");
       mesh->CalculateVertexNormals();
+      Log.WithTime("Calculated vertex normals.");
    }
 }

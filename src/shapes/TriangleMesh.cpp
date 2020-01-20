@@ -8,6 +8,7 @@
 #include <queue>
 #include "TriangleMesh.h"
 #include "../utilities/Common.h"
+#include "triangle_mesh_ispc.h"
 
 namespace Polytope {
 
@@ -78,14 +79,9 @@ namespace Polytope {
 
          const Polytope::Vector edge2 = vertex0 - vertex2;
 
-         // 1. Compute the cross product of [the vector defined by the two edges' vertices] and [the vector defined by the first edge's vertex and the point]
          const Polytope::Vector p0 = hitPoint - vertex0;
          const Polytope::Vector cross0 = edge0.Cross(p0);
-
-         // 2. Compute the dot product of the result from [1] and the polygon's normal
          const float normal0 = cross0.Dot(planeNormal);
-
-         // 3. The sign of [2] determines if the point is on the right or left side of that edge.
          const bool pos0 = normal0 > 0;
 
          // 4. Repeat for all 3 edges
@@ -101,6 +97,7 @@ namespace Polytope {
 
          bool inside = pos0 && pos1 && pos2;
 
+
          if (inside) {
             intersection->Hits = true;
             ray.MinT = t;
@@ -112,6 +109,7 @@ namespace Polytope {
             if (ray.Direction.Dot(n) > 0) {
                n.Flip();
             }
+
             intersection->Normal = n;
             intersection->Shape = this;
 
@@ -139,6 +137,227 @@ namespace Polytope {
       }
    }
 
+   void TriangleMesh::IntersectFacesISPC(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces) {
+
+      //unsigned int faceIndex = 0;
+
+      float ispc_vertex[9] = { 0 };
+      float ispc_edge[9] = { 0 };
+      bool ispc_out[3] = { false };
+
+      for (const Point3ui &face : faces) {
+         const Point vertex0 = Vertices[face.x];
+         const Point vertex1 = Vertices[face.y];
+         const Point vertex2 = Vertices[face.z];
+
+         ispc_vertex[0] = vertex0.x;
+         ispc_vertex[1] = vertex0.y;
+         ispc_vertex[2] = vertex0.z;
+         ispc_vertex[3] = vertex1.x;
+         ispc_vertex[4] = vertex1.y;
+         ispc_vertex[5] = vertex1.z;
+         ispc_vertex[6] = vertex2.x;
+         ispc_vertex[7] = vertex2.y;
+         ispc_vertex[8] = vertex2.z;
+
+         ispc_out[0] = false;
+         ispc_out[1] = false;
+         ispc_out[2] = false;
+
+         // step 1 - intersect with plane
+
+         // const Polytope::Vector edge0 = vertex1 - vertex0;
+         ispc_edge[0] = ispc_vertex[3] - ispc_vertex[0];
+         ispc_edge[1] = ispc_vertex[4] - ispc_vertex[1];
+         ispc_edge[2] = ispc_vertex[5] - ispc_vertex[2];
+
+         // const Polytope::Vector edge1 = vertex2 - vertex1;
+         ispc_edge[3] = ispc_vertex[6] - ispc_vertex[3];
+         ispc_edge[4] = ispc_vertex[7] - ispc_vertex[4];
+         ispc_edge[5] = ispc_vertex[8] - ispc_vertex[5];
+
+         //Polytope::Vector planeNormal = edge0.Cross(edge1);
+         Polytope::Vector planeNormal = Polytope::Vector(
+               ispc_edge[1] * ispc_edge[5] - ispc_edge[2] * ispc_edge[4],
+               ispc_edge[2] * ispc_edge[3] - ispc_edge[0] * ispc_edge[5],
+               ispc_edge[0] * ispc_edge[4] - ispc_edge[1] * ispc_edge[3]
+         );
+         planeNormal.Normalize();
+
+         const float divisor = planeNormal.Dot(ray.Direction);
+         if (divisor == 0.0f) {
+            // parallel
+            continue;
+         }
+
+         const float t = planeNormal.Dot(vertex0 - ray.Origin) / divisor;
+
+         if (t <= 0 || t >= ray.MinT)
+            continue;
+
+         const Polytope::Point hitPoint = ray.GetPointAtT(t);
+
+         // step 2 - inside/outside test
+
+         // const Polytope::Vector edge2 = vertex0 - vertex2;
+         ispc_edge[6] = ispc_vertex[0] - ispc_vertex[6];
+         ispc_edge[7] = ispc_vertex[1] - ispc_vertex[7];
+         ispc_edge[8] = ispc_vertex[2] - ispc_vertex[8];
+
+         ispc::simple(hitPoint.x, hitPoint.y, hitPoint.z, planeNormal.x, planeNormal.y, planeNormal.z, ispc_vertex, ispc_edge, ispc_out, 3);
+
+         bool inside = ispc_out[0] && ispc_out[1] && ispc_out[2];
+
+         if (inside) {
+            intersection->Hits = true;
+            ray.MinT = t;
+            //intersection->faceIndex = faceIndex;
+            intersection->Location = hitPoint;
+
+            // flip normal if needed
+            Polytope::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
+            if (ray.Direction.Dot(n) > 0) {
+               n.Flip();
+            }
+
+            intersection->Normal = n;
+            intersection->Shape = this;
+
+            const float edge0dot = std::abs(ispc_edge[0] * ispc_edge[3] + ispc_edge[1] + ispc_edge[4] + ispc_edge[2] * ispc_edge[5]);
+            const float edge1dot = std::abs(ispc_edge[3] * ispc_edge[6] + ispc_edge[4] + ispc_edge[7] + ispc_edge[5] * ispc_edge[8]);
+            const float edge2dot = std::abs(ispc_edge[6] * ispc_edge[0] + ispc_edge[7] + ispc_edge[1] + ispc_edge[8] * ispc_edge[2]);
+
+            if (edge0dot > edge1dot && edge0dot > edge2dot) {
+               intersection->Tangent1 = Polytope::Vector(ispc_edge[0], ispc_edge[1], ispc_edge[2]);
+               intersection->Tangent2 = Polytope::Vector(ispc_edge[3], ispc_edge[4], ispc_edge[5]);
+            }
+            else if (edge1dot > edge0dot && edge1dot > edge2dot) {
+               intersection->Tangent1 = Polytope::Vector(ispc_edge[3], ispc_edge[4], ispc_edge[5]);
+               intersection->Tangent2 = Polytope::Vector(ispc_edge[6], ispc_edge[7], ispc_edge[8]);
+            }
+            else {
+               intersection->Tangent1 = Polytope::Vector(ispc_edge[6], ispc_edge[7], ispc_edge[8]);
+               intersection->Tangent2 = Polytope::Vector(ispc_edge[0], ispc_edge[1], ispc_edge[2]);;
+            }
+
+            intersection->Tangent1.Normalize();
+            intersection->Tangent2.Normalize();
+         }
+         //faceIndex++;
+      }
+   }
+
+
+   void TriangleMesh::IntersectFacesISPC_SOA(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces) {
+
+      //unsigned int faceIndex = 0;
+
+      float ispc_vertex[9] = { 0 };
+      float ispc_edge[9] = { 0 };
+      bool ispc_out[3] = { false };
+
+      for (const Point3ui &face : faces) {
+         const Point vertex0 = Vertices[face.x];
+         const Point vertex1 = Vertices[face.y];
+         const Point vertex2 = Vertices[face.z];
+
+         ispc_vertex[0] = vertex0.x;
+         ispc_vertex[1] = vertex1.x;
+         ispc_vertex[2] = vertex2.x;
+         ispc_vertex[3] = vertex0.y;
+         ispc_vertex[4] = vertex1.y;
+         ispc_vertex[5] = vertex2.y;
+         ispc_vertex[6] = vertex0.z;
+         ispc_vertex[7] = vertex1.z;
+         ispc_vertex[8] = vertex2.z;
+
+         ispc_out[0] = false;
+         ispc_out[1] = false;
+         ispc_out[2] = false;
+
+         // step 1 - intersect with plane
+
+         // const Polytope::Vector edge0 = vertex1 - vertex0;
+         ispc_edge[0] = ispc_vertex[1] - ispc_vertex[0]; //e0x
+         ispc_edge[3] = ispc_vertex[4] - ispc_vertex[3]; //e0y -> 3
+         ispc_edge[6] = ispc_vertex[7] - ispc_vertex[6]; //e0z -> 6
+
+         // const Polytope::Vector edge1 = vertex2 - vertex1;
+         ispc_edge[1] = ispc_vertex[2] - ispc_vertex[1]; //e1x -> 1
+         ispc_edge[4] = ispc_vertex[5] - ispc_vertex[4]; //e1y -> 4
+         ispc_edge[7] = ispc_vertex[8] - ispc_vertex[7]; //e1z -> 7
+
+         //Polytope::Vector planeNormal = edge0.Cross(edge1);
+         Polytope::Vector planeNormal = Polytope::Vector(
+               ispc_edge[3] * ispc_edge[7] - ispc_edge[6] * ispc_edge[4],
+               ispc_edge[6] * ispc_edge[1] - ispc_edge[0] * ispc_edge[7],
+               ispc_edge[0] * ispc_edge[4] - ispc_edge[3] * ispc_edge[1]
+         );
+         planeNormal.Normalize();
+
+         const float divisor = planeNormal.Dot(ray.Direction);
+         if (divisor == 0.0f) {
+            // parallel
+            continue;
+         }
+
+         const float t = planeNormal.Dot(vertex0 - ray.Origin) / divisor;
+
+         if (t <= 0 || t >= ray.MinT)
+            continue;
+
+         const Polytope::Point hitPoint = ray.GetPointAtT(t);
+
+         // step 2 - inside/outside test
+
+         // const Polytope::Vector edge2 = vertex0 - vertex2;
+         ispc_edge[2] = ispc_vertex[0] - ispc_vertex[2]; // e2x -> 2
+         ispc_edge[5] = ispc_vertex[3] - ispc_vertex[5]; // e2y -> 5
+         ispc_edge[8] = ispc_vertex[6] - ispc_vertex[8]; // e2z -> 8
+
+         ispc::simple(hitPoint.x, hitPoint.y, hitPoint.z, planeNormal.x, planeNormal.y, planeNormal.z, ispc_vertex, ispc_edge, ispc_out, 3);
+
+         bool inside = ispc_out[0] && ispc_out[1] && ispc_out[2];
+
+         if (inside) {
+            intersection->Hits = true;
+            ray.MinT = t;
+            //intersection->faceIndex = faceIndex;
+            intersection->Location = hitPoint;
+
+            // flip normal if needed
+            Polytope::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
+            if (ray.Direction.Dot(n) > 0) {
+               n.Flip();
+            }
+
+            intersection->Normal = n;
+            intersection->Shape = this;
+
+            const float edge0dot = std::abs(ispc_edge[0] * ispc_edge[1] + ispc_edge[3] + ispc_edge[4] + ispc_edge[6] * ispc_edge[7]);
+            const float edge1dot = std::abs(ispc_edge[1] * ispc_edge[2] + ispc_edge[4] + ispc_edge[5] + ispc_edge[7] * ispc_edge[8]);
+            const float edge2dot = std::abs(ispc_edge[2] * ispc_edge[0] + ispc_edge[5] + ispc_edge[3] + ispc_edge[8] * ispc_edge[6]);
+
+            if (edge0dot > edge1dot && edge0dot > edge2dot) {
+               intersection->Tangent1 = Polytope::Vector(ispc_edge[0], ispc_edge[3], ispc_edge[6]);
+               intersection->Tangent2 = Polytope::Vector(ispc_edge[1], ispc_edge[4], ispc_edge[7]);
+            }
+            else if (edge1dot > edge0dot && edge1dot > edge2dot) {
+               intersection->Tangent1 = Polytope::Vector(ispc_edge[1], ispc_edge[4], ispc_edge[7]);
+               intersection->Tangent2 = Polytope::Vector(ispc_edge[2], ispc_edge[5], ispc_edge[8]);
+            }
+            else {
+               intersection->Tangent1 = Polytope::Vector(ispc_edge[2], ispc_edge[5], ispc_edge[8]);
+               intersection->Tangent2 = Polytope::Vector(ispc_edge[0], ispc_edge[3], ispc_edge[6]);;
+            }
+
+            intersection->Tangent1.Normalize();
+            intersection->Tangent2.Normalize();
+         }
+         //faceIndex++;
+      }
+   }
+
    void TriangleMesh::IntersectNode(Ray &ray, Intersection *intersection, BVHNode* node, const unsigned int depth) {
 
       bool debug = false;
@@ -147,7 +366,8 @@ namespace Polytope {
       if (node->low == nullptr) {
          if (ray.x == 130 && ray.y == 128)
             debug = true;
-         IntersectFaces(ray, intersection, node->faces);
+         IntersectFacesISPC_SOA(ray, intersection, node->faces);
+         //IntersectFaces(ray, intersection, node->faces);
 
          return;
       }
@@ -352,7 +572,6 @@ namespace Polytope {
             Faces.push_back(newFace);
          }
       }
-
    }
 
    void TriangleMesh::Bound() {
@@ -362,12 +581,12 @@ namespace Polytope {
       Bound(root, Faces, 0);
    }
 
-   void TriangleMesh::Bound(BVHNode *node, const std::vector<Point3ui> &faces, const unsigned int depth) {
+   void TriangleMesh:: Bound(BVHNode *node, const std::vector<Point3ui> &faces, const unsigned int depth) {
 
       node->ShrinkBoundingBox(Vertices, faces);
 
       // base case
-      if (faces.size() < 30 || depth > 10) {
+      if (faces.size() < 750 || depth > 10) {
          node->faces = faces;
          return;
       }
@@ -502,35 +721,39 @@ namespace Polytope {
       unsigned int index = 0;
 
       for (const Point3ui &face : Faces) {
-         Point v0 = Vertices[face.x];
-         Point v1 = Vertices[face.y];
-         Point v2 = Vertices[face.z];
+         const Point v0 = Vertices[face.x];
+         const Point v1 = Vertices[face.y];
+         const Point v2 = Vertices[face.z];
 
-         unsigned int identicalVerts = 0;
-         if (v0 == v1)
-            identicalVerts++;
-
-         if (v1 == v2)
-            identicalVerts++;
-
-         if (v2 == v0)
-            identicalVerts++;
-
-         if (identicalVerts > 0)
+         if (v0 == v1 || v1 == v2 || v2 == v0)
             faceIndicesToDelete.push_back(index);
 
          index++;
       }
 
-      std::sort(faceIndicesToDelete.rbegin(), faceIndicesToDelete.rend());
-
       // delete old faces
 
-      for (const int i : faceIndicesToDelete) {
-         Faces.erase(Faces.begin() + i);
-      }
+      if (!faceIndicesToDelete.empty()) {
 
-      return faceIndicesToDelete.size();
+         std::sort(faceIndicesToDelete.begin(), faceIndicesToDelete.end());
+
+
+         std::vector<Point3ui> newFaceVector;
+         newFaceVector.reserve(Faces.size() - faceIndicesToDelete.size());
+
+         index = 0;
+
+         for (unsigned int i = 0; i < Faces.size(); i++) {
+            if (i != faceIndicesToDelete[index]) {
+               newFaceVector.push_back(Faces[i]);
+            }
+            else {
+               index++;
+            }
+         }
+
+         Faces = newFaceVector;
+      }
    }
 
    unsigned int TriangleMesh::CountOrphanedVertices() {

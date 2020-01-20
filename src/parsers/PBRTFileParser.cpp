@@ -5,7 +5,7 @@
 #include <sstream>
 #include <stack>
 #include <map>
-#include <algorithm>
+#include <cassert>
 #include "PBRTFileParser.h"
 #include "mesh/OBJParser.h"
 #include "../integrators/PathTraceIntegrator.h"
@@ -670,7 +670,6 @@ namespace Polytope {
 
       const std::shared_ptr<Polytope::Material> materialMarker = std::make_shared<Polytope::Material>(AttributeBeginText);
       const std::shared_ptr<SpectralPowerDistribution> lightMarker = std::make_shared<SpectralPowerDistribution>();
-      const std::shared_ptr<Transform> transformMarker = std::make_shared<Transform>();
 
       _scene = new NaiveScene(std::move(camera));
 
@@ -714,10 +713,11 @@ namespace Polytope {
                }
 
                // push onto transform stack
-               transformStack.push(transformMarker);
-               if (activeTransform != nullptr) {
-                  transformStack.push(activeTransform);
-               }
+               //transformStack.push(transformMarker);
+               //if (activeTransform != nullptr) {
+               transformStack.push(activeTransform);
+               //activeTransform =
+               //}
                break;
             }
             case WorldDirectiveName::AttributeEnd: {
@@ -772,7 +772,7 @@ namespace Polytope {
                   std::shared_ptr<Transform> stackValue = transformStack.top();
                   transformStack.pop();
 
-                  if (stackValue == transformMarker) {
+                  if (false /* TODO stackValue == transformMarker*/) {
                      // no value was pushed, so there wasn't any active transform before, so there shouldn't be now
                      activeTransform = nullptr;
                   }
@@ -892,13 +892,9 @@ namespace Polytope {
                y *= oneOverLength;
                z *= oneOverLength;
 
-               // todo implement rotate...
                Transform t = Transform::Rotate(angle, x, y, z);
 
-               if (activeTransform == nullptr) {
-                  activeTransform = std::make_shared<Transform>();
-               }
-
+               assert (activeTransform != nullptr);
                Transform *active = activeTransform.get();
                *active = t * *active;
                break;
@@ -1053,10 +1049,8 @@ namespace Polytope {
             }
             case WorldDirectiveName::TransformBegin: {
                // push onto transform stack
-               transformStack.push(transformMarker);
-               if (activeTransform != nullptr) {
-                  transformStack.push(activeTransform);
-               }
+               assert (activeTransform != nullptr);
+               transformStack.push(activeTransform);
                break;
             }
             case (WorldDirectiveName::TransformEnd): {
@@ -1064,23 +1058,8 @@ namespace Polytope {
                if (!transformStack.empty()) {
                   std::shared_ptr<Transform> stackValue = transformStack.top();
                   transformStack.pop();
-
-                  if (stackValue == transformMarker) {
-                     // no value was pushed, so there wasn't any active transform before, so there shouldn't be now
-                     activeTransform = nullptr;
-                  }
-                  else {
-                     // a value was pushed, so there should be at least one more transformMarker on the stack
-                     if (transformStack.empty()) {
-                        // OOPS, should never happen
-                     }
-                     else {
-                        // restore the previously active transform
-                        activeTransform = stackValue;
-                        // pop the marker
-                        transformStack.pop();
-                     }
-                  }
+                  assert (stackValue != nullptr);
+                  activeTransform = stackValue;
                }
                break;
             }
@@ -1092,10 +1071,7 @@ namespace Polytope {
                float z = std::stof(argument.Values[2]);
                Transform t = Transform::Translate(x, y, z);
 
-               if (activeTransform == nullptr) {
-                  activeTransform = std::make_shared<Transform>();
-               }
-
+               assert (activeTransform != nullptr);
                Transform *active = activeTransform.get();
                *active *= t;
                break;

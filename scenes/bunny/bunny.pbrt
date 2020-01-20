@@ -2,16 +2,16 @@ Integrator "path" "integer maxdepth" [ 7 ]
 LookAt 0 0 1 # eye
        0 0 -1 # look at point
        0 1 0 # up
-Sampler "halton" "integer pixelsamples" [ 4 ]
+Sampler "halton" "integer pixelsamples" [ 1 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
-Film "image" "integer xresolution" [ 256 ] "integer yresolution" [ 256 ] "string filename" [ "bunny.png" ]
+Film "image" "integer xresolution" [ 1280 ] "integer yresolution" [ 720 ] "string filename" [ "bunny.png" ]
 Camera "perspective" "float fov" [ 10 ]
 WorldBegin
     LightSource "infinite" "rgb L" [1 1 1]
-    Material "matte" "rgb Kd" [ .7  .8  .8 ]
+    Material "matte" "rgb Kd" [ .7  .5  .7 ]
     TransformBegin
-        # Translate 0 0 -25
-        Rotate -90 1 0 0
+        Translate .0175 -.105 0
+        # Rotate -90 1 0 0
         Shape "plymesh" "string filename" [ bunny.ply ]
     TransformEnd
 WorldEnd

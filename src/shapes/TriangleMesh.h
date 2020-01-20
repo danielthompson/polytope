@@ -38,6 +38,8 @@ namespace Polytope {
       void Bound();
       void Intersect(Ray &ray, Intersection *intersection) override;
       void IntersectFaces(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces);
+      void IntersectFacesISPC(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces);
+      void IntersectFacesISPC_SOA(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces);
       void IntersectNode(Ray &ray, Intersection *intersection, BVHNode* node, unsigned int depth);
 
       void CalculateVertexNormals();
@@ -67,8 +69,6 @@ namespace Polytope {
       void Bound(BVHNode* node, const std::vector<Point3ui> &faces, unsigned int depth);
       void Split(Axis axis, float split);
    };
-
-
 }
 
 #endif //POLYTOPE_TRIANGLEMESH_H

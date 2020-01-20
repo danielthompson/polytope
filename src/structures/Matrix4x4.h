@@ -18,6 +18,8 @@ namespace Polytope {
                 float t20, float t21, float t22, float t23,
                 float t30, float t31, float t32, float t33);
 
+      Matrix4x4(const Matrix4x4 &other);
+
       // operators
 
       bool operator==(const Matrix4x4 &rhs) const;
@@ -32,7 +34,7 @@ namespace Polytope {
 
       // data
 
-      float Matrix[4][4];
+      float Matrix[4][4]{};
    };
 }
 #endif //POLYTOPE_MATRIX4X4_H

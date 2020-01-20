@@ -1,0 +1,22 @@
+Integrator "path" "integer maxdepth" [ 7 ] 
+LookAt 0 -0.05 10 # eye
+       0 -10 -1 # look at point
+       0 1 0 # up
+Sampler "halton" "integer pixelsamples" [ 1 ]
+PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
+Film "image" "integer xresolution" [ 1280 ] "integer yresolution" [ 720 ] "string filename" [ "dragon.png" ]
+Camera "perspective" "float fov" [ 1 ]
+WorldBegin
+    Material "matte" "rgb Kd" [ 1 1 1 ]
+    Shape "objmesh" "string filename" [ triangle-one.obj ]
+
+    LightSource "infinite" "rgb L" [1 1 1]
+    Material "matte" "rgb Kd" [ .7  .5  .7 ]
+    TransformBegin
+        # Translate 0 -0.0528440997 0
+        Translate 0 -0.055 0
+        Shape "plymesh" "string filename" [ dragon_vrip_res4.ply ]
+    TransformEnd
+
+
+WorldEnd

@@ -3,32 +3,31 @@
 //
 
 #include <cstring>
-#include <cmath>
 #include <exception>
 #include <stdexcept>
 #include "Matrix4x4.h"
 
 namespace Polytope {
 
-   Matrix4x4::Matrix4x4() {
+   Matrix4x4::Matrix4x4() : Matrix {0}{
       Matrix[0][0] = 1;
-      Matrix[0][1] = 0;
-      Matrix[0][2] = 0;
-      Matrix[0][3] = 0;
+      //Matrix[0][1] = 0;
+      //Matrix[0][2] = 0;
+      //Matrix[0][3] = 0;
 
-      Matrix[1][0] = 0;
+      //Matrix[1][0] = 0;
       Matrix[1][1] = 1;
-      Matrix[1][2] = 0;
-      Matrix[1][3] = 0;
+      //Matrix[1][2] = 0;
+      //Matrix[1][3] = 0;
 
-      Matrix[2][0] = 0;
-      Matrix[2][1] = 0;
+      //Matrix[2][0] = 0;
+      //Matrix[2][1] = 0;
       Matrix[2][2] = 1;
-      Matrix[2][3] = 0;
+      //Matrix[2][3] = 0;
 
-      Matrix[3][0] = 0;
-      Matrix[3][1] = 0;
-      Matrix[3][2] = 0;
+      //Matrix[3][0] = 0;
+      //Matrix[3][1] = 0;
+      //Matrix[3][2] = 0;
       Matrix[3][3] = 1;
    }
 
@@ -78,6 +77,28 @@ namespace Polytope {
       Matrix[3][1] = t31;
       Matrix[3][2] = t32;
       Matrix[3][3] = t33;
+   }
+
+   Matrix4x4::Matrix4x4(const Matrix4x4 &other) {
+      Matrix[0][0] = other.Matrix[0][0];
+      Matrix[0][1] = other.Matrix[0][1];
+      Matrix[0][2] = other.Matrix[0][2];
+      Matrix[0][3] = other.Matrix[0][3];
+
+      Matrix[1][0] = other.Matrix[1][0];
+      Matrix[1][1] = other.Matrix[1][1];
+      Matrix[1][2] = other.Matrix[1][2];
+      Matrix[1][3] = other.Matrix[1][3];
+
+      Matrix[2][0] = other.Matrix[2][0];
+      Matrix[2][1] = other.Matrix[2][1];
+      Matrix[2][2] = other.Matrix[2][2];
+      Matrix[2][3] = other.Matrix[2][3];
+
+      Matrix[3][0] = other.Matrix[3][0];
+      Matrix[3][1] = other.Matrix[3][1];
+      Matrix[3][2] = other.Matrix[3][2];
+      Matrix[3][3] = other.Matrix[3][3];
    }
 
    Matrix4x4 Matrix4x4::Transpose() {
@@ -259,5 +280,4 @@ namespace Polytope {
 
       return *this;
    }
-
 }

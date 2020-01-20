@@ -11,6 +11,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 SET(CMAKE_CXX_FLAGS "-O0 -g -Wno-error=unused-function -pthread")
 
+set (ISPC_EXECUTABLE $<TARGET_FILE:ispc>)
+
 # see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 SET(COVERAGE OFF CACHE BOOL "Coverage")
 
@@ -121,6 +123,8 @@ add_library(polytope_lib
       src/exporters/OBJExporter.cpp
       src/exporters/OBJExporter.h
       src/scenes/BVHScene.cpp)
+
+target_link_libraries(polytope_lib PRIVATE ~/repos/polytope/src/shapes/triangle_mesh_ispc.o)
 
 add_executable(${PROJECT_NAME} src/Main.cpp
       src/platforms/win32-cygwin.h

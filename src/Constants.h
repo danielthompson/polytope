@@ -102,15 +102,6 @@ namespace Polytope {
    }
 
    inline float SignedDistanceFromPlane(const Point &pointOnPlane, const Normal &normal, const Point &p) {
-//      const float a = normal.x;
-//      const float b = normal.y;
-//      const float c = normal.z;
-//      const float d = -(a * pointOnPlane.x + b * pointOnPlane.y + c * pointOnPlane.z);
-//      // normal should already be normalized
-////      const float sqrt = std::sqrt(a * a + b * b + c * c);
-//      const float dist = (normal.x * p.x + normal.y * p.y + normal.z * p.z + d);// / sqrt;
-//      return dist;
-
       return (p - pointOnPlane).Dot(normal);
    }
 
