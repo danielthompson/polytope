@@ -4,13 +4,13 @@ LookAt 0 0 0 # eye
        0 1 0 # up	   
 Sampler "halton" "integer pixelsamples" [ 64 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
-Film "image" "integer xresolution" [ 512 ] "integer yresolution" [ 512 ] "string filename" [ "triangle-one.png" ]
+Film "image" "integer xresolution" [ 512 ] "integer yresolution" [ 512 ] "string filename" [ "TriangleMesh-one.png" ]
 Camera "perspective" "float fov" [ 50 ]
 WorldBegin
     LightSource "infinite" "rgb L" [1 1 1]
     Material "matte" "rgb Kd" [ 1 .8 .8 ]
     TransformBegin
         Translate 0 0 -50
-        Shape "objmesh" "string filename" [ triangle-one.obj ]
+        Shape "objmesh" "string filename" [ TriangleMesh-one.obj ]
     TransformEnd
 WorldEnd

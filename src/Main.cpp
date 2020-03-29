@@ -10,7 +10,7 @@
 #include "utilities/Common.h"
 #include "scenes/SceneBuilder.h"
 #include "integrators/PathTraceIntegrator.h"
-#include "samplers/HaltonSampler.h"
+#include "samplers/samplers.h"
 #include "filters/BoxFilter.h"
 #include "runners/TileRunner.h"
 #include "films/PNGFilm.h"

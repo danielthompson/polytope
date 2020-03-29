@@ -9,7 +9,7 @@
 #include "PBRTFileParser.h"
 #include "mesh/OBJParser.h"
 #include "../integrators/PathTraceIntegrator.h"
-#include "../samplers/HaltonSampler.h"
+#include "../samplers/samplers.h"
 #include "../runners/TileRunner.h"
 #include "../films/PNGFilm.h"
 #include "../filters/BoxFilter.h"
@@ -19,7 +19,6 @@
 #include "../utilities/Common.h"
 #include "../scenes/skyboxes/ColorSkybox.h"
 #include "../structures/Vectors.h"
-#include "../samplers/CenterSampler.h"
 #include "mesh/PLYParser.h"
 
 namespace Polytope {
@@ -948,6 +947,8 @@ namespace Polytope {
                      const OBJParser parser;
                      const std::string absoluteObjFilepath = GetCurrentWorkingDirectory() + UnixPathSeparator + _basePathFromCWD + objFilename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
+                     mesh->Bound();
+                     mesh->CalculateVertexNormals();
                      //mesh->ObjectToWorld = *activeTransform;
                      mesh->Material = activeMaterial;
                      _scene->Shapes.push_back(mesh);
@@ -992,7 +993,8 @@ namespace Polytope {
                      const PLYParser parser;
                      const std::string absoluteObjFilepath = GetCurrentWorkingDirectory() + UnixPathSeparator + _basePathFromCWD + objFilename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
-
+                     mesh->Bound();
+                     mesh->CalculateVertexNormals();
                      std::ostringstream oss;
                      oss << "Vertex count: " << mesh->Vertices.size();
                      Log.WithTime(oss.str());

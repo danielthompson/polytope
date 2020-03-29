@@ -2,7 +2,7 @@ Integrator "path" "integer maxdepth" [ 7 ]
 LookAt 0 0 35 # eye
        0 0 -1 # look at point
        0 1 0 # up
-Sampler "halton" "integer pixelsamples" [ 64 ]
+Sampler "halton" "integer pixelsamples" [ 4 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
 Film "image" "integer xresolution" [ 512 ] "integer yresolution" [ 512 ] "string filename" [ "teapot.png" ]
 Camera "perspective" "float fov" [ 15 ]

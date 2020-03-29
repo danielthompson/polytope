@@ -4,11 +4,11 @@ LookAt 0 -0.05 10 # eye
        0 1 0 # up
 Sampler "halton" "integer pixelsamples" [ 1 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
-Film "image" "integer xresolution" [ 1280 ] "integer yresolution" [ 720 ] "string filename" [ "dragon.png" ]
+Film "image" "integer xresolution" [ 256 ] "integer yresolution" [ 256 ] "string filename" [ "dragon.png" ]
 Camera "perspective" "float fov" [ 1 ]
 WorldBegin
     Material "matte" "rgb Kd" [ 1 1 1 ]
-    Shape "objmesh" "string filename" [ triangle-one.obj ]
+    Shape "objmesh" "string filename" [ TriangleMesh-one.obj ]
 
     LightSource "infinite" "rgb L" [1 1 1]
     Material "matte" "rgb Kd" [ .7  .5  .7 ]

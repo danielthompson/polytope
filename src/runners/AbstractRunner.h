@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <thread>
-#include "../samplers/AbstractSampler.h"
+#include "../samplers/samplers.h"
 #include "../scenes/AbstractScene.h"
 #include "../integrators/AbstractIntegrator.h"
 #include "../films/AbstractFilm.h"

@@ -18,7 +18,7 @@ export void simple(
       // const Polytope::Vector p2 = hitPoint - vertex2;
       const float px = hitx - vertex[xindex];
       const float py = hity - vertex[yindex];
-      const float pz = hitz - vertex[zindex];
+      const float pz = hitz - vertex[zindex]; 
 
       // const Polytope::Vector cross2 = edge2.Cross(p2);
       const float crossx = edge[yindex] * pz - edge[zindex] * py;
@@ -32,3 +32,278 @@ export void simple(
       out[index] = n > 0;
    }
 }
+
+export void soa_hit(
+      uniform const float vx[],
+      uniform const float vy[],
+      uniform const float vz[],
+      uniform const unsigned int fv0[],
+      uniform const unsigned int fv1[],
+      uniform const unsigned int fv2[],
+      uniform float rox,
+      uniform float roy,
+      uniform float roz,
+      uniform float rdx,
+      uniform float rdy,
+      uniform float rdz,
+      uniform float t[],
+      uniform unsigned int count) {
+
+   foreach (index = 0 ... count) {
+
+//      const int xindex = index;
+//      const int yindex = index + yOffset;
+//      const int zindex = index + zOffset;
+
+      // TODO - gathers required here, maybe pre-pack these per BVH node at file read time?
+      const unsigned int v0index = fv0[index];
+      const float v0x = vx[v0index];
+      const float v0y = vy[v0index];
+      const float v0z = vz[v0index];
+
+      const unsigned int v1index = fv1[index];
+      const float v1x = vx[v1index];
+      const float v1y = vy[v1index];
+      const float v1z = vz[v1index];
+
+      const unsigned int v2index = fv2[index];
+      const float v2x = vx[v2index];
+      const float v2y = vy[v2index];
+      const float v2z = vz[v2index];
+
+      //print("v0: % % %\n", v0x, v0y, v0z);
+
+      // const Polytope::Vector edge0 = vertex1 - vertex0;
+      const float e0x = v1x - v0x;
+      const float e0y = v1y - v0y;
+      const float e0z = v1z - v0z;
+
+      // const Polytope::Vector edge1 = vertex2 - vertex1;
+      const float e1x = v2x - v1x;
+      const float e1y = v2y - v1y;
+      const float e1z = v2z - v1z;
+
+      //Polytope::Vector planeNormal = edge0.Cross(edge1);
+      float pnx = e0y * e1z - e0z * e1y;
+      float pny = e0z * e1x - e0x * e1z;
+      float pnz = e0x * e1y - e0y * e1x;
+
+      //planeNormal.Normalize();
+      const float oneOverLength = 1.0f / sqrt(pnx * pnx + pny * pny + pnz * pnz);
+      pnx *= oneOverLength;
+      pny *= oneOverLength;
+      pnz *= oneOverLength;
+
+      //const float divisor = planeNormal.Dot(ray.Direction);
+      const float divisor = pnx * rdx + pny * rdy + pnz * rdz;
+
+      if (divisor == 0.0f) {
+         // parallel
+         continue;
+      }
+
+      // const float t = planeNormal.Dot(vertex0 - ray.Origin) / divisor;
+      const float ft = (pnx * (v0x - rox) + pny * (v0y - roy) + pnz * (v0z - roz)) / divisor;
+
+      t[index] = ft;
+
+      if (ft <= 0)
+         continue;
+
+      // const Polytope::Point hitPoint = ray.GetPointAtT(t);
+      const float hpx = rox + rdx * ft;
+      const float hpy = roy + rdy * ft;
+      const float hpz = roz + rdz * ft;
+
+      //print("hp: % % %\n", hpx, hpy, hpz);
+      
+      // const Polytope::Vector edge2 = vertex0 - vertex2;
+      const float e2x = v0x - v2x;
+      const float e2y = v0y - v2y;
+      const float e2z = v0z - v2z;
+
+      // const Polytope::Vector p0 = hitPoint - vertex0;
+      const float p0x = hpx - v0x;
+      const float p0y = hpy - v0y;
+      const float p0z = hpz - v0z;
+
+      // const Polytope::Vector cross0 = edge0.Cross(p0);
+      const float cross0x = e0y * p0z - e0z * p0y;
+      const float cross0y = e0z * p0x - e0x * p0z;
+      const float cross0z = e0x * p0y - e0y * p0x;
+
+      // const float normal0 = cross0.Dot(planeNormal);
+      const float normal0 = cross0x * pnx + cross0y * pny + cross0z * pnz;
+
+      // const bool pos0 = normal0 > 0;
+      const bool pos0 = normal0 > 0;
+
+//      const Polytope::Vector p1 = hitPoint - vertex1;
+//      const Polytope::Vector cross1 = edge1.Cross(p1);
+//      const float normal1 = cross1.Dot(planeNormal);
+//      const bool pos1 = normal1 > 0;
+
+      const float p1x = hpx - v1x;
+      const float p1y = hpy - v1y;
+      const float p1z = hpz - v1z;
+      const float cross1x = e1y * p1z - e1z * p1y;
+      const float cross1y = e1z * p1x - e1x * p1z;
+      const float cross1z = e1x * p1y - e1y * p1x;
+      const float normal1 = cross1x * pnx + cross1y * pny + cross1z * pnz;
+      const bool pos1 = normal1 > 0;
+
+//      const Polytope::Vector p2 = hitPoint - vertex2;
+//      const Polytope::Vector cross2 = edge2.Cross(p2);
+//      const float normal2 = cross2.Dot(planeNormal);
+//      const bool pos2 = normal2 > 0;
+
+      const float p2x = hpx - v2x;
+      const float p2y = hpy - v2y;
+      const float p2z = hpz - v2z;
+      const float cross2x = e2y * p2z - e2z * p2y;
+      const float cross2y = e2z * p2x - e2x * p2z;
+      const float cross2z = e2x * p2y - e2y * p2x;
+      const float normal2 = cross2x * pnx + cross2y * pny + cross2z * pnz;
+      const bool pos2 = normal2 > 0;
+
+      //print("inside: % % %\n", pos0, pos1, pos2);
+      
+      bool inside = pos0 && pos1 && pos2;
+      if (!inside)
+         t[index] = -1;
+   }
+}
+
+export void soa2( 
+      uniform float vertex[],
+      uniform float rayox,
+      uniform float rayoy,
+      uniform float rayoz,
+      uniform float raydirx,
+      uniform float raydiry,
+      uniform float raydirz,
+      uniform float t[],
+      uniform bool inside[],
+      uniform unsigned int yOffset,
+      uniform unsigned int zOffset,
+      uniform int count) {
+   
+   //print("test");
+   //print("test");
+   foreach (index = 0 ... count) {
+
+      const int xindex = index;
+      const int yindex = index + yOffset;
+      const int zindex = index + zOffset;
+
+      const float v0x = vertex[xindex];
+      const float v0y = vertex[yindex];
+      const float v0z = vertex[zindex];
+
+      const float v1x = vertex[xindex + 1];
+      const float v1y = vertex[yindex + 1];
+      const float v1z = vertex[zindex + 1];
+
+      const float v2x = vertex[xindex + 2];
+      const float v2y = vertex[yindex + 2];
+      const float v2z = vertex[zindex + 2];
+
+      //print("v0: % % %\n", v0x, v0y, v0z);
+      
+      // const Polytope::Vector edge0 = vertex1 - vertex0;
+      const float e0x = v1x - v0x;
+      const float e0y = v1y - v0y;
+      const float e0z = v1z - v0z;
+
+      // const Polytope::Vector edge1 = vertex2 - vertex1;
+      const float e1x = v2x - v1x;
+      const float e1y = v2y - v1y;
+      const float e1z = v2z - v1z;
+
+      //Polytope::Vector planeNormal = edge0.Cross(edge1);
+      float pnx = e0y * e1z - e0z * e1y;
+      float pny = e0z * e1x - e0x * e1z;
+      float pnz = e0x * e1y - e0y * e1x;
+
+      //planeNormal.Normalize();
+      const float oneOverLength = 1.0f / sqrt(pnx * pnx + pny * pny + pnz * pnz);
+      pnx *= oneOverLength;
+      pny *= oneOverLength;
+      pnz *= oneOverLength;
+
+      //const float divisor = planeNormal.Dot(ray.Direction);
+      const float divisor = pnx * raydirx + pny * raydiry + pnz * raydirz;
+
+      if (divisor == 0.0f) {
+         // parallel
+         continue;
+      }
+
+      // const float t = planeNormal.Dot(vertex0 - ray.Origin) / divisor;
+      const float ft = (pnx * (v0x - rayox) + pny * (v0y - rayoy) + pnz * (v0z - rayoz)) / divisor;
+
+      t[index] = ft;
+
+      if (ft <= 0)
+         continue;
+
+      // const Polytope::Point hitPoint = ray.GetPointAtT(t);
+      const float hpx = rayox + raydirx * ft;
+      const float hpy = rayoy + raydiry * ft;
+      const float hpz = rayoz + raydirz * ft;
+
+      // const Polytope::Vector edge2 = vertex0 - vertex2;
+      const float e2x = v0x - v2x;
+      const float e2y = v0y - v2y;
+      const float e2z = v0z - v2z;
+
+      // const Polytope::Vector p0 = hitPoint - vertex0;
+      const float p0x = hpx - v0x;
+      const float p0y = hpy - v0y;
+      const float p0z = hpz - v0z;
+
+      // const Polytope::Vector cross0 = edge0.Cross(p0);
+      const float cross0x = e0y * p0z - e0z * p0y;
+      const float cross0y = e0z * p0x - e0x * p0z;
+      const float cross0z = e0x * p0y - e0y * p0x;
+
+      // const float normal0 = cross0.Dot(planeNormal);
+      const float normal0 = cross0x * pnx + cross0y * pny + cross0z * pnz;
+
+      // const bool pos0 = normal0 > 0;
+      const bool pos0 = normal0 > 0;
+
+//      const Polytope::Vector p1 = hitPoint - vertex1;
+//      const Polytope::Vector cross1 = edge1.Cross(p1);
+//      const float normal1 = cross1.Dot(planeNormal);
+//      const bool pos1 = normal1 > 0;
+
+      const float p1x = hpx - v1x;
+      const float p1y = hpy - v1y;
+      const float p1z = hpz - v1z;
+      const float cross1x = e1y * p1z - e1z * p1y;
+      const float cross1y = e1z * p1x - e1x * p1z;
+      const float cross1z = e1x * p1y - e1y * p1x;
+      const float normal1 = cross1x * pnx + cross1y * pny + cross1z * pnz;
+      const bool pos1 = normal1 > 0;
+
+//      const Polytope::Vector p2 = hitPoint - vertex2;
+//      const Polytope::Vector cross2 = edge2.Cross(p2);
+//      const float normal2 = cross2.Dot(planeNormal);
+//      const bool pos2 = normal2 > 0;
+
+      const float p2x = hpx - v2x;
+      const float p2y = hpy - v2y;
+      const float p2z = hpz - v2z;
+      const float cross2x = e2y * p2z - e2z * p2y;
+      const float cross2y = e2z * p2x - e2x * p2z;
+      const float cross2z = e2x * p2y - e2y * p2x;
+      const float normal2 = cross2x * pnx + cross2y * pny + cross2z * pnz;
+      const bool pos2 = normal2 > 0;
+
+      bool inside = pos0 && pos1 && pos2;
+      if (!inside)
+         t[index] = -1;
+   }
+}
+

@@ -7,12 +7,13 @@
 
 #include "../AbstractFileParser.h"
 #include "AbstractMeshParser.h"
-#include "../../shapes/TriangleMesh.h"
+#include "../../shapes/triangle.h"
 
 namespace Polytope {
    class PLYParser : public AbstractMeshParser {
    public:
       void ParseFile(TriangleMesh *mesh, const std::string &filepath) const override;
+      void ParseFile(TriangleMeshSOA* mesh, const std::string &filepath) const override;
    };
 }
 

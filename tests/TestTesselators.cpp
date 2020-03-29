@@ -4,7 +4,7 @@
 
 #include <fstream>
 #include "gtest/gtest.h"
-#include "../src/shapes/TriangleMesh.h"
+#include "../src/shapes/triangle.h"
 #include "../src/shapes/Tesselators.h"
 #include "../src/exporters/OBJExporter.h"
 

@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 SET(CMAKE_CXX_FLAGS "-O0 -g -Wno-error=unused-function -pthread")
 
-set (ISPC_EXECUTABLE $<TARGET_FILE:ispc>)
+# set (ISPC_EXECUTABLE $<TARGET_FILE:ispc>)
 
 # see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 SET(COVERAGE OFF CACHE BOOL "Coverage")
@@ -23,108 +23,113 @@ SET(COVERAGE OFF CACHE BOOL "Coverage")
 ################################
 # Normal Libraries & Executables
 ################################
+
+add_custom_command(
+        OUTPUT ~/repos/polytope/src/shapes/triangle_mesh_ispc.o
+        COMMAND ispc -h ~/repos/polytope/src/shapes/triangle_mesh_ispc.h --pic -o ~/repos/polytope/src/shapes/triangle_mesh_ispc.o ~/repos/polytope/src/shapes/triangle_mesh.ispc
+        DEPENDS ~/repos/polytope/src/shapes/triangle_mesh.ispc)
+
 add_library(polytope_lib
-        lib/lodepng.cpp
-        lib/lodepng.h
-        src/Constants.h
+      lib/lodepng.cpp
+      lib/lodepng.h
+      src/Constants.h
       src/cameras/AbstractCamera.cpp
-        src/cameras/AbstractCamera.h
-        src/cameras/CameraSettings.h
-        src/cameras/PerspectiveCamera.cpp
-        src/cameras/PerspectiveCamera.h
-        src/films/AbstractFilm.h
-        src/films/PNGFilm.cpp
-        src/films/PNGFilm.h
-        src/filters/AbstractFilter.h
-        src/filters/BoxFilter.cpp
-        src/filters/BoxFilter.h
-        src/integrators/AbstractIntegrator.h
-        src/integrators/AbstractIntegrator.h
-        src/integrators/DebugIntegrator.cpp
-        src/integrators/DebugIntegrator.h
-        src/integrators/PathTraceIntegrator.cpp
-        src/integrators/PathTraceIntegrator.h
-        src/lights/AbstractLight.h
-        src/lights/PointLight.h
-        src/lights/ShapeLight.h
-        src/parsers/PBRTFileParser.cpp
-        src/parsers/PBRTFileParser.h
-        src/runners/AbstractRunner.cpp
-        src/runners/AbstractRunner.h
-        src/runners/PixelRunner.cpp
-        src/runners/PixelRunner.h
-        src/runners/TileRunner.cpp
-        src/runners/TileRunner.h
-        src/samplers/AbstractSampler.h
-        src/samplers/CenterSampler.cpp
-        src/samplers/CenterSampler.h
-        src/samplers/GridSampler.cpp
-        src/samplers/GridSampler.h
-        src/samplers/HaltonSampler.cpp
-        src/samplers/HaltonSampler.h
+      src/cameras/AbstractCamera.h
+      src/cameras/CameraSettings.h
+      src/cameras/PerspectiveCamera.cpp
+      src/cameras/PerspectiveCamera.h
+      src/films/AbstractFilm.h
+      src/films/PNGFilm.cpp
+      src/films/PNGFilm.h
+      src/filters/AbstractFilter.h
+      src/filters/BoxFilter.cpp
+      src/filters/BoxFilter.h
+      src/integrators/AbstractIntegrator.h
+      src/integrators/AbstractIntegrator.h
+      src/integrators/DebugIntegrator.cpp
+      src/integrators/DebugIntegrator.h
+      src/integrators/PathTraceIntegrator.cpp
+      src/integrators/PathTraceIntegrator.h
+      src/lights/AbstractLight.h
+      src/lights/PointLight.h
+      src/lights/ShapeLight.h
+      src/parsers/PBRTFileParser.cpp
+      src/parsers/PBRTFileParser.h
+      src/runners/AbstractRunner.cpp
+      src/runners/AbstractRunner.h
+      src/runners/PixelRunner.cpp
+      src/runners/PixelRunner.h
+      src/runners/TileRunner.cpp
+      src/runners/TileRunner.h
+        src/samplers/samplers.h
+        src/samplers/samplers.cpp
         src/scenes/AbstractScene.cpp
-        src/scenes/AbstractScene.h
+      src/scenes/AbstractScene.h
       src/scenes/BVHScene.h
       src/scenes/NaiveScene.cpp
-        src/scenes/NaiveScene.h
-        src/scenes/SceneBuilder.cpp
-        src/scenes/SceneBuilder.h
-        src/scenes/skyboxes/AbstractSkybox.h
-        src/scenes/skyboxes/ColorSkybox.cpp
-        src/scenes/skyboxes/ColorSkybox.h
-        src/shading/Material.h
-        src/shading/ReflectanceSpectrum.cpp
-        src/shading/ReflectanceSpectrum.h
-        src/shading/SpectralPowerDistribution.cpp
-        src/shading/SpectralPowerDistribution.h
-        src/shading/brdf/AbstractBRDF.cpp
-        src/shading/brdf/AbstractBRDF.h
-        src/shading/brdf/LambertBRDF.cpp
-        src/shading/brdf/LambertBRDF.h
-        src/shading/brdf/MirrorBRDF.cpp
+      src/scenes/NaiveScene.h
+      src/scenes/SceneBuilder.cpp
+      src/scenes/SceneBuilder.h
+      src/scenes/skyboxes/AbstractSkybox.h
+      src/scenes/skyboxes/ColorSkybox.cpp
+      src/scenes/skyboxes/ColorSkybox.h
+      src/shading/Material.h
+      src/shading/ReflectanceSpectrum.cpp
+      src/shading/ReflectanceSpectrum.h
+      src/shading/SpectralPowerDistribution.cpp
+      src/shading/SpectralPowerDistribution.h
+      src/shading/brdf/AbstractBRDF.cpp
+      src/shading/brdf/AbstractBRDF.h
+      src/shading/brdf/LambertBRDF.cpp
+      src/shading/brdf/LambertBRDF.h
+      src/shading/brdf/MirrorBRDF.cpp
       src/shading/brdf/MirrorBRDF.h
-        src/shapes/AbstractShape.cpp
-        src/shapes/AbstractShape.h
-        src/structures/Intersection.cpp
-        src/structures/Intersection.h
-        src/structures/Matrix4x4.cpp
+      src/shapes/AbstractShape.cpp
+      src/shapes/AbstractShape.h
+      src/structures/Intersection.cpp
+      src/structures/Intersection.h
+      src/structures/Matrix4x4.cpp
       src/structures/Matrix4x4.h
       src/structures/Point2.cpp
-        src/structures/Point2.h
-        src/structures/Ray.cpp
-        src/structures/Ray.h
-        src/structures/Sample.cpp
-        src/structures/Sample.h
-        src/structures/Transform.cpp
-        src/structures/Transform.h
+      src/structures/Point2.h
+      src/structures/Ray.cpp
+      src/structures/Ray.h
+      src/structures/Sample.cpp
+      src/structures/Sample.h
+      src/structures/Transform.cpp
+      src/structures/Transform.h
       src/utilities/Common.h
-        src/utilities/GeometryCalculations.h
-        src/utilities/GlobalDefines.h
-        src/utilities/Logger.cpp
-        src/utilities/Logger.h
-        src/utilities/Options.h
-        src/utilities/OptionsParser.cpp
-        src/utilities/OptionsParser.h
+      src/utilities/GeometryCalculations.h
+      src/utilities/GlobalDefines.h
+      src/utilities/Logger.cpp
+      src/utilities/Logger.h
+      src/utilities/Options.h
+      src/utilities/OptionsParser.cpp
+      src/utilities/OptionsParser.h
       src/parsers/mesh/OBJParser.cpp
       src/parsers/mesh/OBJParser.h
-        src/shapes/TriangleMesh.cpp
-        src/shapes/TriangleMesh.h
-        src/parsers/AbstractFileParser.cpp
-        src/parsers/AbstractFileParser.h
+        src/shapes/triangle.cpp
+        src/shapes/triangle.h 
+      src/shapes/triangle_mesh_ispc.h 
+      src/shapes/triangle_mesh_ispc.o
+      src/parsers/AbstractFileParser.cpp
+      src/parsers/AbstractFileParser.h
       src/structures/Vectors.cpp
       src/structures/Vectors.h
-        src/structures/BoundingBox.cpp
+      src/structures/BoundingBox.cpp
       src/structures/BoundingBox.h
-        src/parsers/mesh/PLYParser.cpp
-        src/parsers/mesh/PLYParser.h
-        src/parsers/mesh/AbstractMeshParser.h
+      src/parsers/mesh/PLYParser.cpp
+      src/parsers/mesh/PLYParser.h
+      src/parsers/mesh/AbstractMeshParser.h
       src/shapes/Tesselators.cpp
       src/shapes/Tesselators.h
       src/exporters/OBJExporter.cpp
       src/exporters/OBJExporter.h
       src/scenes/BVHScene.cpp)
 
-target_link_libraries(polytope_lib PRIVATE ~/repos/polytope/src/shapes/triangle_mesh_ispc.o)
+set_source_files_properties(~/repos/polytope/src/shapes/triangle_mesh_ispc.h PROPERTIES OBJECT_DEPENDS ~/repos/polytope/src/shapes/triangle_mesh.ispc)
+
+#target_link_libraries(polytope_lib PRIVATE ~/repos/polytope/src/shapes/triangle_mesh_ispc.o)
 
 add_executable(${PROJECT_NAME} src/Main.cpp
       src/platforms/win32-cygwin.h
@@ -197,7 +202,8 @@ add_executable(runUnitTests
       tests/TestTriangleMesh.cpp
       tests/TestVector.cpp
       tests/TestTesselators.cpp
-      tests/TestTriangleSplitting.cpp)
+      tests/TestTriangleSplitting.cpp
+        tests/TestTriangleMeshISPC.cpp)
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 # if (COVERAGE)

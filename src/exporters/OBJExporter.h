@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_OBJEXPORTER_H
 #define POLYTOPE_OBJEXPORTER_H
 
-#include "../shapes/TriangleMesh.h"
+#include "../shapes/triangle.h"
 
 namespace Polytope {
    class OBJExporter {

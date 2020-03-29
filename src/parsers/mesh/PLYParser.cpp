@@ -208,10 +208,9 @@ namespace Polytope {
 
       mesh->BoundingBox->p0 = min;
       mesh->BoundingBox->p1 = max;
+   }
 
-      mesh->Bound();
-      Log.WithTime("Created BVH.");
-      mesh->CalculateVertexNormals();
-      Log.WithTime("Calculated vertex normals.");
+   void PLYParser::ParseFile(TriangleMeshSOA *mesh, const std::string &filepath) const {
+      // TODO
    }
 }

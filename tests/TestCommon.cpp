@@ -2,7 +2,7 @@
 
 #include "../src/Constants.h"
 #include "../src/structures/Vectors.h"
-#include "../src/shapes/TriangleMesh.h"
+#include "../src/shapes/triangle.h"
 
 
 namespace Tests {

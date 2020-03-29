@@ -5,7 +5,7 @@
 #include "gtest/gtest.h"
 
 #include "../src/parsers/PBRTFileParser.h"
-#include "../src/samplers/HaltonSampler.h"
+#include "../src/samplers/samplers.h"
 #include "../src/utilities/Logger.h"
 #include "../src/films/PNGFilm.h"
 #include "../src/filters/BoxFilter.h"

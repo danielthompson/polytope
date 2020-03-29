@@ -26,7 +26,7 @@ Hobby ray/path tracer in C++.
 
 #### Does polytope render polytopes?
 
-Polytope represents all shapes internally as triangle meshes, which are 3-polytopes. Input grammars that specify other types of geometry (implicit surfaces, etc) are tesselated on import to triangle meshes.
+Polytope represents all shapes internally as TriangleMesh meshes, which are 3-polytopes. Input grammars that specify other types of geometry (implicit surfaces, etc) are tesselated on import to TriangleMesh meshes.
 
 So, yes.
 

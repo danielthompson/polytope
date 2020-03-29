@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_TESSELATORS_H
 #define POLYTOPE_TESSELATORS_H
 
-#include "TriangleMesh.h"
+#include "triangle.h"
 
 namespace Polytope {
    class SphereTesselator {

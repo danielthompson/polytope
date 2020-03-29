@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 
 #include "../src/structures/Vectors.h"
-#include "../src/shapes/TriangleMesh.h"
+#include "../src/shapes/triangle.h"
 #include "../src/exporters/OBJExporter.h"
 #include "../src/shapes/Tesselators.h"
 
@@ -90,7 +90,7 @@ namespace Tests {
          //  | /
          //  |/
          //
-         // in this case, we should split the triangle into 2, not 3.
+         // in this case, we should split the TriangleMesh into 2, not 3.
 
          std::shared_ptr<Transform> identity = std::make_shared<Transform>();
          TriangleMesh mesh(identity, identity, nullptr);

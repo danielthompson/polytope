@@ -5,7 +5,7 @@
 
 
 #include "GLRenderer.h"
-#include "../shapes/TriangleMesh.h"
+#include "../shapes/triangle.h"
 #include "../utilities/Common.h"
 
 #define GLFW_INCLUDE_NONE
