@@ -1,5 +1,14 @@
 typedef float<3> float3;
 
+export struct soa_hit_result {
+   float t;
+   unsigned int index;
+   bool hits;
+};
+
+const uniform float float_max = 3.40282346638528859812e+38F;
+const uniform unsigned int unsigned_int_max = 4294967294;
+
 inline float3 cross(float3 v0, float3 v1) {
    float<3> retval = {
       v0.y * v1.z - v0.z * v1.y,
@@ -49,7 +58,7 @@ export void simple(
    }
 }
 
-export void soa_hit(
+export uniform soa_hit_result soa_hits(
       uniform const float vx[],
       uniform const float vy[],
       uniform const float vz[],
@@ -62,14 +71,16 @@ export void soa_hit(
       uniform float rdx,
       uniform float rdy,
       uniform float rdz,
-      uniform float t[],
       uniform unsigned int count) {
 
-   const float3 ro = { rox, roy, roz };
-   const float3 rd = { rdx, rdy, rdz };
+   uniform const float3 ro = { rox, roy, roz };
+   uniform const float3 rd = { rdx, rdy, rdz };
    
-   foreach (index = 0 ... count) {
-
+   varying float t = float_max;
+   varying unsigned int original_index = unsigned_int_max;
+   
+   foreach (index = 0 ... count) { 
+      
 //      const int xindex = index;
 //      const int yindex = index + yOffset;
 //      const int zindex = index + zOffset;
@@ -108,19 +119,263 @@ export void soa_hit(
       }
 
       // const float t = planeNormal.Dot(vertex0 - ray.Origin) / divisor;
-      const float ft = (dot(pn, v0 - ro)) / divisor;
+      const float new_t = (dot(pn, v0 - ro)) / divisor;
+      
+      if (new_t < t && new_t > 0) {
+         // const Polytope::Point hitPoint = ray.GetPointAtT(t);
+         const float3 hp = ro + rd * new_t;
 
-      t[index] = ft;
+         //print("hp: % % %\n", hpx, hpy, hpz);
 
-      if (ft <= 0)
+         // const Polytope::Vector edge2 = vertex0 - vertex2;
+         const float3 e2 = v0 - v2;
+
+         const float3 p0 = hp - v0;
+         const float3 cross0 = cross(e0, p0);
+         const float normal0 = dot(cross0, pn);
+         const bool pos0 = normal0 > 0;
+
+         const float3 p1 = hp - v1;
+         const float3 cross1 = cross(e1, p1);
+         const float normal1 = dot(cross1, pn);
+         const bool pos1 = normal1 > 0;
+
+         const float3 p2 = hp - v2;
+         const float3 cross2 = cross(e2, p2);
+         const float normal2 = dot(cross2, pn);
+         const bool pos2 = normal2 > 0;
+
+         //print("inside: % % %\n", pos0, pos1, pos2);
+
+         const bool inside = pos0 && pos1 && pos2;
+         if (inside) {
+            t = new_t;
+            original_index = programIndex;
+         }
+      }
+   }
+
+   uniform float min_t = float_max;
+   uniform unsigned int min_t_index = unsigned_int_max;
+   
+   for (uniform int i = 0; i < programCount; i++) {
+      uniform float possible_t = extract(t, i);
+      if (possible_t < min_t) {
+         min_t = possible_t;
+         min_t_index = extract(original_index, i);
+      }
+   }
+
+   print("t: %\n", t);
+   print("original index: %\n", original_index);
+   print("min_t: %\n", min_t);
+   print("min_t_index: %\n", min_t_index);
+   
+   uniform soa_hit_result result;
+   result.index = min_t_index;
+   result.t = min_t;
+   
+   return result;
+}
+
+export uniform soa_hit_result soa_intersect(
+      uniform const float vx[],
+      uniform const float vy[],
+      uniform const float vz[],
+      uniform const unsigned int fv0[],
+      uniform const unsigned int fv1[],
+      uniform const unsigned int fv2[],
+      uniform float rox,
+      uniform float roy,
+      uniform float roz,
+      uniform float rdx,
+      uniform float rdy,
+      uniform float rdz,
+      uniform float t[],
+      uniform unsigned int count) {
+
+   uniform const float3 ro = { rox, roy, roz };
+   uniform const float3 rd = { rdx, rdy, rdz };
+   
+   varying soa_hit_result partial_result;
+   partial_result.t = float_max;
+   partial_result.index = 0;
+   
+   foreach (index = 0 ... count) {
+      
+      //t[index] = float_max;
+      
+      //      const int xindex = index;
+      //      const int yindex = index + yOffset;
+      //      const int zindex = index + zOffset;
+      
+      const unsigned int v0index = fv0[index];
+      float3 v0 = { vx[v0index], vy[v0index], vz[v0index] };
+      
+      const unsigned int v1index = fv1[index];
+      float3 v1 = { vx[v1index], vy[v1index], vz[v1index] };
+      
+      const unsigned int v2index = fv2[index];
+      float3 v2 = { vx[v2index], vy[v2index], vz[v2index] };
+      
+      //print("v0: % % %\n", v0x, v0y, v0z);
+      
+      // const Polytope::Vector edge0 = vertex1 - vertex0;
+      const float3 e0 = v1 - v0;
+      
+      // const Polytope::Vector edge1 = vertex2 - vertex1;
+      const float3 e1 = v2 - v1;
+      
+      //Polytope::Vector planeNormal = edge0.Cross(edge1);
+      float3 pn = cross(e0, e1);
+      
+      //planeNormal.Normalize();
+      const float oneOverLength = 1.0f / sqrt(dot(pn, pn));
+      pn *= oneOverLength;
+      
+      //const float divisor = planeNormal.Dot(ray.Direction);
+      const float divisor = dot(pn, rd);
+      
+      if (divisor == 0.0f) {
+         // parallel
          continue;
-
+      }
+      
+      // const float t = planeNormal.Dot(vertex0 - ray.Origin) / divisor;
+      const float ft = (dot(pn, v0 - ro)) / divisor;
+      
+      if (ft <= 0) {
+         continue;
+      }
+      
+//      t[index] = ft;
+      
       // const Polytope::Point hitPoint = ray.GetPointAtT(t);
       const float3 hp = ro + rd * ft;
-
+      
       //print("hp: % % %\n", hpx, hpy, hpz);
       
       // const Polytope::Vector edge2 = vertex0 - vertex2;
+      const float3 e2 = v0 - v2; 
+      
+      const float3 p0 = hp - v0;
+      const float3 cross0 = cross(e0, p0);
+      const float normal0 = dot(cross0, pn);
+      const bool pos0 = normal0 > 0;
+      
+      const float3 p1 = hp - v1;
+      const float3 cross1 = cross(e1, p1);
+      const float normal1 = dot(cross1, pn);
+      const bool pos1 = normal1 > 0;
+      
+      const float3 p2 = hp - v2;
+      const float3 cross2 = cross(e2, p2);
+      const float normal2 = dot(cross2, pn);
+      const bool pos2 = normal2 > 0;
+      
+      //print("inside: % % %\n", pos0, pos1, pos2);
+      
+      const bool inside = pos0 && pos1 && pos2;
+
+      partial_result.t = inside ? ft : partial_result.t;
+      partial_result.index = inside ? index : partial_result.index;
+      
+//      if (!inside)
+//         t[index] = float_max;
+   }
+   
+   uniform soa_hit_result uniform_result;
+   
+   for (uniform int i = 0; i < programCount; i++) {
+      uniform float partial_t = extract(partial_result.t, i);
+      if (partial_t < uniform_result.t) {
+         uniform_result.t = partial_t;
+         uniform_result.index = extract(partial_result.index, i);
+      }
+   }
+   
+   return uniform_result;
+   
+}
+
+export void soa_intersect_expanded(
+      uniform const float vx[],
+      uniform const float vy[],
+      uniform const float vz[],
+      uniform float rox,
+      uniform float roy,
+      uniform float roz,
+      uniform float rdx,
+      uniform float rdy,
+      uniform float rdz,
+      uniform float &return_t,
+      uniform unsigned int &return_face_index,
+      uniform bool &return_hits,
+      //uniform float t[],
+      uniform unsigned int num_faces) {
+
+   uniform const float3 ro = { rox, roy, roz };
+   uniform const float3 rd = { rdx, rdy, rdz };
+
+   uniform const unsigned int v1_index_offset = num_faces;
+   uniform const unsigned int v2_index_offset = num_faces * 2;
+
+   varying soa_hit_result partial_result;
+   partial_result.t = float_max;
+   partial_result.index = 0;
+   partial_result.hits = false;
+   
+   foreach (index = 0 ... num_faces) {
+
+      //      t[index] = float_max;
+
+      //      const int xindex = index;
+      //      const int yindex = index + yOffset;
+      //      const int zindex = index + zOffset;
+
+      // TODO - gathers required here, maybe pre-pack these per BVH node at file read time?
+      //const unsigned int v0index = fv0[index];
+      
+      const unsigned int v1index = index + v1_index_offset;
+      const unsigned int v2index = index + v2_index_offset;
+      
+      const float3 v0 = { vx[index], vy[index], vz[index] };
+      const float3 v1 = { vx[v1index], vy[v1index], vz[v1index] };
+      const float3 v2 = { vx[v2index], vy[v2index], vz[v2index] };
+
+      //print("v0: % % %\n", v0x, v0y, v0z);
+
+      // const Polytope::Vector edge0 = vertex1 - vertex0;
+      const float3 e0 = v1 - v0;
+
+      // const Polytope::Vector edge1 = vertex2 - vertex1;
+      const float3 e1 = v2 - v1;
+
+      //Polytope::Vector planeNormal = edge0.Cross(edge1);
+      float3 pn = cross(e0, e1);
+
+      //planeNormal.Normalize();
+      const float oneOverLength = 1.0f / sqrt(dot(pn, pn));
+      pn *= oneOverLength;
+
+      //const float divisor = planeNormal.Dot(ray.Direction);
+      const float divisor = dot(pn, rd);
+
+      if (divisor == 0.0f) {
+         // parallel
+         continue;
+      }
+
+      // const float t = planeNormal.Dot(vertex0 - ray.Origin) / divisor;
+      const float ft = (dot(pn, v0 - ro)) / divisor;
+
+      if (ft <= 0 || ft >= partial_result.t) {
+         continue;
+      }
+      // t[index] = ft;
+
+      // const Polytope::Point hitPoint = ray.GetPointAtT(t);
+      const float3 hp = ro + rd * ft;
       const float3 e2 = v0 - v2;
 
       const float3 p0 = hp - v0;
@@ -128,21 +383,37 @@ export void soa_hit(
       const float normal0 = dot(cross0, pn);
       const bool pos0 = normal0 > 0;
 
+      if (!pos0)
+         continue;
+      
       const float3 p1 = hp - v1;
       const float3 cross1 = cross(e1, p1);
       const float normal1 = dot(cross1, pn);
       const bool pos1 = normal1 > 0;
 
+      if (!pos1)
+         continue;
+      
       const float3 p2 = hp - v2;
       const float3 cross2 = cross(e2, p2);
       const float normal2 = dot(cross2, pn);
       const bool pos2 = normal2 > 0;
 
-      //print("inside: % % %\n", pos0, pos1, pos2);
+      if (!pos2)
+         continue;
       
-      bool inside = pos0 && pos1 && pos2;
-      if (!inside)
-         t[index] = -1;
+      partial_result.t = ft;
+      partial_result.index = index;
+      partial_result.hits = true;
+   }
+   
+   for (uniform int i = 0; i < programCount; i++) {
+      uniform const float partial_t = extract(partial_result.t, i);
+      uniform const unsigned int partial_index = extract(partial_result.index, i);
+      uniform const bool less_than = partial_t < return_t;
+      return_t = less_than ? partial_t : return_t;
+      return_face_index = less_than ? partial_index : return_face_index;
+      return_hits = less_than || return_hits;
    }
 }
 

@@ -9,7 +9,14 @@ project(${PROJECT_NAME})
 
 set(CMAKE_CXX_STANDARD 14)
 
-SET(CMAKE_CXX_FLAGS "-O0 -g -Wno-error=unused-function -pthread")
+SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -Wno-error=unused-function -pthread")
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-error=unused-function -pthread")
+
+set(ispc_options -g --pic)
+
+IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
+   set(ispc_options --pic -O3)
+ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
 # set (ISPC_EXECUTABLE $<TARGET_FILE:ispc>)
 
@@ -25,9 +32,11 @@ SET(COVERAGE OFF CACHE BOOL "Coverage")
 ################################
 
 add_custom_command(
-        OUTPUT ~/repos/polytope/src/shapes/triangle_mesh_ispc.o
-        COMMAND ispc -h ~/repos/polytope/src/shapes/triangle_mesh_ispc.h --pic -o ~/repos/polytope/src/shapes/triangle_mesh_ispc.o ~/repos/polytope/src/shapes/triangle_mesh.ispc
-        DEPENDS ~/repos/polytope/src/shapes/triangle_mesh.ispc)
+        OUTPUT ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh_ispc.o
+        COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh_ispc.h -o ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh_ispc.o ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh.ispc
+        MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh.ispc
+        BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh_ispc.h
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh.ispc)
 
 add_library(polytope_lib
       lib/lodepng.cpp

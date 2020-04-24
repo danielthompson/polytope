@@ -55,7 +55,8 @@ namespace Polytope {
 
    constexpr float FloatMin = std::numeric_limits<float>::min();
    constexpr float FloatMax = std::numeric_limits<float>::max();
-
+   constexpr unsigned int UnsignedIntMax = std::numeric_limits<unsigned int>::max();
+   
    constexpr float MachineEpsilon = std::numeric_limits<float>::epsilon() * 0.5f;
 
    inline bool WithinEpsilon(float number, float target, float epsilon) {

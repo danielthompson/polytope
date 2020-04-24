@@ -2,11 +2,11 @@
 // Created by Daniel on 15-Dec-19.
 //
 
-#include <algorithm>
 #include <vector>
 #include <map>
 #include <queue>
 #include <iostream>
+#include <algorithm>
 #include "triangle.h"
 #include "../utilities/Common.h"
 #include "triangle_mesh_ispc.h"
@@ -55,9 +55,9 @@ namespace Polytope {
          debug = true;
 
       std::vector<float> t_values;
-      
+
       unsigned int numInside = 0;
-      
+
       for (const Point3ui &face : faces) {
          const Point vertex0 = Vertices[face.x];
          const Point vertex1 = Vertices[face.y];
@@ -80,22 +80,22 @@ namespace Polytope {
          }
 
          const float t = planeNormal.Dot(vertex0 - ray.Origin) / divisor;
-         
-         if (faceIndex == 233) {
-            debug = true;
-         }
-         
+
+//         if (faceIndex == 233) {
+//            debug = true;
+//         }
+
          if (t <= 0) {
             t_values.push_back(-1);
             faceIndex++;
-            
-            if (debug)
-               std::cout << t << std::endl;
+
+//            if (debug)
+//               std::cout << t << std::endl;
             continue;
          }
 
          t_values.push_back(t);
-         
+
          const Polytope::Point hitPoint = ray.GetPointAtT(t);
 
          // step 2 - inside/outside test
@@ -120,18 +120,18 @@ namespace Polytope {
 
          bool inside = pos0 && pos1 && pos2;
 
-         if (debug) {
-
-            std::cout << t << std::endl;
-//            if (inside)
-//               std::cout << t << std::endl;
-//            else
-//               std::cout << -1 << std::endl;
-         }
+//         if (debug) {
+//
+//            std::cout << t << std::endl;
+////            if (inside)
+////               std::cout << t << std::endl;
+////            else
+////               std::cout << -1 << std::endl;
+//         }
 
          if (inside)
             numInside++;
-         
+
          if (inside && t < ray.MinT) {
             intersection->Hits = true;
             ray.MinT = t;
@@ -154,12 +154,10 @@ namespace Polytope {
             if (edge0dot > edge1dot && edge0dot > edge2dot) {
                intersection->Tangent1 = edge0;
                intersection->Tangent2 = edge1;
-            }
-            else if (edge1dot > edge0dot && edge1dot > edge2dot) {
+            } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
                intersection->Tangent1 = edge1;
                intersection->Tangent2 = edge2;
-            }
-            else {
+            } else {
                intersection->Tangent1 = edge2;
                intersection->Tangent2 = edge0;
             }
@@ -175,9 +173,9 @@ namespace Polytope {
 
       //unsigned int faceIndex = 0;
 
-      float ispc_vertex[9] = { 0 };
-      float ispc_edge[9] = { 0 };
-      bool ispc_out[3] = { false };
+      float ispc_vertex[9] = {0};
+      float ispc_edge[9] = {0};
+      bool ispc_out[3] = {false};
 
       for (const Point3ui &face : faces) {
          const Point vertex0 = Vertices[face.x];
@@ -238,7 +236,8 @@ namespace Polytope {
          ispc_edge[7] = ispc_vertex[1] - ispc_vertex[7];
          ispc_edge[8] = ispc_vertex[2] - ispc_vertex[8];
 
-         ispc::simple(hitPoint.x, hitPoint.y, hitPoint.z, planeNormal.x, planeNormal.y, planeNormal.z, ispc_vertex, ispc_edge, ispc_out, 3);
+         ispc::simple(hitPoint.x, hitPoint.y, hitPoint.z, planeNormal.x, planeNormal.y, planeNormal.z, ispc_vertex,
+                      ispc_edge, ispc_out, 3);
 
          bool inside = ispc_out[0] && ispc_out[1] && ispc_out[2];
 
@@ -257,19 +256,20 @@ namespace Polytope {
             intersection->Normal = n;
             intersection->Shape = this;
 
-            const float edge0dot = std::abs(ispc_edge[0] * ispc_edge[3] + ispc_edge[1] + ispc_edge[4] + ispc_edge[2] * ispc_edge[5]);
-            const float edge1dot = std::abs(ispc_edge[3] * ispc_edge[6] + ispc_edge[4] + ispc_edge[7] + ispc_edge[5] * ispc_edge[8]);
-            const float edge2dot = std::abs(ispc_edge[6] * ispc_edge[0] + ispc_edge[7] + ispc_edge[1] + ispc_edge[8] * ispc_edge[2]);
+            const float edge0dot = std::abs(
+                  ispc_edge[0] * ispc_edge[3] + ispc_edge[1] + ispc_edge[4] + ispc_edge[2] * ispc_edge[5]);
+            const float edge1dot = std::abs(
+                  ispc_edge[3] * ispc_edge[6] + ispc_edge[4] + ispc_edge[7] + ispc_edge[5] * ispc_edge[8]);
+            const float edge2dot = std::abs(
+                  ispc_edge[6] * ispc_edge[0] + ispc_edge[7] + ispc_edge[1] + ispc_edge[8] * ispc_edge[2]);
 
             if (edge0dot > edge1dot && edge0dot > edge2dot) {
                intersection->Tangent1 = Polytope::Vector(ispc_edge[0], ispc_edge[1], ispc_edge[2]);
                intersection->Tangent2 = Polytope::Vector(ispc_edge[3], ispc_edge[4], ispc_edge[5]);
-            }
-            else if (edge1dot > edge0dot && edge1dot > edge2dot) {
+            } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
                intersection->Tangent1 = Polytope::Vector(ispc_edge[3], ispc_edge[4], ispc_edge[5]);
                intersection->Tangent2 = Polytope::Vector(ispc_edge[6], ispc_edge[7], ispc_edge[8]);
-            }
-            else {
+            } else {
                intersection->Tangent1 = Polytope::Vector(ispc_edge[6], ispc_edge[7], ispc_edge[8]);
                intersection->Tangent2 = Polytope::Vector(ispc_edge[0], ispc_edge[1], ispc_edge[2]);;
             }
@@ -285,9 +285,9 @@ namespace Polytope {
 
       //unsigned int faceIndex = 0;
 
-      float ispc_vertex[9] = { 0 };
-      float ispc_edge[9] = { 0 };
-      bool ispc_out[3] = { false };
+      float ispc_vertex[9] = {0};
+      float ispc_edge[9] = {0};
+      bool ispc_out[3] = {false};
 
       for (const Point3ui &face : faces) {
          const Point vertex0 = Vertices[face.x];
@@ -348,7 +348,8 @@ namespace Polytope {
          ispc_edge[5] = ispc_vertex[3] - ispc_vertex[5]; // e2y -> 5
          ispc_edge[8] = ispc_vertex[6] - ispc_vertex[8]; // e2z -> 8
 
-         ispc::simple(hitPoint.x, hitPoint.y, hitPoint.z, planeNormal.x, planeNormal.y, planeNormal.z, ispc_vertex, ispc_edge, ispc_out, 3);
+         ispc::simple(hitPoint.x, hitPoint.y, hitPoint.z, planeNormal.x, planeNormal.y, planeNormal.z, ispc_vertex,
+                      ispc_edge, ispc_out, 3);
 
          bool inside = ispc_out[0] && ispc_out[1] && ispc_out[2];
 
@@ -367,19 +368,20 @@ namespace Polytope {
             intersection->Normal = n;
             intersection->Shape = this;
 
-            const float edge0dot = std::abs(ispc_edge[0] * ispc_edge[1] + ispc_edge[3] + ispc_edge[4] + ispc_edge[6] * ispc_edge[7]);
-            const float edge1dot = std::abs(ispc_edge[1] * ispc_edge[2] + ispc_edge[4] + ispc_edge[5] + ispc_edge[7] * ispc_edge[8]);
-            const float edge2dot = std::abs(ispc_edge[2] * ispc_edge[0] + ispc_edge[5] + ispc_edge[3] + ispc_edge[8] * ispc_edge[6]);
+            const float edge0dot = std::abs(
+                  ispc_edge[0] * ispc_edge[1] + ispc_edge[3] + ispc_edge[4] + ispc_edge[6] * ispc_edge[7]);
+            const float edge1dot = std::abs(
+                  ispc_edge[1] * ispc_edge[2] + ispc_edge[4] + ispc_edge[5] + ispc_edge[7] * ispc_edge[8]);
+            const float edge2dot = std::abs(
+                  ispc_edge[2] * ispc_edge[0] + ispc_edge[5] + ispc_edge[3] + ispc_edge[8] * ispc_edge[6]);
 
             if (edge0dot > edge1dot && edge0dot > edge2dot) {
                intersection->Tangent1 = Polytope::Vector(ispc_edge[0], ispc_edge[3], ispc_edge[6]);
                intersection->Tangent2 = Polytope::Vector(ispc_edge[1], ispc_edge[4], ispc_edge[7]);
-            }
-            else if (edge1dot > edge0dot && edge1dot > edge2dot) {
+            } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
                intersection->Tangent1 = Polytope::Vector(ispc_edge[1], ispc_edge[4], ispc_edge[7]);
                intersection->Tangent2 = Polytope::Vector(ispc_edge[2], ispc_edge[5], ispc_edge[8]);
-            }
-            else {
+            } else {
                intersection->Tangent1 = Polytope::Vector(ispc_edge[2], ispc_edge[5], ispc_edge[8]);
                intersection->Tangent2 = Polytope::Vector(ispc_edge[0], ispc_edge[3], ispc_edge[6]);;
             }
@@ -391,14 +393,15 @@ namespace Polytope {
       }
    }
 
-   void TriangleMesh::IntersectFacesISPC_SOA2(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces) {
+   void
+   TriangleMesh::IntersectFacesISPC_SOA2(Ray &ray, Intersection *intersection, const std::vector<Point3ui> &faces) {
 
       const unsigned int numFaces = faces.size();
 
       std::vector<float> v(numFaces * 9, 0);
 
-      bool* inside = new bool[numFaces * 9];
-      
+      bool *inside = new bool[numFaces * 9];
+
       const unsigned int yOffset = numFaces * 3;
       const unsigned int zOffset = numFaces * 6;
 
@@ -426,7 +429,7 @@ namespace Polytope {
       }
 
       // idea: have an ispc function to do just AoS -> SoA conversion and validate against that 
-      
+
       ispc::soa2(
             &v[0],
             ray.Origin.x,
@@ -443,9 +446,9 @@ namespace Polytope {
 
       // get mint
 
-      bool debug = false;
-      if (ray.x == 67 && ray.y == 23)
-         debug = true;
+//      bool debug = false;
+//      if (ray.x == 67 && ray.y == 23)
+//         debug = true;
 
       int faceIndex = -1;
       float minT = Polytope::FloatMax;
@@ -454,8 +457,8 @@ namespace Polytope {
             faceIndex = i;
             minT = t[i];
          }
-         if (debug)
-            std::cout << t[i] << std::endl;
+//         if (debug)
+//            std::cout << t[i] << std::endl;
       }
 
       if (faceIndex < 0)
@@ -489,12 +492,10 @@ namespace Polytope {
       if (edge0dot > edge1dot && edge0dot > edge2dot) {
          intersection->Tangent1 = edge0;
          intersection->Tangent2 = edge1;
-      }
-      else if (edge1dot > edge0dot && edge1dot > edge2dot) {
+      } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
          intersection->Tangent1 = edge1;
          intersection->Tangent2 = edge2;
-      }
-      else {
+      } else {
          intersection->Tangent1 = edge2;
          intersection->Tangent2 = edge0;
       }
@@ -504,7 +505,7 @@ namespace Polytope {
 
    }
 
-   void TriangleMesh::IntersectNode(Ray &ray, Intersection *intersection, BVHNode* node, const unsigned int depth) {
+   void TriangleMesh::IntersectNode(Ray &ray, Intersection *intersection, BVHNode *node, const unsigned int depth) {
 
       bool debug = false;
 
@@ -551,8 +552,7 @@ namespace Polytope {
    void Polytope::TriangleMesh::Intersect(Polytope::Ray &ray, Polytope::Intersection *intersection) {
       if (root != nullptr) {
          IntersectNode(ray, intersection, root, 0);
-      }
-      else {
+      } else {
          IntersectFaces(ray, intersection, Faces);
       }
 
@@ -617,7 +617,7 @@ namespace Polytope {
          // step 2 - skip if no split required
 
          if ((d0 >= 0 && d1 >= 0 && d2 >= 0)
-         || (d0 <= 0 && d1 <= 0 && d2 <= 0))
+             || (d0 <= 0 && d1 <= 0 && d2 <= 0))
             continue;
 
          // TODO - add optimization for the case in which the splitting plane happens to exactly
@@ -643,16 +643,14 @@ namespace Polytope {
             even1Index = face.y;
             even2 = v2;
             even2Index = face.z;
-         }
-         else if ((d1 <= 0 && d2 >= 0 && d0 >= 0) || ((d1 >= 0 && d2 <= 0 && d0 <= 0))) {
+         } else if ((d1 <= 0 && d2 >= 0 && d0 >= 0) || ((d1 >= 0 && d2 <= 0 && d0 <= 0))) {
             odd = v1;
             oddIndex = face.y;
             even1 = v2;
             even1Index = face.z;
             even2 = v0;
             even2Index = face.x;
-         }
-         else {
+         } else {
             odd = v2;
             oddIndex = face.z;
             even1 = v0;
@@ -706,8 +704,7 @@ namespace Polytope {
          for (unsigned int i = 0; i < Faces.size(); i++) {
             if (i != faceIndicesToDelete[faceIndicesToDeleteIndex]) {
                newFaceVector.push_back(Faces[i]);
-            }
-            else {
+            } else {
                faceIndicesToDeleteIndex++;
             }
          }
@@ -728,7 +725,7 @@ namespace Polytope {
       Bound(root, Faces, 0);
    }
 
-   void TriangleMesh:: Bound(BVHNode *node, const std::vector<Point3ui> &faces, const unsigned int depth) {
+   void TriangleMesh::Bound(BVHNode *node, const std::vector<Point3ui> &faces, const unsigned int depth) {
 
       node->ShrinkBoundingBox(Vertices, faces);
 
@@ -754,8 +751,7 @@ namespace Polytope {
       if (extentY > extentX && extentY > extentZ) {
          splitAxis = Axis::y;
          extent = extentY;
-      }
-      else if (extentZ > extentX && extentZ > extentY) {
+      } else if (extentZ > extentX && extentZ > extentY) {
          splitAxis = Axis::z;
          extent = extentZ;
       }
@@ -775,8 +771,7 @@ namespace Polytope {
          // add all faces at or below split to low child
          if (v0[splitAxis] <= split && v1[splitAxis] <= split && v2[splitAxis] <= split) {
             lowFaces.push_back(face);
-         }
-         else { // add all faces above split to high child
+         } else { // add all faces above split to high child
             highFaces.push_back(face);
          }
       }
@@ -785,9 +780,9 @@ namespace Polytope {
 
       bool continueRecursing = true;
       if (faces.size() <= lowFaces.size()
-      || faces.size() <= highFaces.size()
-      || lowFaces.empty()
-      || highFaces.empty())
+          || faces.size() <= highFaces.size()
+          || lowFaces.empty()
+          || highFaces.empty())
          continueRecursing = false;
 
       if (continueRecursing) {
@@ -805,8 +800,7 @@ namespace Polytope {
 
          Bound(node->low, lowFaces, depth + 1);
          Bound(node->high, highFaces, depth + 1);
-      }
-      else {
+      } else {
          node->faces = faces;
       }
    }
@@ -893,8 +887,7 @@ namespace Polytope {
          for (unsigned int i = 0; i < Faces.size(); i++) {
             if (i != faceIndicesToDelete[index]) {
                newFaceVector.push_back(Faces[i]);
-            }
-            else {
+            } else {
                index++;
             }
          }
@@ -914,7 +907,7 @@ namespace Polytope {
       }
 
       unsigned int sum = 0;
-      for (auto && i : vertexState) {
+      for (auto &&i : vertexState) {
          sum += i;
       }
 
@@ -932,7 +925,7 @@ namespace Polytope {
       bool valid = true;
 
       while (!q.empty()) {
-         BVHNode* node = q.front();
+         BVHNode *node = q.front();
          q.pop();
 
          bool lowNull = node->low == nullptr;
@@ -1078,12 +1071,12 @@ namespace Polytope {
 
          // planeNormal.Normalize();         
          const float one_over_normal_length = 1.0f / std::sqrt(pnx * pnx + pny * pny + pnz * pnz);
-         
+
          pnx *= one_over_normal_length;
          nx[fv0[i]] += pnx;
          nx[fv1[i]] += pnx;
          nx[fv2[i]] += pnx;
-         
+
          pny *= one_over_normal_length;
          ny[fv0[i]] += pny;
          ny[fv1[i]] += pny;
@@ -1104,9 +1097,8 @@ namespace Polytope {
    }
 
    bool TriangleMeshSOA::Hits(Polytope::Ray &worldSpaceRay) const {
-      float* t = static_cast<float *>(calloc(num_faces, sizeof(float)));
-      
-      ispc::soa_hit(
+
+      ispc::soa_hit_result result = ispc::soa_hits(
             &x[0],
             &y[0],
             &z[0],
@@ -1119,31 +1111,20 @@ namespace Polytope {
             worldSpaceRay.Direction.x,
             worldSpaceRay.Direction.y,
             worldSpaceRay.Direction.z,
-            t,
             num_faces);
-      
-      // if there is a positive t, we're done
-      for (unsigned int i = 0; i < num_faces; i++) {
-         if (t[i] > 0) {
-            free(t);
-            return true;
-         }
-      }
 
-      free(t);
-      return false;
+      return result.index < Polytope::UnsignedIntMax;
    }
 
    void TriangleMeshSOA::Intersect(Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) {
-      float* t = static_cast<float *>(calloc(num_faces, sizeof(float)));
-
-      ispc::soa_hit(
-            &x[0],
-            &y[0],
-            &z[0],
-            &fv0[0],
-            &fv1[0],
-            &fv2[0],
+      float t = Polytope::FloatMax;
+      unsigned int face_index = 0;
+      bool hits = false;
+      
+      ispc::soa_intersect_expanded(
+            &x_expanded[0],
+            &y_expanded[0],
+            &z_expanded[0],
             worldSpaceRay.Origin.x,
             worldSpaceRay.Origin.y,
             worldSpaceRay.Origin.z,
@@ -1151,39 +1132,33 @@ namespace Polytope {
             worldSpaceRay.Direction.y,
             worldSpaceRay.Direction.z,
             t,
+            face_index,
+            hits,
             num_faces);
 
-      int faceIndex = -1;
-      float minT = Polytope::FloatMax;
-      for (unsigned int i = 0; i < num_faces; i++) {
-         if (t[i] > 0 && t[i] < minT) {
-            faceIndex = i;
-            minT = t[i];
-         }
-      }
-
-      if (faceIndex < 0)
+      if (!hits) {
          return;
+      }
 
       // now we have the closest face, if any
 
       intersection->Hits = true;
-      worldSpaceRay.MinT = minT;
-      intersection->faceIndex = faceIndex;
-      intersection->Location = worldSpaceRay.GetPointAtT(minT);
+      worldSpaceRay.MinT = t;
+      intersection->faceIndex = face_index;
+      intersection->Location = worldSpaceRay.GetPointAtT(t);
 
-      const unsigned int v0_index = fv0[faceIndex];
-      const unsigned int v1_index = fv1[faceIndex];
-      const unsigned int v2_index = fv2[faceIndex];
-      
+      const unsigned int v0_index = fv0[face_index];
+      const unsigned int v1_index = fv1[face_index];
+      const unsigned int v2_index = fv2[face_index];
+
       const Point v0 = Point(x[v0_index], y[v0_index], z[v0_index]);
       const Point v1 = Point(x[v1_index], y[v1_index], z[v1_index]);
       const Point v2 = Point(x[v2_index], y[v2_index], z[v2_index]);
-      
+
       const Polytope::Vector edge0 = v1 - v0;
       const Polytope::Vector edge1 = v2 - v1;
       const Polytope::Vector edge2 = v0 - v2;
-      Polytope::Vector planeNormal = edge0.Cross(edge1);
+      const Polytope::Vector planeNormal = edge0.Cross(edge1);
 
       // flip normal if needed
       Polytope::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
@@ -1201,12 +1176,10 @@ namespace Polytope {
       if (edge0dot > edge1dot && edge0dot > edge2dot) {
          intersection->Tangent1 = edge0;
          intersection->Tangent2 = edge1;
-      }
-      else if (edge1dot > edge0dot && edge1dot > edge2dot) {
+      } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
          intersection->Tangent1 = edge1;
          intersection->Tangent2 = edge2;
-      }
-      else {
+      } else {
          intersection->Tangent1 = edge2;
          intersection->Tangent2 = edge0;
       }
@@ -1217,6 +1190,68 @@ namespace Polytope {
 
    Point TriangleMeshSOA::GetRandomPointOnSurface() {
       // TODO
+      return Point();
+   }
+
+   void TriangleMeshSOA::ExpandFaces() {
+      
+      x_expanded.reserve(num_faces * 3);
+      y_expanded.reserve(num_faces * 3);
+      z_expanded.reserve(num_faces * 3);
+
+      nx_expanded.reserve(num_faces * 3);
+      ny_expanded.reserve(num_faces * 3);
+      nz_expanded.reserve(num_faces * 3);
+      
+      // for each face
+      for (unsigned int i = 0; i < num_faces; i++) {
+         unsigned int index = fv0[i];
+         
+         x_expanded.push_back(x[index]);
+         y_expanded.push_back(y[index]);
+         z_expanded.push_back(z[index]);
+
+//         nx_expanded.push_back(nx[index]);
+//         ny_expanded.push_back(ny[index]);
+//         nz_expanded.push_back(nz[index]);
+      }
+
+      for (unsigned int i = 0; i < num_faces; i++) {
+         unsigned int index = fv1[i];
+
+         x_expanded.push_back(x[index]);
+         y_expanded.push_back(y[index]);
+         z_expanded.push_back(z[index]);
+
+//         nx_expanded.push_back(nx[index]);
+//         ny_expanded.push_back(ny[index]);
+//         nz_expanded.push_back(nz[index]);
+      }
+
+      for (unsigned int i = 0; i < num_faces; i++) {
+         unsigned int index = fv2[i];
+
+         x_expanded.push_back(x[index]);
+         y_expanded.push_back(y[index]);
+         z_expanded.push_back(z[index]);
+
+//         nx_expanded.push_back(nx[index]);
+//         ny_expanded.push_back(ny[index]);
+//         nz_expanded.push_back(nz[index]);
+      }
+      
+      num_vertices_expanded = 3 * num_faces;
+   }
+
+   bool TriangleMeshAOS::Hits(Ray &worldSpaceRay) const {
+      return false;
+   }
+
+   void TriangleMeshAOS::Intersect(Ray &ray, Intersection *intersection) {
+
+   }
+
+   Point TriangleMeshAOS::GetRandomPointOnSurface() {
       return Point();
    }
 }

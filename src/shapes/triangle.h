@@ -22,6 +22,43 @@ namespace Polytope {
       void ShrinkBoundingBox(const std::vector<Point> &vertices, const std::vector<Point3ui> &nodeFaces);
    };
 
+   /*
+    * Triangle mesh as an array of structures, with naive linear intersection
+    */
+   class TriangleMeshAOS : public AbstractShape {
+   public:
+      std::vector<Point> Vertices;
+      std::vector<Point3ui> Faces;
+      std::vector<Normal> Normals;
+
+      TriangleMeshAOS(
+            const std::shared_ptr<Polytope::Transform> &objectToWorld,
+            const std::shared_ptr<Polytope::Transform> &worldToObject,
+            const std::shared_ptr<Polytope::Material> &material)
+            : AbstractShape(objectToWorld, worldToObject, material) {}
+
+      bool Hits(Ray &worldSpaceRay) const override;
+      void Intersect(Ray &ray, Intersection *intersection) override;
+
+      void CalculateVertexNormals();
+
+      Point GetRandomPointOnSurface() override;
+
+      unsigned int CountUniqueVertices();
+
+      void DeduplicateVertices();
+
+      bool Validate();
+
+      /// Removes all faces that have 2 or more identical vertices.
+      /// \return The number of faces removed.
+      unsigned int RemoveDegenerateFaces();
+
+      /// Removes all vertices that aren't associated with a face.
+      /// \return The number of vertices removed.
+      unsigned int CountOrphanedVertices();
+   };
+   
    class TriangleMesh : public AbstractShape {
    public:
       std::vector<Point> Vertices;
@@ -83,6 +120,16 @@ namespace Polytope {
 
       unsigned int num_vertices = 0;
       
+      std::vector<float> x_expanded;
+      std::vector<float> y_expanded;
+      std::vector<float> z_expanded;
+
+      std::vector<float> nx_expanded;
+      std::vector<float> ny_expanded;
+      std::vector<float> nz_expanded;
+
+      unsigned int num_vertices_expanded = 0;
+
       // given a face index, returns that face's vertex index, etc
       std::vector<unsigned int> fv0;
       std::vector<unsigned int> fv1;
@@ -90,19 +137,18 @@ namespace Polytope {
       
       unsigned int num_faces = 0;
       
-      BVHNode* root;
-      
       TriangleMeshSOA(
             const std::shared_ptr<Polytope::Transform> &objectToWorld,
             const std::shared_ptr<Polytope::Transform> &worldToObject,
             const std::shared_ptr<Polytope::Material> &material)
-            : AbstractShape(objectToWorld, worldToObject, material), root(nullptr) {}
+            : AbstractShape(objectToWorld, worldToObject, material) {}
 
-      void CalculateVertexNormals();
 
+      void ExpandFaces();
+            
       bool Hits(Polytope::Ray &worldSpaceRay) const override;
-
       void Intersect(Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) override;
+      void CalculateVertexNormals();
 
       Point GetRandomPointOnSurface() override;
    };
