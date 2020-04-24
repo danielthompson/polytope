@@ -715,6 +715,7 @@ namespace Polytope {
                //transformStack.push(transformMarker);
                //if (activeTransform != nullptr) {
                transformStack.push(activeTransform);
+               activeTransform = std::make_shared<Transform>(*(activeTransform.get()));
                //activeTransform =
                //}
                break;
@@ -1053,6 +1054,7 @@ namespace Polytope {
                // push onto transform stack
                assert (activeTransform != nullptr);
                transformStack.push(activeTransform);
+               activeTransform = std::make_shared<Transform>(*(activeTransform.get()));
                break;
             }
             case (WorldDirectiveName::TransformEnd): {

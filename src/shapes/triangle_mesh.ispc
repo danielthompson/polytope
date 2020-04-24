@@ -5,7 +5,7 @@ export struct soa_hit_result {
    unsigned int index;
    bool hits;
 };
-
+ 
 const uniform float float_max = 3.40282346638528859812e+38F;
 const uniform unsigned int unsigned_int_max = 4294967294;
 
