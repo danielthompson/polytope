@@ -666,10 +666,7 @@ namespace Polytope {
       std::shared_ptr<Polytope::Material> activeMaterial;
       std::shared_ptr<SpectralPowerDistribution> activeLight;
       std::shared_ptr<Transform> activeTransform = std::make_shared<Transform>();
-
-      const std::shared_ptr<Polytope::Material> materialMarker = std::make_shared<Polytope::Material>(AttributeBeginText);
-      const std::shared_ptr<SpectralPowerDistribution> lightMarker = std::make_shared<SpectralPowerDistribution>();
-
+      
       _scene = new NaiveScene(std::move(camera));
 
       for (const PBRTDirective& directive : worldDirectives) {
@@ -700,13 +697,11 @@ namespace Polytope {
             }
             case WorldDirectiveName::AttributeBegin: {
                // push onto material stack
-               materialStack.push(materialMarker);
                if (activeMaterial != nullptr) {
                   materialStack.push(activeMaterial);
                }
 
                // push onto light stack
-               lightStack.push(lightMarker);
                if (activeLight != nullptr) {
                   lightStack.push(activeLight);
                }
@@ -725,69 +720,22 @@ namespace Polytope {
                if (!materialStack.empty()) {
                   std::shared_ptr<Polytope::Material> stackValue = materialStack.top();
                   materialStack.pop();
-
-                  if (stackValue == materialMarker) {
-                     // no value was pushed, so there wasn't any active material before, so there shouldn't be now
-                     activeMaterial = nullptr;
-                  }
-                  else {
-                     // a value was pushed, so there should be at least one more materialMarker on the stack
-                     if (materialStack.empty()) {
-                        // OOPS, should never happen
-                     }
-                     else {
-                        // restore the previously active material
-                        activeMaterial = stackValue;
-                        // pop the marker
-                        materialStack.pop();
-                     }
-                  }
+                  activeMaterial = stackValue;
                }
 
                // pop light stack
                if (!lightStack.empty()) {
                   std::shared_ptr<SpectralPowerDistribution> stackValue = lightStack.top();
                   lightStack.pop();
-
-                  if (stackValue == lightMarker) {
-                     // no value was pushed, so there wasn't any active light before, so there shouldn't be now
-                     activeLight = nullptr;
-                  }
-                  else {
-                     // a value was pushed, so there should be at least one more lightMarker on the stack
-                     if (lightStack.empty()) {
-                        // OOPS, should never happen
-                     }
-                     else {
-                        // restore the previously active light
-                        activeLight = stackValue;
-                        // pop the marker
-                        lightStack.pop();
-                     }
-                  }
+                  activeLight = stackValue;
                }
 
                // pop transform stack
                if (!transformStack.empty()) {
                   std::shared_ptr<Transform> stackValue = transformStack.top();
                   transformStack.pop();
-
-                  if (false /* TODO stackValue == transformMarker*/) {
-                     // no value was pushed, so there wasn't any active transform before, so there shouldn't be now
-                     activeTransform = nullptr;
-                  }
-                  else {
-                     // a value was pushed, so there should be at least one more transformMarker on the stack
-                     if (transformStack.empty()) {
-                        // OOPS, should never happen
-                     }
-                     else {
-                        // restore the previously active transform
-                        activeTransform = stackValue;
-                        // pop the marker
-                        transformStack.pop();
-                     }
-                  }
+                  assert (stackValue != nullptr);
+                  activeTransform = stackValue;
                }
                break;
             }

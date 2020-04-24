@@ -9,12 +9,13 @@ Camera "perspective" "float fov" [ 15 ]
 WorldBegin
     LightSource "infinite" "rgb L" [1 1 1]
     Material "matte" "rgb Kd" [ .8  .5  .5 ]
-    TransformBegin
+    AttributeBegin
         # Translate 0 0 -25
         Rotate 45 1 0 0
+        Material "matte" "rgb Kd" [ .5  .8  .5 ]
         Shape "objmesh" "string filename" [ teapot.obj ]
         # Shape "plymesh" "string filename" [ teapot.ply ]
-    TransformEnd
+    AttributeEnd
     
     TransformBegin
         Translate 2 0 0
