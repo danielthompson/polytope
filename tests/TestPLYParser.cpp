@@ -7,6 +7,7 @@
 #include "../src/utilities/Logger.h"
 #include "../src/parsers/mesh/PLYParser.h"
 #include "../src/structures/Vectors.h"
+#include "../src/parsers/mesh/OBJParser.h"
 
 namespace Tests {
 
@@ -45,6 +46,75 @@ namespace Tests {
          EXPECT_EQ(1087, secondToLastFace.z);
 
          delete mesh;
+      }
+
+      TEST(PLYParser, TeapotConverted) {
+
+         const std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
+         Polytope::TriangleMeshSOA* ply_mesh = new Polytope::TriangleMeshSOA(identity, identity, nullptr);
+         {
+            const Polytope::PLYParser ply_parser;
+            const std::string file = "../scenes/teapot/teapot_converted.ply";
+            ply_parser.ParseFile(ply_mesh, file);
+         }
+
+         Polytope::TriangleMeshSOA* obj_mesh = new Polytope::TriangleMeshSOA(identity, identity, nullptr);
+         {
+            const Polytope::OBJParser obj_parser;
+            const std::string file = "../scenes/teapot/teapot.obj";
+            obj_parser.ParseFile(obj_mesh, file);
+         }
+            
+         ASSERT_FALSE(ply_mesh == nullptr);
+         ASSERT_FALSE(obj_mesh == nullptr);
+
+         EXPECT_EQ(ply_mesh->x.size(), obj_mesh->x.size());
+         
+         constexpr float epsilon = 0.001;
+         
+         for (unsigned int i = 0; i < ply_mesh->x.size(); i++) {
+            const float delta = std::abs(ply_mesh->x_expanded[i] - obj_mesh->x_expanded[i]);
+            EXPECT_TRUE(delta < epsilon);
+            //EXPECT_FLOAT_EQ(ply_mesh->x_expanded[i], obj_mesh->x_expanded[i]);
+         }
+         
+         EXPECT_EQ(ply_mesh->x_expanded.size(), obj_mesh->x_expanded.size());
+         EXPECT_EQ(ply_mesh->y.size(), obj_mesh->y.size());
+         EXPECT_EQ(ply_mesh->y_expanded.size(), obj_mesh->y_expanded.size());
+         EXPECT_EQ(ply_mesh->z.size(), obj_mesh->z.size());
+         EXPECT_EQ(ply_mesh->z_expanded.size(), obj_mesh->z_expanded.size());
+
+         EXPECT_EQ(ply_mesh->nx.size(), obj_mesh->nx.size());
+         EXPECT_EQ(ply_mesh->nx_expanded.size(), obj_mesh->nx_expanded.size());
+         EXPECT_EQ(ply_mesh->ny.size(), obj_mesh->ny.size());
+         EXPECT_EQ(ply_mesh->ny_expanded.size(), obj_mesh->ny_expanded.size());
+         EXPECT_EQ(ply_mesh->nz.size(), obj_mesh->nz.size());
+         EXPECT_EQ(ply_mesh->nz_expanded.size(), obj_mesh->nz_expanded.size());
+
+         EXPECT_EQ(ply_mesh->num_vertices_expanded, obj_mesh->num_vertices_expanded);
+         EXPECT_EQ(ply_mesh->num_vertices, obj_mesh->num_vertices);
+         EXPECT_EQ(ply_mesh->num_faces, obj_mesh->num_faces);
+
+         ASSERT_EQ(ply_mesh->fv0.size(), obj_mesh->fv0.size());
+
+         for (unsigned int i = 0; i < ply_mesh->fv0.size(); i++) {
+            EXPECT_EQ(ply_mesh->fv0[i], obj_mesh->fv0[i]);
+         }
+         
+         ASSERT_EQ(ply_mesh->fv1.size(), obj_mesh->fv1.size());
+
+         for (unsigned int i = 0; i < ply_mesh->fv0.size(); i++) {
+            EXPECT_EQ(ply_mesh->fv1[i], obj_mesh->fv1[i]);
+         }
+
+         ASSERT_EQ(ply_mesh->fv2.size(), obj_mesh->fv2.size());
+
+         for (unsigned int i = 0; i < ply_mesh->fv0.size(); i++) {
+            EXPECT_EQ(ply_mesh->fv2[i], obj_mesh->fv2[i]);
+         }
+         
+         delete ply_mesh;
+         delete obj_mesh;
       }
    }
 }

@@ -22,28 +22,26 @@ namespace Polytope {
    }
 
    Ray PerspectiveCamera::GetRay(const Point2f pixel) {
-      float pixelNDCx = (pixel.x/* + 0.5f*/) * OneOverWidth;
-      float pixelNDCy = (pixel.y/* + 0.5f*/) * OneOverHeight;
+      const float pixelNDCx = (pixel.x/* + 0.5f*/) * OneOverWidth;
+      const float pixelNDCy = (pixel.y/* + 0.5f*/) * OneOverHeight;
 
-      float pixelCameraX = (2 * pixelNDCx - 1) * AspectRatio * TanFOVOver2;
-      float pixelCameraY = (1 - 2 * pixelNDCy) * TanFOVOver2;
+      const float pixelCameraX = (2 * pixelNDCx - 1) * AspectRatio * TanFOVOver2;
+      const float pixelCameraY = (1 - 2 * pixelNDCy) * TanFOVOver2;
 
       const float z = LeftHanded ? 1 : -1;
 
-      Point imagePlanePixelInCameraSpace = Point(pixelCameraX, pixelCameraY, z);
+      Point imagePlanePixelInCameraSpace = { pixelCameraX, pixelCameraY, z };
 
-      Vector direction = Vector (imagePlanePixelInCameraSpace.x, imagePlanePixelInCameraSpace.y, imagePlanePixelInCameraSpace.z);
+      Vector direction = { imagePlanePixelInCameraSpace.x, imagePlanePixelInCameraSpace.y, imagePlanePixelInCameraSpace.z };
 
       direction.Normalize();
 
-      Ray cameraSpaceRay = Ray(DefaultOrigin, direction);
-
+      Ray cameraSpaceRay = { DefaultOrigin, direction };
       Ray worldSpaceRay = CameraToWorld.Apply(cameraSpaceRay);
 
-      //std::cout << "o.x: " << worldSpaceRay.Origin.x << ", o.y: " << worldSpaceRay.Origin.y << ", o.z: " << worldSpaceRay.Origin.z << std::endl;
-      //std::cout << "d.x: " << worldSpaceRay.Direction.x << ", d.y: " << worldSpaceRay.Direction.y << ", d.z: " << worldSpaceRay.Direction.z << std::endl;
-
       worldSpaceRay.Direction.Normalize();
+      
+      // hmm... doubt
       worldSpaceRay.DirectionInverse.Normalize();
 
       return worldSpaceRay;

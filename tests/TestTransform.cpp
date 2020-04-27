@@ -7,6 +7,7 @@
 
 #include "../src/structures/Vectors.h"
 #include "../src/structures/Transform.h"
+#include "../src/cameras/PerspectiveCamera.h"
 
 namespace Tests {
 
@@ -78,4 +79,47 @@ namespace Tests {
       }
    }
 
+   TEST(Transform, LookAt1) {
+
+      const Polytope::Point eye = {0, 0, 35};
+      const Polytope::Point look_at = {0, 0, -1};
+      Polytope::Vector up = {0, 1, 0};
+
+      Transform t = Transform::LookAt(eye, look_at, up);
+      
+      //Polytope::PerspectiveCamera camera = Polytope::PerspectiveCamera() 
+      Polytope::Ray cameraSpaceRay = {{0, 0, 0}, {0, 0, -1}};
+      
+      Polytope::Ray worldSpaceRay = t.Apply(cameraSpaceRay);
+      
+      EXPECT_EQ(worldSpaceRay.Origin.x, eye.x);
+      EXPECT_EQ(worldSpaceRay.Origin.y, eye.y);
+      EXPECT_EQ(worldSpaceRay.Origin.z, eye.z);
+
+      EXPECT_EQ(worldSpaceRay.Direction.x, 0);
+      EXPECT_EQ(worldSpaceRay.Direction.y, 0);
+      EXPECT_EQ(worldSpaceRay.Direction.z, -1);
+   }
+
+   TEST(Transform, LookAt2) {
+
+      const Polytope::Point eye = {0, 0, -35};
+      const Polytope::Point look_at = {0, 0, -1};
+      Polytope::Vector up = {0, 1, 0};
+
+      Transform t = Transform::LookAt(eye, look_at, up);
+
+      //Polytope::PerspectiveCamera camera = Polytope::PerspectiveCamera() 
+      Polytope::Ray cameraSpaceRay = {{0, 0, 0}, {0, 0, -1}};
+
+      Polytope::Ray worldSpaceRay = t.Apply(cameraSpaceRay);
+
+      EXPECT_EQ(worldSpaceRay.Origin.x, eye.x);
+      EXPECT_EQ(worldSpaceRay.Origin.y, eye.y);
+      EXPECT_EQ(worldSpaceRay.Origin.z, eye.z);
+
+      EXPECT_EQ(worldSpaceRay.Direction.x, 0);
+      EXPECT_EQ(worldSpaceRay.Direction.y, 0);
+      EXPECT_EQ(worldSpaceRay.Direction.z, 1);
+   }
 }

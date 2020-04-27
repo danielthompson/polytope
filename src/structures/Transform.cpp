@@ -313,7 +313,7 @@ namespace Polytope {
       return transform;
    }
 
-   Transform Transform::LookAt(const Point &eye, const Point &lookAt, Vector &up) {
+   Transform Transform::LookAt(const Point &eye, const Point &lookAt, Vector &up, bool right_handed) {
 
       float m[4][4];
 
@@ -329,10 +329,8 @@ namespace Polytope {
       Vector left = up.Cross(dir);
 
       if (left.Length() == 0) {
-
          std::cout << "Bad Transform::LookAt() call - left vector is 0. Up and viewing direction are pointing in the same direction. Using identity.";
          return Transform();
-
       }
 
       left.Normalize();
@@ -351,13 +349,13 @@ namespace Polytope {
 
       m[0][2] = dir.x;
       m[1][2] = dir.y;
-      m[2][2] = dir.z;
+      m[2][2] = right_handed ? -dir.z : dir.z;
       m[3][2] = 0;
 
       Matrix4x4 matrix = Matrix4x4(m);
       const Matrix4x4 inverse = matrix.Inverse();
-
-      return Transform(inverse, matrix);
+      return Transform(matrix, inverse);
+//      return Transform(inverse, matrix);
    }
 
    Transform Transform::LookAtLeftHanded(const Point &eye, const Point &lookAt, Vector &up) {

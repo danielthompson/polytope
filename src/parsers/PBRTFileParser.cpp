@@ -20,6 +20,7 @@
 #include "../scenes/skyboxes/ColorSkybox.h"
 #include "../structures/Vectors.h"
 #include "mesh/PLYParser.h"
+#include "../shading/brdf/MirrorBRDF.h"
 
 namespace Polytope {
 
@@ -110,13 +111,23 @@ namespace Polytope {
       };
 
       enum MaterialIdentifier {
-         Matte
+         Matte,
+         Mirror
       };
 
       const std::map<std::string, MaterialIdentifier> MaterialIdentifierMap {
-            {"matte", Matte}
+            {"matte", Matte},
+            { "mirror", Mirror}
       };
 
+      enum MaterialMatteArgument {
+         Kd,
+      };
+
+      const std::map<std::string, MaterialMatteArgument> MaterialMatteArgumentMap {
+            {"Kd", Kd},
+      };
+      
       enum OBJMeshArgument {
          Filename
       };
@@ -530,9 +541,8 @@ namespace Polytope {
          Point lookAt;
          Vector up;
 
-
          Transform currentTransform;
-
+         
          for (const PBRTDirective& directive : sceneDirectives) {
             if (directive.Name == LookAtText) {
                if (directive.Arguments.size() == 1) {
@@ -555,9 +565,8 @@ namespace Polytope {
 
                      up = Vector(upX, upY, upZ);
 
-                     Transform t = Transform::LookAt(eye, lookAt, up);
-
-                     currentTransform = currentTransform * t;
+                     Transform t = Transform::LookAt(eye, lookAt, up, false);
+                     currentTransform *= t;
                   }
                }
 
@@ -565,7 +574,6 @@ namespace Polytope {
                break;
             }
          }
-
 
          CameraSettings settings = CameraSettings(_bounds, DefaultCameraFOV);
 
@@ -682,6 +690,10 @@ namespace Polytope {
          switch (name) {
             case WorldDirectiveName::AreaLightSource: {
                // lights with geometry
+               if (directive.Identifier != "diffuse") {
+                  LogUnknownIdentifier(directive);
+                  break;
+               }
                for (const PBRTArgument& argument : directive.Arguments) {
                   if (argument.Name == "L") {
                      if (activeLight == nullptr) {
@@ -707,12 +719,8 @@ namespace Polytope {
                }
 
                // push onto transform stack
-               //transformStack.push(transformMarker);
-               //if (activeTransform != nullptr) {
                transformStack.push(activeTransform);
                activeTransform = std::make_shared<Transform>(*(activeTransform.get()));
-               //activeTransform =
-               //}
                break;
             }
             case WorldDirectiveName::AttributeEnd: {
@@ -796,6 +804,19 @@ namespace Polytope {
                switch (identifier) {
                   case MaterialIdentifier::Matte: {
                      for (const PBRTArgument& argument : directive.Arguments) {
+                        MaterialMatteArgument param;
+                        try {
+                           param = MaterialMatteArgumentMap.at(argument.Name);
+                        }
+                        catch (...) {
+                           LogUnknownArgument(argument);
+                           continue;
+                        }
+                        switch (param) {
+                           case MaterialMatteArgument::Kd: {
+                              
+                           }
+                        }
                         if (argument.Name == "Kd" && argument.Type == "rgb") {
                            const float r = stof(argument.Values[0]);
                            const float g = stof(argument.Values[1]);
@@ -803,6 +824,20 @@ namespace Polytope {
 
                            ReflectanceSpectrum refl(r, g, b);
                            std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::LambertBRDF>();
+                           std::shared_ptr<Polytope::Material> material = std::make_shared<Polytope::Material>(brdf, refl);
+                           activeMaterial = material;
+                        }
+                     }
+                  }
+                  case MaterialIdentifier::Mirror: {
+                     for (const PBRTArgument& argument : directive.Arguments) {
+                        if (argument.Name == "Kr" && argument.Type == "rgb") {
+                           const float r = stof(argument.Values[0]);
+                           const float g = stof(argument.Values[1]);
+                           const float b = stof(argument.Values[2]);
+
+                           ReflectanceSpectrum refl(r, g, b);
+                           std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::MirrorBRDF>();
                            std::shared_ptr<Polytope::Material> material = std::make_shared<Polytope::Material>(brdf, refl);
                            activeMaterial = material;
                         }
@@ -844,7 +879,7 @@ namespace Polytope {
 
                assert (activeTransform != nullptr);
                Transform *active = activeTransform.get();
-               *active = t * *active;
+               *active = *active * t;
                break;
             }
             case WorldDirectiveName::Shape: {
@@ -1033,6 +1068,7 @@ namespace Polytope {
                LogUnimplementedDirective(directive);
                break;
             }
+            
          }
       }
 

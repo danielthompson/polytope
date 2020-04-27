@@ -1159,13 +1159,15 @@ namespace Polytope {
       const Polytope::Vector edge1 = v2 - v1;
       const Polytope::Vector edge2 = v0 - v2;
       const Polytope::Vector planeNormal = edge0.Cross(edge1);
-
+      
       // flip normal if needed
       Polytope::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
       if (worldSpaceRay.Direction.Dot(n) > 0) {
          n.Flip();
       }
 
+      n.Normalize();
+      
       intersection->Normal = n;
       intersection->Shape = this;
 

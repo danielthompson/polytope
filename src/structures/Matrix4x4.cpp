@@ -242,42 +242,63 @@ namespace Polytope {
    }
 
    Matrix4x4 &Matrix4x4::operator*=(const Matrix4x4 &rhs) {
-      Matrix[0][0] = Matrix[0][0] * rhs.Matrix[0][0] + Matrix[0][1] * rhs.Matrix[1][0] + Matrix[0][2] * rhs.Matrix[2][0] +
-                         Matrix[0][3] * rhs.Matrix[3][0];
-      Matrix[0][1] = Matrix[0][0] * rhs.Matrix[0][1] + Matrix[0][1] * rhs.Matrix[1][1] + Matrix[0][2] * rhs.Matrix[2][1] +
+      
+      const float m00 = Matrix[0][0] * rhs.Matrix[0][0] + Matrix[0][1] * rhs.Matrix[1][0] + Matrix[0][2] * rhs.Matrix[2][0] +
+                  Matrix[0][3] * rhs.Matrix[3][0];
+      const float m01 = Matrix[0][0] * rhs.Matrix[0][1] + Matrix[0][1] * rhs.Matrix[1][1] + Matrix[0][2] * rhs.Matrix[2][1] +
                          Matrix[0][3] * rhs.Matrix[3][1];
-      Matrix[0][2] = Matrix[0][0] * rhs.Matrix[0][2] + Matrix[0][1] * rhs.Matrix[1][2] + Matrix[0][2] * rhs.Matrix[2][2] +
+      const float m02 = Matrix[0][0] * rhs.Matrix[0][2] + Matrix[0][1] * rhs.Matrix[1][2] + Matrix[0][2] * rhs.Matrix[2][2] +
                          Matrix[0][3] * rhs.Matrix[3][2];
-      Matrix[0][3] = Matrix[0][0] * rhs.Matrix[0][3] + Matrix[0][1] * rhs.Matrix[1][3] + Matrix[0][2] * rhs.Matrix[2][3] +
+      const float m03 = Matrix[0][0] * rhs.Matrix[0][3] + Matrix[0][1] * rhs.Matrix[1][3] + Matrix[0][2] * rhs.Matrix[2][3] +
                          Matrix[0][3] * rhs.Matrix[3][3];
 
-      Matrix[1][0] = Matrix[1][0] * rhs.Matrix[0][0] + Matrix[1][1] * rhs.Matrix[1][0] + Matrix[1][2] * rhs.Matrix[2][0] +
+      const float m10 = Matrix[1][0] * rhs.Matrix[0][0] + Matrix[1][1] * rhs.Matrix[1][0] + Matrix[1][2] * rhs.Matrix[2][0] +
                          Matrix[1][3] * rhs.Matrix[3][0];
-      Matrix[1][1] = Matrix[1][0] * rhs.Matrix[0][1] + Matrix[1][1] * rhs.Matrix[1][1] + Matrix[1][2] * rhs.Matrix[2][1] +
+      const float m11 = Matrix[1][0] * rhs.Matrix[0][1] + Matrix[1][1] * rhs.Matrix[1][1] + Matrix[1][2] * rhs.Matrix[2][1] +
                          Matrix[1][3] * rhs.Matrix[3][1];
-      Matrix[1][2] = Matrix[1][0] * rhs.Matrix[0][2] + Matrix[1][1] * rhs.Matrix[1][2] + Matrix[1][2] * rhs.Matrix[2][2] +
+      const float m12 = Matrix[1][0] * rhs.Matrix[0][2] + Matrix[1][1] * rhs.Matrix[1][2] + Matrix[1][2] * rhs.Matrix[2][2] +
                          Matrix[1][3] * rhs.Matrix[3][2];
-      Matrix[1][3] = Matrix[1][0] * rhs.Matrix[0][3] + Matrix[1][1] * rhs.Matrix[1][3] + Matrix[1][2] * rhs.Matrix[2][3] +
+      const float m13 = Matrix[1][0] * rhs.Matrix[0][3] + Matrix[1][1] * rhs.Matrix[1][3] + Matrix[1][2] * rhs.Matrix[2][3] +
                          Matrix[1][3] * rhs.Matrix[3][3];
 
-      Matrix[2][0] = Matrix[2][0] * rhs.Matrix[0][0] + Matrix[2][1] * rhs.Matrix[1][0] + Matrix[2][2] * rhs.Matrix[2][0] +
+      const float m20 = Matrix[2][0] * rhs.Matrix[0][0] + Matrix[2][1] * rhs.Matrix[1][0] + Matrix[2][2] * rhs.Matrix[2][0] +
                          Matrix[2][3] * rhs.Matrix[3][0];
-      Matrix[2][1] = Matrix[2][0] * rhs.Matrix[0][1] + Matrix[2][1] * rhs.Matrix[1][1] + Matrix[2][2] * rhs.Matrix[2][1] +
+      const float m21 = Matrix[2][0] * rhs.Matrix[0][1] + Matrix[2][1] * rhs.Matrix[1][1] + Matrix[2][2] * rhs.Matrix[2][1] +
                          Matrix[2][3] * rhs.Matrix[3][1];
-      Matrix[2][2] = Matrix[2][0] * rhs.Matrix[0][2] + Matrix[2][1] * rhs.Matrix[1][2] + Matrix[2][2] * rhs.Matrix[2][2] +
+      const float m22 = Matrix[2][0] * rhs.Matrix[0][2] + Matrix[2][1] * rhs.Matrix[1][2] + Matrix[2][2] * rhs.Matrix[2][2] +
                          Matrix[2][3] * rhs.Matrix[3][2];
-      Matrix[2][3] = Matrix[2][0] * rhs.Matrix[0][3] + Matrix[2][1] * rhs.Matrix[1][3] + Matrix[2][2] * rhs.Matrix[2][3] +
+      const float m23 = Matrix[2][0] * rhs.Matrix[0][3] + Matrix[2][1] * rhs.Matrix[1][3] + Matrix[2][2] * rhs.Matrix[2][3] +
                          Matrix[2][3] * rhs.Matrix[3][3];
 
-      Matrix[3][0] = Matrix[3][0] * rhs.Matrix[0][0] + Matrix[3][1] * rhs.Matrix[1][0] + Matrix[3][2] * rhs.Matrix[2][0] +
+      const float m30 = Matrix[3][0] * rhs.Matrix[0][0] + Matrix[3][1] * rhs.Matrix[1][0] + Matrix[3][2] * rhs.Matrix[2][0] +
                          Matrix[3][3] * rhs.Matrix[3][0];
-      Matrix[3][1] = Matrix[3][0] * rhs.Matrix[0][1] + Matrix[3][1] * rhs.Matrix[1][1] + Matrix[3][2] * rhs.Matrix[2][1] +
+      const float m31 = Matrix[3][0] * rhs.Matrix[0][1] + Matrix[3][1] * rhs.Matrix[1][1] + Matrix[3][2] * rhs.Matrix[2][1] +
                          Matrix[3][3] * rhs.Matrix[3][1];
-      Matrix[3][2] = Matrix[3][0] * rhs.Matrix[0][2] + Matrix[3][1] * rhs.Matrix[1][2] + Matrix[3][2] * rhs.Matrix[2][2] +
+      const float m32 = Matrix[3][0] * rhs.Matrix[0][2] + Matrix[3][1] * rhs.Matrix[1][2] + Matrix[3][2] * rhs.Matrix[2][2] +
                          Matrix[3][3] * rhs.Matrix[3][2];
-      Matrix[3][3] = Matrix[3][0] * rhs.Matrix[0][3] + Matrix[3][1] * rhs.Matrix[1][3] + Matrix[3][2] * rhs.Matrix[2][3] +
+      const float m33 = Matrix[3][0] * rhs.Matrix[0][3] + Matrix[3][1] * rhs.Matrix[1][3] + Matrix[3][2] * rhs.Matrix[2][3] +
                          Matrix[3][3] * rhs.Matrix[3][3];
 
+      Matrix[0][0] = m00;
+      Matrix[0][1] = m01;
+      Matrix[0][2] = m02;
+      Matrix[0][3] = m03;
+
+      Matrix[1][0] = m10;
+      Matrix[1][1] = m11;
+      Matrix[1][2] = m12;
+      Matrix[1][3] = m13;
+
+      Matrix[2][0] = m20;
+      Matrix[2][1] = m21;
+      Matrix[2][2] = m22;
+      Matrix[2][3] = m23;
+
+      Matrix[3][0] = m30;
+      Matrix[3][1] = m31;
+      Matrix[3][2] = m32;
+      Matrix[3][3] = m33;
+      
       return *this;
    }
 }

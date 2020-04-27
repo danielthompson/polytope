@@ -11,6 +11,12 @@ namespace Polytope {
 
       Intersection intersection = Scene->GetNearestShape(ray, x, y);
 
+      bool debug = false;
+      
+      if (x == 386 && y == 177) {
+         debug = true;
+      }
+      
       if (!intersection.Hits) {
 
          SpectralPowerDistribution spd;

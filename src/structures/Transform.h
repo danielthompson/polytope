@@ -62,10 +62,10 @@ namespace Polytope {
       static Transform Scale(float x, float y, float z);
       static Transform Scale(float t);
 
-      static Transform LookAt(const Point &eye, const Point &lookAt, Vector &up);
+      static Transform LookAt(const Point &eye, const Point &lookAt, Vector &up, bool right_handed = true);
 
       static Transform LookAtLeftHanded(const Point &eye, const Point &lookAt, Vector &up);
-
+      
       // data
 
       Matrix4x4 Matrix;
