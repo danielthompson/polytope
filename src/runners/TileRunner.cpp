@@ -108,6 +108,9 @@ namespace Polytope {
          if (tile.y == _numYTiles - 1)
             yMax = tile.y * _yTileWidth + _yLastTileWidth;
 
+         xMax = std::min(xMax, Bounds.x - 1);
+         yMax = std::min(yMax, Bounds.y - 1);
+         
          for (int y = yMin; y < yMax; y++) {
             for (int x = xMin; x < xMax; x++) {
                Trace(x, y);

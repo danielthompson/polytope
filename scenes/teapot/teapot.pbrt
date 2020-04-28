@@ -1,10 +1,10 @@
 Integrator "path" "integer maxdepth" [ 7 ] 
-LookAt 0 10 35 # eye
+LookAt 0 20 35 # eye
        0 0 -1 # look at point
        0 1 0 # up
 Sampler "halton" "integer pixelsamples" [ 1 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
-Film "image" "integer xresolution" [ 512 ] "integer yresolution" [ 512 ] "string filename" [ "teapot.png" ]
+Film "image" "integer xresolution" [ 400 ] "integer yresolution" [ 250 ] "string filename" [ "teapot.png" ]
 Camera "perspective" "float fov" [ 15 ]
 WorldBegin
     LightSource "infinite" "rgb L" [1 1 1]
@@ -30,5 +30,8 @@ WorldBegin
         Translate 0 5 0
         
     AttributeEnd
+    # AttributeBegin
+        
+    
     
 WorldEnd
