@@ -111,8 +111,8 @@ namespace Polytope {
          xMax = std::min(xMax, Bounds.x - 1);
          yMax = std::min(yMax, Bounds.y - 1);
          
-         for (int y = yMin; y < yMax; y++) {
-            for (int x = xMin; x < xMax; x++) {
+         for (unsigned int y = yMin; y < yMax; y++) {
+            for (unsigned int x = xMin; x < xMax; x++) {
                Trace(x, y);
             }
          }

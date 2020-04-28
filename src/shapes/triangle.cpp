@@ -1177,14 +1177,13 @@ namespace Polytope {
 
       if (edge0dot > edge1dot && edge0dot > edge2dot) {
          intersection->Tangent1 = edge0;
-         intersection->Tangent2 = edge1;
       } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
          intersection->Tangent1 = edge1;
-         intersection->Tangent2 = edge2;
       } else {
          intersection->Tangent1 = edge2;
-         intersection->Tangent2 = edge0;
       }
+
+      intersection->Tangent2 = intersection->Tangent1.Cross(intersection->Normal);
 
       intersection->Tangent1.Normalize();
       intersection->Tangent2.Normalize();

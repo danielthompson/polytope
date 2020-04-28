@@ -13,7 +13,7 @@ namespace Polytope {
 
       bool debug = false;
       
-      if (x == 386 && y == 177) {
+      if (x == 40 && y == 200) {
          debug = true;
       }
       

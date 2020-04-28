@@ -73,6 +73,7 @@ namespace Polytope {
          Material,
          NamedMaterial,
          Rotate,
+         Scale,
          Shape,
          TransformBegin,
          TransformEnd,
@@ -90,6 +91,7 @@ namespace Polytope {
             {"Material", Material},
             {"NamedMaterial", NamedMaterial},
             {"Rotate", Rotate},
+            {"Scale", Scale},
             {"Shape", Shape},
             {"TransformBegin", TransformBegin},
             {"TransformEnd", TransformEnd},
@@ -879,7 +881,20 @@ namespace Polytope {
 
                assert (activeTransform != nullptr);
                Transform *active = activeTransform.get();
-               *active = *active * t;
+               *active *= t;
+               break;
+            }
+            case WorldDirectiveName::Scale: {
+               PBRTArgument argument = directive.Arguments[0];
+               float x = std::stof(argument.Values[0]);
+               float y = std::stof(argument.Values[1]);
+               float z = std::stof(argument.Values[2]);
+
+               Transform t = Transform::Scale(x, y, z);
+
+               assert (activeTransform != nullptr);
+               Transform *active = activeTransform.get();
+               *active *= t;
                break;
             }
             case WorldDirectiveName::Shape: {
