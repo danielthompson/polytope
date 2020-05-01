@@ -9,7 +9,7 @@
 
 namespace Polytope {
 
-   Matrix4x4::Matrix4x4() : Matrix {0}{
+   Matrix4x4::Matrix4x4() : Matrix {0} {
       Matrix[0][0] = 1;
       //Matrix[0][1] = 0;
       //Matrix[0][2] = 0;

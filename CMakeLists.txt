@@ -204,7 +204,9 @@ add_executable(runUnitTests
       tests/TestMatrix4x4.cpp
       tests/TestMirrorBRDF.cpp
       tests/TestOBJParser.cpp
-      tests/TestPBRTFileParser.cpp
+        tests/parsers/pbrt/test_scan.cpp
+        tests/parsers/pbrt/test_parse.cpp
+        tests/parsers/pbrt/test_lex.cpp
       tests/TestPLYParser.cpp
       tests/TestPoint.cpp
       tests/TestTransform.cpp

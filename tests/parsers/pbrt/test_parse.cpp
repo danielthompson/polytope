@@ -4,24 +4,23 @@
 
 #include "gtest/gtest.h"
 
-#include "../src/parsers/PBRTFileParser.h"
-#include "../src/samplers/samplers.h"
-#include "../src/utilities/Logger.h"
-#include "../src/films/PNGFilm.h"
-#include "../src/filters/BoxFilter.h"
-#include "../src/integrators/PathTraceIntegrator.h"
-#include "../src/scenes/NaiveScene.h"
-#include "../src/cameras/PerspectiveCamera.h"
+#include "../../../src/parsers/PBRTFileParser.h"
+#include "../../../src/samplers/samplers.h"
+#include "../../../src/utilities/Logger.h"
+#include "../../../src/films/PNGFilm.h"
+#include "../../../src/filters/BoxFilter.h"
+#include "../../../src/integrators/PathTraceIntegrator.h"
+#include "../../../src/scenes/NaiveScene.h"
+#include "../../../src/cameras/PerspectiveCamera.h"
 
 // TODO - put all test globals somewhere
-Polytope::Logger Log;
 
 namespace Tests {
 
    using Polytope::PBRTFileParser;
 
    namespace Parse {
-      TEST(FileParser, EmptyWorld) {
+      TEST(PBRTParse, EmptyWorld) {
 
          PBRTFileParser fp = PBRTFileParser();
          std::string file = "../scenes/minimum-emptyworld.pbrt";
@@ -104,7 +103,7 @@ namespace Tests {
          EXPECT_EQ(50, actualCamera->Settings.FieldOfView);
       }
 
-      TEST(FileParser, EmptyWorldMissingCamera) {
+      TEST(PBRTParse, EmptyWorldMissingCamera) {
 
          PBRTFileParser fp = PBRTFileParser();
          std::string file = "../scenes/minimum-emptyworld-missingcamera.pbrt";

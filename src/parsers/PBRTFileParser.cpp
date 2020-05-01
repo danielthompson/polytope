@@ -30,59 +30,58 @@ namespace Polytope {
 
       // datatypes
 
-      const std::string IntegerText = "integer";
-      const std::string FloatText = "float";
-      const std::string StringText = "string";
       const std::string RGBText = "rgb";
 
-      // scene
+      // directives
 
       const std::string CameraText = "Camera";
       const std::string FilmText = "Film";
       const std::string IntegratorText = "Integrator";
       const std::string LookAtText = "LookAt";
       const std::string PixelFilterText = "PixelFilter";
+      const std::string RotateText = "Rotate";
       const std::string SamplerText = "Sampler";
+      const std::string ScaleText = "Scale";
+      const std::string TranslateText = "Translate";
 
-      enum SceneDirectiveName {
+      enum DirectiveName {
+         AreaLightSource,
+         AttributeBegin,
+         AttributeEnd,
          Camera,
          Film,
          Integrator,
+         LightSource,
          LookAt,
+         MakeNamedMaterial,
+         Material,
+         NamedMaterial,
          PixelFilter,
-         Sampler
+         Rotate,
+         Sampler,
+         Scale,
+         Shape,
+         Translate,
+         TransformBegin,
+         TransformEnd,
+         WorldBegin,
+         WorldEnd
       };
 
-      const std::map<std::string, SceneDirectiveName> SceneDirectiveMap {
+      const std::map<std::string, DirectiveName> SceneDirectiveMap {
             {CameraText, Camera},
             {FilmText, Film},
             {IntegratorText, Integrator},
             {LookAtText, LookAt},
             {PixelFilterText, PixelFilter},
-            {SamplerText, Sampler}
+            {RotateText, Rotate},
+            {SamplerText, Sampler},
+            {ScaleText, Scale},
+            {TranslateText, Translate}
       };
 
-      // world
 
-      enum WorldDirectiveName {
-         AreaLightSource,
-         AttributeBegin,
-         AttributeEnd,
-         LightSource,
-         MakeNamedMaterial,
-         Material,
-         NamedMaterial,
-         Rotate,
-         Scale,
-         Shape,
-         TransformBegin,
-         TransformEnd,
-         Translate,
-         WorldBegin,
-         WorldEnd
-      };
-
-      const std::map<std::string, WorldDirectiveName> WorldDirectiveMap {
+      const std::map<std::string, DirectiveName> WorldDirectiveMap {
             {"AreaLightSource", AreaLightSource},
             {"AttributeBegin", AttributeBegin},
             {"AttributeEnd", AttributeEnd},
@@ -90,12 +89,12 @@ namespace Polytope {
             {"MakeNamedMaterial", MakeNamedMaterial},
             {"Material", Material},
             {"NamedMaterial", NamedMaterial},
-            {"Rotate", Rotate},
-            {"Scale", Scale},
+            {RotateText, Rotate},
+            {ScaleText, Scale},
             {"Shape", Shape},
             {"TransformBegin", TransformBegin},
             {"TransformEnd", TransformEnd},
-            {"Translate", Translate},
+            {TranslateText, Translate},
             {"WorldBegin", WorldBegin},
             {"WorldEnd", WorldEnd}
       };
@@ -163,36 +162,39 @@ namespace Polytope {
          return (token[0] != '"' && token[token.size() - 1] == '"');
       }
 
-      void LogOther(const PBRTDirective &directive, const std::string &error) {
-         Log.WithTime(directive.Name + ": " + error);
+      void LogOther(const std::unique_ptr<PBRTDirective> &directive, const std::string &error) {
+         Log.WithTime(directive->Name + ": " + error);
       }
 
-      void LogMissingArgument(const PBRTDirective &directive, const std::string& argument) {
-         Log.WithTime("Directive [" + directive.Name + "] w/ identifier [" + directive.Identifier + "] is missing argument [" + argument + "]");
+      void LogMissingArgument(const std::unique_ptr<PBRTDirective>& directive, const std::string& argument) {
+         Log.WithTime("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] is missing argument [" + argument + "]");
       }
 
       void LogMissingDirective(const std::string& name, std::string& defaultOption) {
          Log.WithTime("Directive [" + name + "] is missing, defaulting to " + defaultOption + ".");
       }
 
-      void LogUnknownDirective(const PBRTDirective &directive) {
-         Log.WithTime("Directive [" + directive.Name + "] found, but is unknown. Ignoring.");
+      void LogUnknownDirective(const std::unique_ptr<PBRTDirective> &directive) {
+         Log.WithTime("Directive [" + directive->Name + "] found, but is unknown. Ignoring.");
       }
 
-      void LogUnknownIdentifier(const PBRTDirective &directive) {
-         Log.WithTime("Directive [" + directive.Name + "] has unknown identifier [" + directive.Identifier + "].");
+      void LogUnknownIdentifier(const std::unique_ptr<PBRTDirective> &directive) {
+         Log.WithTime("Directive [" + directive->Name + "] has unknown identifier [" + directive->Identifier + "].");
       }
 
       void LogUnknownArgument(const PBRTArgument &argument) {
-         Log.WithTime("Unknown argument type/name combination: [" + argument.Type + "] / [" + argument.Name + "].");
+         
+         Log.WithTime("Unknown argument type/name combination: [" +
+                            PBRTArgument::get_argument_type_string(argument.Type) + "] / [" + argument.Name + "].");
       }
 
-      void LogWrongArgumentType(const PBRTDirective &directive, const PBRTArgument &argument) {
-         Log.WithTime("Directive [" + directive.Name + "] w/ identifier [" + directive.Identifier + "] found has argument [" + argument.Name + "] with wrong type [" + argument.Type + "].");
+      void LogWrongArgumentType(const std::unique_ptr<PBRTDirective> &directive, const PBRTArgument &argument) {
+         Log.WithTime("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] found has argument [" + argument.Name + "] with wrong type [" +
+                            PBRTArgument::get_argument_type_string(argument.Type) + "].");
       }
 
-      void LogUnimplementedDirective(const PBRTDirective &directive) {
-         Log.WithTime("Directive [" + directive.Name + "] w/ identifier [" + directive.Identifier + "] found, but is not yet implemented. Ignoring.");
+      void LogUnimplementedDirective(const std::unique_ptr<PBRTDirective> &directive) {
+         Log.WithTime("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] found, but is not yet implemented. Ignoring.");
       }
 
       unsigned int stoui(const std::string& text) {
@@ -208,20 +210,12 @@ namespace Polytope {
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filepath) {
 
-      std::string unixifiedFilePath = filepath;
-
-      std::string::size_type n = 0;
-      while (( n = unixifiedFilePath.find(WindowsPathSeparator, n ) ) != std::string::npos) {
-         unixifiedFilePath.replace( n, unixifiedFilePath.size(), UnixPathSeparator);
-         n += unixifiedFilePath.size();
-      }
-
       //std::replace(unixifiedFilePath.begin(), unixifiedFilePath.end(), WindowsPathSeparator, UnixPathSeparator);
 
-      std::vector<std::vector<std::string>> tokens = Scan(OpenStream(filepath));
+      std::unique_ptr<std::vector<std::vector<std::string>>> tokens = Scan(OpenStream(filepath));
 
       // determine the name of the file from the given path
-      const size_t lastPos = unixifiedFilePath.find_last_of(UnixPathSeparator);
+      const size_t lastPos = filepath.find_last_of(UnixPathSeparator);
 
       if (lastPos == std::string::npos) {
          _inputFilename = filepath;
@@ -232,23 +226,23 @@ namespace Polytope {
          _inputFilename = filepath.substr(lastPos + 1);
       }
 
-      return Parse(tokens);
+      return Parse(std::move(tokens));
    }
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseString(const std::string &text) {
       auto tokens = Scan(std::make_unique<std::istringstream>(text));
-      return Parse(tokens);
+      return Parse(std::move(tokens));
    }
 
-   std::vector<std::vector<std::string>> PBRTFileParser::Scan(std::unique_ptr<std::istream> stream) {
+   std::unique_ptr<std::vector<std::vector<std::string>>> PBRTFileParser::Scan(const std::unique_ptr<std::istream> &stream) {
 
-      std::vector<std::vector<std::string>> tokens;
+      std::unique_ptr<std::vector<std::vector<std::string>>> tokens = std::make_unique<std::vector<std::vector<std::string>>>();
 
       int sourceLineNumber = 0;
       int targetLineNumber = -1;
       std::string line;
       while (getline(*stream, line)) {
-         tokens.emplace_back();
+         tokens->emplace_back();
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
 
@@ -259,129 +253,262 @@ namespace Polytope {
 
             // check if this is a directive
             if (WorldDirectiveMap.count(word) > 0 || SceneDirectiveMap.count(word) > 0) {
-            //if (std::find(Directives.begin(), Directives.end(), word) != Directives.end()) {
                // if this is a directive, then we move on to a new line
                targetLineNumber++;
             }
 
             // split brackets, if needed
 
-            if (word.size() > 1) {
-               const unsigned long lastIndex = word.size() - 1;
-
-               if (word[0] == '[') {
-                  tokens[targetLineNumber].push_back("[");
-                  tokens[targetLineNumber].push_back(word.substr(1, lastIndex));
-               } else if (word[lastIndex] == ']') {
-                  tokens[targetLineNumber].push_back(word.substr(0, lastIndex));
-                  tokens[targetLineNumber].push_back("]");
-               } else {
-                  tokens[targetLineNumber].push_back(word);
-               }
-            } else {
-               tokens[targetLineNumber].push_back(word);
+            if (word.empty()) {
+               continue;
             }
 
+            const unsigned long lastIndex = word.size() - 1;
+
+            const bool first_char_is_bracket = word[0] == '[';
+            const bool last_char_is_bracket = word[lastIndex] == ']';
+            const unsigned int token_index = (*tokens)[targetLineNumber].size() - 1;
+
+            std::vector<std::string>* current_line = &(*tokens)[targetLineNumber];
+            
+            if (word.size() == 1) {
+               if (last_char_is_bracket) {
+                  if ((*current_line)[token_index - 1] == "[") {
+                     current_line->erase(current_line->end() - 2);
+                  }
+                  else {
+                     current_line->push_back("]");
+                  }
+               }
+               else {
+                  current_line->push_back(word);
+               }
+            }
+            else {
+               if (first_char_is_bracket) {
+                  if (last_char_is_bracket) {
+                     current_line->push_back(word.substr(1, word.size() - 2));
+                  }
+                  else {
+                     current_line->push_back("[");
+                     current_line->push_back(word.substr(1));
+                  }
+               }
+               else {
+                  if (last_char_is_bracket) {
+                     if ((*current_line)[token_index] == "[") {
+                        current_line->erase(current_line->end() - 1);
+                        current_line->push_back(word.substr(0, word.size() - 1));
+                     }
+                     else {
+                        current_line->push_back(word.substr(0, word.size() - 1));
+                        current_line->push_back("]");
+                     }
+                  }
+                  else {
+                     current_line->push_back(word);
+                  }
+               }
+            }
          }
-
+         
          sourceLineNumber++;
-
-      }
-
-      Log.WithTime("Scanned file.");
-
+      } // end line
+      
+      Log.WithTime("Scan complete.");
       return tokens;
    }
 
-   std::unique_ptr<AbstractRunner> PBRTFileParser::Parse(std::vector<std::vector<std::string>> tokens) noexcept(false){
-      std::vector<PBRTDirective> sceneDirectives;
-      std::vector<PBRTDirective> worldDirectives;
+   void LexFloatArrayArgument(const std::vector<std::string>& line, const int expected_num_elements, Polytope::PBRTArgument *argument) {
+      if (line.size() != expected_num_elements + 1) {
+         throw std::invalid_argument(line[0] + " requires exactly " + std::to_string(expected_num_elements) + " arguments, but found " + std::to_string(line.size()));
+      }
+
+      argument->Type = PBRTArgument::pbrt_float;
+      argument->float_values = std::make_unique<std::vector<float>>();
+      for (int i = 1; i <= expected_num_elements; i++) {
+         std::string current_arg = line[i];
+         float value;
+         try {
+            value = stof(current_arg);
+         }
+         catch (const std::invalid_argument &) {
+            throw std::invalid_argument(line[0] + ": failed to parse [" + current_arg + "] as a float");
+         }
+         argument->float_values->push_back(value);
+      }
+   }
+   
+   std::unique_ptr<Polytope::PBRTDirective> PBRTFileParser::Lex(std::vector<std::string> line) {
+      std::unique_ptr<Polytope::PBRTDirective> directive = std::make_unique<PBRTDirective>();
+
+      if (line.empty())
+         return directive;
+
+      directive->Name = line[0];
+
+      if (line.size() == 1) {
+         return directive;
+      }
+
+      // first, lex directives that use non-uniform argument syntax
+      if (directive->Name == LookAtText) {
+         directive->Arguments = std::vector<PBRTArgument>();
+         directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
+         LexFloatArrayArgument(line, 9, &(directive->Arguments[0]));
+         return directive;
+      }
+      
+      if (directive->Name == RotateText) {
+         directive->Arguments = std::vector<PBRTArgument>();
+         directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
+         LexFloatArrayArgument(line, 4, &(directive->Arguments[0]));
+         return directive;
+      }
+
+      if (directive->Name == ScaleText) {
+         directive->Arguments = std::vector<PBRTArgument>();
+         directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
+         LexFloatArrayArgument(line, 3, &(directive->Arguments[0]));
+         return directive;
+      }
+      
+      if (directive->Name == TranslateText) {
+         directive->Arguments = std::vector<PBRTArgument>();
+         directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
+         LexFloatArrayArgument(line, 3, &(directive->Arguments[0]));
+         return directive;
+      }
+      
+      if (IsQuoted(line[1])) {
+         directive->Identifier = line[1].substr(1, line[1].length() - 2);
+      } 
+      else {
+         throw std::invalid_argument(line[0] + ": second token (identifier) isn't quoted, but should be");
+      }
+
+      if (line.size() == 2) {
+         //directive->Arguments.clear();
+         return directive;
+      }
+      
+      bool inValue = false;
+      bool in_arg = false;
+      int i = 2;
+      int current_arg_index = -1;
+      PBRTArgument* current_arg = nullptr;
+      while (i < line.size()) {
+         if (StartQuoted(line[i]) && EndQuoted(line[i + 1])) {
+            // we're in an argument
+            if (directive->Arguments.empty())
+               directive->Arguments = std::vector<PBRTArgument>();
+            const PBRTArgument::PBRTArgumentType type = PBRTArgument::get_argument_type(line[i].substr(1, line[i].length() - 1));
+            directive->Arguments.emplace_back(PBRTArgument(type));
+            current_arg_index++;
+            current_arg = &(directive->Arguments[current_arg_index]);
+            current_arg->Name = line[i + 1].substr(0, line[i + 1].length() - 1);
+            inValue = true;
+            i += 2;
+            continue;
+         }
+         // TODO catch sequential non-bracketed values
+         if (line[i] == "[") {
+            inValue = true;
+            i++;
+            continue;
+         }
+         if (line[i] == "]") {
+            inValue = false;
+            i++;
+            continue;
+         }
+         if (inValue) {
+            if (IsQuoted(line[i])) {
+               // probably just string?
+               assert(current_arg->Type == PBRTArgument::PBRTArgumentType::pbrt_string);
+               assert(current_arg->float_values == nullptr);
+               assert(current_arg->int_values == nullptr);
+               current_arg->string_value = std::make_unique<std::string>(line[i].substr(1, line[i].length() - 2));
+            } 
+            else {
+               switch (current_arg->Type) {
+                  case PBRTArgument::pbrt_rgb:
+                  case PBRTArgument::pbrt_float: {
+                     assert(current_arg->string_value == nullptr);
+                     assert(current_arg->int_values == nullptr);
+                     
+                     float value;
+                     try {
+                        value = std::stof(line[i]);
+                     }
+                     catch (const std::invalid_argument &) {
+                        throw std::invalid_argument(line[0] + ": failed to parse [" + line[i] + "] as a float");
+                     }
+                     if (current_arg->Type == PBRTArgument::pbrt_rgb) {
+                        if (value < 0.f || value > 1.f) {
+                           throw std::invalid_argument(line[0] + ": parsed value [" + std::to_string(value) + "] is outside the range for rgb (must be between 0 and 1 inclusive)");
+                        }
+                     }
+                     if (current_arg->float_values == nullptr) {
+                        current_arg->float_values = std::make_unique<std::vector<float>>();
+                     }
+
+                     current_arg->float_values->push_back(value);
+                     break;
+                  }
+                  case PBRTArgument::pbrt_int: {
+                     assert(current_arg->string_value == nullptr);
+                     assert(current_arg->float_values == nullptr);
+                     int value;
+                     try {
+                        value = std::stoi(line[i]);
+                     }
+                     catch (const std::invalid_argument &) {
+                        throw std::invalid_argument(line[0] + ": failed to parse [" + line[i] + "] as an int");
+                     }
+
+                     if (current_arg->int_values == nullptr) {
+                        current_arg->int_values = std::make_unique<std::vector<int>>();
+                     }
+                     
+                     current_arg->int_values->push_back(value);
+                     break;
+                  }
+                  default: {
+                     // TODO
+                  }
+               }
+            }
+            i++;
+            continue;
+         }
+         throw std::invalid_argument("Lexer: current line has invalid token [" + line[i] + "]");
+      }
+
+//      if (inValue) {
+//         directive->Arguments.push_back(argument);
+//      }
+
+      Log.WithTime("Lexed directive [" + directive->Name + "]");
+
+      return directive;
+   }
+   
+   std::unique_ptr<AbstractRunner> PBRTFileParser::Parse(const std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
+      std::vector<std::unique_ptr<PBRTDirective>> scene_directives;
+      std::vector<std::unique_ptr<PBRTDirective>> world_directives;
 
       {
-         std::vector<PBRTDirective> *currentDirectives = &sceneDirectives;
-
-         for (std::vector<std::string> line : tokens) {
-            PBRTDirective currentDirective = PBRTDirective();
-
-            if (line.empty())
-               continue;
-
-            currentDirective.Name = line[0];
-
-            if (currentDirective.Name == WorldBeginText)
-               currentDirectives = &worldDirectives;
-
-            if (line.size() == 1) {
-               //currentDirective.
-               currentDirectives->push_back(currentDirective);
-
-               continue;
+         std::vector<std::unique_ptr<PBRTDirective>>* current_directives = &scene_directives;
+         for (const std::vector<std::string>& line : *tokens) {
+            std::unique_ptr<PBRTDirective> directive = Lex(line);
+            // TODO ensure directive is valid for scene/world
+            
+            if (directive->Name == WorldBeginText) {
+               current_directives = &world_directives;
             }
-
-            if (IsQuoted(line[1])) {
-               currentDirective.Identifier = line[1].substr(1, line[1].length() - 2);
-            } else {
-               currentDirective.Arguments = std::vector<PBRTArgument>();
-               PBRTArgument argument = PBRTArgument();
-               argument.Type = "float";
-               argument.Values = std::vector<std::string>();
-
-               for (int i = 1; i < line.size(); i++) {
-                  argument.Values.push_back(line[i]);
-               }
-
-               currentDirective.Arguments.push_back(argument);
-               currentDirectives->push_back(currentDirective);
-               continue;
-            }
-
-            if (line.size() == 2) {
-               currentDirectives->push_back(currentDirective);
-               continue;
-            }
-
-            currentDirective.Arguments = std::vector<PBRTArgument>();
-            PBRTArgument currentArgument = PBRTArgument();
-            bool inValue = false;
-            int i = 2;
-            while (i < line.size()) {
-
-               if (StartQuoted(line[i]) && EndQuoted(line[i + 1])) {
-                  // we're in an argument
-                  currentArgument.Type = line[i].substr(1, line[i].length() - 1);
-                  currentArgument.Name = line[i + 1].substr(0, line[i + 1].length() - 1);
-                  inValue = true;
-                  i += 2;
-                  continue;
-               }
-               if (line[i] == "[") {
-                  inValue = true;
-                  i++;
-                  continue;
-               }
-               if (line[i] == "]") {
-                  inValue = false;
-                  i++;
-                  currentDirective.Arguments.push_back(currentArgument);
-                  currentArgument = PBRTArgument();
-                  continue;
-               }
-               if (inValue) {
-                  if (IsQuoted(line[i])) {
-                     currentArgument.Values.push_back(line[i].substr(1, line[i].length() - 2));
-                  } else {
-                     currentArgument.Values.push_back(line[i]);
-                  }
-                  i++;
-                  continue;
-               }
-            }
-
-            if (inValue) {
-               currentDirective.Arguments.push_back(currentArgument);
-            }
-
-            currentDirectives->push_back(currentDirective);
+            
+            current_directives->push_back(std::move(directive));
          }
       }
 
@@ -391,25 +518,28 @@ namespace Polytope {
 
       unsigned int numSamples = DefaultSamples;
 
-      for (const PBRTDirective& directive : sceneDirectives) {
-         if (directive.Name == SamplerText) {
+      for (const std::unique_ptr<PBRTDirective> &directive : scene_directives) {
+         if (directive->Name == SamplerText) {
             missingSampler = false;
-            if (directive.Identifier == "halton") {
+            if (directive->Identifier == "halton") {
                _sampler = std::make_unique<HaltonSampler>();
             } else {
                LogUnknownIdentifier(directive);
                _sampler = std::make_unique<HaltonSampler>();
             }
 
-            for (const PBRTArgument& arg : directive.Arguments) {
-               if (arg.Type == IntegerText) {
+            for (const PBRTArgument& arg : directive->Arguments) {
+               if (arg.Type == PBRTArgument::pbrt_int) {
                   if (arg.Name == "pixelsamples") {
-                     numSamples = stoui(arg.Values[0]);
+                     numSamples = arg.int_values->at(0);
                      break;
                   } else {
                      LogUnknownArgument(arg);
                   }
                   break;
+               }
+               else {
+                  // TODO log bad argument type
                }
             }
             break;
@@ -431,9 +561,9 @@ namespace Polytope {
 
       bool missingFilm = true;
 
-      for (const PBRTDirective& directive : sceneDirectives) {
-         if (directive.Name == FilmText) {
-            if (directive.Identifier == "image") {
+      for (const std::unique_ptr<PBRTDirective> &directive : scene_directives) {
+         if (directive->Name == FilmText) {
+            if (directive->Identifier == "image") {
                unsigned int x = 0;
                unsigned int y = 0;
 
@@ -447,20 +577,21 @@ namespace Polytope {
                bool foundX = false;
                bool foundY = false;
 
-               for (const PBRTArgument& arg : directive.Arguments) {
-                  if (arg.Type == IntegerText) {
+               for (const PBRTArgument& arg : directive->Arguments) {
+                  if (arg.Type == PBRTArgument::pbrt_int) {
                      if (arg.Name == "xresolution") {
-                        x = stoui(arg.Values[0]);
+                        x = arg.int_values->at(0);
                         foundX = true;
                      } else if (arg.Name == "yresolution") {
-                        y = stoui(arg.Values[0]);
+                        y = arg.int_values->at(0);
                         foundY = true;
                      } else {
                         LogUnknownArgument(arg);
                      }
-                  } else if (arg.Type == StringText) {
+                  } else if (arg.Type == PBRTArgument::pbrt_string) {
                      if (arg.Name == "filename") {
-                        filename = arg.Values[0];
+                        filename = *(arg.string_value);
+                        // TODO complain if filename arg is provided but empty
                      } else {
                         LogUnknownArgument(arg);
                      }
@@ -496,19 +627,19 @@ namespace Polytope {
 
       bool missingFilter = true;
 
-      for (const PBRTDirective& directive : sceneDirectives) {
-         if (directive.Name == PixelFilterText) {
+      for (const std::unique_ptr<PBRTDirective>& directive : scene_directives) {
+         if (directive->Name == PixelFilterText) {
             missingFilter = false;
-            if (directive.Identifier == "box") {
+            if (directive->Identifier == "box") {
                unsigned int xWidth = 0;
                unsigned int yWidth = 0;
 
-               for (const PBRTArgument& arg : directive.Arguments) {
-                  if (arg.Type == IntegerText) {
+               for (const PBRTArgument& arg : directive->Arguments) {
+                  if (arg.Type == PBRTArgument::pbrt_int) {
                      if (arg.Name == "xwidth") {
-                        xWidth = stoui(arg.Values[0]);
+                        xWidth = arg.int_values->at(0);
                      } else if (arg.Name == "ywidth") {
-                        yWidth = stoui(arg.Values[0]);
+                        yWidth = arg.int_values->at(0);
                      } else {
                         LogUnknownArgument(arg);
                      }
@@ -545,32 +676,28 @@ namespace Polytope {
 
          Transform currentTransform;
          
-         for (const PBRTDirective& directive : sceneDirectives) {
-            if (directive.Name == LookAtText) {
-               if (directive.Arguments.size() == 1) {
-                  if (directive.Arguments[0].Values.size() == 9) {
-                     const float eyeX = stof(directive.Arguments[0].Values[0]);
-                     const float eyeY = stof(directive.Arguments[0].Values[1]);
-                     const float eyeZ = stof(directive.Arguments[0].Values[2]);
+         for (const std::unique_ptr<PBRTDirective>& directive : scene_directives) {
+            if (directive->Name == LookAtText) {
+               const float eyeX = directive->Arguments[0].float_values->at(0);
+               const float eyeY = directive->Arguments[0].float_values->at(1);
+               const float eyeZ = directive->Arguments[0].float_values->at(2);
 
-                     eye = Point(eyeX, eyeY, eyeZ);
+               eye = Point(eyeX, eyeY, eyeZ);
 
-                     const float lookAtX = stof(directive.Arguments[0].Values[3]);
-                     const float lookAtY = stof(directive.Arguments[0].Values[4]);
-                     const float lookAtZ = stof(directive.Arguments[0].Values[5]);
+               const float lookAtX = directive->Arguments[0].float_values->at(3);
+               const float lookAtY = directive->Arguments[0].float_values->at(4);
+               const float lookAtZ = directive->Arguments[0].float_values->at(5);
 
-                     lookAt = Point(lookAtX, lookAtY, lookAtZ);
+               lookAt = Point(lookAtX, lookAtY, lookAtZ);
 
-                     const float upX = stof(directive.Arguments[0].Values[6]);
-                     const float upY = stof(directive.Arguments[0].Values[7]);
-                     const float upZ = stof(directive.Arguments[0].Values[8]);
+               const float upX = directive->Arguments[0].float_values->at(6);
+               const float upY = directive->Arguments[0].float_values->at(7);
+               const float upZ = directive->Arguments[0].float_values->at(8);
 
-                     up = Vector(upX, upY, upZ);
+               up = Vector(upX, upY, upZ);
 
-                     Transform t = Transform::LookAt(eye, lookAt, up, false);
-                     currentTransform *= t;
-                  }
-               }
+               Transform t = Transform::LookAt(eye, lookAt, up, false);
+               currentTransform *= t;
 
                Log.WithTime("Found LookAt.");
                break;
@@ -581,19 +708,19 @@ namespace Polytope {
 
          bool foundCamera = false;
 
-         for (const PBRTDirective &directive : sceneDirectives) {
-            if (directive.Name == CameraText) {
-               if (directive.Identifier == "perspective") {
+         for (const std::unique_ptr<PBRTDirective> &directive : scene_directives) {
+            if (directive->Name == CameraText) {
+               if (directive->Identifier == "perspective") {
                   float fov = DefaultCameraFOV;
 
                   foundCamera = true;
 
-                  for (const PBRTArgument& arg : directive.Arguments) {
-                     if (arg.Type == FloatText) {
+                  for (const PBRTArgument& arg : directive->Arguments) {
+                     if (arg.Type == PBRTArgument::pbrt_float) {
                         if (arg.Name == "fov") {
-                           // TODO remove static_cast?
-                           fov = static_cast<float>(stof(arg.Values[0]));
-                        } else {
+                           fov = arg.float_values->at(0);
+                        } 
+                        else {
                            LogUnknownArgument(arg);
                         }
                      }
@@ -623,19 +750,19 @@ namespace Polytope {
 
       bool missingIntegrator = true;
 
-      for (const PBRTDirective& directive : sceneDirectives) {
-         if (directive.Name == IntegratorText) {
-            if (directive.Identifier == "path") {
+      for (const std::unique_ptr<PBRTDirective>& directive : scene_directives) {
+         if (directive->Name == IntegratorText) {
+            if (directive->Identifier == "path") {
                unsigned int maxDepth = 5;
 
                missingIntegrator = false;
 
                bool missingDepth = true;
 
-               for (const PBRTArgument& arg : directive.Arguments) {
-                  if (arg.Type == IntegerText) {
+               for (const PBRTArgument& arg : directive->Arguments) {
+                  if (arg.Type == PBRTArgument::pbrt_int) {
                      if (arg.Name == "maxdepth") {
-                        maxDepth = stoui(arg.Values[0]);
+                        maxDepth = arg.int_values->at(0);
                         missingDepth = false;
                         break;
                      } else {
@@ -679,10 +806,10 @@ namespace Polytope {
       
       _scene = new NaiveScene(std::move(camera));
 
-      for (const PBRTDirective& directive : worldDirectives) {
-         WorldDirectiveName name;
+      for (const std::unique_ptr<PBRTDirective>& directive : world_directives) {
+         DirectiveName name;
          try {
-            name = WorldDirectiveMap.at(directive.Name);
+            name = WorldDirectiveMap.at(directive->Name);
          }
          catch (...) {
             LogUnknownDirective(directive);
@@ -690,26 +817,26 @@ namespace Polytope {
          }
 
          switch (name) {
-            case WorldDirectiveName::AreaLightSource: {
+            case DirectiveName::AreaLightSource: {
                // lights with geometry
-               if (directive.Identifier != "diffuse") {
+               if (directive->Identifier != "diffuse") {
                   LogUnknownIdentifier(directive);
                   break;
                }
-               for (const PBRTArgument& argument : directive.Arguments) {
+               for (const PBRTArgument& argument : directive->Arguments) {
                   if (argument.Name == "L") {
                      if (activeLight == nullptr) {
                         activeLight = std::make_shared<SpectralPowerDistribution>();
                      }
-                     activeLight->r = stof(argument.Values[0]);
-                     activeLight->g = stof(argument.Values[1]);
-                     activeLight->b = stof(argument.Values[2]);
+                     activeLight->r = argument.float_values->at(0);
+                     activeLight->g = argument.float_values->at(1);
+                     activeLight->b = argument.float_values->at(2);
                      break;
                   }
                }
                break;
             }
-            case WorldDirectiveName::AttributeBegin: {
+            case DirectiveName::AttributeBegin: {
                // push onto material stack
                if (activeMaterial != nullptr) {
                   materialStack.push(activeMaterial);
@@ -725,7 +852,7 @@ namespace Polytope {
                activeTransform = std::make_shared<Transform>(*(activeTransform.get()));
                break;
             }
-            case WorldDirectiveName::AttributeEnd: {
+            case DirectiveName::AttributeEnd: {
                // pop material stack
                if (!materialStack.empty()) {
                   std::shared_ptr<Polytope::Material> stackValue = materialStack.top();
@@ -749,14 +876,14 @@ namespace Polytope {
                }
                break;
             }
-            case WorldDirectiveName::LightSource: {
+            case DirectiveName::LightSource: {
                // lights without geometry
-               if (directive.Identifier == "infinite") {
-                  for (const PBRTArgument& argument : directive.Arguments) {
+               if (directive->Identifier == "infinite") {
+                  for (const PBRTArgument& argument : directive->Arguments) {
                      if (argument.Name == "L") {
-                        const float r = stof(argument.Values[0]);
-                        const float g = stof(argument.Values[1]);
-                        const float b = stof(argument.Values[2]);
+                        const float r = argument.float_values->at(0);
+                        const float g = argument.float_values->at(1);
+                        const float b = argument.float_values->at(2);
 
                         const Polytope::SpectralPowerDistribution spd(r * 255, g * 255, b * 255);
 
@@ -770,23 +897,21 @@ namespace Polytope {
                }
                break;
             }
-            case WorldDirectiveName::MakeNamedMaterial: {
-               const std::string materialName = directive.Identifier;
+            case DirectiveName::MakeNamedMaterial: {
+               const std::string materialName = directive->Identifier;
                std::shared_ptr<AbstractBRDF> brdf;
                Polytope::ReflectanceSpectrum reflectanceSpectrum;
-               for (const PBRTArgument &argument : directive.Arguments) {
-                  if (argument.Type == StringText) {
-                     if (argument.Name == "type") {
-                        if (argument.Values[0] == "matte") {
-                           brdf = std::make_unique<Polytope::LambertBRDF>();
-                        }
+               for (const PBRTArgument &argument : directive->Arguments) {
+                  if (argument.Type == PBRTArgument::pbrt_string) {
+                     if (argument.Name == "type" && *(argument.string_value) == "matte") {
+                        brdf = std::make_unique<Polytope::LambertBRDF>();
                      }
                   }
-                  if (argument.Type == RGBText) {
+                  if (argument.Type == PBRTArgument::pbrt_rgb) {
                      if (argument.Name == "Kd") {
-                        reflectanceSpectrum.r = stof(argument.Values[0]);
-                        reflectanceSpectrum.g = stof(argument.Values[1]);
-                        reflectanceSpectrum.b = stof(argument.Values[2]);
+                        reflectanceSpectrum.r = argument.float_values->at(0);
+                        reflectanceSpectrum.g = argument.float_values->at(1);
+                        reflectanceSpectrum.b = argument.float_values->at(2);
                      }
                   }
                }
@@ -794,10 +919,10 @@ namespace Polytope {
                namedMaterials.push_back(std::make_shared<Polytope::Material>(std::move(brdf), reflectanceSpectrum, materialName));
                break;
             }
-            case WorldDirectiveName::Material: {
+            case DirectiveName::Material: {
                MaterialIdentifier identifier;
                try {
-                  identifier = MaterialIdentifierMap.at(directive.Identifier);
+                  identifier = MaterialIdentifierMap.at(directive->Identifier);
                }
                catch (...) {
                   LogUnknownIdentifier(directive);
@@ -805,7 +930,7 @@ namespace Polytope {
                }
                switch (identifier) {
                   case MaterialIdentifier::Matte: {
-                     for (const PBRTArgument& argument : directive.Arguments) {
+                     for (const PBRTArgument& argument : directive->Arguments) {
                         MaterialMatteArgument param;
                         try {
                            param = MaterialMatteArgumentMap.at(argument.Name);
@@ -819,10 +944,10 @@ namespace Polytope {
                               
                            }
                         }
-                        if (argument.Name == "Kd" && argument.Type == "rgb") {
-                           const float r = stof(argument.Values[0]);
-                           const float g = stof(argument.Values[1]);
-                           const float b = stof(argument.Values[2]);
+                        if (argument.Name == "Kd" && argument.Type == PBRTArgument::pbrt_rgb) {
+                           const float r = argument.float_values->at(0);
+                           const float g = argument.float_values->at(1);
+                           const float b = argument.float_values->at(2);
 
                            ReflectanceSpectrum refl(r, g, b);
                            std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::LambertBRDF>();
@@ -832,11 +957,11 @@ namespace Polytope {
                      }
                   }
                   case MaterialIdentifier::Mirror: {
-                     for (const PBRTArgument& argument : directive.Arguments) {
-                        if (argument.Name == "Kr" && argument.Type == "rgb") {
-                           const float r = stof(argument.Values[0]);
-                           const float g = stof(argument.Values[1]);
-                           const float b = stof(argument.Values[2]);
+                     for (const PBRTArgument& argument : directive->Arguments) {
+                        if (argument.Name == "Kr" && argument.Type == PBRTArgument::pbrt_rgb) {
+                           const float r = argument.float_values->at(0);
+                           const float g = argument.float_values->at(1);
+                           const float b = argument.float_values->at(2);
 
                            ReflectanceSpectrum refl(r, g, b);
                            std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::MirrorBRDF>();
@@ -848,8 +973,8 @@ namespace Polytope {
                }
                break;
             }
-            case WorldDirectiveName::NamedMaterial: {
-               std::string materialName = directive.Identifier;
+            case DirectiveName::NamedMaterial: {
+               std::string materialName = directive->Identifier;
                bool found = false;
                for (const auto &material : namedMaterials) {
                   if (material->Name == materialName) {
@@ -863,13 +988,13 @@ namespace Polytope {
                }
                break;
             }
-            case WorldDirectiveName::Rotate: {
+            case DirectiveName::Rotate: {
                // TODO need to ensure just 1 argument with 4 values
-               PBRTArgument argument = directive.Arguments[0];
-               const float angle = std::stof(argument.Values[0]) * PIOver180;
-               float x = std::stof(argument.Values[1]);
-               float y = std::stof(argument.Values[2]);
-               float z = std::stof(argument.Values[3]);
+               PBRTArgument* arg = &(directive->Arguments[0]);
+               const float angle = arg->float_values->at(0) * PIOver180;
+               float x = arg->float_values->at(1);
+               float y = arg->float_values->at(2);
+               float z = arg->float_values->at(3);
 
                // normalize
                const float oneOverLength = 1.f / std::sqrt(x * x + y * y + z * z);
@@ -884,11 +1009,11 @@ namespace Polytope {
                *active *= t;
                break;
             }
-            case WorldDirectiveName::Scale: {
-               PBRTArgument argument = directive.Arguments[0];
-               float x = std::stof(argument.Values[0]);
-               float y = std::stof(argument.Values[1]);
-               float z = std::stof(argument.Values[2]);
+            case DirectiveName::Scale: {
+               PBRTArgument* arg = &(directive->Arguments[0]);
+               float x = arg->float_values->at(0);
+               float y = arg->float_values->at(1);
+               float z = arg->float_values->at(2);
 
                Transform t = Transform::Scale(x, y, z);
 
@@ -897,10 +1022,10 @@ namespace Polytope {
                *active *= t;
                break;
             }
-            case WorldDirectiveName::Shape: {
+            case DirectiveName::Shape: {
                ShapeIdentifier identifier;
                try {
-                  identifier = ShapeIdentifierMap.at(directive.Identifier);
+                  identifier = ShapeIdentifierMap.at(directive->Identifier);
                }
                catch (...) {
                   LogUnknownIdentifier(directive);
@@ -911,7 +1036,7 @@ namespace Polytope {
                      // make sure it has a filename argument
                      bool filenameMissing = true;
                      std::string objFilename;
-                     for (const PBRTArgument& argument : directive.Arguments) {
+                     for (const PBRTArgument& argument : directive->Arguments) {
                         OBJMeshArgument arg;
                         try {
                            arg = OBJMeshArgumentMap.at(argument.Name);
@@ -923,8 +1048,8 @@ namespace Polytope {
                         switch (arg) {
                            case Filename: {
                               filenameMissing = false;
-                              objFilename = argument.Values[0];
-                              if (argument.Type != StringText) {
+                              objFilename = *argument.string_value;
+                              if (argument.Type != PBRTArgument::pbrt_string) {
                                  LogWrongArgumentType(directive, argument);
                               }
                               break;
@@ -957,7 +1082,7 @@ namespace Polytope {
                      // make sure it has a filename argument
                      bool filenameMissing = true;
                      std::string objFilename;
-                     for (const PBRTArgument& argument : directive.Arguments) {
+                     for (const PBRTArgument& argument : directive->Arguments) {
                         PLYMeshArgument arg;
                         try {
                            arg = PLYMeshArgumentMap.at(argument.Name);
@@ -969,8 +1094,8 @@ namespace Polytope {
                         switch (arg) {
                            case PLYMeshArgument::Filename: {
                               filenameMissing = false;
-                              objFilename = argument.Values[0];
-                              if (argument.Type != StringText) {
+                              objFilename = *argument.string_value;
+                              if (argument.Type != PBRTArgument::pbrt_string) {
                                  LogWrongArgumentType(directive, argument);
                               }
                               break;
@@ -1029,8 +1154,8 @@ namespace Polytope {
                      break;
                   }
 //                  case ShapeIdentifier::Sphere: {
-//                     PBRTArgument argument = directive.Arguments[0];
-//                     if (argument.Type == FloatText) {
+//                     PBRTArgument argument = directive->Arguments[0];
+//                     if (argument.Type == PBRTArgumentType::pbrt_float) {
 //                        float radius = std::stof(argument.Values[0]);
 //                        AbstractShape *sphere = new Polytope::Sphere(*activeTransform, activeMaterial);
 //                        if (activeLight != nullptr) {
@@ -1048,14 +1173,14 @@ namespace Polytope {
                }
                break;
             }
-            case WorldDirectiveName::TransformBegin: {
+            case DirectiveName::TransformBegin: {
                // push onto transform stack
                assert (activeTransform != nullptr);
                transformStack.push(activeTransform);
                activeTransform = std::make_shared<Transform>(*(activeTransform.get()));
                break;
             }
-            case (WorldDirectiveName::TransformEnd): {
+            case (DirectiveName::TransformEnd): {
                // pop transform stack
                if (!transformStack.empty()) {
                   std::shared_ptr<Transform> stackValue = transformStack.top();
@@ -1065,12 +1190,12 @@ namespace Polytope {
                }
                break;
             }
-            case WorldDirectiveName::Translate: {
+            case DirectiveName::Translate: {
                // need to ensure just one argument with 3 values
-               PBRTArgument argument = directive.Arguments[0];
-               float x = std::stof(argument.Values[0]);
-               float y = std::stof(argument.Values[1]);
-               float z = std::stof(argument.Values[2]);
+               PBRTArgument* arg = &(directive->Arguments[0]);
+               float x = arg->float_values->at(0);
+               float y = arg->float_values->at(1);
+               float z = arg->float_values->at(2);
                Transform t = Transform::Translate(x, y, z);
 
                assert (activeTransform != nullptr);
@@ -1098,4 +1223,6 @@ namespace Polytope {
          numSamples
       );
    }
+
+
 }
