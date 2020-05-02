@@ -203,11 +203,11 @@ add_executable(runUnitTests
       tests/TestIntersectionTests.cpp
       tests/TestMatrix4x4.cpp
       tests/TestMirrorBRDF.cpp
-      tests/TestOBJParser.cpp
+        tests/parsers/test_obj_parser.cpp
         tests/parsers/pbrt/test_scan.cpp
         tests/parsers/pbrt/test_parse.cpp
         tests/parsers/pbrt/test_lex.cpp
-      tests/TestPLYParser.cpp
+        tests/parsers/test_ply_parser.cpp
       tests/TestPoint.cpp
       tests/TestTransform.cpp
       tests/TestTriangleMesh.cpp

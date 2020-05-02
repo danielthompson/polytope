@@ -9,7 +9,7 @@
 namespace Polytope {
    void OBJParser::ParseFile(TriangleMesh* mesh, const std::string &filepath) const {
 
-      std::unique_ptr<std::istream> stream = OpenStream(filepath);
+      std::unique_ptr<std::istream> stream = open_ascii_stream(filepath);
 
       Polytope::Point min(FloatMax, FloatMax, FloatMax), max(-FloatMax, -FloatMax, -FloatMax);
 
@@ -95,7 +95,7 @@ namespace Polytope {
 
    void OBJParser::ParseFile(TriangleMeshSOA *mesh, const std::string &filepath) const {
 
-      std::unique_ptr<std::istream> stream = OpenStream(filepath);
+      std::unique_ptr<std::istream> stream = open_ascii_stream(filepath);
 
       Polytope::Point min(FloatMax, FloatMax, FloatMax), max(-FloatMax, -FloatMax, -FloatMax);
 

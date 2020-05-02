@@ -5,13 +5,6 @@
 #include "gtest/gtest.h"
 
 #include "../../../src/parsers/PBRTFileParser.h"
-#include "../../../src/samplers/samplers.h"
-#include "../../../src/utilities/Logger.h"
-#include "../../../src/films/PNGFilm.h"
-#include "../../../src/filters/BoxFilter.h"
-#include "../../../src/integrators/PathTraceIntegrator.h"
-#include "../../../src/scenes/NaiveScene.h"
-#include "../../../src/cameras/PerspectiveCamera.h"
 
 namespace Tests {
 
@@ -85,18 +78,51 @@ namespace Tests {
             FAIL() << "Expected std::invalid_argument";
          }
       }
-      
-//      TEST(PBRTLex, DirectiveWithOneArgumentSingle) {
-//         std::vector<std::string> line_tokens = {"directive_name", R"("identifier")", R"("param_type)", R"(param_name")", "1"};
-//         const std::unique_ptr<Polytope::PBRTDirective> directive = test_lex(line_tokens);
-//         ASSERT_NE(directive, nullptr);
-//         EXPECT_EQ(directive->Name, "directive_name");
-//         EXPECT_EQ(directive->Identifier, "identifier");
-//         ASSERT_EQ(directive->Arguments.size(), 1);
-//         EXPECT_EQ(directive->Arguments[0].Type, "param_type");
-//         EXPECT_EQ(directive->Arguments[0].Name, "param_name");
-//         ASSERT_EQ(directive->Arguments[0].Values.size(), 1);
-//         EXPECT_EQ(directive->Arguments[0].Values[0], "1");
-//      }
+
+      TEST(PBRTLex, AreaLightSource) {
+         std::vector<std::string> line_tokens = {"AreaLightSource", R"("diffuse")", R"("color)", R"(L")", "[", "100.0", "100.0", "100.0", "]"};
+         const std::unique_ptr<Polytope::PBRTDirective> directive = test_lex(line_tokens);
+         ASSERT_NE(directive, nullptr);
+         EXPECT_EQ(directive->Name, "AreaLightSource");
+         EXPECT_EQ(directive->Identifier, "diffuse");
+         EXPECT_EQ(directive->Arguments.size(), 1);
+         EXPECT_EQ(directive->Arguments[0].Type, Polytope::PBRTArgument::PBRTArgumentType::pbrt_rgb);
+         EXPECT_EQ(directive->Arguments[0].Name, "L");
+         ASSERT_EQ(directive->Arguments[0].float_values->size(), 3);
+         EXPECT_EQ(directive->Arguments[0].float_values->at(0), 100.f);
+         EXPECT_EQ(directive->Arguments[0].float_values->at(1), 100.f);
+         EXPECT_EQ(directive->Arguments[0].float_values->at(2), 100.f);
+      }
+
+      TEST(PBRTLex, TestBoolParamTrue) {
+         std::vector<std::string> line_tokens = {"TestDirective", R"("identifier")", R"("bool)", R"(param_name")", R"("true")"};
+         const std::unique_ptr<Polytope::PBRTDirective> directive = test_lex(line_tokens);
+         ASSERT_NE(directive, nullptr);
+         EXPECT_EQ(directive->Name, "TestDirective");
+         EXPECT_EQ(directive->Identifier, "identifier");
+         EXPECT_EQ(directive->Arguments.size(), 1);
+         EXPECT_EQ(directive->Arguments[0].Type, Polytope::PBRTArgument::PBRTArgumentType::pbrt_bool);
+         EXPECT_EQ(directive->Arguments[0].Name, "param_name");
+         ASSERT_NE(directive->Arguments[0].bool_value, nullptr);
+         EXPECT_TRUE(*(directive->Arguments[0].bool_value));
+      }
+
+      TEST(PBRTLex, TestBoolParamFalse) {
+         std::vector<std::string> line_tokens = {"TestDirective", R"("identifier")", R"("bool)", R"(param_name")", R"("false")"};
+         const std::unique_ptr<Polytope::PBRTDirective> directive = test_lex(line_tokens);
+         ASSERT_NE(directive, nullptr);
+         EXPECT_EQ(directive->Name, "TestDirective");
+         EXPECT_EQ(directive->Identifier, "identifier");
+         EXPECT_EQ(directive->Arguments.size(), 1);
+         EXPECT_EQ(directive->Arguments[0].Type, Polytope::PBRTArgument::PBRTArgumentType::pbrt_bool);
+         EXPECT_EQ(directive->Arguments[0].Name, "param_name");
+         ASSERT_NE(directive->Arguments[0].bool_value, nullptr);
+         EXPECT_FALSE(*(directive->Arguments[0].bool_value));
+      }
+
+      TEST(PBRTLex, TestBoolParamInvalid) {
+         std::vector<std::string> line_tokens = {"TestDirective", R"("identifier")", R"("bool)", R"(param_name")", R"("asdf")"};
+         ASSERT_THROW(test_lex(line_tokens), std::invalid_argument);
+      }
    }
 }

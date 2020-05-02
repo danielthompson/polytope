@@ -4,9 +4,9 @@
 
 #include "gtest/gtest.h"
 
-#include "../src/utilities/Logger.h"
-#include "../src/parsers/mesh/OBJParser.h"
-#include "../src/structures/Vectors.h"
+#include "../../src/utilities/Logger.h"
+#include "../../src/parsers/mesh/OBJParser.h"
+#include "../../src/structures/Vectors.h"
 
 namespace Tests {
 

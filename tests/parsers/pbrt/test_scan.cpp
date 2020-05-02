@@ -101,5 +101,19 @@ namespace Tests {
          const std::vector<std::string> tokens = test_scan(R"(WorldBegin "name" "param_type param_name" [12.3 45.6 78.9 ])", 9);
          expect_array_value(tokens);
       }
+
+      TEST(PBRTScan, AreaLightSource) {
+         const std::vector<std::string> tokens = test_scan(R"(AreaLightSource "diffuse" "color L" [100.0 100.0 100.0])", 9);
+         EXPECT_EQ(tokens[0], "AreaLightSource");
+         EXPECT_EQ(tokens[1], R"("diffuse")");
+         EXPECT_EQ(tokens[2], R"("color)");
+         EXPECT_EQ(tokens[3], R"(L")");
+         EXPECT_EQ(tokens[4], "[");
+         EXPECT_EQ(tokens[5], "100.0");
+         EXPECT_EQ(tokens[6], "100.0");
+         EXPECT_EQ(tokens[7], "100.0");
+         EXPECT_EQ(tokens[8], "]");
+      }
+      
    }
 }

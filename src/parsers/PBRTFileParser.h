@@ -32,6 +32,10 @@ namespace Polytope {
 
       PBRTArgument(const PBRTArgumentType type) : Type(type) { 
          switch (type) {
+            case pbrt_bool: {
+               bool_value = std::make_unique<bool>();
+               break;
+            }
             case pbrt_float: {
                float_values = std::make_unique<std::vector<float>>();
                break;
@@ -51,6 +55,7 @@ namespace Polytope {
       }
       
       std::string Name;
+      std::unique_ptr<bool> bool_value;
       std::unique_ptr<std::vector<float>> float_values;
       std::unique_ptr<std::string> string_value;
       std::unique_ptr<std::vector<int>> int_values;

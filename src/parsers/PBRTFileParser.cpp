@@ -210,9 +210,7 @@ namespace Polytope {
 
    std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filepath) {
 
-      //std::replace(unixifiedFilePath.begin(), unixifiedFilePath.end(), WindowsPathSeparator, UnixPathSeparator);
-
-      std::unique_ptr<std::vector<std::vector<std::string>>> tokens = Scan(OpenStream(filepath));
+      std::unique_ptr<std::vector<std::vector<std::string>>> tokens = Scan(open_ascii_stream(filepath));
 
       // determine the name of the file from the given path
       const size_t lastPos = filepath.find_last_of(UnixPathSeparator);
@@ -242,6 +240,10 @@ namespace Polytope {
       int targetLineNumber = -1;
       std::string line;
       while (getline(*stream, line)) {
+         if (line.empty()) {
+            continue;
+         }
+         
          tokens->emplace_back();
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
@@ -310,6 +312,12 @@ namespace Polytope {
                   }
                }
             }
+            assert(!current_line->empty());
+         }
+         
+         // just-added line could still be empty, like if it was non-empty but had no valid tokens
+         if (tokens->back().empty()) {
+            tokens->erase(tokens->end() - 1);
          }
          
          sourceLineNumber++;
@@ -342,12 +350,20 @@ namespace Polytope {
    std::unique_ptr<Polytope::PBRTDirective> PBRTFileParser::Lex(std::vector<std::string> line) {
       std::unique_ptr<Polytope::PBRTDirective> directive = std::make_unique<PBRTDirective>();
 
-      if (line.empty())
+      if (line.empty()) {
+         Log.WithTime("Lexed empty line. Hmm...");
          return directive;
+      }
 
       directive->Name = line[0];
 
+      bool debug = false;
+      if (directive->Name == AttributeBeginText) {
+         debug = true;
+      }
+      
       if (line.size() == 1) {
+         Log.WithTime("Lexed directive [" + directive->Name + "]");
          return directive;
       }
 
@@ -356,6 +372,7 @@ namespace Polytope {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 9, &(directive->Arguments[0]));
+         Log.WithTime("Lexed directive [" + directive->Name + "]");
          return directive;
       }
       
@@ -363,6 +380,7 @@ namespace Polytope {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 4, &(directive->Arguments[0]));
+         Log.WithTime("Lexed directive [" + directive->Name + "]");
          return directive;
       }
 
@@ -370,6 +388,7 @@ namespace Polytope {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 3, &(directive->Arguments[0]));
+         Log.WithTime("Lexed directive [" + directive->Name + "]");
          return directive;
       }
       
@@ -377,6 +396,7 @@ namespace Polytope {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 3, &(directive->Arguments[0]));
+         Log.WithTime("Lexed directive [" + directive->Name + "]");
          return directive;
       }
       
@@ -388,7 +408,7 @@ namespace Polytope {
       }
 
       if (line.size() == 2) {
-         //directive->Arguments.clear();
+         Log.WithTime("Lexed directive [" + directive->Name + "]");
          return directive;
       }
       
@@ -425,10 +445,34 @@ namespace Polytope {
          if (inValue) {
             if (IsQuoted(line[i])) {
                // probably just string?
-               assert(current_arg->Type == PBRTArgument::PBRTArgumentType::pbrt_string);
-               assert(current_arg->float_values == nullptr);
                assert(current_arg->int_values == nullptr);
-               current_arg->string_value = std::make_unique<std::string>(line[i].substr(1, line[i].length() - 2));
+               assert(current_arg->float_values == nullptr);
+               
+               std::string value = line[i].substr(1, line[i].length() - 2);
+               
+               switch (current_arg->Type) {
+                  case PBRTArgument::PBRTArgumentType::pbrt_string: {
+                     assert(current_arg->bool_value == nullptr);
+                     current_arg->string_value = std::make_unique<std::string>(value);
+                     break;
+                  }
+                  case PBRTArgument::PBRTArgumentType::pbrt_bool: {
+                     assert(current_arg->string_value == nullptr);
+                     if (value == "true") {
+                        current_arg->bool_value = std::make_unique<bool>(true);
+                     }
+                     else if (value == "false") {
+                        current_arg->bool_value = std::make_unique<bool>(false);
+                     }
+                     else {
+                        throw std::invalid_argument(line[0] + ": failed to parse [" + value + "] as a bool");
+                     }
+                     break;
+                  }
+                  default: {
+                     assert(false);
+                  }
+               }
             } 
             else {
                switch (current_arg->Type) {
@@ -444,11 +488,11 @@ namespace Polytope {
                      catch (const std::invalid_argument &) {
                         throw std::invalid_argument(line[0] + ": failed to parse [" + line[i] + "] as a float");
                      }
-                     if (current_arg->Type == PBRTArgument::pbrt_rgb) {
-                        if (value < 0.f || value > 1.f) {
-                           throw std::invalid_argument(line[0] + ": parsed value [" + std::to_string(value) + "] is outside the range for rgb (must be between 0 and 1 inclusive)");
-                        }
-                     }
+//                     if (current_arg->Type == PBRTArgument::pbrt_rgb) {
+//                        if (value < 0.f || value > 1.f) {
+//                           throw std::invalid_argument(line[0] + ": parsed value [" + std::to_string(value) + "] is outside the range for rgb (must be between 0 and 1 inclusive)");
+//                        }
+//                     }
                      if (current_arg->float_values == nullptr) {
                         current_arg->float_values = std::make_unique<std::vector<float>>();
                      }
@@ -1069,7 +1113,7 @@ namespace Polytope {
                      Polytope::TriangleMesh* mesh = new TriangleMesh(activeTransform, activeInverse, activeMaterial);
 
                      const OBJParser parser;
-                     const std::string absoluteObjFilepath = GetCurrentWorkingDirectory() + UnixPathSeparator + _basePathFromCWD + objFilename;
+                     const std::string absoluteObjFilepath = _basePathFromCWD + objFilename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
                      mesh->Bound();
                      mesh->CalculateVertexNormals();
@@ -1115,7 +1159,7 @@ namespace Polytope {
                      Polytope::TriangleMeshSOA* mesh = new TriangleMeshSOA(activeTransform, activeInverse, activeMaterial);
 
                      const PLYParser parser;
-                     const std::string absoluteObjFilepath = GetCurrentWorkingDirectory() + UnixPathSeparator + _basePathFromCWD + objFilename;
+                     const std::string absoluteObjFilepath = /*GetCurrentWorkingDirectory() + UnixPathSeparator +*/ _basePathFromCWD + objFilename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
                      //mesh->Bound();
                      mesh->CalculateVertexNormals();

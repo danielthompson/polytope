@@ -3,14 +3,14 @@
 //
 
 #include <sstream>
+#include <cstring>
 #include "PLYParser.h"
 #include "../../utilities/Common.h"
 
 namespace Polytope {
-   void PLYParser::ParseFile(TriangleMesh *mesh, const std::string &filepath) const {
-      std::unique_ptr<std::istream> stream = OpenStream(filepath);
 
-      Polytope::Point min(FloatMax, FloatMax, FloatMax), max(-FloatMax, -FloatMax, -FloatMax);
+   std::unique_ptr<std::ifstream> PLYParser::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
+      std::unique_ptr<std::ifstream> stream = open_ascii_stream(filepath);
 
       std::string line;
 
@@ -18,15 +18,12 @@ namespace Polytope {
       if (getline(*stream, line)) {
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
-
          if (!(iss >> word) || word != "ply") {
-            Log.WithTime("File missing PLY header :/");
-            return;
+            throw std::invalid_argument(filepath + ": Missing PLY header");
          }
       }
       else {
-         Log.WithTime("Read error when trying to read PLY header :/");
-         return;
+         throw std::invalid_argument(filepath + ": Read error when trying to read PLY header");
       }
 
       // format
@@ -35,29 +32,36 @@ namespace Polytope {
          std::istringstream iss(line, std::istringstream::in);
 
          if (!(iss >> word) || word != "format") {
-            Log.WithTime("File missing format header");
-            return;
+            throw std::invalid_argument(filepath + ": Missing \"format\" header");
          }
-         if (!(iss >> word) || word != "ascii") {
-            Log.WithTime("Unsupported format");
-            return;
+         if (!(iss >> word)) {
+            throw std::invalid_argument(filepath + ": Unsupported format");
          }
+         if (word == "ascii") {
+            *format = ply_format::ascii;
+         }
+         else if (word == "binary_little_endian") {
+            *format = ply_format::binary_le;
+         }
+         else if (word == "binary_big_endian") {
+            *format = ply_format::binary_be;
+         }
+         else {
+            throw std::invalid_argument(filepath + ": Read error when reading format type");
+         }
+         
          if (!(iss >> word) || word != "1.0") {
-            Log.WithTime("Unsupported format version");
-            return;
+            throw std::invalid_argument(filepath + ": Unsupported format version");
          }
       }
       else {
-         Log.WithTime("Read error when trying to read PLY format :/");
-         return;
+         throw std::invalid_argument(filepath + ": Read error when reading format line");
       }
 
       // rest of header
 
-      bool inVertex = false;
-      bool inFace = false;
-      int numVertices = -1;
-      int numFaces = -1;
+      bool in_vertex = false;
+      bool in_face = false;
       while (getline(*stream, line)) {
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
@@ -66,107 +70,177 @@ namespace Polytope {
             break;
          }
          else if (word == "element") {
-            inVertex = false;
-            inFace = false;
+            in_vertex = false;
+            in_face = false;
             iss >> word;
             if (word == "vertex") {
-               inVertex = true;
+               in_vertex = true;
                iss >> word;
-               numVertices = stoui(word);
+               *num_vertices = stoi(word);
             }
             else if (word == "face") {
-               inFace = true;
+               in_face = true;
                iss >> word;
-               numFaces = stoui(word);
+               *num_faces = stoi(word);
             }
          }
          else if (word == "property") {
-            if (inVertex) {
+            if (in_vertex) {
                iss >> word;
                if (word != "float32" && word != "float") {
-                  Log.WithTime("unknown property datatype :/");
-                  return;
+                  throw std::invalid_argument(filepath + ": Unknown property datatype");
                }
                iss >> word;
                if (!(word == "x" || word == "y" || word == "z")) {
-                  Log.WithTime("unknown property name :/");
-                  //return;
+                  throw std::invalid_argument(filepath + ": Unknown property name");
                }
             }
-            else if (inFace) {
+            else if (in_face) {
 
             }
             else {
-               Log.WithTime("property outside of element :/");
-               return;
+               throw std::invalid_argument(filepath + ": Property outside of element");
             }
          }
       }
 
-      if (numVertices <= 0) {
-         Log.WithTime("header contains no vertex info :/");
-         return;
+      if (*num_vertices == 0) {
+         throw std::invalid_argument(filepath + ": Header contains no vertices");
       }
 
-      if (numFaces <= 0) {
-         Log.WithTime("header contains no face info :/");
-         return;
+      if (*num_faces == 0) {
+         throw std::invalid_argument(filepath + ": Header contains no faces");
       }
 
+      if (*format == ply_format::binary_le || *format == ply_format::binary_be) {
+         std::streampos offset = stream->tellg();
+         stream->close();
+         stream = open_binary_stream(filepath);
+         stream->seekg(offset);
+      }
+      
+      return stream;
+   }
+   
+   float PLYParser::read_float(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
+      char buffer[4];
+      float value;
+      stream->read(buffer, 4);
+      if (format == binary_be) {
+         std::swap(buffer[0], buffer[3]);
+         std::swap(buffer[1], buffer[2]);
+      }
+      std::memcpy(&value, buffer, 4);
+      return value;
+   }
+
+   int PLYParser::read_int(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
+      char buffer[4];
+      int value;
+      stream->read(buffer, 4);
+      if (format == binary_be) {
+         std::swap(buffer[0], buffer[3]);
+         std::swap(buffer[1], buffer[2]);
+      }
+      std::memcpy(&value, buffer, 4);
+      return value;
+   }
+
+   unsigned char PLYParser::read_uchar(const std::unique_ptr<std::ifstream> &stream) {
+      char value;
+      stream->read(&value, 1);
+      unsigned char unsigned_value = reinterpret_cast<unsigned char&>(value);
+      return unsigned_value;
+   }
+
+   void PLYParser::ParseFile(TriangleMesh *mesh, const std::string &filepath) const {
+      
+      int num_vertices = -1;
+      int num_faces = -1;
+      ply_format format = ply_format::ascii;
+      
+      std::unique_ptr<std::ifstream> stream = parse_header(filepath, &num_vertices, &num_faces, &format);
+      
       // data - vertices
 
-      for (int i = 0; i < numVertices; i++) {
-         if (!getline(*stream, line)) {
-            Log.WithTime("Failed to read line in vertices :/");
-            return;
+      std::string line;
+      
+      for (int i = 0; i < num_vertices; i++) {
+         if (format == ascii) {
+            if (!getline(*stream, line)) {
+               Log.WithTime("Failed to read line in vertices :/");
+               return;
+            }
+
+            std::string word;
+            std::istringstream iss(line, std::istringstream::in);
+
+            iss >> word;
+            const float x = stof(word);
+            iss >> word;
+            const float y = stof(word);
+            iss >> word;
+            const float z = stof(word);
+            const Point p(x, y, z);
+            const Point worldPoint = mesh->ObjectToWorld->Apply(p);
+            mesh->Vertices.push_back(worldPoint);
          }
-
-         std::string word;
-         std::istringstream iss(line, std::istringstream::in);
-
-         iss >> word;
-         const float x = stof(word);
-         iss >> word;
-         const float y = stof(word);
-         iss >> word;
-         const float z = stof(word);
-         const Point p(x, y, z);
-         const Point worldPoint = mesh->ObjectToWorld->Apply(p);
-         mesh->Vertices.push_back(worldPoint);
+         else {
+            const float x = read_float(stream, format);
+            const float y = read_float(stream, format);
+            const float z = read_float(stream, format);
+            const Point p(x, y, z);
+            const Point worldPoint = mesh->ObjectToWorld->Apply(p);
+            mesh->Vertices.push_back(worldPoint);
+         } 
       }
 
-      std::ostringstream str;
-      str << "Parsed " << mesh->Vertices.size() << " vertices.";
-      Log.WithTime(str.str());
-      str.str("");
+      Log.WithTime("Parsed " + std::to_string(mesh->Vertices.size()) + " vertices.");
 
       // data - faces
 
-      for (int i = 0; i < numFaces; i++) {
-         if (!getline(*stream, line)) {
-            Log.WithTime("Failed to read line in faces :/");
-            return;
+      Polytope::Point min(FloatMax, FloatMax, FloatMax), max(-FloatMax, -FloatMax, -FloatMax);
+      
+      for (int i = 0; i < num_faces; i++) {
+         unsigned int v0, v1, v2;
+         
+         if (format == ascii) {
+            if (!getline(*stream, line)) {
+               Log.WithTime("Failed to read line in faces :/");
+               return;
+            }
+
+            std::string word;
+            std::istringstream iss(line, std::istringstream::in);
+
+            // parse vertex indices
+
+            iss >> word;
+            int numVertexIndices = stoi(word);
+            if (numVertexIndices != 3) {
+               Log.WithTime("Face has too many vertex indices :/");
+               return;
+            }
+
+            iss >> word;
+            // TODO error handling for non-existent face
+            v0 = stoui(word);
+            iss >> word;
+            v1 = stoui(word);
+            iss >> word;
+            v2 = stoui(word);
+         }
+         else {
+            const unsigned char num_vertex_indices = read_uchar(stream);
+            if (num_vertex_indices != 3) {
+               Log.WithTime("Face has too many vertex indices :/");
+               return;
+            }
+            v0 = read_int(stream, format);
+            v1 = read_int(stream, format);
+            v2 = read_int(stream, format);
          }
 
-         std::string word;
-         std::istringstream iss(line, std::istringstream::in);
-
-         // parse vertex indices
-
-         iss >> word;
-         int numVertexIndices = stoui(word);
-         if (numVertexIndices != 3) {
-            Log.WithTime("Face has too many vertex indices :/");
-            return;
-         }
-
-         iss >> word;
-         // TODO error handling for non-existent face
-         const unsigned int v0 = stoui(word);
-         iss >> word;
-         const unsigned int v1 = stoui(word);
-         iss >> word;
-         const unsigned int v2 = stoui(word);
          Point3ui face(v0, v1, v2);
          mesh->Faces.push_back(face);
 
@@ -197,128 +271,26 @@ namespace Polytope {
          max.x = p2.x > max.x ? p2.x : max.x;
          max.y = p2.y > max.y ? p2.y : max.y;
          max.z = p2.z > max.z ? p2.z : max.z;
-
-         bool debug = false;
-         if (min.y == 0)
-            debug = true;
       }
 
-      str << "Parsed " << mesh->Faces.size() << " faces.";
-      Log.WithTime(str.str());
+      Log.WithTime("Parsed " + std::to_string(mesh->Faces.size()) + " faces.");
 
       mesh->BoundingBox->p0 = min;
       mesh->BoundingBox->p1 = max;
    }
 
    void PLYParser::ParseFile(TriangleMeshSOA *mesh, const std::string &filepath) const {
-      std::unique_ptr<std::istream> stream = OpenStream(filepath);
+      int num_vertices = -1;
+      int num_faces = -1;
 
-      Polytope::Point min(FloatMax, FloatMax, FloatMax), max(-FloatMax, -FloatMax, -FloatMax);
-
-      std::string line;
-
-      // ply header
-      if (getline(*stream, line)) {
-         std::string word;
-         std::istringstream iss(line, std::istringstream::in);
-
-         if (!(iss >> word) || word != "ply") {
-            Log.WithTime("File missing PLY header :/");
-            return;
-         }
-      }
-      else {
-         Log.WithTime("Read error when trying to read PLY header :/");
-         return;
-      }
-
-      // format
-      if (getline(*stream, line)) {
-         std::string word;
-         std::istringstream iss(line, std::istringstream::in);
-
-         if (!(iss >> word) || word != "format") {
-            Log.WithTime("File missing format header");
-            return;
-         }
-         if (!(iss >> word) || word != "ascii") {
-            Log.WithTime("Unsupported format");
-            return;
-         }
-         if (!(iss >> word) || word != "1.0") {
-            Log.WithTime("Unsupported format version");
-            return;
-         }
-      }
-      else {
-         Log.WithTime("Read error when trying to read PLY format :/");
-         return;
-      }
-
-      // rest of header
-
-      bool inVertex = false;
-      bool inFace = false;
-      int numVertices = -1;
-      int numFaces = -1;
-      while (getline(*stream, line)) {
-         std::string word;
-         std::istringstream iss(line, std::istringstream::in);
-         iss >> word;
-         if (word == "end_header") {
-            break;
-         }
-         else if (word == "element") {
-            inVertex = false;
-            inFace = false;
-            iss >> word;
-            if (word == "vertex") {
-               inVertex = true;
-               iss >> word;
-               numVertices = stoui(word);
-            }
-            else if (word == "face") {
-               inFace = true;
-               iss >> word;
-               numFaces = stoui(word);
-            }
-         }
-         else if (word == "property") {
-            if (inVertex) {
-               iss >> word;
-               if (word != "float32" && word != "float") {
-                  Log.WithTime("unknown property datatype :/");
-                  return;
-               }
-               iss >> word;
-               if (!(word == "x" || word == "y" || word == "z")) {
-                  Log.WithTime("unknown property name :/");
-                  //return;
-               }
-            }
-            else if (inFace) {
-
-            }
-            else {
-               Log.WithTime("property outside of element :/");
-               return;
-            }
-         }
-      }
-
-      if (numVertices <= 0) {
-         Log.WithTime("header contains no vertex info :/");
-         return;
-      }
-
-      if (numFaces <= 0) {
-         Log.WithTime("header contains no face info :/");
-         return;
-      }
+      ply_format format = ply_format::ascii;
+      std::unique_ptr<std::istream> stream = parse_header(filepath, &num_vertices, &num_faces, &format);
 
       // data - vertices
 
-      for (int i = 0; i < numVertices; i++) {
+      std::string line;
+      
+      for (int i = 0; i < num_vertices; i++) {
          if (!getline(*stream, line)) {
             Log.WithTime("Failed to read line in vertices :/");
             return;
@@ -348,7 +320,9 @@ namespace Polytope {
 
       // data - faces
 
-      for (int i = 0; i < numFaces; i++) {
+      Polytope::Point min(FloatMax, FloatMax, FloatMax), max(-FloatMax, -FloatMax, -FloatMax);
+      
+      for (int i = 0; i < num_faces; i++) {
          if (!getline(*stream, line)) {
             Log.WithTime("Failed to read line in faces :/");
             return;
@@ -360,7 +334,7 @@ namespace Polytope {
          // parse vertex indices
 
          iss >> word;
-         int numVertexIndices = stoui(word);
+         int numVertexIndices = stoi(word);
          if (numVertexIndices != 3) {
             Log.WithTime("Face has too many vertex indices :/");
             return;

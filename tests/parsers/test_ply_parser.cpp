@@ -4,10 +4,10 @@
 
 #include "gtest/gtest.h"
 
-#include "../src/utilities/Logger.h"
-#include "../src/parsers/mesh/PLYParser.h"
-#include "../src/structures/Vectors.h"
-#include "../src/parsers/mesh/OBJParser.h"
+#include "../../src/utilities/Logger.h"
+#include "../../src/parsers/mesh/PLYParser.h"
+#include "../../src/structures/Vectors.h"
+#include "../../src/parsers/mesh/OBJParser.h"
 
 namespace Tests {
 
@@ -115,6 +115,46 @@ namespace Tests {
          
          delete ply_mesh;
          delete obj_mesh;
+      }
+      
+      TEST(PLYParser, Binary) {
+         const Polytope::PLYParser parser;
+         const std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
+         constexpr unsigned int expected_num_vertices = 8;
+         constexpr unsigned int expected_num_faces = 4;
+
+         // binary file
+         const std::string binary_file = "../scenes/test/floor-binary-le.ply";
+         Polytope::TriangleMesh* binary_mesh = new Polytope::TriangleMesh(identity, identity, nullptr);
+
+         parser.ParseFile(binary_mesh, binary_file);
+         // ensure nothing is null
+         ASSERT_NE(nullptr, binary_mesh);
+         EXPECT_EQ(expected_num_vertices, binary_mesh->Vertices.size());
+         EXPECT_EQ(expected_num_faces, binary_mesh->Faces.size());
+         
+         // ascii file
+         const std::string ascii_file = "../scenes/test/floor-ascii.ply";
+         Polytope::TriangleMesh* ascii_mesh = new Polytope::TriangleMesh(identity, identity, nullptr);
+
+         parser.ParseFile(ascii_mesh, ascii_file);
+         // ensure nothing is null
+         ASSERT_NE(nullptr, ascii_mesh);
+         EXPECT_EQ(expected_num_vertices, ascii_mesh->Vertices.size());
+         EXPECT_EQ(expected_num_faces, ascii_mesh->Faces.size());
+
+         // check vertices
+         for (unsigned int i = 0; i < expected_num_vertices; i++) {
+            EXPECT_EQ(binary_mesh->Vertices[i], ascii_mesh->Vertices[i]);
+         }
+         
+         // check faces
+         for (unsigned int i = 0; i < expected_num_faces; i++) {
+            EXPECT_EQ(binary_mesh->Vertices[i], ascii_mesh->Vertices[i]);
+         }
+
+         delete ascii_mesh;
+         delete binary_mesh;
       }
    }
 }
