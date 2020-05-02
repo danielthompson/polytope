@@ -113,12 +113,14 @@ namespace Polytope {
 
       enum MaterialIdentifier {
          Matte,
-         Mirror
+         Mirror,
+         Plastic
       };
 
       const std::map<std::string, MaterialIdentifier> MaterialIdentifierMap {
             {"matte", Matte},
-            { "mirror", Mirror}
+            { "mirror", Mirror},
+            { "plastic", Plastic}
       };
 
       enum MaterialMatteArgument {
@@ -905,7 +907,9 @@ namespace Polytope {
                }
 
                // pop light stack
-               if (!lightStack.empty()) {
+               if (lightStack.empty()) {
+                  activeLight = nullptr;
+               } else {
                   std::shared_ptr<SpectralPowerDistribution> stackValue = lightStack.top();
                   lightStack.pop();
                   activeLight = stackValue;
@@ -973,6 +977,7 @@ namespace Polytope {
                   continue;
                }
                switch (identifier) {
+                  case MaterialIdentifier::Plastic:
                   case MaterialIdentifier::Matte: {
                      for (const PBRTArgument& argument : directive->Arguments) {
                         MaterialMatteArgument param;
@@ -1193,6 +1198,10 @@ namespace Polytope {
 //                     Log.WithTime(oss.str());
 
                      //mesh->ObjectToWorld = *activeTransform;
+                     if (activeLight != nullptr) {
+                        mesh->L
+                     }
+                     
                      mesh->Material = activeMaterial;
                      _scene->Shapes.push_back(mesh);
                      break;

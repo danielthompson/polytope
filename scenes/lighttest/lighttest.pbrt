@@ -1,0 +1,28 @@
+Integrator "path" "integer maxdepth" [ 7 ] 
+LookAt 0 0 10 # eye
+       0 0 0 # look at point
+       0 1 0 # up
+Sampler "halton" "integer pixelsamples" [ 16 ]
+PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
+Film "image" "integer xresolution" [ 400 ] "integer yresolution" [ 250 ] "string filename" [ "lighttest.png" ]
+Camera "perspective" "float fov" [ 30 ]
+WorldBegin
+    # world light
+    LightSource "infinite" "rgb L" [.05 .05 .05]
+    
+    # "ceiling" light
+    AttributeBegin
+        AreaLightSource "diffuse" "rgb L" [ 7 7 8 ] "bool twosided" "true"
+        Translate 0 1 2
+        
+        Shape "plymesh" "string filename" [ "triangle.ply" ]
+    AttributeEnd
+    
+    # floor 
+    AttributeBegin
+        Material "matte" "rgb Kd" [ .3  .7  .8 ]
+        Translate -4 -1 0
+        Scale 10 1 10
+        Shape "plymesh" "string filename" [ "triangle.ply" ]
+    AttributeEnd
+WorldEnd

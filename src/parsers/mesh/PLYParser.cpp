@@ -165,8 +165,8 @@ namespace Polytope {
 
       std::string line;
       
-      for (int i = 0; i < num_vertices; i++) {
-         if (format == ascii) {
+      if (format == ascii) {
+         for (int i = 0; i < num_vertices; i++) {
             if (!getline(*stream, line)) {
                Log.WithTime("Failed to read line in vertices :/");
                return;
@@ -185,14 +185,16 @@ namespace Polytope {
             const Point worldPoint = mesh->ObjectToWorld->Apply(p);
             mesh->Vertices.push_back(worldPoint);
          }
-         else {
+      }
+      else {
+         for (int i = 0; i < num_vertices; i++) {
             const float x = read_float(stream, format);
             const float y = read_float(stream, format);
             const float z = read_float(stream, format);
             const Point p(x, y, z);
             const Point worldPoint = mesh->ObjectToWorld->Apply(p);
             mesh->Vertices.push_back(worldPoint);
-         } 
+         }
       }
 
       Log.WithTime("Parsed " + std::to_string(mesh->Vertices.size()) + " vertices.");
@@ -284,74 +286,101 @@ namespace Polytope {
       int num_faces = -1;
 
       ply_format format = ply_format::ascii;
-      std::unique_ptr<std::istream> stream = parse_header(filepath, &num_vertices, &num_faces, &format);
+      std::unique_ptr<std::ifstream> stream = parse_header(filepath, &num_vertices, &num_faces, &format);
 
       // data - vertices
 
       std::string line;
       
-      for (int i = 0; i < num_vertices; i++) {
-         if (!getline(*stream, line)) {
-            Log.WithTime("Failed to read line in vertices :/");
-            return;
+      if (format == ascii) {
+         for (int i = 0; i < num_vertices; i++) {
+            if (!getline(*stream, line)) {
+               Log.WithTime("Failed to read line in vertices :/");
+               return;
+            }
+
+            std::string word;
+            std::istringstream iss(line, std::istringstream::in);
+
+            iss >> word;
+            const float x = stof(word);
+            iss >> word;
+            const float y = stof(word);
+            iss >> word;
+            const float z = stof(word);
+            Point p(x, y, z);
+            mesh->ObjectToWorld->ApplyInPlace(p);
+            mesh->x.push_back(p.x);
+            mesh->y.push_back(p.y);
+            mesh->z.push_back(p.z);
+            mesh->num_vertices++;
          }
-
-         std::string word;
-         std::istringstream iss(line, std::istringstream::in);
-
-         iss >> word;
-         const float x = stof(word);
-         iss >> word;
-         const float y = stof(word);
-         iss >> word;
-         const float z = stof(word);
-         Point p(x, y, z);
-         mesh->ObjectToWorld->ApplyInPlace(p);
-         mesh->x.push_back(p.x);
-         mesh->y.push_back(p.y);
-         mesh->z.push_back(p.z);
-         mesh->num_vertices++;
+      }
+      
+      else {
+         for (int i = 0; i < num_vertices; i++) {
+            const float x = read_float(stream, format);
+            const float y = read_float(stream, format);
+            const float z = read_float(stream, format);
+            Point p(x, y, z);
+            mesh->ObjectToWorld->ApplyInPlace(p);
+            mesh->x.push_back(p.x);
+            mesh->y.push_back(p.y);
+            mesh->z.push_back(p.z);
+            mesh->num_vertices++;
+         }
       }
 
-      std::ostringstream str;
-      str << "Parsed " << mesh->num_vertices << " vertices.";
-      Log.WithTime(str.str());
-      str.str("");
-
+      Log.WithTime("Parsed " + std::to_string(mesh->num_vertices) + " vertices.");
+      
       // data - faces
 
       Polytope::Point min(FloatMax, FloatMax, FloatMax), max(-FloatMax, -FloatMax, -FloatMax);
       
       for (int i = 0; i < num_faces; i++) {
-         if (!getline(*stream, line)) {
-            Log.WithTime("Failed to read line in faces :/");
-            return;
+         unsigned int v0, v1, v2;
+
+         if (format == ascii) {
+            if (!getline(*stream, line)) {
+               Log.WithTime("Failed to read line in faces :/");
+               return;
+            }
+            std::string word;
+            std::istringstream iss(line, std::istringstream::in);
+
+            // parse vertex indices
+
+            iss >> word;
+            int numVertexIndices = stoi(word);
+            if (numVertexIndices != 3) {
+               Log.WithTime("Face has too many vertex indices :/");
+               return;
+            }
+
+            iss >> word;
+            // TODO error handling for non-existent face
+            v0 = stoui(word);
+            iss >> word;
+            v1 = stoui(word);
+            iss >> word;
+            v2 = stoui(word);
+         }
+         else {
+            const unsigned char num_vertex_indices = read_uchar(stream);
+            if (num_vertex_indices != 3) {
+               Log.WithTime("Face has too many vertex indices :/");
+               return;
+            }
+            v0 = read_int(stream, format);
+            v1 = read_int(stream, format);
+            v2 = read_int(stream, format);
          }
 
-         std::string word;
-         std::istringstream iss(line, std::istringstream::in);
-
-         // parse vertex indices
-
-         iss >> word;
-         int numVertexIndices = stoi(word);
-         if (numVertexIndices != 3) {
-            Log.WithTime("Face has too many vertex indices :/");
-            return;
-         }
-
-         iss >> word;
-         // TODO error handling for non-existent face
-         const unsigned int v0 = stoui(word);
-         iss >> word;
-         const unsigned int v1 = stoui(word);
-         iss >> word;
-         const unsigned int v2 = stoui(word);
          mesh->fv0.push_back(v0);
          mesh->fv1.push_back(v1);
          mesh->fv2.push_back(v2);
          mesh->num_faces++;
-
+         
          {
             const float p0x = mesh->x[v0];
             min.x = p0x < min.x ? p0x : min.x;
@@ -407,9 +436,8 @@ namespace Polytope {
          }
       }
 
-      str << "Parsed " << mesh->num_faces << " faces.";
-      Log.WithTime(str.str());
-
+      Log.WithTime("Parsed " + std::to_string(mesh->num_faces) + " faces.");
+      
       mesh->BoundingBox->p0 = min;
       mesh->BoundingBox->p1 = max;
       
