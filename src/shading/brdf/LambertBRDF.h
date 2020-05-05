@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_LAMBERTBRDF_H
 #define POLYTOPE_LAMBERTBRDF_H
 
-#include "AbstractBRDF.h"
+#include "abstract_brdf.h"
 #include "../../Constants.h"
 
 namespace Polytope {

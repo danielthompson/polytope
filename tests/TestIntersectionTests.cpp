@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
 #include "../src/structures/Vectors.h"
-#include "../src/shapes/AbstractShape.h"
+#include "../src/shapes/abstract_mesh.h"
 
 namespace Tests {
 

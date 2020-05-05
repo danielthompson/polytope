@@ -2,6 +2,7 @@
 // Created by Daniel on 17-Dec-19.
 //
 
+
 #include <cmath>
 #include <cassert>
 #include "Vectors.h"
@@ -108,7 +109,7 @@ namespace Polytope {
                     z * rhs.x - x * rhs.z,
                     x * rhs.y - y * rhs.x);
    }
-
+   
    bool Point::operator==(const Point &rhs) const {
       return x == rhs.x &&
              y == rhs.y &&
@@ -173,3 +174,4 @@ namespace Polytope {
       return x < rhs.x;
    }
 }
+

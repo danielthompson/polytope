@@ -9,8 +9,7 @@
 #include "Ray.h"
 #include "BoundingBox.h"
 #include "Matrix4x4.h"
-#include "Vectors.h"
-#include "../shapes/AbstractShape.h"
+//#include "../shapes/abstract_mesh.h"
 
 namespace Polytope {
 
@@ -38,6 +37,7 @@ namespace Polytope {
 
       void ApplyInPlace(Point &point) const;
       Point Apply(const Point &point) const;
+      void ApplyPoint(float &x, float &y, float &z) const;
 
       void ApplyInPlace(Vector &vector) const;
       Vector Apply(const Vector &vector) const;

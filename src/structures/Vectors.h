@@ -5,6 +5,8 @@
 #ifndef POLYTOPE_VECTORS_H
 #define POLYTOPE_VECTORS_H
 
+#include <functional>
+
 namespace Polytope {
    enum class Axis {
       x = 0,
@@ -90,6 +92,23 @@ namespace Polytope {
       Point3ui(const unsigned int x, const unsigned int y, const unsigned int z) : x(x), y(y), z(z) { };
    };
 
+}
+
+namespace std {
+   template <>
+   struct hash<Polytope::Point>
+   {
+      std::size_t operator()(const Polytope::Point& k) const
+      {
+         // Compute individual hash values for first, second and third
+         // http://stackoverflow.com/a/1646913/126995
+         std::size_t res = 17;
+         res = res * 31 + hash<float>()( k.x );
+         res = res * 31 + hash<float>()( k.y );
+         res = res * 31 + hash<float>()( k.z );
+         return res;
+      }
+   };
 }
 
 #endif //POLYTOPE_VECTORS_H

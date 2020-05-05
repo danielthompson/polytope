@@ -10,7 +10,7 @@
 
 namespace Polytope {
 
-   class AbstractShape; // predeclared to avoid circular header references
+   class AbstractMesh; // predeclared to avoid circular header references
 
    class Intersection {
    public:
@@ -21,7 +21,7 @@ namespace Polytope {
 
       // data
 
-      AbstractShape *Shape = nullptr;
+      AbstractMesh *Shape = nullptr;
       unsigned int faceIndex;
       Point Location;
       Polytope::Normal Normal;

@@ -32,11 +32,10 @@ SET(COVERAGE OFF CACHE BOOL "Coverage")
 ################################
 
 add_custom_command(
-        OUTPUT ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh_ispc.o
-        COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh_ispc.h -o ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh_ispc.o ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh.ispc
-        MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh.ispc
-        BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh_ispc.h
-        DEPENDS ${CMAKE_SOURCE_DIR}/src/shapes/triangle_mesh.ispc)
+        OUTPUT ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o
+        COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.h -o ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.ispc
+        MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.ispc
+        BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o)
 
 add_library(polytope_lib
       lib/lodepng.cpp
@@ -61,7 +60,6 @@ add_library(polytope_lib
       src/integrators/PathTraceIntegrator.h
       src/lights/AbstractLight.h
       src/lights/PointLight.h
-      src/lights/ShapeLight.h
       src/parsers/PBRTFileParser.cpp
       src/parsers/PBRTFileParser.h
       src/runners/AbstractRunner.cpp
@@ -87,14 +85,12 @@ add_library(polytope_lib
       src/shading/ReflectanceSpectrum.h
       src/shading/SpectralPowerDistribution.cpp
       src/shading/SpectralPowerDistribution.h
-      src/shading/brdf/AbstractBRDF.cpp
-      src/shading/brdf/AbstractBRDF.h
+        src/shading/brdf/abstract_brdf.h
       src/shading/brdf/LambertBRDF.cpp
       src/shading/brdf/LambertBRDF.h
       src/shading/brdf/MirrorBRDF.cpp
-      src/shading/brdf/MirrorBRDF.h
-      src/shapes/AbstractShape.cpp
-      src/shapes/AbstractShape.h
+      src/shading/brdf/MirrorBRDF.h 
+      src/shapes/abstract_mesh.h
       src/structures/Intersection.cpp
       src/structures/Intersection.h
       src/structures/Matrix4x4.cpp
@@ -117,10 +113,6 @@ add_library(polytope_lib
       src/utilities/OptionsParser.h
       src/parsers/mesh/OBJParser.cpp
       src/parsers/mesh/OBJParser.h
-        src/shapes/triangle.cpp
-        src/shapes/triangle.h 
-      src/shapes/triangle_mesh_ispc.h 
-      src/shapes/triangle_mesh_ispc.o
       src/parsers/AbstractFileParser.cpp
       src/parsers/AbstractFileParser.h
       src/structures/Vectors.cpp
@@ -130,20 +122,24 @@ add_library(polytope_lib
       src/parsers/mesh/PLYParser.cpp
       src/parsers/mesh/PLYParser.h
       src/parsers/mesh/AbstractMeshParser.h
-      src/shapes/Tesselators.cpp
-      src/shapes/Tesselators.h
-      src/exporters/OBJExporter.cpp
-      src/exporters/OBJExporter.h
-      src/scenes/BVHScene.cpp)
-
-set_source_files_properties(~/repos/polytope/src/shapes/triangle_mesh_ispc.h PROPERTIES OBJECT_DEPENDS ~/repos/polytope/src/shapes/triangle_mesh.ispc)
-
-#target_link_libraries(polytope_lib PRIVATE ~/repos/polytope/src/shapes/triangle_mesh_ispc.o)
+        src/shapes/tesselators.cpp
+        src/shapes/tesselators.h
+      src/scenes/BVHScene.cpp 
+        src/scenes/BVHNode.cpp 
+        src/scenes/BVHNode.h
+        src/shapes/linear_soa/mesh_linear_soa.cpp
+        src/shapes/linear_soa/mesh_linear_soa.h
+        src/shapes/linear_soa/mesh_linear_soa_intersect.h
+        src/shapes/linear_soa/mesh_linear_soa_intersect.o
+        src/shapes/bvh_split/mesh_bvh_split.cpp
+        src/shapes/bvh_split/mesh_bvh_split.h
+        src/shapes/linear_aos/mesh_linear_aos.cpp
+        src/shapes/linear_aos/mesh_linear_aos.h)
 
 add_executable(${PROJECT_NAME} src/Main.cpp
       src/platforms/win32-cygwin.h
       src/gl/GLRenderer.cpp
-      src/gl/GLRenderer.h)
+      src/gl/GLRenderer.h )
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be
 # used elsewhere.
@@ -210,11 +206,11 @@ add_executable(runUnitTests
         tests/parsers/test_ply_parser.cpp
       tests/TestPoint.cpp
       tests/TestTransform.cpp
-      tests/TestTriangleMesh.cpp
+        tests/shapes/test_mesh_linear_aos.cpp
       tests/TestVector.cpp
-      tests/TestTesselators.cpp
-      tests/TestTriangleSplitting.cpp
-        tests/TestTriangleMeshISPC.cpp)
+        tests/shapes/TestTesselators.cpp
+        tests/shapes/test_mesh_bvh_split.cpp
+        tests/shapes/test_mesh_linear_aos.cpp)
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 # if (COVERAGE)

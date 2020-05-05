@@ -5,22 +5,13 @@
 #ifndef POLYTOPE_ABSTRACTBRDF_H
 #define POLYTOPE_ABSTRACTBRDF_H
 
-#include "../../structures/Vectors.h"
+#include "../../Constants.h"
 #include "../../structures/Vectors.h"
 
 namespace Polytope {
 
    class AbstractBRDF {
    public:
-
-      // constructors
-
-
-
-      // operators
-
-      // methods
-
       virtual float f(float thetaIncoming, float thetaOutgoing) const = 0;
 
       /**
@@ -30,7 +21,17 @@ namespace Polytope {
        * @param pdf The pdf of the returned vector.
        * @return A vector randomly samplb
        */
-      virtual Vector getVectorInPDF(Vector incoming, float &pdf) const;
+      virtual Vector getVectorInPDF(const Vector &incoming, float &pdf) const {
+         const float u0 = NormalizedUniformRandom();
+         const float u1 = NormalizedUniformRandom();
+
+         const Vector hemi = CosineSampleHemisphere(u0, u1);
+
+         pdf = 1;
+
+         return hemi;
+      }
+      
       /**
        * Returns the proportion of outgoing light that comes from the incoming direction.
        * Should only be used for non-delta distributions - f() can be assumed to be 0 for deltas

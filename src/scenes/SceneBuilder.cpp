@@ -11,7 +11,6 @@
 #include "../shading/SpectralPowerDistribution.h"
 #include "../lights/AbstractLight.h"
 #include "../lights/PointLight.h"
-#include "../lights/ShapeLight.h"
 
 
 namespace Polytope {

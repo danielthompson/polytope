@@ -6,16 +6,12 @@
 #define POLYTOPE_ABSTRACTMESHPARSER_H
 
 #include "../AbstractFileParser.h"
-#include "../../shapes/triangle.h"
+#include "../../shapes/abstract_mesh.h"
 
 namespace Polytope {
-
    class AbstractMeshParser : public AbstractFileParser {
-      virtual void ParseFile(TriangleMesh* mesh, const std::string &filepath) const = 0;
-      virtual void ParseFile(TriangleMeshSOA* mesh, const std::string &filepath) const = 0;
+      virtual void ParseFile(AbstractMesh *mesh, const std::string &filepath) const = 0;
    };
-
 }
-
 
 #endif //POLYTOPE_ABSTRACTMESHPARSER_H

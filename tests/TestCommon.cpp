@@ -2,8 +2,8 @@
 
 #include "../src/Constants.h"
 #include "../src/structures/Vectors.h"
-#include "../src/shapes/triangle.h"
-
+#include "../src/structures/Transform.h"
+#include "../src/shapes/abstract_mesh.h"
 
 namespace Tests {
 
@@ -12,7 +12,7 @@ namespace Tests {
       using Polytope::Point;
       using Polytope::Vector;
       using Polytope::Transform;
-      using Polytope::TriangleMesh;
+      using Polytope::AbstractMesh;
 
       TEST(Common, SignedDistanceFromPlane1) {
          Point pointOnPlane(0, 0, 0);

@@ -8,7 +8,7 @@
 
 namespace Polytope {
 
-   Intersection AbstractScene::GetNearestShapeIteratively(std::vector<AbstractShape*> &shapes, Ray &ray) const {
+   Intersection AbstractScene::GetNearestShapeIteratively(std::vector<AbstractMesh*> &shapes, Ray &ray) const {
 
       Intersection intersection;
 
@@ -17,7 +17,7 @@ namespace Polytope {
             continue;
          }
 
-         shape->Intersect(ray, &intersection);
+         shape->intersect(ray, &intersection);
       }
 
       return intersection;

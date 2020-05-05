@@ -8,19 +8,22 @@
 #include <cassert>
 #include "PBRTFileParser.h"
 #include "mesh/OBJParser.h"
+#include "mesh/PLYParser.h"
 #include "../integrators/PathTraceIntegrator.h"
+#include "../integrators/DebugIntegrator.h"
+#include "../cameras/PerspectiveCamera.h"
 #include "../samplers/samplers.h"
 #include "../runners/TileRunner.h"
 #include "../films/PNGFilm.h"
 #include "../filters/BoxFilter.h"
-#include "../cameras/PerspectiveCamera.h"
-#include "../shading/brdf/LambertBRDF.h"
 #include "../scenes/NaiveScene.h"
 #include "../utilities/Common.h"
 #include "../scenes/skyboxes/ColorSkybox.h"
 #include "../structures/Vectors.h"
-#include "mesh/PLYParser.h"
+#include "../shading/brdf/LambertBRDF.h"
 #include "../shading/brdf/MirrorBRDF.h"
+#include "../shapes/linear_soa/mesh_linear_soa.h"
+#include "../shapes/tesselators.h"
 
 namespace Polytope {
 
@@ -123,12 +126,18 @@ namespace Polytope {
             { "plastic", Plastic}
       };
 
-      enum MaterialMatteArgument {
+      enum MaterialArgumentName {
          Kd,
+         Ks
       };
 
-      const std::map<std::string, MaterialMatteArgument> MaterialMatteArgumentMap {
+      const std::map<std::string, MaterialArgumentName> MaterialMatteArgumentMap {
+            {"Kd", Kd}
+      };
+
+      const std::map<std::string, MaterialArgumentName> MaterialPlasticArgumentMap {
             {"Kd", Kd},
+            {"Ks", Ks},
       };
       
       enum OBJMeshArgument {
@@ -820,7 +829,8 @@ namespace Polytope {
                if (missingDepth) {
                   LogMissingArgument(directive, "maxdepth");
                }
-               _integrator = std::make_unique<PathTraceIntegrator>(maxDepth);
+               //_integrator = std::make_unique<Polytope::DebugIntegrator>(maxDepth);
+               _integrator = std::make_unique<Polytope::PathTraceIntegrator>(maxDepth);
             }
             else {
                LogUnimplementedDirective(directive);
@@ -874,9 +884,9 @@ namespace Polytope {
                      if (activeLight == nullptr) {
                         activeLight = std::make_shared<SpectralPowerDistribution>();
                      }
-                     activeLight->r = argument.float_values->at(0);
-                     activeLight->g = argument.float_values->at(1);
-                     activeLight->b = argument.float_values->at(2);
+                     activeLight->r = argument.float_values->at(0) * 255;
+                     activeLight->g = argument.float_values->at(1) * 255;
+                     activeLight->b = argument.float_values->at(2) * 255;
                      break;
                   }
                }
@@ -978,9 +988,34 @@ namespace Polytope {
                }
                switch (identifier) {
                   case MaterialIdentifier::Plastic:
+                     for (const PBRTArgument& argument : directive->Arguments) {
+                        MaterialArgumentName param;
+                        try {
+                           param = MaterialPlasticArgumentMap.at(argument.Name);
+                        }
+                        catch (...) {
+                           LogUnknownArgument(argument);
+                           continue;
+                        }
+                        switch (param) {
+                           case MaterialArgumentName::Kd: {
+
+                           }
+                        }
+                        if (argument.Name == "Ks" && argument.Type == PBRTArgument::pbrt_rgb) {
+                           const float r = argument.float_values->at(0);
+                           const float g = argument.float_values->at(1);
+                           const float b = argument.float_values->at(2);
+
+                           ReflectanceSpectrum refl(r, g, b);
+                           std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::LambertBRDF>();
+                           std::shared_ptr<Polytope::Material> material = std::make_shared<Polytope::Material>(brdf, refl);
+                           activeMaterial = material;
+                        }
+                     }
                   case MaterialIdentifier::Matte: {
                      for (const PBRTArgument& argument : directive->Arguments) {
-                        MaterialMatteArgument param;
+                        MaterialArgumentName param;
                         try {
                            param = MaterialMatteArgumentMap.at(argument.Name);
                         }
@@ -989,7 +1024,7 @@ namespace Polytope {
                            continue;
                         }
                         switch (param) {
-                           case MaterialMatteArgument::Kd: {
+                           case MaterialArgumentName::Kd: {
                               
                            }
                         }
@@ -1080,6 +1115,8 @@ namespace Polytope {
                   LogUnknownIdentifier(directive);
                   continue;
                }
+
+               std::shared_ptr<Polytope::Transform> activeInverse = std::make_shared<Polytope::Transform>(activeTransform->Invert());
                switch (identifier) {
                   case ShapeIdentifier::OBJMesh: {
                      // make sure it has a filename argument
@@ -1113,9 +1150,7 @@ namespace Polytope {
                         break;
                      }
 
-                     std::shared_ptr<Polytope::Transform> activeInverse = std::make_shared<Polytope::Transform>(activeTransform->Invert());
-
-                     Polytope::TriangleMesh* mesh = new TriangleMesh(activeTransform, activeInverse, activeMaterial);
+                     Polytope::AbstractMesh* mesh = new MeshLinearSOA(activeTransform, activeInverse, activeMaterial);
 
                      const OBJParser parser;
                      const std::string absoluteObjFilepath = _basePathFromCWD + objFilename;
@@ -1159,66 +1194,44 @@ namespace Polytope {
                         break;
                      }
 
-                     std::shared_ptr<Polytope::Transform> activeInverse = std::make_shared<Polytope::Transform>(activeTransform->Invert());
 
-                     Polytope::TriangleMeshSOA* mesh = new TriangleMeshSOA(activeTransform, activeInverse, activeMaterial);
+                     Polytope::AbstractMesh* mesh = new MeshLinearSOA(activeTransform, activeInverse, activeMaterial);
 
                      const PLYParser parser;
                      const std::string absoluteObjFilepath = /*GetCurrentWorkingDirectory() + UnixPathSeparator +*/ _basePathFromCWD + objFilename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
                      //mesh->Bound();
                      mesh->CalculateVertexNormals();
-//                     std::ostringstream oss;
-//                     oss << "Vertex count: " << mesh->Vertices.size();
-//                     Log.WithTime(oss.str());
-//
-//                     oss.str("");
-//                     const unsigned int uniqueVertices = mesh->CountUniqueVertices();
-//                     oss << "Unique vertex count: " << uniqueVertices;
-//                     Log.WithTime(oss.str());
-//
-//                     oss.str("");
-//                     const unsigned int redundantVertices = mesh->Vertices.size() - uniqueVertices;
-//                     oss << "Redundant vertex count: " << redundantVertices;
-//                     Log.WithTime(oss.str());
-//
-//                     oss.str("");
-//                     const unsigned int orphanedVertices = mesh->CountOrphanedVertices();
-//                     oss << "Orphaned vertex count: " << orphanedVertices;
-//                     Log.WithTime(oss.str());
-//
-//                     oss.str("");
-//                     const unsigned int degenerateFaceCount = mesh->RemoveDegenerateFaces();
-//                     oss << "Degenerate faces removed: " << degenerateFaceCount;
-//                     Log.WithTime(oss.str());
-//
-//                     oss.str("");
-//                     const bool valid = mesh->Validate();
-//                     oss << "Mesh valid: " << (valid ? "true" : "false");
-//                     Log.WithTime(oss.str());
 
-                     //mesh->ObjectToWorld = *activeTransform;
                      if (activeLight != nullptr) {
-                        mesh->L
+                        // TODO
+                        mesh->spd = activeLight;
                      }
-                     
-                     mesh->Material = activeMaterial;
+                     else {
+                        mesh->Material = activeMaterial;   
+                     }
                      _scene->Shapes.push_back(mesh);
                      break;
                   }
-//                  case ShapeIdentifier::Sphere: {
-//                     PBRTArgument argument = directive->Arguments[0];
-//                     if (argument.Type == PBRTArgumentType::pbrt_float) {
-//                        float radius = std::stof(argument.Values[0]);
-//                        AbstractShape *sphere = new Polytope::Sphere(*activeTransform, activeMaterial);
-//                        if (activeLight != nullptr) {
-//                           ShapeLight *sphereLight = new ShapeLight(*activeLight);
-//                           sphere->Light = sphereLight;
-//                           _scene->Lights.push_back(sphereLight);
-//                        }
-//                        _scene->Shapes.push_back(sphere);
-//                     }
-//                  }
+                  case ShapeIdentifier::Sphere: {
+                     for (const PBRTArgument& argument : directive->Arguments) {
+                        if (argument.Type == PBRTArgument::PBRTArgumentType::pbrt_float) {
+                           const float radius = argument.float_values->at(0);
+                           
+                           Polytope::Transform radius_transform = Transform::Scale(radius);
+                           std::shared_ptr<Polytope::Transform> temp_radius_transform = std::make_shared<Polytope::Transform>((*activeTransform) * radius_transform);
+                           std::shared_ptr<Polytope::Transform> temp_radius_inverse = std::make_shared<Polytope::Transform>(temp_radius_transform->Invert());
+                           
+                           Polytope::AbstractMesh* sphere = new MeshLinearSOA(temp_radius_transform, temp_radius_inverse, activeMaterial);
+                           const int subdivisions = std::max((int)radius, 10);
+                           Polytope::SphereTesselator::Create(subdivisions, subdivisions, sphere);
+                           sphere->ObjectToWorld = activeTransform;
+                           sphere->WorldToObject = activeInverse;
+                           sphere->spd = activeLight;
+                           _scene->Shapes.push_back(sphere);
+                        }
+                     }
+                  }
                   default: {
                      LogUnimplementedDirective(directive);
                      break;

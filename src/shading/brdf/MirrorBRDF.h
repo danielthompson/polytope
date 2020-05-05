@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_MIRRORBRDF_H
 #define POLYTOPE_MIRRORBRDF_H
 
-#include "AbstractBRDF.h"
+#include "abstract_brdf.h"
 
 namespace Polytope {
 
@@ -19,7 +19,7 @@ namespace Polytope {
       // methods
 
       float f(float thetaIncoming, float thetaOutgoing) const override;
-      Vector getVectorInPDF(Vector incoming, float &pdf) const override;
+      Vector getVectorInPDF(const Vector &incoming, float &pdf) const override;
       float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const override;
 
       // data

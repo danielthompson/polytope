@@ -2,13 +2,13 @@ Integrator "path" "integer maxdepth" [ 7 ]
 LookAt 0 0 10 # eye
        0 0 0 # look at point
        0 1 0 # up
-Sampler "halton" "integer pixelsamples" [ 16 ]
+Sampler "halton" "integer pixelsamples" [ 256 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
 Film "image" "integer xresolution" [ 400 ] "integer yresolution" [ 250 ] "string filename" [ "lighttest.png" ]
 Camera "perspective" "float fov" [ 30 ]
 WorldBegin
     # world light
-    LightSource "infinite" "rgb L" [.05 .05 .05]
+    LightSource "infinite" "rgb L" [.15 .15 .15]
     
     # "ceiling" light
     AttributeBegin

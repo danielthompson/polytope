@@ -5,22 +5,22 @@
 #ifndef POLYTOPE_TESSELATORS_H
 #define POLYTOPE_TESSELATORS_H
 
-#include "triangle.h"
+#include "abstract_mesh.h"
 
 namespace Polytope {
    class SphereTesselator {
    public:
-      void Create(unsigned int meridians, unsigned int parallels, TriangleMesh* mesh);
+      static void Create(unsigned int meridians, unsigned int parallels, AbstractMesh* mesh);
    };
 
    class DiskTesselator {
    public:
-      void Create(unsigned int meridians, TriangleMesh* mesh);
+      static void Create(unsigned int meridians, AbstractMesh* mesh);
    };
 
    class ConeTesselator {
    public:
-      void Create(unsigned int meridians, TriangleMesh* mesh);
+      static void Create(unsigned int meridians, AbstractMesh* mesh);
    };
 }
 

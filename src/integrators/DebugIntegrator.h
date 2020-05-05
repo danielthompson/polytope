@@ -14,6 +14,9 @@ namespace Polytope {
       DebugIntegrator(AbstractScene *scene, int maxDepth)
       : AbstractIntegrator(scene, maxDepth) { };
 
+      explicit DebugIntegrator(int maxDepth)
+            : AbstractIntegrator(maxDepth) { }
+      
       Sample GetSample(Ray &ray, int depth, int x, int y) override;
    };
 

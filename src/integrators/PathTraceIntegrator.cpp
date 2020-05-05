@@ -9,16 +9,15 @@ namespace Polytope {
 
    Sample PathTraceIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
 
-      Intersection intersection = Scene->GetNearestShape(ray, x, y);
-
       bool debug = false;
-      
-      if (x == 40 && y == 200) {
+      if (x == 279 && y == 752)
          debug = true;
-      }
+      
+      Intersection intersection = Scene->GetNearestShape(ray, x, y);
+      
+
       
       if (!intersection.Hits) {
-
          SpectralPowerDistribution spd;
 
          if (Scene->Skybox != nullptr) {
@@ -28,15 +27,15 @@ namespace Polytope {
          return Sample(spd);
       }
 
-      if (intersection.Shape->IsLight()) {
-
-         return Sample(intersection.Shape->Light->SpectralPowerDistribution);
+      if (intersection.Shape->is_light()) {
+         return Sample(intersection.Shape->spd);
       }
 
       // base case
       if (depth >= MaxDepth) {
          return Sample(SpectralPowerDistribution());
-      } else {
+      } 
+      else {
 
          // indirect lighting
          float pdf = 0.0f;
@@ -48,6 +47,7 @@ namespace Polytope {
          Ray bounceRay = Ray(intersection.Location, worldOutgoing);
 
          // fuzz fix/hack
+         // TODO - offset by geometric normal instead
          bounceRay.OffsetOrigin(intersection.Normal, Polytope::OffsetEpsilon);
 
          Sample incomingSample = GetSample(bounceRay, depth + 1, x, y);

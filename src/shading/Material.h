@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <utility>
-#include "brdf/AbstractBRDF.h"
+#include "brdf/abstract_brdf.h"
 #include "ReflectanceSpectrum.h"
 
 namespace Polytope {
