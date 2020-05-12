@@ -39,7 +39,7 @@ namespace Polytope {
       std::unique_ptr<AbstractCamera> Camera{};
       std::string ImplementationType = "Base Scene";
       std::vector<AbstractMesh*> Shapes;
-      std::vector<AbstractLight*> Lights;
+      std::vector<AbstractMesh*> Lights;
       std::unique_ptr<AbstractSkybox> Skybox;
 
    protected:

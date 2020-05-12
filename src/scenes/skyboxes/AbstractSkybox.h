@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_ABSTRACTSKYBOX_H
 #define POLYTOPE_ABSTRACTSKYBOX_H
 
-#include "../../shading/SpectralPowerDistribution.h"
+#include "../../shading/spectrum.h"
 
 namespace Polytope {
    class AbstractSkybox {

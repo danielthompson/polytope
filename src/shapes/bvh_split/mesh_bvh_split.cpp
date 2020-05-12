@@ -516,7 +516,7 @@ namespace Polytope {
       return Point3ui();
    }
 
-   Point MeshBVHSplit::GetRandomPointOnSurface() const {
+   Point MeshBVHSplit::random_surface_point() const {
       return Point();
    }
 

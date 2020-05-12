@@ -13,15 +13,15 @@ namespace Polytope {
       MeshLinearSOA(
             const std::shared_ptr<Polytope::Transform> &objectToWorld,
             const std::shared_ptr<Polytope::Transform> &worldToObject,
-            const std::shared_ptr<Polytope::Material> &material)
-            : AbstractMesh(objectToWorld, worldToObject, material) {}
-      ~MeshLinearSOA() override = default;
+            const std::shared_ptr<Polytope::Material> &material) 
+            : AbstractMesh(objectToWorld, worldToObject, material) { }
+      ~MeshLinearSOA() override;
 
 
       void intersect(Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) override;
       void CalculateVertexNormals() override;
 
-      Point GetRandomPointOnSurface() const override;
+      Point random_surface_point() const override;
 
       void add_vertex(Point &v) override;
       void add_vertex(float x, float y, float z) override;

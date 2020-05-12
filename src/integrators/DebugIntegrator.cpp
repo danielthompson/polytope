@@ -11,8 +11,10 @@ namespace Polytope {
       const Intersection closestStateToRay = Scene->GetNearestShape(ray, x, y);
 
       if (closestStateToRay.Hits) {
-         const ReflectanceSpectrum refl = closestStateToRay.Shape->Material->ReflectanceSpectrum;
-         return Sample(SpectralPowerDistribution(refl.r, refl.g, refl.b));
+         // TODO
+//         const ReflectanceSpectrum refl = closestStateToRay.Shape->Material->ReflectanceSpectrum;
+//         return Sample(SpectralPowerDistribution(refl.r, refl.g, refl.b));
+         return Sample(SpectralPowerDistribution(ray.MinT, ray.MinT, ray.MinT));
       }
 
       else {

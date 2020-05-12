@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_ABSTRACTLIGHT_H
 #define POLYTOPE_ABSTRACTLIGHT_H
 
-#include "../shading/SpectralPowerDistribution.h"
+#include "../shading/spectrum.h"
 #include "../structures/Vectors.h"
 
 namespace Polytope {

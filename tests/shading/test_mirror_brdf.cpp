@@ -5,9 +5,9 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "../src/structures/Vectors.h"
-#include "../src/structures/Vectors.h"
-#include "../src/shading/brdf/MirrorBRDF.h"
+#include "../../src/structures/Vectors.h"
+#include "../../src/structures/Vectors.h"
+#include "../../src/shading/brdf/mirror_brdf.h"
 
 
 namespace Tests {
@@ -26,7 +26,7 @@ namespace Tests {
 //
 //         float pdf = 0.0;
 //
-//         Vector actual = brdf.getVectorInPDF(incoming, pdf);
+//         Vector actual = brdf.sample(incoming, pdf);
 //
 //         EXPECT_FLOAT_EQ(expected.x, actual.x);
 //         EXPECT_FLOAT_EQ(expected.y, actual.y);
@@ -43,12 +43,12 @@ namespace Tests {
          normal.Normalize();
          expected.Normalize();
 
-         Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF();
-
+         ReflectanceSpectrum refl;
+         Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF(refl);
+         
          float pdf = 0.0;
 
-         Vector actual = brdf.getVectorInPDF(incoming, pdf);
-
+         Vector actual = brdf.sample(incoming, refl, pdf);
 
          EXPECT_EQ(expected, actual);
       }
@@ -63,11 +63,13 @@ namespace Tests {
          normal.Normalize();
          expected.Normalize();
 
-         Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF();
-
+         ReflectanceSpectrum refl;
+         Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF(refl);
+         
+         
          float pdf = 0.0;
 
-         Vector actual = brdf.getVectorInPDF(incoming, pdf);
+         Vector actual = brdf.sample(incoming, refl, pdf);
 
 
          EXPECT_EQ(expected, actual);
@@ -82,12 +84,13 @@ namespace Tests {
          incoming.Normalize();
          normal.Normalize();
          expected.Normalize();
-
-         Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF();
-
+         
+         ReflectanceSpectrum refl;
+         Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF(refl);
+         
          float pdf = 0.0;
 
-         Vector actual = brdf.getVectorInPDF(incoming, pdf);
+         Vector actual = brdf.sample(incoming, refl, pdf);
 
 
          EXPECT_EQ(expected, actual);

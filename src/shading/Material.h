@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 #include "brdf/abstract_brdf.h"
-#include "ReflectanceSpectrum.h"
+#include "spectrum.h"
 
 namespace Polytope {
 
@@ -18,19 +18,19 @@ namespace Polytope {
 
       explicit Material(std::string name) : Name(std::move(name)) { }
 
-      Material(std::shared_ptr<AbstractBRDF> brdf, Polytope::ReflectanceSpectrum reflectanceSpectrum)
-            : BRDF(std::move(brdf)), ReflectanceSpectrum(reflectanceSpectrum){ }
+      Material(std::shared_ptr<AbstractBRDF> brdf/*, Polytope::ReflectanceSpectrum reflectanceSpectrum*/)
+            : BRDF(std::move(brdf))/*, ReflectanceSpectrum(reflectanceSpectrum)*/{ }
 
       Material(
             std::shared_ptr<AbstractBRDF> brdf,
             Polytope::ReflectanceSpectrum reflectanceSpectrum,
             std::string name)
             : BRDF(std::move(brdf)),
-              ReflectanceSpectrum(reflectanceSpectrum),
+//              ReflectanceSpectrum(reflectanceSpectrum),
               Name (std::move(name)){ }
 
       std::shared_ptr<AbstractBRDF> BRDF;
-      Polytope::ReflectanceSpectrum ReflectanceSpectrum;
+//      Polytope::ReflectanceSpectrum ReflectanceSpectrum;
       std::string Name;
    };
 

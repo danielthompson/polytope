@@ -32,7 +32,7 @@ namespace Polytope {
 
       void CalculateVertexNormals();
 
-      Point GetRandomPointOnSurface() const override;
+      Point random_surface_point() const override;
 
       unsigned int CountUniqueVertices() const ;
 

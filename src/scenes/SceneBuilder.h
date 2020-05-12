@@ -6,7 +6,7 @@
 #define POLYTOPE_SCENEBUILDER_H
 
 #include "AbstractScene.h"
-#include "../shading/ReflectanceSpectrum.h"
+#include "../shading/spectrum.h"
 
 namespace Polytope {
 

@@ -27,7 +27,11 @@ namespace Polytope {
          Log.WithTime(oss.str());
       }
 
-      _data[index].push_back(sample);
+      Sample clamped = sample;
+      if (clamped.SpectralPowerDistribution.r > 255)  clamped.SpectralPowerDistribution.r = 255;
+      if (clamped.SpectralPowerDistribution.g > 255)  clamped.SpectralPowerDistribution.g = 255;
+      if (clamped.SpectralPowerDistribution.b > 255)  clamped.SpectralPowerDistribution.b = 255;
+      _data[index].push_back(clamped);
    }
 
    void BoxFilter::AddSamples(const Point2f &location, const std::vector<Sample> &samples) {
@@ -39,7 +43,11 @@ namespace Polytope {
       // std::lock_guard<std::mutex> lock(_mutex);
 
       for (const auto &sample : samples) {
-         _data[index].push_back(sample);
+         Sample clamped = sample;
+         if (clamped.SpectralPowerDistribution.r > 255)  clamped.SpectralPowerDistribution.r = 255;
+         if (clamped.SpectralPowerDistribution.g > 255)  clamped.SpectralPowerDistribution.g = 255;
+         if (clamped.SpectralPowerDistribution.b > 255)  clamped.SpectralPowerDistribution.b = 255;
+         _data[index].push_back(clamped);
       }
    }
 

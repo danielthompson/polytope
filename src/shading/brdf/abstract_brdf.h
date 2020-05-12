@@ -7,6 +7,7 @@
 
 #include "../../Constants.h"
 #include "../../structures/Vectors.h"
+#include "../spectrum.h"
 
 namespace Polytope {
 
@@ -21,21 +22,21 @@ namespace Polytope {
        * @param pdf The pdf of the returned vector.
        * @return A vector randomly samplb
        */
-      virtual Vector getVectorInPDF(const Vector &incoming, float &pdf) const {
+      virtual Vector sample(const Vector &incoming, Polytope::ReflectanceSpectrum &refl_spectrum, float &pdf) const {
          const float u0 = NormalizedUniformRandom();
          const float u1 = NormalizedUniformRandom();
 
          const Vector hemi = CosineSampleHemisphere(u0, u1);
 
          pdf = 1;
-
+         
          return hemi;
       }
       
       /**
        * Returns the proportion of outgoing light that comes from the incoming direction.
        * Should only be used for non-delta distributions - f() can be assumed to be 0 for deltas
-       * except when the outgoing Vector has been obtained from getVectorInPDF(), in which case
+       * except when the outgoing Vector has been obtained from sample(), in which case
        * there should be no need to call this since it can be assumed to be 1.
        * @param incoming The direction of incoming light.
        * @param normal The surface normal at the point of intersection.

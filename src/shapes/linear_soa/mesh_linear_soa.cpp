@@ -4,8 +4,10 @@
 
 #include "mesh_linear_soa.h"
 #include "mesh_linear_soa_intersect.h"
+#include "mesh_linear_soa_kernel.cuh"
 
 namespace Polytope {
+   
    void MeshLinearSOA::add_vertex(Point &v) {
       ObjectToWorld->ApplyInPlace(v);
       x_packed.push_back(v.x);
@@ -249,9 +251,12 @@ namespace Polytope {
       intersection->Tangent2.Normalize();
    }
 
-   Point MeshLinearSOA::GetRandomPointOnSurface() const {
-      // TODO
-      return Point();
+   Point MeshLinearSOA::random_surface_point() const {
+      // TODO 1. generate a random point on a face instead of just using a vertex
+      // TODO 2. weight face choice by face surface area
+
+      const unsigned int index = RandomUniformBetween(0u, num_faces - 1);
+      return Point(x[index], y[index], z[index]);
    }
 
    void MeshLinearSOA::unpack_faces() {
@@ -301,6 +306,8 @@ namespace Polytope {
       }
 
       num_vertices = 3 * num_faces;
+      
+      initialize_unpacked_mesh(&x[0], &y[0], &z[0], num_vertices);
    }
 
    Point MeshLinearSOA::get_vertex(const unsigned int i) const {
@@ -309,5 +316,9 @@ namespace Polytope {
 
    Point3ui MeshLinearSOA::get_vertex_indices_for_face(const unsigned int i) const {
       return { fv0[i], fv1[i], fv2[i] };
+   }
+
+   MeshLinearSOA::~MeshLinearSOA() {
+      free_mesh();
    }
 }

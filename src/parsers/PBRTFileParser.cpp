@@ -4,8 +4,8 @@
 
 #include <sstream>
 #include <stack>
-#include <map>
 #include <cassert>
+#include <unordered_map>
 #include "PBRTFileParser.h"
 #include "mesh/OBJParser.h"
 #include "mesh/PLYParser.h"
@@ -20,32 +20,58 @@
 #include "../utilities/Common.h"
 #include "../scenes/skyboxes/ColorSkybox.h"
 #include "../structures/Vectors.h"
-#include "../shading/brdf/LambertBRDF.h"
-#include "../shading/brdf/MirrorBRDF.h"
+#include "../shading/brdf/lambert_brdf.h"
+#include "../shading/brdf/mirror_brdf.h"
 #include "../shapes/linear_soa/mesh_linear_soa.h"
 #include "../shapes/tesselators.h"
+#include "../shading/brdf/glossy_brdf.h"
 
 namespace Polytope {
 
    namespace {
+      namespace str {
+         
+         const std::string AreaLightSource = "AreaLightSource";
+         const std::string AttributeBegin = "AttributeBegin";
+         const std::string AttributeEnd = "AttributeEnd";
+         const std::string Camera = "Camera";
+         const std::string filename = "filename";
+         const std::string Film = "Film";
+         const std::string halton = "halton";
+         const std::string image = "image";
+         const std::string Integrator = "Integrator";
+         const std::string Kd = "Kd";
+         const std::string Kr = "Kr";
+         const std::string Ks = "Ks";
+         const std::string LightSource = "LightSource";
+         const std::string LookAt = "LookAt";
+         const std::string MakeNamedMaterial = "MakeNamedMaterial";
+         const std::string Material = "Material";
+         const std::string matte = "matte";
+         const std::string mirror = "mirror";
+         const std::string NamedMaterial = "NamedMaterial";
+         const std::string objmesh = "objmesh";
+         const std::string PixelFilter = "PixelFilter";
+         const std::string pixelsamples = "pixelsamples";
+         const std::string plastic = "plastic";
+         const std::string plymesh = "plymesh";
+         const std::string Rotate = "Rotate";
+         const std::string roughness = "roughness";
+         const std::string Sampler = "Sampler";
+         const std::string Scale = "Scale";
+         const std::string Shape = "Shape";
+         const std::string sphere = "sphere";
+         const std::string TransformBegin = "TransformBegin";
+         const std::string TransformEnd = "TransformEnd";
+         const std::string Translate = "Translate";
+         const std::string WorldBegin = "WorldBegin";
+         const std::string WorldEnd = "WorldEnd";
+      }
+      
       std::string _inputFilename = "";
       std::string _basePathFromCWD = "";
 
-      // datatypes
-
-      const std::string RGBText = "rgb";
-
-      // directives
-
-      const std::string CameraText = "Camera";
-      const std::string FilmText = "Film";
-      const std::string IntegratorText = "Integrator";
-      const std::string LookAtText = "LookAt";
-      const std::string PixelFilterText = "PixelFilter";
-      const std::string RotateText = "Rotate";
-      const std::string SamplerText = "Sampler";
-      const std::string ScaleText = "Scale";
-      const std::string TranslateText = "Translate";
+      // strings
 
       enum DirectiveName {
          AreaLightSource,
@@ -71,47 +97,46 @@ namespace Polytope {
          WorldEnd
       };
 
-      const std::map<std::string, DirectiveName> SceneDirectiveMap {
-            {CameraText, Camera},
-            {FilmText, Film},
-            {IntegratorText, Integrator},
-            {LookAtText, LookAt},
-            {PixelFilterText, PixelFilter},
-            {RotateText, Rotate},
-            {SamplerText, Sampler},
-            {ScaleText, Scale},
-            {TranslateText, Translate}
+      const std::unordered_map<std::string, DirectiveName> SceneDirectiveMap {
+            {str::Camera, Camera},
+            {str::Film, Film},
+            {str::Integrator, Integrator},
+            {str::LookAt, LookAt},
+            {str::PixelFilter, PixelFilter},
+            {str::Rotate, Rotate},
+            {str::Sampler, Sampler},
+            {str::Scale, Scale},
+            {str::Translate, Translate}
       };
 
-
-      const std::map<std::string, DirectiveName> WorldDirectiveMap {
-            {"AreaLightSource", AreaLightSource},
-            {"AttributeBegin", AttributeBegin},
-            {"AttributeEnd", AttributeEnd},
-            {"LightSource", LightSource},
-            {"MakeNamedMaterial", MakeNamedMaterial},
-            {"Material", Material},
-            {"NamedMaterial", NamedMaterial},
-            {RotateText, Rotate},
-            {ScaleText, Scale},
-            {"Shape", Shape},
-            {"TransformBegin", TransformBegin},
-            {"TransformEnd", TransformEnd},
-            {TranslateText, Translate},
-            {"WorldBegin", WorldBegin},
-            {"WorldEnd", WorldEnd}
+      const std::unordered_map<std::string, DirectiveName> WorldDirectiveMap {
+            {str::AreaLightSource, AreaLightSource},
+            {str::AttributeBegin, AttributeBegin},
+            {str::AttributeEnd, AttributeEnd},
+            {str::LightSource, LightSource},
+            {str::MakeNamedMaterial, MakeNamedMaterial},
+            {str::Material, Material},
+            {str::NamedMaterial, NamedMaterial},
+            {str::Rotate, Rotate},
+            {str::Scale, Scale},
+            {str::Shape, Shape},
+            {str::TransformBegin, TransformBegin},
+            {str::TransformEnd, TransformEnd},
+            {str::Translate, Translate},
+            {str::WorldBegin, WorldBegin},
+            {str::WorldEnd, WorldEnd},
       };
 
       enum ShapeIdentifier {
-         OBJMesh,
-         PLYMesh,
-         Sphere
+         objmesh,
+         plymesh,
+         sphere
       };
 
-      const std::map<std::string, ShapeIdentifier> ShapeIdentifierMap {
-            {"objmesh", OBJMesh},
-            {"plymesh", PLYMesh},
-            {"sphere", Sphere},
+      const std::unordered_map<std::string, ShapeIdentifier> ShapeIdentifierMap {
+            {str::objmesh, objmesh},
+            {str::plymesh,    plymesh},
+            {str::sphere,     sphere},
       };
 
       enum MaterialIdentifier {
@@ -120,46 +145,46 @@ namespace Polytope {
          Plastic
       };
 
-      const std::map<std::string, MaterialIdentifier> MaterialIdentifierMap {
-            {"matte", Matte},
-            { "mirror", Mirror},
-            { "plastic", Plastic}
+      const std::unordered_map<std::string, MaterialIdentifier> MaterialIdentifierMap {
+            {str::matte, Matte},
+            { str::mirror, Mirror},
+            { str::plastic, Plastic}
       };
 
       enum MaterialArgumentName {
          Kd,
-         Ks
+         Ks,
+         Roughness
       };
 
-      const std::map<std::string, MaterialArgumentName> MaterialMatteArgumentMap {
-            {"Kd", Kd}
+      const std::unordered_map<std::string, MaterialArgumentName> MaterialMatteArgumentMap {
+            {str::Kd, Kd}
       };
 
-      const std::map<std::string, MaterialArgumentName> MaterialPlasticArgumentMap {
-            {"Kd", Kd},
-            {"Ks", Ks},
+      const std::unordered_map<std::string, MaterialArgumentName> MaterialPlasticArgumentMap {
+            {str::Kd, Kd},
+            {str::Ks, Ks},
+            {str::roughness, Roughness}
       };
       
       enum OBJMeshArgument {
          Filename
       };
 
-      const std::map<std::string, OBJMeshArgument> OBJMeshArgumentMap {
-            {"filename", Filename}
+      const std::unordered_map<std::string, OBJMeshArgument> OBJMeshArgumentMap {
+            {str::filename, Filename}
       };
 
       enum class PLYMeshArgument {
          Filename
       };
 
-      const std::map<std::string, PLYMeshArgument> PLYMeshArgumentMap {
-            {"filename", PLYMeshArgument::Filename}
+      const std::unordered_map<std::string, PLYMeshArgument> PLYMeshArgumentMap {
+            {str::filename, PLYMeshArgument::Filename}
       };
 
       // TODO get rid of this junk in favor of using WorldDirectiveMap
-
-      const std::string AttributeBeginText = "AttributeBegin";
-      const std::string WorldBeginText = "WorldBegin";
+      
 
       bool IsQuoted(const std::string &token) {
          return (token[0] == '"' && token[token.size() - 1] == '"');
@@ -369,7 +394,7 @@ namespace Polytope {
       directive->Name = line[0];
 
       bool debug = false;
-      if (directive->Name == AttributeBeginText) {
+      if (directive->Name == str::AttributeBegin) {
          debug = true;
       }
       
@@ -379,7 +404,7 @@ namespace Polytope {
       }
 
       // first, lex directives that use non-uniform argument syntax
-      if (directive->Name == LookAtText) {
+      if (directive->Name == str::LookAt) {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 9, &(directive->Arguments[0]));
@@ -387,7 +412,7 @@ namespace Polytope {
          return directive;
       }
       
-      if (directive->Name == RotateText) {
+      if (directive->Name == str::Rotate) {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 4, &(directive->Arguments[0]));
@@ -395,7 +420,7 @@ namespace Polytope {
          return directive;
       }
 
-      if (directive->Name == ScaleText) {
+      if (directive->Name == str::Scale) {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 3, &(directive->Arguments[0]));
@@ -403,7 +428,7 @@ namespace Polytope {
          return directive;
       }
       
-      if (directive->Name == TranslateText) {
+      if (directive->Name == str::Translate) {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(Polytope::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 3, &(directive->Arguments[0]));
@@ -559,7 +584,7 @@ namespace Polytope {
             std::unique_ptr<PBRTDirective> directive = Lex(line);
             // TODO ensure directive is valid for scene/world
             
-            if (directive->Name == WorldBeginText) {
+            if (directive->Name == str::WorldBegin) {
                current_directives = &world_directives;
             }
             
@@ -574,9 +599,9 @@ namespace Polytope {
       unsigned int numSamples = DefaultSamples;
 
       for (const std::unique_ptr<PBRTDirective> &directive : scene_directives) {
-         if (directive->Name == SamplerText) {
+         if (directive->Name == str::Sampler) {
             missingSampler = false;
-            if (directive->Identifier == "halton") {
+            if (directive->Identifier == str::halton) {
                _sampler = std::make_unique<HaltonSampler>();
             } else {
                LogUnknownIdentifier(directive);
@@ -585,7 +610,7 @@ namespace Polytope {
 
             for (const PBRTArgument& arg : directive->Arguments) {
                if (arg.Type == PBRTArgument::pbrt_int) {
-                  if (arg.Name == "pixelsamples") {
+                  if (arg.Name == str::pixelsamples) {
                      numSamples = arg.int_values->at(0);
                      break;
                   } else {
@@ -603,7 +628,7 @@ namespace Polytope {
 
       if (missingSampler) {
          std::string defaultOption = "Halton";
-         LogMissingDirective(SamplerText, defaultOption);
+         LogMissingDirective(str::Sampler, defaultOption);
       }
 
       if (_sampler == nullptr) {
@@ -617,8 +642,8 @@ namespace Polytope {
       bool missingFilm = true;
 
       for (const std::unique_ptr<PBRTDirective> &directive : scene_directives) {
-         if (directive->Name == FilmText) {
-            if (directive->Identifier == "image") {
+         if (directive->Name == str::Film) {
+            if (directive->Identifier == str::image) {
                unsigned int x = 0;
                unsigned int y = 0;
 
@@ -666,7 +691,7 @@ namespace Polytope {
 
       if (missingFilm) {
          std::string defaultOption = "PNGFilm with 640x480 and output filename polytope.png";
-         LogMissingDirective(FilmText, defaultOption);
+         LogMissingDirective(str::Film, defaultOption);
       }
 
       if (_film == nullptr) {
@@ -683,7 +708,7 @@ namespace Polytope {
       bool missingFilter = true;
 
       for (const std::unique_ptr<PBRTDirective>& directive : scene_directives) {
-         if (directive->Name == PixelFilterText) {
+         if (directive->Name == str::PixelFilter) {
             missingFilter = false;
             if (directive->Identifier == "box") {
                unsigned int xWidth = 0;
@@ -710,7 +735,7 @@ namespace Polytope {
 
       if (missingFilter) {
          std::string defaultOption = "Box";
-         LogMissingDirective(PixelFilterText, defaultOption);
+         LogMissingDirective(str::PixelFilter, defaultOption);
       }
 
       if (_filter == nullptr) {
@@ -732,7 +757,7 @@ namespace Polytope {
          Transform currentTransform;
          
          for (const std::unique_ptr<PBRTDirective>& directive : scene_directives) {
-            if (directive->Name == LookAtText) {
+            if (directive->Name == str::LookAt) {
                const float eyeX = directive->Arguments[0].float_values->at(0);
                const float eyeY = directive->Arguments[0].float_values->at(1);
                const float eyeZ = directive->Arguments[0].float_values->at(2);
@@ -764,7 +789,7 @@ namespace Polytope {
          bool foundCamera = false;
 
          for (const std::unique_ptr<PBRTDirective> &directive : scene_directives) {
-            if (directive->Name == CameraText) {
+            if (directive->Name == str::Camera) {
                if (directive->Identifier == "perspective") {
                   float fov = DefaultCameraFOV;
 
@@ -796,7 +821,7 @@ namespace Polytope {
             std::ostringstream stringstream;
             stringstream << "PerspectiveCamera with FOV = " << DefaultCameraFOV;
             std::string cameraDefaultString = stringstream.str();
-            LogMissingDirective(CameraText, cameraDefaultString);
+            LogMissingDirective(str::Camera, cameraDefaultString);
             camera = std::make_unique<PerspectiveCamera>(settings, currentTransform, true);
          }
       }
@@ -806,7 +831,7 @@ namespace Polytope {
       bool missingIntegrator = true;
 
       for (const std::unique_ptr<PBRTDirective>& directive : scene_directives) {
-         if (directive->Name == IntegratorText) {
+         if (directive->Name == str::Integrator) {
             if (directive->Identifier == "path") {
                unsigned int maxDepth = 5;
 
@@ -840,8 +865,8 @@ namespace Polytope {
       }
 
       if (missingIntegrator) {
-         std::string text = "PathTraceIntegrator with MaxDepth = 5";
-         LogMissingDirective(IntegratorText, text);
+         std::string error = "PathTraceIntegrator with MaxDepth = 5";
+         LogMissingDirective(str::Integrator, error);
       }
 
       if (_integrator == nullptr) {
@@ -961,12 +986,14 @@ namespace Polytope {
                Polytope::ReflectanceSpectrum reflectanceSpectrum;
                for (const PBRTArgument &argument : directive->Arguments) {
                   if (argument.Type == PBRTArgument::pbrt_string) {
-                     if (argument.Name == "type" && *(argument.string_value) == "matte") {
-                        brdf = std::make_unique<Polytope::LambertBRDF>();
+                     if (argument.Name == "type" && *(argument.string_value) == str::matte) {
+                        // TODO instead of using default, parse values
+                        ReflectanceSpectrum refl(0.5f, 0.5f, 0.5f);
+                        brdf = std::make_unique<Polytope::LambertBRDF>(refl);
                      }
                   }
                   if (argument.Type == PBRTArgument::pbrt_rgb) {
-                     if (argument.Name == "Kd") {
+                     if (argument.Name == str::Kd) {
                         reflectanceSpectrum.r = argument.float_values->at(0);
                         reflectanceSpectrum.g = argument.float_values->at(1);
                         reflectanceSpectrum.b = argument.float_values->at(2);
@@ -987,8 +1014,16 @@ namespace Polytope {
                   continue;
                }
                switch (identifier) {
-                  case MaterialIdentifier::Plastic:
-                     for (const PBRTArgument& argument : directive->Arguments) {
+                  case MaterialIdentifier::Plastic: {
+                     // diffuse reflectivity
+                     ReflectanceSpectrum kd(0.25f, 0.25f, 0.25f);
+
+                     // specular reflectivity
+                     ReflectanceSpectrum ks(0.25f, 0.25f, 0.25f);
+
+                     float roughness = 0.1f;
+
+                     for (const PBRTArgument &argument : directive->Arguments) {
                         MaterialArgumentName param;
                         try {
                            param = MaterialPlasticArgumentMap.at(argument.Name);
@@ -998,21 +1033,40 @@ namespace Polytope {
                            continue;
                         }
                         switch (param) {
-                           case MaterialArgumentName::Kd: {
-
+                           case Kd: {
+                              if (argument.Type == PBRTArgument::pbrt_rgb) {
+                                 kd.r = argument.float_values->at(0);
+                                 kd.g = argument.float_values->at(1);
+                                 kd.b = argument.float_values->at(2);
+                              }
+                              break;
+                           }
+                           case Ks: {
+                              if (argument.Type == PBRTArgument::pbrt_rgb) {
+                                 ks.r = argument.float_values->at(0);
+                                 ks.g = argument.float_values->at(1);
+                                 ks.b = argument.float_values->at(2);
+                              }
+                              break;
+                           }
+                           case Roughness: {
+                              if (argument.Type == PBRTArgument::pbrt_float) {
+                                 roughness = argument.float_values->at(0);
+                              }
+                              break;
+                           }
+                           default: {
+                              LogUnknownArgument(argument);
+                              break;
                            }
                         }
-                        if (argument.Name == "Ks" && argument.Type == PBRTArgument::pbrt_rgb) {
-                           const float r = argument.float_values->at(0);
-                           const float g = argument.float_values->at(1);
-                           const float b = argument.float_values->at(2);
-
-                           ReflectanceSpectrum refl(r, g, b);
-                           std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::LambertBRDF>();
-                           std::shared_ptr<Polytope::Material> material = std::make_shared<Polytope::Material>(brdf, refl);
-                           activeMaterial = material;
-                        }
                      }
+                     
+                     std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::GlossyBRDF>(ks, kd, roughness);
+                     std::shared_ptr<Polytope::Material> material = std::make_shared<Polytope::Material>(brdf);
+                     activeMaterial = material;
+                     break;
+                  }
                   case MaterialIdentifier::Matte: {
                      for (const PBRTArgument& argument : directive->Arguments) {
                         MaterialArgumentName param;
@@ -1028,31 +1082,33 @@ namespace Polytope {
                               
                            }
                         }
-                        if (argument.Name == "Kd" && argument.Type == PBRTArgument::pbrt_rgb) {
+                        if (argument.Name == str::Kd && argument.Type == PBRTArgument::pbrt_rgb) {
                            const float r = argument.float_values->at(0);
                            const float g = argument.float_values->at(1);
                            const float b = argument.float_values->at(2);
 
                            ReflectanceSpectrum refl(r, g, b);
-                           std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::LambertBRDF>();
-                           std::shared_ptr<Polytope::Material> material = std::make_shared<Polytope::Material>(brdf, refl);
+                           std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::LambertBRDF>(refl);
+                           std::shared_ptr<Polytope::Material> material = std::make_shared<Polytope::Material>(brdf);
                            activeMaterial = material;
                         }
                      }
+                     break;
                   }
                   case MaterialIdentifier::Mirror: {
                      for (const PBRTArgument& argument : directive->Arguments) {
-                        if (argument.Name == "Kr" && argument.Type == PBRTArgument::pbrt_rgb) {
+                        if (argument.Name == str::Kr && argument.Type == PBRTArgument::pbrt_rgb) {
                            const float r = argument.float_values->at(0);
                            const float g = argument.float_values->at(1);
                            const float b = argument.float_values->at(2);
 
                            ReflectanceSpectrum refl(r, g, b);
-                           std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::MirrorBRDF>();
-                           std::shared_ptr<Polytope::Material> material = std::make_shared<Polytope::Material>(brdf, refl);
+                           std::shared_ptr<Polytope::AbstractBRDF> brdf = std::make_shared<Polytope::MirrorBRDF>(refl);
+                           std::shared_ptr<Polytope::Material> material = std::make_shared<Polytope::Material>(brdf);
                            activeMaterial = material;
                         }
                      }
+                     break;
                   }
                }
                break;
@@ -1118,10 +1174,10 @@ namespace Polytope {
 
                std::shared_ptr<Polytope::Transform> activeInverse = std::make_shared<Polytope::Transform>(activeTransform->Invert());
                switch (identifier) {
-                  case ShapeIdentifier::OBJMesh: {
+                  case ShapeIdentifier::objmesh: {
                      // make sure it has a filename argument
                      bool filenameMissing = true;
-                     std::string objFilename;
+                     std::string mesh_filename;
                      for (const PBRTArgument& argument : directive->Arguments) {
                         OBJMeshArgument arg;
                         try {
@@ -1134,7 +1190,7 @@ namespace Polytope {
                         switch (arg) {
                            case Filename: {
                               filenameMissing = false;
-                              objFilename = *argument.string_value;
+                              mesh_filename = *argument.string_value;
                               if (argument.Type != PBRTArgument::pbrt_string) {
                                  LogWrongArgumentType(directive, argument);
                               }
@@ -1146,26 +1202,34 @@ namespace Polytope {
                         }
                      }
                      if (filenameMissing) {
-                        LogMissingArgument(directive, "filename");
+                        LogMissingArgument(directive, str::filename);
                         break;
                      }
 
                      Polytope::AbstractMesh* mesh = new MeshLinearSOA(activeTransform, activeInverse, activeMaterial);
 
                      const OBJParser parser;
-                     const std::string absoluteObjFilepath = _basePathFromCWD + objFilename;
+                     const std::string absoluteObjFilepath = _basePathFromCWD + mesh_filename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
                      mesh->Bound();
                      mesh->CalculateVertexNormals();
                      //mesh->ObjectToWorld = *activeTransform;
-                     mesh->Material = activeMaterial;
+
+                     if (activeLight != nullptr) {
+                        // TODO
+                        mesh->spd = activeLight;
+                        _scene->Lights.push_back(mesh);
+                     }
+                     else {
+                        mesh->Material = activeMaterial;
+                     }
                      _scene->Shapes.push_back(mesh);
                      break;
                   }
-                  case ShapeIdentifier::PLYMesh: {
+                  case ShapeIdentifier::plymesh: {
                      // make sure it has a filename argument
                      bool filenameMissing = true;
-                     std::string objFilename;
+                     std::string mesh_filename;
                      for (const PBRTArgument& argument : directive->Arguments) {
                         PLYMeshArgument arg;
                         try {
@@ -1178,7 +1242,7 @@ namespace Polytope {
                         switch (arg) {
                            case PLYMeshArgument::Filename: {
                               filenameMissing = false;
-                              objFilename = *argument.string_value;
+                              mesh_filename = *argument.string_value;
                               if (argument.Type != PBRTArgument::pbrt_string) {
                                  LogWrongArgumentType(directive, argument);
                               }
@@ -1190,7 +1254,7 @@ namespace Polytope {
                         }
                      }
                      if (filenameMissing) {
-                        LogMissingArgument(directive, "filename");
+                        LogMissingArgument(directive, str::filename);
                         break;
                      }
 
@@ -1198,7 +1262,7 @@ namespace Polytope {
                      Polytope::AbstractMesh* mesh = new MeshLinearSOA(activeTransform, activeInverse, activeMaterial);
 
                      const PLYParser parser;
-                     const std::string absoluteObjFilepath = /*GetCurrentWorkingDirectory() + UnixPathSeparator +*/ _basePathFromCWD + objFilename;
+                     const std::string absoluteObjFilepath = /*GetCurrentWorkingDirectory() + UnixPathSeparator +*/ _basePathFromCWD + mesh_filename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
                      //mesh->Bound();
                      mesh->CalculateVertexNormals();
@@ -1206,6 +1270,7 @@ namespace Polytope {
                      if (activeLight != nullptr) {
                         // TODO
                         mesh->spd = activeLight;
+                        _scene->Lights.push_back(mesh);
                      }
                      else {
                         mesh->Material = activeMaterial;   
@@ -1213,7 +1278,7 @@ namespace Polytope {
                      _scene->Shapes.push_back(mesh);
                      break;
                   }
-                  case ShapeIdentifier::Sphere: {
+                  case ShapeIdentifier::sphere: {
                      for (const PBRTArgument& argument : directive->Arguments) {
                         if (argument.Type == PBRTArgument::PBRTArgumentType::pbrt_float) {
                            const float radius = argument.float_values->at(0);
@@ -1222,13 +1287,20 @@ namespace Polytope {
                            std::shared_ptr<Polytope::Transform> temp_radius_transform = std::make_shared<Polytope::Transform>((*activeTransform) * radius_transform);
                            std::shared_ptr<Polytope::Transform> temp_radius_inverse = std::make_shared<Polytope::Transform>(temp_radius_transform->Invert());
                            
-                           Polytope::AbstractMesh* sphere = new MeshLinearSOA(temp_radius_transform, temp_radius_inverse, activeMaterial);
-                           const int subdivisions = std::max((int)radius, 10);
-                           Polytope::SphereTesselator::Create(subdivisions, subdivisions, sphere);
-                           sphere->ObjectToWorld = activeTransform;
-                           sphere->WorldToObject = activeInverse;
-                           sphere->spd = activeLight;
-                           _scene->Shapes.push_back(sphere);
+                           Polytope::AbstractMesh* mesh = new MeshLinearSOA(temp_radius_transform, temp_radius_inverse, activeMaterial);
+                           const int subdivisions = std::max((int)radius, 20);
+                           Polytope::SphereTesselator::Create(subdivisions, subdivisions, mesh);
+                           mesh->ObjectToWorld = activeTransform;
+                           mesh->WorldToObject = activeInverse;
+
+                           if (activeLight != nullptr) {
+                              mesh->spd = activeLight;
+                              _scene->Lights.push_back(mesh);
+                           }
+                           else {
+                              mesh->Material = activeMaterial;
+                           }
+                           _scene->Shapes.push_back(mesh);
                         }
                      }
                   }

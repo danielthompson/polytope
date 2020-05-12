@@ -6,7 +6,7 @@
 #define POLYTOPE_SAMPLE_H
 
 #include <memory>
-#include "../shading/SpectralPowerDistribution.h"
+#include "../shading/spectrum.h"
 
 namespace Polytope {
 

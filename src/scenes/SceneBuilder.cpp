@@ -6,9 +6,9 @@
 #include "../cameras/PerspectiveCamera.h"
 #include "NaiveScene.h"
 #include "../shading/Material.h"
-#include "../shading/brdf/MirrorBRDF.h"
-#include "../shading/brdf/LambertBRDF.h"
-#include "../shading/SpectralPowerDistribution.h"
+#include "../shading/brdf/mirror_brdf.h"
+#include "../shading/brdf/lambert_brdf.h"
+#include "../shading/spectrum.h"
 #include "../lights/AbstractLight.h"
 #include "../lights/PointLight.h"
 
@@ -26,9 +26,7 @@ namespace Polytope {
 
       std::shared_ptr<Material> material = std::make_shared<Material>(
 
-         std::make_unique<LambertBRDF>(),
-         Solarizedcyan
-
+         std::make_unique<LambertBRDF>(Solarizedcyan)
       );
 
       Transform objectToWorld =
@@ -69,7 +67,7 @@ namespace Polytope {
 
       //scene->Lights.push_back(std::make_shared<PointLight>(lightSPD, Point(0, 1000, 500)));
 
-      material = std::make_shared<Material>(std::make_unique<MirrorBRDF>(), FirenzeBeige);
+      material = std::make_shared<Material>(std::make_unique<MirrorBRDF>(FirenzeBeige));
 
       objectToWorld =
          Transform::Translate(0, 0, -300)

@@ -11,7 +11,7 @@
 #include "../shading/Material.h"
 #include "../structures/BoundingBox.h"
 #include "../structures/Transform.h"
-#include "../shading/SpectralPowerDistribution.h"
+#include "../shading/spectrum.h"
 
 namespace Polytope {
 
@@ -41,7 +41,7 @@ namespace Polytope {
       unsigned int num_faces = 0;
       
       virtual void intersect(Polytope::Ray &world_ray, Polytope::Intersection *intersection) = 0;
-      virtual Point GetRandomPointOnSurface() const = 0;
+      virtual Point random_surface_point() const = 0;
       bool is_light() const {
          return (spd != nullptr);
       }

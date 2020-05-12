@@ -136,7 +136,7 @@ namespace Polytope {
       // TODO
    }
 
-   Point MeshLinearAOS::GetRandomPointOnSurface() const {
+   Point MeshLinearAOS::random_surface_point() const {
       // TODO
       return Point();
    }

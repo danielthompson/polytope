@@ -1,13 +1,17 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.10)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(tests "Build all tests." OFF) # Makes boolean 'tests' available.
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Make PROJECT_SOURCE_DIR, PROJECT_BINARY_DIR, and PROJECT_NAME available.
 set(PROJECT_NAME polytope)
-project(${PROJECT_NAME})
+project(${PROJECT_NAME} LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 14)
+
+# https://stackoverflow.com/questions/51756562/obtaining-the-cuda-include-dir-in-c-targets-with-native-cuda-support-cmake
+find_library(CUDART_LIBRARY cudart ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
 
 SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -Wno-error=unused-function -pthread")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-error=unused-function -pthread")
@@ -36,6 +40,7 @@ add_custom_command(
         COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.h -o ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.ispc
         MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.ispc
         BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o)
+
 
 add_library(polytope_lib
       lib/lodepng.cpp
@@ -68,9 +73,9 @@ add_library(polytope_lib
       src/runners/PixelRunner.h
       src/runners/TileRunner.cpp
       src/runners/TileRunner.h
-        src/samplers/samplers.h
-        src/samplers/samplers.cpp
-        src/scenes/AbstractScene.cpp
+      src/samplers/samplers.h
+      src/samplers/samplers.cpp
+      src/scenes/AbstractScene.cpp
       src/scenes/AbstractScene.h
       src/scenes/BVHScene.h
       src/scenes/NaiveScene.cpp
@@ -81,15 +86,11 @@ add_library(polytope_lib
       src/scenes/skyboxes/ColorSkybox.cpp
       src/scenes/skyboxes/ColorSkybox.h
       src/shading/Material.h
-      src/shading/ReflectanceSpectrum.cpp
-      src/shading/ReflectanceSpectrum.h
-      src/shading/SpectralPowerDistribution.cpp
-      src/shading/SpectralPowerDistribution.h
-        src/shading/brdf/abstract_brdf.h
-      src/shading/brdf/LambertBRDF.cpp
-      src/shading/brdf/LambertBRDF.h
-      src/shading/brdf/MirrorBRDF.cpp
-      src/shading/brdf/MirrorBRDF.h 
+      src/shading/brdf/abstract_brdf.h
+      src/shading/brdf/lambert_brdf.h
+      src/shading/brdf/mirror_brdf.h
+      src/shading/brdf/glossy_brdf.h
+      src/shading/spectrum.h
       src/shapes/abstract_mesh.h
       src/structures/Intersection.cpp
       src/structures/Intersection.h
@@ -122,19 +123,26 @@ add_library(polytope_lib
       src/parsers/mesh/PLYParser.cpp
       src/parsers/mesh/PLYParser.h
       src/parsers/mesh/AbstractMeshParser.h
-        src/shapes/tesselators.cpp
-        src/shapes/tesselators.h
+      src/shapes/tesselators.cpp
+      src/shapes/tesselators.h
       src/scenes/BVHScene.cpp 
-        src/scenes/BVHNode.cpp 
-        src/scenes/BVHNode.h
-        src/shapes/linear_soa/mesh_linear_soa.cpp
-        src/shapes/linear_soa/mesh_linear_soa.h
-        src/shapes/linear_soa/mesh_linear_soa_intersect.h
-        src/shapes/linear_soa/mesh_linear_soa_intersect.o
-        src/shapes/bvh_split/mesh_bvh_split.cpp
-        src/shapes/bvh_split/mesh_bvh_split.h
-        src/shapes/linear_aos/mesh_linear_aos.cpp
-        src/shapes/linear_aos/mesh_linear_aos.h)
+      src/scenes/BVHNode.cpp 
+      src/scenes/BVHNode.h
+      src/shapes/linear_soa/mesh_linear_soa.cpp
+      src/shapes/linear_soa/mesh_linear_soa.h
+      src/shapes/linear_soa/mesh_linear_soa_intersect.h
+      src/shapes/linear_soa/mesh_linear_soa_intersect.o
+        src/shapes/linear_soa/mesh_linear_soa_kernel.cu
+      src/shapes/bvh_split/mesh_bvh_split.cpp
+      src/shapes/bvh_split/mesh_bvh_split.h
+      src/shapes/linear_aos/mesh_linear_aos.cpp
+      src/shapes/linear_aos/mesh_linear_aos.h 
+)
+
+set_target_properties(
+        polytope_lib
+        PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON)
 
 add_executable(${PROJECT_NAME} src/Main.cpp
       src/platforms/win32-cygwin.h
@@ -168,6 +176,18 @@ if (UNIX)
 
    find_package(glm REQUIRED)
    target_link_libraries(polytope PRIVATE glm)
+   
+   target_include_directories(
+           polytope_lib
+           PRIVATE
+           ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+   )
+   
+   target_link_libraries(
+           polytope_lib
+           PRIVATE
+           ${CUDART_LIBRARY}
+   )
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC polytope_lib)
@@ -198,7 +218,7 @@ add_executable(runUnitTests
       tests/TestCommon.cpp
       tests/TestIntersectionTests.cpp
       tests/TestMatrix4x4.cpp
-      tests/TestMirrorBRDF.cpp
+      tests/shading/test_mirror_brdf.cpp
         tests/parsers/test_obj_parser.cpp
         tests/parsers/pbrt/test_scan.cpp
         tests/parsers/pbrt/test_parse.cpp
