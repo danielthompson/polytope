@@ -5,7 +5,7 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "../src/structures/Matrix4x4.h"
+#include "../src/cpu/structures/Matrix4x4.h"
 
 namespace Tests {
 

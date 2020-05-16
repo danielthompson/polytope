@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 
-#include "../src/Constants.h"
-#include "../src/structures/Vectors.h"
-#include "../src/structures/Transform.h"
-#include "../src/shapes/abstract_mesh.h"
+#include "../src/cpu/constants.h"
+#include "../src/cpu/structures/Vectors.h"
+#include "../src/cpu/structures/Transform.h"
+#include "../src/cpu/shapes/abstract_mesh.h"
 
 namespace Tests {
 

@@ -1,10 +1,10 @@
 #include "gtest/gtest.h"
 
-#include "../../src/structures/Vectors.h"
-#include "../../src/Constants.h"
+#include "../../src/cpu/structures/Vectors.h"
+#include "../../src/cpu/constants.h"
 
-#include "../../src/structures/Intersection.h"
-#include "../../src/shapes/linear_aos/mesh_linear_aos.h"
+#include "../../src/cpu/structures/Intersection.h"
+#include "../../src/cpu/shapes/linear_aos/mesh_linear_aos.h"
 
 namespace Tests {
    TEST(MeshLinearAOS, Hits) {

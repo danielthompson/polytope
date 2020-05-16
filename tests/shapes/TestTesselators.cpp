@@ -4,7 +4,7 @@
 
 #include <fstream>
 #include "gtest/gtest.h"
-#include "../../src/shapes/tesselators.h"
+#include "../../src/cpu/shapes/tesselators.h"
 // #include "../src/exporters/OBJExporter.h"
 
 namespace Tests {

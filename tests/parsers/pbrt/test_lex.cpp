@@ -4,7 +4,7 @@
 
 #include "gtest/gtest.h"
 
-#include "../../../src/parsers/PBRTFileParser.h"
+#include "../../../src/common/parsers/PBRTFileParser.h"
 
 namespace Tests {
 

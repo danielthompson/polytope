@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 
-#include "../../src/structures/Vectors.h"
-#include "../../src/Constants.h"
-#include "../../src/structures/Intersection.h"
-#include "../../src/shapes/linear_soa/mesh_linear_soa.h"
+#include "../../src/cpu/structures/Vectors.h"
+#include "../../src/cpu/constants.h"
+#include "../../src/cpu/structures/Intersection.h"
+#include "../../src/cpu/shapes/linear_soa/mesh_linear_soa.h"
 
 namespace Tests {
    TEST(MeshLinearSOA, Intersects) {

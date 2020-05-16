@@ -4,11 +4,11 @@
 
 #include "gtest/gtest.h"
 
-#include "../../src/utilities/Logger.h"
-#include "../../src/parsers/mesh/PLYParser.h"
-#include "../../src/structures/Vectors.h"
-#include "../../src/parsers/mesh/OBJParser.h"
-#include "../../src/shapes/linear_soa/mesh_linear_soa.h"
+#include "../../src/common/utilities/Logger.h"
+#include "../../src/common/parsers/mesh/PLYParser.h"
+#include "../../src/cpu/structures/Vectors.h"
+#include "../../src/common/parsers/mesh/OBJParser.h"
+#include "../../src/cpu/shapes/linear_soa/mesh_linear_soa.h"
 
 namespace Tests {
 

@@ -4,10 +4,10 @@
 
 #include "gtest/gtest.h"
 
-#include "../../src/utilities/Logger.h"
-#include "../../src/parsers/mesh/OBJParser.h"
-#include "../../src/shapes/linear_aos/mesh_linear_aos.h"
-#include "../../src/shapes/bvh_split/mesh_bvh_split.h"
+#include "../../src/common/utilities/Logger.h"
+#include "../../src/common/parsers/mesh/OBJParser.h"
+#include "../../src/cpu/shapes/linear_aos/mesh_linear_aos.h"
+#include "../../src/cpu/shapes/bvh_split/mesh_bvh_split.h"
 
 namespace Tests {
 

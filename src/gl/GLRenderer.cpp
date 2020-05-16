@@ -5,8 +5,8 @@
 
 
 #include "GLRenderer.h"
-#include "../utilities/Common.h"
-#include "../scenes/BVHNode.h"
+#include "../common/utilities/Common.h"
+#include "../cpu/scenes/BVHNode.h"
 
 #define GLFW_INCLUDE_NONE
 #include <glbinding/gl/gl.h>

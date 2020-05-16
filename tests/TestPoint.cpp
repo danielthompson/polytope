@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "../src/structures/Vectors.h"
+#include "../src/cpu/structures/Vectors.h"
 
 namespace Tests {
 

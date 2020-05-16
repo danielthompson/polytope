@@ -5,9 +5,9 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "../../src/structures/Vectors.h"
-#include "../../src/structures/Vectors.h"
-#include "../../src/shading/brdf/mirror_brdf.h"
+#include "../../src/cpu/structures/Vectors.h"
+#include "../../src/cpu/structures/Vectors.h"
+#include "../../src/cpu/shading/brdf/mirror_brdf.h"
 
 
 namespace Tests {

@@ -9,12 +9,16 @@ set(PROJECT_NAME polytope)
 project(${PROJECT_NAME} LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CUDA_STANDARD 14)
 
 # https://stackoverflow.com/questions/51756562/obtaining-the-cuda-include-dir-in-c-targets-with-native-cuda-support-cmake
 find_library(CUDART_LIBRARY cudart ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
 
 SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -Wno-error=unused-function -pthread")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-error=unused-function -pthread")
+
+#SET(CMAKE_CUDA_FLAGS " -gencode arch=compute_61,code=sm_61")
+#SET(CMAKE_CUDA_FLAGS " -arch=sm_61")
 
 set(ispc_options -g --pic)
 
@@ -42,112 +46,126 @@ add_custom_command(
         BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o)
 
 
+
 add_library(polytope_lib
-      lib/lodepng.cpp
-      lib/lodepng.h
-      src/Constants.h
-      src/cameras/AbstractCamera.cpp
-      src/cameras/AbstractCamera.h
-      src/cameras/CameraSettings.h
-      src/cameras/PerspectiveCamera.cpp
-      src/cameras/PerspectiveCamera.h
-      src/films/AbstractFilm.h
-      src/films/PNGFilm.cpp
-      src/films/PNGFilm.h
-      src/filters/AbstractFilter.h
-      src/filters/BoxFilter.cpp
-      src/filters/BoxFilter.h
-      src/integrators/AbstractIntegrator.h
-      src/integrators/AbstractIntegrator.h
-      src/integrators/DebugIntegrator.cpp
-      src/integrators/DebugIntegrator.h
-      src/integrators/PathTraceIntegrator.cpp
-      src/integrators/PathTraceIntegrator.h
-      src/lights/AbstractLight.h
-      src/lights/PointLight.h
-      src/parsers/PBRTFileParser.cpp
-      src/parsers/PBRTFileParser.h
-      src/runners/AbstractRunner.cpp
-      src/runners/AbstractRunner.h
-      src/runners/PixelRunner.cpp
-      src/runners/PixelRunner.h
-      src/runners/TileRunner.cpp
-      src/runners/TileRunner.h
-      src/samplers/samplers.h
-      src/samplers/samplers.cpp
-      src/scenes/AbstractScene.cpp
-      src/scenes/AbstractScene.h
-      src/scenes/BVHScene.h
-      src/scenes/NaiveScene.cpp
-      src/scenes/NaiveScene.h
-      src/scenes/SceneBuilder.cpp
-      src/scenes/SceneBuilder.h
-      src/scenes/skyboxes/AbstractSkybox.h
-      src/scenes/skyboxes/ColorSkybox.cpp
-      src/scenes/skyboxes/ColorSkybox.h
-      src/shading/Material.h
-      src/shading/brdf/abstract_brdf.h
-      src/shading/brdf/lambert_brdf.h
-      src/shading/brdf/mirror_brdf.h
-      src/shading/brdf/glossy_brdf.h
-      src/shading/spectrum.h
-      src/shapes/abstract_mesh.h
-      src/structures/Intersection.cpp
-      src/structures/Intersection.h
-      src/structures/Matrix4x4.cpp
-      src/structures/Matrix4x4.h
-      src/structures/Point2.cpp
-      src/structures/Point2.h
-      src/structures/Ray.cpp
-      src/structures/Ray.h
-      src/structures/Sample.cpp
-      src/structures/Sample.h
-      src/structures/Transform.cpp
-      src/structures/Transform.h
-      src/utilities/Common.h
-      src/utilities/GeometryCalculations.h
-      src/utilities/GlobalDefines.h
-      src/utilities/Logger.cpp
-      src/utilities/Logger.h
-      src/utilities/Options.h
-      src/utilities/OptionsParser.cpp
-      src/utilities/OptionsParser.h
-      src/parsers/mesh/OBJParser.cpp
-      src/parsers/mesh/OBJParser.h
-      src/parsers/AbstractFileParser.cpp
-      src/parsers/AbstractFileParser.h
-      src/structures/Vectors.cpp
-      src/structures/Vectors.h
-      src/structures/BoundingBox.cpp
-      src/structures/BoundingBox.h
-      src/parsers/mesh/PLYParser.cpp
-      src/parsers/mesh/PLYParser.h
-      src/parsers/mesh/AbstractMeshParser.h
-      src/shapes/tesselators.cpp
-      src/shapes/tesselators.h
-      src/scenes/BVHScene.cpp 
-      src/scenes/BVHNode.cpp 
-      src/scenes/BVHNode.h
-      src/shapes/linear_soa/mesh_linear_soa.cpp
-      src/shapes/linear_soa/mesh_linear_soa.h
-      src/shapes/linear_soa/mesh_linear_soa_intersect.h
-      src/shapes/linear_soa/mesh_linear_soa_intersect.o
-        src/shapes/linear_soa/mesh_linear_soa_kernel.cu
-      src/shapes/bvh_split/mesh_bvh_split.cpp
-      src/shapes/bvh_split/mesh_bvh_split.h
-      src/shapes/linear_aos/mesh_linear_aos.cpp
-      src/shapes/linear_aos/mesh_linear_aos.h 
-)
+        lib/lodepng.cpp
+        lib/lodepng.h
+        src/cpu/constants.h
+        src/cpu/cameras/AbstractCamera.h
+        src/cpu/cameras/CameraSettings.h
+        src/cpu/cameras/PerspectiveCamera.cpp
+        src/cpu/cameras/PerspectiveCamera.h
+        src/cpu/films/AbstractFilm.h
+        src/cpu/films/PNGFilm.cpp
+        src/cpu/films/PNGFilm.h
+        src/cpu/filters/AbstractFilter.h
+        src/cpu/filters/BoxFilter.cpp
+        src/cpu/filters/BoxFilter.h
+        src/cpu/integrators/AbstractIntegrator.h
+        src/cpu/integrators/AbstractIntegrator.h
+        src/cpu/integrators/DebugIntegrator.cpp
+        src/cpu/integrators/DebugIntegrator.h
+        src/cpu/integrators/PathTraceIntegrator.cpp
+        src/cpu/integrators/PathTraceIntegrator.h
+        src/cpu/lights/AbstractLight.h
+        src/cpu/lights/PointLight.h
+        src/common/parsers/PBRTFileParser.cpp
+        src/common/parsers/PBRTFileParser.h
+        src/cpu/runners/AbstractRunner.cpp
+        src/cpu/runners/AbstractRunner.h
+        src/cpu/runners/PixelRunner.cpp
+        src/cpu/runners/PixelRunner.h
+        src/cpu/runners/TileRunner.cpp
+        src/cpu/runners/TileRunner.h
+        src/cpu/samplers/samplers.h
+        src/cpu/samplers/samplers.cpp
+        src/cpu/scenes/AbstractScene.cpp
+        src/cpu/scenes/AbstractScene.h
+        src/cpu/scenes/BVHScene.h
+        src/cpu/scenes/NaiveScene.cpp
+        src/cpu/scenes/NaiveScene.h
+        src/cpu/scenes/SceneBuilder.cpp
+        src/cpu/scenes/SceneBuilder.h
+        src/cpu/scenes/skyboxes/AbstractSkybox.h
+        src/cpu/scenes/skyboxes/ColorSkybox.cpp
+        src/cpu/scenes/skyboxes/ColorSkybox.h
+        src/cpu/shading/Material.h
+        src/cpu/shading/brdf/abstract_brdf.h
+        src/cpu/shading/brdf/lambert_brdf.h
+        src/cpu/shading/brdf/mirror_brdf.h
+        src/cpu/shading/brdf/glossy_brdf.h
+        src/cpu/shading/spectrum.h
+        src/cpu/shapes/abstract_mesh.h
+        src/cpu/structures/Intersection.cpp
+        src/cpu/structures/Intersection.h
+        src/cpu/structures/Matrix4x4.cpp
+        src/cpu/structures/Matrix4x4.h
+        src/common/structures/Point2.h
+        src/cpu/structures/Ray.cpp
+        src/cpu/structures/Ray.h
+        src/cpu/structures/Sample.cpp
+        src/cpu/structures/Sample.h
+        src/cpu/structures/Transform.cpp
+        src/cpu/structures/Transform.h
+        src/common/utilities/Common.h
+        src/common/utilities/GeometryCalculations.h
+        src/common/utilities/GlobalDefines.h
+        src/common/utilities/Logger.cpp
+        src/common/utilities/Logger.h
+        src/common/utilities/Options.h
+        src/common/utilities/OptionsParser.cpp
+        src/common/utilities/OptionsParser.h
+        src/common/parsers/mesh/OBJParser.cpp
+        src/common/parsers/mesh/OBJParser.h
+        src/common/parsers/AbstractFileParser.cpp
+        src/common/parsers/AbstractFileParser.h
+        src/cpu/structures/Vectors.cpp
+        src/cpu/structures/Vectors.h
+        src/cpu/structures/BoundingBox.cpp
+        src/cpu/structures/BoundingBox.h
+        src/common/parsers/mesh/PLYParser.cpp
+        src/common/parsers/mesh/PLYParser.h
+        src/common/parsers/mesh/AbstractMeshParser.h
+        src/cpu/shapes/tesselators.cpp
+        src/cpu/shapes/tesselators.h
+        src/cpu/scenes/BVHScene.cpp
+        src/cpu/scenes/BVHNode.cpp
+        src/cpu/scenes/BVHNode.h
+        src/cpu/shapes/linear_soa/mesh_linear_soa.cpp
+        src/cpu/shapes/linear_soa/mesh_linear_soa.h
+        src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.h
+        src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.o
+        src/cpu/shapes/bvh_split/mesh_bvh_split.cpp
+        src/cpu/shapes/bvh_split/mesh_bvh_split.h
+        src/cpu/shapes/linear_aos/mesh_linear_aos.cpp
+        src/cpu/shapes/linear_aos/mesh_linear_aos.h
+        src/common/utilities/mesh_factory.cpp src/common/utilities/mesh_factory.h)
+
+#set_target_properties(
+#        polytope_lib
+#        PROPERTIES
+#        CUDA_SEPARABLE_COMPILATION ON)
+
+add_executable(${PROJECT_NAME} src/cpu/main.cpp
+        src/cpu/platforms/win32-cygwin.h
+      src/gl/GLRenderer.cpp
+      src/gl/GLRenderer.h )
+
+add_executable(polytope_cuda 
+        src/cuda/main.cpp
+        src/cuda/kernels/generate_rays.cu
+        src/cuda/kernels/generate_rays.cuh
+        src/cuda/kernels/path_tracer.cu 
+        src/cuda/kernels/path_tracer.cuh 
+        src/cuda/gpu_memory_manager.cpp 
+        src/cuda/gpu_memory_manager.h src/cuda/png_output.cpp src/cuda/png_output.h)
 
 set_target_properties(
-        polytope_lib
+        polytope_cuda
         PROPERTIES
         CUDA_SEPARABLE_COMPILATION ON)
 
-add_executable(${PROJECT_NAME} src/Main.cpp
-      src/platforms/win32-cygwin.h
-      src/gl/GLRenderer.cpp
-      src/gl/GLRenderer.h )
+
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be
 # used elsewhere.
@@ -178,19 +196,20 @@ if (UNIX)
    target_link_libraries(polytope PRIVATE glm)
    
    target_include_directories(
-           polytope_lib
+           polytope_cuda
            PRIVATE
            ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
    )
    
    target_link_libraries(
-           polytope_lib
+           polytope_cuda
            PRIVATE
            ${CUDART_LIBRARY}
    )
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC polytope_lib)
+target_link_libraries(polytope_cuda PUBLIC polytope_lib)
 
 ################################
 # Testing
@@ -214,20 +233,20 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 # Unit Tests
 ##############
 add_executable(runUnitTests
-      tests/TestBoundingBox.cpp
-      tests/TestCommon.cpp
-      tests/TestIntersectionTests.cpp
-      tests/TestMatrix4x4.cpp
-      tests/shading/test_mirror_brdf.cpp
+        tests/TestBoundingBox.cpp
+        tests/TestCommon.cpp
+        tests/TestIntersectionTests.cpp
+        tests/TestMatrix4x4.cpp
+        tests/shading/test_mirror_brdf.cpp
         tests/parsers/test_obj_parser.cpp
         tests/parsers/pbrt/test_scan.cpp
         tests/parsers/pbrt/test_parse.cpp
         tests/parsers/pbrt/test_lex.cpp
         tests/parsers/test_ply_parser.cpp
-      tests/TestPoint.cpp
-      tests/TestTransform.cpp
+        tests/TestPoint.cpp
+        tests/TestTransform.cpp
         tests/shapes/test_mesh_linear_aos.cpp
-      tests/TestVector.cpp
+        tests/TestVector.cpp
         tests/shapes/TestTesselators.cpp
         tests/shapes/test_mesh_bvh_split.cpp
         tests/shapes/test_mesh_linear_aos.cpp)

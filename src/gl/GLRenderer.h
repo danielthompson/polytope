@@ -5,7 +5,7 @@
 #ifndef POLYTOPE_GLRENDERER_H
 #define POLYTOPE_GLRENDERER_H
 
-#include "../scenes/AbstractScene.h"
+#include "../cpu/scenes/AbstractScene.h"
 
 namespace Polytope {
    class GLRenderer {

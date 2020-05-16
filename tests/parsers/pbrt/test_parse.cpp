@@ -4,14 +4,14 @@
 
 #include "gtest/gtest.h"
 
-#include "../../../src/parsers/PBRTFileParser.h"
-#include "../../../src/samplers/samplers.h"
-#include "../../../src/utilities/Logger.h"
-#include "../../../src/films/PNGFilm.h"
-#include "../../../src/filters/BoxFilter.h"
-#include "../../../src/integrators/PathTraceIntegrator.h"
-#include "../../../src/scenes/NaiveScene.h"
-#include "../../../src/cameras/PerspectiveCamera.h"
+#include "../../../src/common/parsers/PBRTFileParser.h"
+#include "../../../src/cpu/samplers/samplers.h"
+#include "../../../src/common/utilities/Logger.h"
+#include "../../../src/cpu/films/PNGFilm.h"
+#include "../../../src/cpu/filters/BoxFilter.h"
+#include "../../../src/cpu/integrators/PathTraceIntegrator.h"
+#include "../../../src/cpu/scenes/NaiveScene.h"
+#include "../../../src/cpu/cameras/PerspectiveCamera.h"
 
 // TODO - put all test globals somewhere
 

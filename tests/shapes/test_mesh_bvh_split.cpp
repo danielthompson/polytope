@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 
-#include "../../src/structures/Vectors.h"
-#include "../../src/shapes/tesselators.h"
-#include "../../src/shapes/bvh_split/mesh_bvh_split.h"
+#include "../../src/cpu/structures/Vectors.h"
+#include "../../src/cpu/shapes/tesselators.h"
+#include "../../src/cpu/shapes/bvh_split/mesh_bvh_split.h"
 
 namespace Tests {
 

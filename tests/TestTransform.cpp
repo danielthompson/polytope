@@ -5,9 +5,9 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "../src/structures/Vectors.h"
-#include "../src/structures/Transform.h"
-#include "../src/cameras/PerspectiveCamera.h"
+#include "../src/cpu/structures/Vectors.h"
+#include "../src/cpu/structures/Transform.h"
+#include "../src/cpu/cameras/PerspectiveCamera.h"
 
 namespace Tests {
 
