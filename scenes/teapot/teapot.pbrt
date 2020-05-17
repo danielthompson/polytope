@@ -15,7 +15,7 @@ WorldBegin
         Scale 20 1 20
         # Material "matte" "rgb Kd" [ .5  .5  .8 ]
         Material "mirror" "rgb Kr" [ .5  .5  .8 ]
-        Shape "plymesh" "string filename" [ "../common/floor.ply" ]
+        # Shape "plymesh" "string filename" [ "../common/floor.ply" ]
     AttributeEnd
     AttributeBegin
         Translate -3 0 0
@@ -23,11 +23,11 @@ WorldBegin
         Material "mirror" "rgb Kr" [ .5  .8  .5 ]
         # Shape "objmesh" "string filename" [ "teapot.obj" ]
         # Shape "plymesh" "string filename" [ "teapot.ply" ]
-        Shape "plymesh" "string filename" [ "teapot_converted.ply" ]
+        # Shape "plymesh" "string filename" [ "teapot_converted.ply" ]
     AttributeEnd
     TransformBegin
-        Translate 3 0 0
-        Rotate 90 0 1 0
+        # Translate 3 0 0
+        # Rotate 90 0 1 0
         # Rotate 45 0 0 1
         # Shape "objmesh" "string filename" [ "teapot.obj" ]
         Shape "plymesh" "string filename" [ "teapot_converted.ply" ]

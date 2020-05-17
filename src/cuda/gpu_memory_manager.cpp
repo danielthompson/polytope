@@ -67,10 +67,6 @@ namespace Polytope {
 
 
    std::shared_ptr<CameraRays> GPUMemoryManager::MallocCameraRays() {
-      constexpr unsigned int width = 640;
-      constexpr unsigned int height = 480;
-      constexpr unsigned int num_pixels = width * height;
-
       cudaError_t error = cudaSuccess;
 
       camera_rays = std::make_shared<CameraRays>();
@@ -95,10 +91,6 @@ namespace Polytope {
    }
 
    void GPUMemoryManager::MallocSamples() {
-      constexpr unsigned int width = 640;
-      constexpr unsigned int height = 480;
-      constexpr unsigned int num_pixels = width * height;
-
       cudaError_t error = cudaSuccess;
       error = cudaMalloc((void **)&d_samples, sizeof(float) * num_pixels);
       if (error != cudaSuccess) {

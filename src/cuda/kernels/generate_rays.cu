@@ -69,7 +69,7 @@ namespace Polytope {
       const float pixel_ndc_y = (float)pixel_y / (float)p.height;
       
       const float aspect = (float)p.width / (float)p.height;
-      const float tan_fov_half = tan(p.fov) / 2.f;
+      const float tan_fov_half = tan(p.fov * M_PI / 360.f);
 
       const float3 camera_origin = {0, 0, 0};
       float3 camera_direction = {
@@ -87,28 +87,24 @@ namespace Polytope {
       normalize(world_direction);
       
 //      p.d_ox[index] = world_direction.x;
-      p.d_oy[index] = 2.f;
-      p.d_oz[index] = 3.f;
-
-      p.d_dx[index] = 4.f;
-      p.d_dy[index] = 5.f;
-      p.d_dz[index] = 6.f;
+//      p.d_oy[index] = 2.f;
+//      p.d_oz[index] = 3.f;
+//
+//      p.d_dx[index] = 4.f;
+//      p.d_dy[index] = 5.f;
+//      p.d_dz[index] = 6.f;
       
       p.d_ox[index] = world_origin.x;
-//      p.d_oy[index] = world_origin.y;
-//      p.d_oz[index] = world_origin.z;
-//
-//      p.d_dx[index] = world_direction.x;
-//      p.d_dy[index] = world_direction.y;
-//      p.d_dz[index] = world_direction.z;
+      p.d_oy[index] = world_origin.y;
+      p.d_oz[index] = world_origin.z;
+
+      p.d_dx[index] = world_direction.x;
+      p.d_dy[index] = world_direction.y;
+      p.d_dz[index] = world_direction.z;
    }
    
    void RayGeneratorKernel::GenerateRays() {
       
-      constexpr unsigned int width = 640;
-      constexpr unsigned int height = 480;
-      constexpr unsigned int num_pixels = width * height;
-
       cudaError_t error = cudaSuccess;
 
       error = cudaSetDevice(0);
@@ -120,14 +116,14 @@ namespace Polytope {
       std::shared_ptr<CameraRays> rays = memory_manager->MallocCameraRays();
 
       struct params kernel_params = {
-            width,
-            height,
+            memory_manager->width,
+            memory_manager->height,
             scene->Camera->Settings.FieldOfView,
             rays->d_o[0], rays->d_o[1], rays->d_o[2], rays->d_d[0], rays->d_d[1], rays->d_d[2]
       };
       
       constexpr unsigned int threadsPerBlock = 256;
-      constexpr unsigned int blocksPerGrid = (num_pixels + threadsPerBlock - 1) / threadsPerBlock;
+      const unsigned int blocksPerGrid = (memory_manager->num_pixels + threadsPerBlock - 1) / threadsPerBlock;
 
       error = cudaSuccess;
       generate_rays_kernel<<<blocksPerGrid, threadsPerBlock>>>(kernel_params);
@@ -143,16 +139,13 @@ namespace Polytope {
    }
 
    void RayGeneratorKernel::CheckRays() {
-      constexpr unsigned int width = 640;
-      constexpr unsigned int height = 480;
-      constexpr unsigned int num_pixels = width * height;
-      constexpr size_t num_bytes = sizeof(float) * num_pixels;
-      float* h_ox = (float *)calloc(num_pixels, sizeof(float));
+      const size_t num_bytes = sizeof(float) * memory_manager->num_pixels;
+      float* h_ox = (float *)calloc(memory_manager->num_pixels, sizeof(float));
       
       cudaError_t error = cudaMemcpy(h_ox, memory_manager->camera_rays->d_o[0], num_bytes, cudaMemcpyDeviceToHost);
       if (error != cudaSuccess)
       {
-         fprintf(stderr, "Failed to launch generate_ray_kernel (error code %s)!\n", cudaGetErrorString(error));
+         fprintf(stderr, "Failed to check rays (error code %s)!\n", cudaGetErrorString(error));
          exit(EXIT_FAILURE);
       }
       

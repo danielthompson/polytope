@@ -12,7 +12,8 @@ namespace Polytope {
    struct DeviceMesh {
       DeviceMesh(float *d_x, float* d_y, float* d_z, size_t bytes, Polytope::MeshLinearSOA* host_mesh) 
         : d_x(d_x), d_y(d_y), d_z(d_z), bytes(bytes), host_mesh(host_mesh) { }
-
+        
+      // need more info on device to loop over meshes  
       float* d_x;
       float* d_y;
       float* d_z;
@@ -28,6 +29,10 @@ namespace Polytope {
    
    class GPUMemoryManager {
    public:
+      GPUMemoryManager(unsigned int width, unsigned int height) 
+      : width(width), height(height) { 
+         num_pixels = width * height;
+      }
       ~GPUMemoryManager();
       std::shared_ptr<CameraRays> MallocCameraRays();
       
@@ -43,6 +48,8 @@ namespace Polytope {
       
       // device camera matrix
       float* d_cm;
+      
+      unsigned int width, height, num_pixels;
    };
 
 }

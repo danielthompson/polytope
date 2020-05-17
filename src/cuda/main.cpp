@@ -56,7 +56,7 @@ Other:
       const auto totalRunTimeStart = std::chrono::system_clock::now();
 
       constexpr unsigned int width = 640;
-      constexpr unsigned int height = 480;
+      constexpr unsigned int height = 640;
 
       const Polytope::Bounds bounds(width, height);
 
@@ -97,7 +97,7 @@ Other:
 
          Log.WithTime("Outputting to film...");
          const auto outputStart = std::chrono::system_clock::now();
-         runner->Output();
+         //runner->Output();
          const auto outputEnd = std::chrono::system_clock::now();
 
          const std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
@@ -121,7 +121,10 @@ void cuda_run(Polytope::AbstractScene* scene) {
    // determine ray sample positions
    // generate rays
 
-   std::shared_ptr<Polytope::GPUMemoryManager> memory_manager = std::make_shared<Polytope::GPUMemoryManager>();
+   const unsigned int width = scene->Camera->Settings.Bounds.x;
+   const unsigned int height = scene->Camera->Settings.Bounds.y;
+   
+   std::shared_ptr<Polytope::GPUMemoryManager> memory_manager = std::make_shared<Polytope::GPUMemoryManager>(width, height);
    memory_manager->MallocSamples();
    
    Polytope::RayGeneratorKernel ray_kernel(scene, memory_manager);
