@@ -13,7 +13,9 @@ namespace Polytope {
       assert(mesh->x.size() == mesh->y.size());
       assert(mesh->y.size() == mesh->z.size());
       
-      size_t num_bytes = sizeof(float) * mesh->x.size();
+      const size_t num_vertices = mesh->x.size();
+      const size_t num_faces = num_vertices / 3;
+      const size_t num_bytes = sizeof(float) * num_vertices;
       
       float* d_x = nullptr;
       cudaError_t error = cudaMalloc((void **)&d_x, num_bytes);
@@ -39,10 +41,8 @@ namespace Polytope {
          exit(EXIT_FAILURE);
       }
       
-      meshes_on_device.push_back(std::make_shared<DeviceMesh>(d_x, d_y, d_z, num_bytes, mesh));
+      meshes_on_device.push_back(std::make_shared<DeviceMesh>(d_x, d_y, d_z, num_bytes, num_vertices, num_faces, mesh));
 
-      size_t offset = 0;
-      
       error = cudaMemcpy(d_x, &(mesh->x[0]), num_bytes, cudaMemcpyHostToDevice);
       if (error != cudaSuccess)
       {
@@ -64,7 +64,6 @@ namespace Polytope {
          exit(EXIT_FAILURE);
       }
    }
-
 
    std::shared_ptr<CameraRays> GPUMemoryManager::MallocCameraRays() {
       cudaError_t error = cudaSuccess;

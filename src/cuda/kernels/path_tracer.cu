@@ -150,7 +150,7 @@ namespace Polytope {
          memory_manager->meshes_on_device[0]->d_x,
          memory_manager->meshes_on_device[0]->d_y,
          memory_manager->meshes_on_device[0]->d_z,
-         memory_manager->meshes_on_device[0]->bytes / 4L,
+         memory_manager->meshes_on_device[0]->num_faces,
          memory_manager->d_samples_r,
          memory_manager->d_samples_g,
          memory_manager->d_samples_b,

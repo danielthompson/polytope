@@ -10,14 +10,14 @@
 namespace Polytope {
 
    struct DeviceMesh {
-      DeviceMesh(float *d_x, float* d_y, float* d_z, size_t bytes, Polytope::MeshLinearSOA* host_mesh) 
-        : d_x(d_x), d_y(d_y), d_z(d_z), bytes(bytes), host_mesh(host_mesh) { }
+      DeviceMesh(float *d_x, float* d_y, float* d_z, size_t num_bytes, size_t num_vertices, size_t num_faces, Polytope::MeshLinearSOA* host_mesh) 
+        : d_x(d_x), d_y(d_y), d_z(d_z), num_bytes(num_bytes), num_vertices(num_vertices), num_faces(num_faces), host_mesh(host_mesh) { }
         
       // need more info on device to loop over meshes  
       float* d_x;
       float* d_y;
       float* d_z;
-      size_t bytes;
+      size_t num_bytes, num_vertices, num_faces;
       Polytope::MeshLinearSOA* host_mesh;
    };
    
