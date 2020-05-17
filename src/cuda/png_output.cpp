@@ -12,12 +12,28 @@ namespace Polytope {
 
       const unsigned int bytes = sizeof(float) * memory_manager->num_pixels;
       
-      float* h_samples = (float *)calloc(bytes, 1); 
+      float* h_samples_r = (float *)calloc(bytes, 1);
+      float* h_samples_g = (float *)calloc(bytes, 1);
+      float* h_samples_b = (float *)calloc(bytes, 1);
       
       cudaError_t error = cudaSuccess;
-      error = cudaMemcpy(h_samples, memory_manager->d_samples, bytes, cudaMemcpyDeviceToHost);
+      error = cudaMemcpy(h_samples_r, memory_manager->d_samples_r, bytes, cudaMemcpyDeviceToHost);
       if (error != cudaSuccess) {
-         fprintf(stderr, "Failed to copy samples from device to host (error code %s)!\n", cudaGetErrorString(error));
+         fprintf(stderr, "Failed to copy samples_r from device to host (error code %s)!\n", cudaGetErrorString(error));
+         exit(EXIT_FAILURE);
+      }
+
+      error = cudaSuccess;
+      error = cudaMemcpy(h_samples_g, memory_manager->d_samples_g, bytes, cudaMemcpyDeviceToHost);
+      if (error != cudaSuccess) {
+         fprintf(stderr, "Failed to copy samples_g from device to host (error code %s)!\n", cudaGetErrorString(error));
+         exit(EXIT_FAILURE);
+      }
+
+      error = cudaSuccess;
+      error = cudaMemcpy(h_samples_b, memory_manager->d_samples_b, bytes, cudaMemcpyDeviceToHost);
+      if (error != cudaSuccess) {
+         fprintf(stderr, "Failed to copy samples_b from device to host (error code %s)!\n", cudaGetErrorString(error));
          exit(EXIT_FAILURE);
       }
       
@@ -27,30 +43,11 @@ namespace Polytope {
       for (unsigned int i = 0; i < bytes; i++) {
          const unsigned int h_index = i;
          
-         data[4 * i] = h_samples[h_index];
-         data[4 * i + 1] = h_samples[h_index];
-         data[4 * i + 2] = h_samples[h_index];
+         data[4 * i] = h_samples_r[h_index] > 255 ? 255 : h_samples_r[h_index];
+         data[4 * i + 1] = h_samples_g[h_index] > 255 ? 255 : h_samples_g[h_index];
+         data[4 * i + 2] = h_samples_b[h_index] > 255 ? 255 : h_samples_b[h_index];
          data[4 * i + 3] = 255;
       }
-//      
-//      for (int y = 0; y < height; y++) {
-//          for (int x = 0; x < width; x++) {
-//
-//            const unsigned int index = (y * width + x);
-//
-//            // TODO this needs 4 bytes per sample, we just have 1 right now
-//            const auto r = static_cast<unsigned char>(h_samples[index]);
-//            const auto g = static_cast<unsigned char>(h_samples[index]);
-//            const auto b = static_cast<unsigned char>(h_samples[index]);
-//            const auto a = static_cast<unsigned char>(255);
-//
-//            data[4 * index + 0] = r;
-//            data[4 * index + 1] = g;
-//            data[4 * index + 2] = b;
-//            data[4 * index + 3] = a;
-//         }
-//      }
-
 
       unsigned lodepng_error = lodepng::encode("output.png", data, memory_manager->width, memory_manager->height);
       if (lodepng_error) {

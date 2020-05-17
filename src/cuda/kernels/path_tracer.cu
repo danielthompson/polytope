@@ -21,7 +21,9 @@ namespace Polytope {
       
       size_t num_faces;
       
-      float* samples;
+      float* samples_r;
+      float* samples_g;
+      float* samples_b;
    };
 
    __device__ float3 operator-(const float3 &a, const float3 &b) {
@@ -66,7 +68,9 @@ namespace Polytope {
       const unsigned int v1_index_offset = device_pointers.num_faces;
       const unsigned int v2_index_offset = device_pointers.num_faces * 2;
 
-      device_pointers.samples[pixel_index] = 255.f;
+      device_pointers.samples_r[pixel_index] = 255.f;
+      device_pointers.samples_g[pixel_index] = 255.f;
+      device_pointers.samples_b[pixel_index] = 255.f;
 
       for (int face_index = 0; face_index < device_pointers.num_faces; face_index++) {
          const unsigned int v1index = face_index + v1_index_offset;
@@ -127,7 +131,9 @@ namespace Polytope {
          }
 
          // temp
-         device_pointers.samples[pixel_index] = 128.f;
+         device_pointers.samples_r[pixel_index] = 128.f;
+         device_pointers.samples_g[pixel_index] = 128.f;
+         device_pointers.samples_b[pixel_index] = 128.f;
          return;
       }
    }
@@ -145,7 +151,9 @@ namespace Polytope {
          memory_manager->meshes_on_device[0]->d_y,
          memory_manager->meshes_on_device[0]->d_z,
          memory_manager->meshes_on_device[0]->bytes / 4L,
-         memory_manager->d_samples
+         memory_manager->d_samples_r,
+         memory_manager->d_samples_g,
+         memory_manager->d_samples_b,
       };
       
       constexpr unsigned int threadsPerBlock = 256;

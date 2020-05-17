@@ -29,7 +29,7 @@ namespace Polytope {
    
    class GPUMemoryManager {
    public:
-      GPUMemoryManager(unsigned int width, unsigned int height) 
+      GPUMemoryManager(const unsigned int width, const unsigned int height) 
       : width(width), height(height) { 
          num_pixels = width * height;
       }
@@ -44,7 +44,9 @@ namespace Polytope {
       std::shared_ptr<CameraRays> camera_rays;
       
       // device sample array
-      float* d_samples;
+      float* d_samples_r;
+      float* d_samples_g;
+      float* d_samples_b;
       
       // device camera matrix
       float* d_cm;

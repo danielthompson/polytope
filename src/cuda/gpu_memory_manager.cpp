@@ -92,9 +92,21 @@ namespace Polytope {
 
    void GPUMemoryManager::MallocSamples() {
       cudaError_t error = cudaSuccess;
-      error = cudaMalloc((void **)&d_samples, sizeof(float) * num_pixels);
+      error = cudaMalloc((void **)&d_samples_r, sizeof(float) * num_pixels);
       if (error != cudaSuccess) {
-         fprintf(stderr, "Failed to malloc for samples on device (error code %s)!\n", cudaGetErrorString(error));
+         fprintf(stderr, "Failed to malloc for samples_r on device (error code %s)!\n", cudaGetErrorString(error));
+         exit(EXIT_FAILURE);
+      }
+
+      error = cudaMalloc((void **)&d_samples_g, sizeof(float) * num_pixels);
+      if (error != cudaSuccess) {
+         fprintf(stderr, "Failed to malloc for samples_g on device (error code %s)!\n", cudaGetErrorString(error));
+         exit(EXIT_FAILURE);
+      }
+
+      error = cudaMalloc((void **)&d_samples_b, sizeof(float) * num_pixels);
+      if (error != cudaSuccess) {
+         fprintf(stderr, "Failed to malloc for samples_b on device (error code %s)!\n", cudaGetErrorString(error));
          exit(EXIT_FAILURE);
       }
    }
@@ -115,6 +127,18 @@ namespace Polytope {
          cudaFree(camera_rays->d_d[0]);
          cudaFree(camera_rays->d_d[1]);
          cudaFree(camera_rays->d_d[2]);
+      }
+
+      if (d_samples_r != nullptr) {
+         cudaFree(d_samples_r);
+      }
+
+      if (d_samples_g != nullptr) {
+         cudaFree(d_samples_g);
+      }
+
+      if (d_samples_b != nullptr) {
+         cudaFree(d_samples_b);
       }
    }
 }

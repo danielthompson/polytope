@@ -61,6 +61,8 @@ namespace Polytope {
    
    __global__ void
    generate_rays_kernel(RayGeneratorKernel::params p) {
+      constexpr float PIOver360 = M_PI / 360.f;
+      
       const unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
       const unsigned int pixel_x = index % p.width;
       const unsigned int pixel_y = index / p.width;
@@ -69,7 +71,7 @@ namespace Polytope {
       const float pixel_ndc_y = (float)pixel_y / (float)p.height;
       
       const float aspect = (float)p.width / (float)p.height;
-      const float tan_fov_half = tan(p.fov * M_PI / 360.f);
+      const float tan_fov_half = tan(p.fov * PIOver360);
 
       const float3 camera_origin = {0, 0, 0};
       float3 camera_direction = {
@@ -85,14 +87,6 @@ namespace Polytope {
       float3 world_direction = matrix_apply_vector(camera_to_world_matrix, camera_direction);
       
       normalize(world_direction);
-      
-//      p.d_ox[index] = world_direction.x;
-//      p.d_oy[index] = 2.f;
-//      p.d_oz[index] = 3.f;
-//
-//      p.d_dx[index] = 4.f;
-//      p.d_dy[index] = 5.f;
-//      p.d_dz[index] = 6.f;
       
       p.d_ox[index] = world_origin.x;
       p.d_oy[index] = world_origin.y;

@@ -269,15 +269,11 @@ namespace Polytope {
 
       // for each face
       for (unsigned int i = 0; i < num_faces; i++) {
-         unsigned int index = fv0[i];
+         const unsigned int index = fv0[i];
 
          x.push_back(x_packed[index]);
          y.push_back(y_packed[index]);
          z.push_back(z_packed[index]);
-
-//         nx_expanded.push_back(nx[index]);
-//         ny_expanded.push_back(ny[index]);
-//         nz_expanded.push_back(nz[index]);
       }
 
       for (unsigned int i = 0; i < num_faces; i++) {
