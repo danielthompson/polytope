@@ -158,7 +158,10 @@ add_executable(polytope_cuda
         src/cuda/kernels/path_tracer.cu 
         src/cuda/kernels/path_tracer.cuh 
         src/cuda/gpu_memory_manager.cpp 
-        src/cuda/gpu_memory_manager.h src/cuda/png_output.cpp src/cuda/png_output.h)
+        src/cuda/gpu_memory_manager.h 
+        src/cuda/png_output.cpp 
+        src/cuda/png_output.h 
+        src/cuda/kernels/common_device_functions.cuh src/cuda/check_error.h)
 
 set_target_properties(
         polytope_cuda

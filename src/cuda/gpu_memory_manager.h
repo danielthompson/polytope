@@ -6,52 +6,61 @@
 #define POLYTOPE_GPU_MEMORY_MANAGER_H
 
 #include "../cpu/shapes/linear_soa/mesh_linear_soa.h"
+#include "../cpu/scenes/AbstractScene.h"
 
 namespace Polytope {
 
-   struct DeviceMesh {
-      DeviceMesh(float *d_x, float* d_y, float* d_z, size_t num_bytes, size_t num_vertices, size_t num_faces, Polytope::MeshLinearSOA* host_mesh) 
-        : d_x(d_x), d_y(d_y), d_z(d_z), num_bytes(num_bytes), num_vertices(num_vertices), num_faces(num_faces), host_mesh(host_mesh) { }
-        
-      // need more info on device to loop over meshes  
-      float* d_x;
-      float* d_y;
-      float* d_z;
-      size_t num_bytes, num_vertices, num_faces;
-      Polytope::MeshLinearSOA* host_mesh;
+   struct DeviceCamera {
+      // origin
+      float* ox;
+      float* oy;
+      float* oz;
+      
+      // direction
+      float* dx;
+      float* dy;
+      float* dz;
+      
+      // camera matrix
+      float* cm;
+      
+      size_t num_pixels;
    };
    
-   struct CameraRays {
-      float* d_o[3];
-      float* d_d[3];
-      size_t num_pixels;
+   struct DeviceMesh {
+      float* x;
+      float* y;
+      float* z;
+      
+      // color.. need to fix this to properly use brdf
+      float* src;
+      size_t num_bytes, num_vertices, num_faces;
+   };
+
+   struct DeviceSamples {
+      float* r;
+      float* g;
+      float* b;
    };
    
    class GPUMemoryManager {
    public:
       GPUMemoryManager(const unsigned int width, const unsigned int height) 
-      : width(width), height(height) { 
+      : width(width), height(height), device_camera(nullptr), meshes(nullptr) { 
          num_pixels = width * height;
       }
       ~GPUMemoryManager();
-      std::shared_ptr<CameraRays> MallocCameraRays();
       
-      // TODO
-      void MallocSamples();
+      void MallocScene(Polytope::AbstractScene* scene);
+      struct DeviceCamera* device_camera;
+      struct DeviceMesh* meshes;
+      unsigned int num_meshes;
       
-      void AddMesh(Polytope::MeshLinearSOA* mesh);
-      std::vector<std::shared_ptr<DeviceMesh>> meshes_on_device;
-      std::shared_ptr<CameraRays> camera_rays;
-      
-      // device sample array
-      float* d_samples_r;
-      float* d_samples_g;
-      float* d_samples_b;
-      
-      // device camera matrix
-      float* d_cm;
+      struct DeviceSamples* device_samples;
       
       unsigned int width, height, num_pixels;
+      
+      std::vector<void *> to_free_list;
    };
 
 }

@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <utility>
 #include "generate_rays.cuh"
+#include "common_device_functions.cuh"
+#include "assert.h"
 
 namespace Polytope {
    
@@ -24,53 +26,18 @@ namespace Polytope {
       // TODO
    }
    
-   __device__ void normalize(float3 &v) {
-      const float one_over_length = 1.f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-      v.x *= one_over_length;
-      v.y *= one_over_length;
-      v.z *= one_over_length;
-   }
-
-   __device__ float3 normalize(const float3 &v) {
-      const float one_over_length = 1.f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-      return {
-         v.x * one_over_length,
-         v.y * one_over_length,
-         v.z * one_over_length
-      };
-   }
-   
-   __device__ float3 matrix_apply_point(const float* d_matrix, const float3 d_p) {
-      const float w = d_p.x * d_matrix[12] + d_p.y * d_matrix[13] + d_p.z * d_matrix[14] + d_matrix[15];
-      const float divisor = 1.f / w;
-      
-      return {
-            (d_p.x * d_matrix[0] + d_p.y * d_matrix[1] + d_p.z * d_matrix[2] + d_matrix[3]) * divisor,
-            (d_p.x * d_matrix[4] + d_p.y * d_matrix[5] + d_p.z * d_matrix[6] + d_matrix[7]) * divisor,
-            (d_p.x * d_matrix[8] + d_p.y * d_matrix[9] + d_p.z * d_matrix[10] + d_matrix[11]) * divisor
-      };
-   }
-
-   __device__ float3 matrix_apply_vector(const float* d_matrix, const float3 d_v) {
-      return {
-            d_v.x * d_matrix[0] + d_v.y * d_matrix[1] + d_v.z * d_matrix[2],
-            d_v.x * d_matrix[4] + d_v.y * d_matrix[5] + d_v.z * d_matrix[6],
-            d_v.x * d_matrix[8] + d_v.y * d_matrix[9] + d_v.z * d_matrix[10]
-      };
-   }
-   
    __global__ void
    generate_rays_kernel(RayGeneratorKernel::params p) {
       constexpr float PIOver360 = M_PI / 360.f;
-      
+
       const unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
       const unsigned int pixel_x = index % p.width;
       const unsigned int pixel_y = index / p.width;
-      
-      const float pixel_ndc_x = (float)pixel_x / (float)p.width;
-      const float pixel_ndc_y = (float)pixel_y / (float)p.height;
-      
-      const float aspect = (float)p.width / (float)p.height;
+
+      const float pixel_ndc_x = (float) pixel_x / (float) p.width;
+      const float pixel_ndc_y = (float) pixel_y / (float) p.height;
+
+      const float aspect = (float) p.width / (float) p.height;
       const float tan_fov_half = tan(p.fov * PIOver360);
 
       const float3 camera_origin = {0, 0, 0};
@@ -80,21 +47,33 @@ namespace Polytope {
             // TODO -1 for right-handed
             1
       };
-      
+
       normalize(camera_direction);
-      
+
       const float3 world_origin = matrix_apply_point(camera_to_world_matrix, camera_origin);
       float3 world_direction = matrix_apply_vector(camera_to_world_matrix, camera_direction);
-      
-      normalize(world_direction);
-      
-      p.d_ox[index] = world_origin.x;
-      p.d_oy[index] = world_origin.y;
-      p.d_oz[index] = world_origin.z;
 
-      p.d_dx[index] = world_direction.x;
-      p.d_dy[index] = world_direction.y;
-      p.d_dz[index] = world_direction.z;
+      normalize(world_direction);
+
+      assert(p.camera != nullptr);
+      assert(p.camera->ox != nullptr);
+      assert(p.camera->oy != nullptr);
+      assert(p.camera->oz != nullptr);
+      assert(p.camera->dx != nullptr);
+      assert(p.camera->dy != nullptr);
+      assert(p.camera->dz != nullptr);
+      
+      __threadfence();
+
+      p.camera->ox[index] = world_origin.x;
+      p.camera->oy[index] = world_origin.y;
+      p.camera->oz[index] = world_origin.z;
+      p.camera->dx[index] = world_direction.x;
+      p.camera->dy[index] = world_direction.y;
+      p.camera->dz[index] = world_direction.z;
+      __threadfence();
+      if (threadIdx.x == 0)
+         printf("%i: ox OK\n", blockIdx.x);
    }
    
    void RayGeneratorKernel::GenerateRays() {
@@ -107,19 +86,26 @@ namespace Polytope {
          exit(EXIT_FAILURE);
       }
 
-      std::shared_ptr<CameraRays> rays = memory_manager->MallocCameraRays();
-
       struct params kernel_params = {
             memory_manager->width,
             memory_manager->height,
             scene->Camera->Settings.FieldOfView,
-            rays->d_o[0], rays->d_o[1], rays->d_o[2], rays->d_d[0], rays->d_d[1], rays->d_d[2]
+            memory_manager->device_camera
       };
       
       constexpr unsigned int threadsPerBlock = 256;
       const unsigned int blocksPerGrid = (memory_manager->num_pixels + threadsPerBlock - 1) / threadsPerBlock;
 
       error = cudaSuccess;
+      cudaDeviceSynchronize();
+      error = cudaGetLastError();
+
+      if (error != cudaSuccess)
+      {
+         fprintf(stderr, "Error before launch generate_ray_kernel (error code %s)!\n", cudaGetErrorString(error));
+         exit(EXIT_FAILURE);
+      }
+      
       generate_rays_kernel<<<blocksPerGrid, threadsPerBlock>>>(kernel_params);
 
       cudaDeviceSynchronize();
@@ -133,16 +119,16 @@ namespace Polytope {
    }
 
    void RayGeneratorKernel::CheckRays() {
-      const size_t num_bytes = sizeof(float) * memory_manager->num_pixels;
-      float* h_ox = (float *)calloc(memory_manager->num_pixels, sizeof(float));
-      
-      cudaError_t error = cudaMemcpy(h_ox, memory_manager->camera_rays->d_o[0], num_bytes, cudaMemcpyDeviceToHost);
-      if (error != cudaSuccess)
-      {
-         fprintf(stderr, "Failed to check rays (error code %s)!\n", cudaGetErrorString(error));
-         exit(EXIT_FAILURE);
-      }
-      
-      free(h_ox);
+//      const size_t num_bytes = sizeof(float) * memory_manager->num_pixels;
+//      float* h_ox = (float *)calloc(memory_manager->num_pixels, sizeof(float));
+//      
+//      cudaError_t error = cudaMemcpy(h_ox, memory_manager->device_camera->ox, num_bytes, cudaMemcpyDeviceToHost);
+//      if (error != cudaSuccess)
+//      {
+//         fprintf(stderr, "Failed to check rays (error code %s)!\n", cudaGetErrorString(error));
+//         exit(EXIT_FAILURE);
+//      }
+//      
+//      free(h_ox);
    }
 }

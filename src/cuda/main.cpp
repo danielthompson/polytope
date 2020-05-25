@@ -125,18 +125,19 @@ void cuda_run(Polytope::AbstractScene* scene) {
    const unsigned int height = scene->Camera->Settings.Bounds.y;
    
    std::shared_ptr<Polytope::GPUMemoryManager> memory_manager = std::make_shared<Polytope::GPUMemoryManager>(width, height);
-   memory_manager->MallocSamples();
+   memory_manager->MallocScene(scene);
+   //memory_manager->MallocSamples();
    
    Polytope::RayGeneratorKernel ray_kernel(scene, memory_manager);
    ray_kernel.GenerateRays();
    ray_kernel.CheckRays();
    
-   // push geometry
-   for (const auto mesh : scene->Shapes) {
-      auto* cast_mesh = dynamic_cast<Polytope::MeshLinearSOA*>(mesh);
-      memory_manager->AddMesh(cast_mesh);
-   }
-   
+//   // push geometry
+//   for (const auto mesh : scene->Shapes) {
+//      auto* cast_mesh = dynamic_cast<Polytope::MeshLinearSOA*>(mesh);
+//      memory_manager->AddMesh(cast_mesh);
+//   }
+//   
    // walk rays through the scene
    Polytope::PathTracerKernel path_tracer_kernel(memory_manager);
    path_tracer_kernel.Trace();

@@ -5,139 +5,103 @@
 #include <cuda_runtime.h>
 #include <cassert>
 #include "gpu_memory_manager.h"
-
+#include "kernels/common_device_functions.cuh"
+#include "check_error.h"
 namespace Polytope {
-   void GPUMemoryManager::AddMesh(Polytope::MeshLinearSOA *mesh) {
 
-      assert(mesh != nullptr);
-      assert(mesh->x.size() == mesh->y.size());
-      assert(mesh->y.size() == mesh->z.size());
+   void GPUMemoryManager::MallocScene(Polytope::AbstractScene *scene) {
+
+      // camera
+      struct DeviceCamera host_camera_temp { };
+      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.ox), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_camera_temp.ox);
+      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.oy), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_camera_temp.oy);
+      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.oz), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_camera_temp.oz);
+      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.dx), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_camera_temp.dx);
+      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.dy), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_camera_temp.dy);
+      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.dz), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_camera_temp.dz);
+      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.cm), sizeof(float) * 16) );
+      to_free_list.push_back(host_camera_temp.cm);
+      host_camera_temp.num_pixels = num_pixels;
+      // data will be provided by camera method
+
+      device_camera = nullptr;
+      cuda_check_error( cudaMalloc((void **)&(device_camera), sizeof(struct DeviceCamera)) );
+      to_free_list.push_back(device_camera);
+      cuda_check_error( cudaMemcpy(device_camera, &host_camera_temp, sizeof(struct DeviceCamera), cudaMemcpyHostToDevice) );
       
-      const size_t num_vertices = mesh->x.size();
-      const size_t num_faces = num_vertices / 3;
-      const size_t num_bytes = sizeof(float) * num_vertices;
+      // samples
+      struct DeviceSamples host_samples_temp { };
+      cuda_check_error( cudaMalloc((void **)&(host_samples_temp.r), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_samples_temp.r);
+      cuda_check_error( cudaMalloc((void **)&(host_samples_temp.g), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_samples_temp.g);
+      cuda_check_error( cudaMalloc((void **)&(host_samples_temp.b), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_samples_temp.b);
       
-      float* d_x = nullptr;
-      cudaError_t error = cudaMalloc((void **)&d_x, num_bytes);
-      if (error != cudaSuccess)
-      {
-         fprintf(stderr, "Failed to malloc device memory for mesh x coords (error code %s)!\n", cudaGetErrorString(error));
-         exit(EXIT_FAILURE);
-      }
-
-      float* d_y = nullptr;
-      error = cudaMalloc((void **)&d_y, num_bytes);
-      if (error != cudaSuccess)
-      {
-         fprintf(stderr, "Failed to malloc device memory for mesh y coords (error code %s)!\n", cudaGetErrorString(error));
-         exit(EXIT_FAILURE);
-      }
-
-      float* d_z = nullptr;
-      error = cudaMalloc((void **)&d_z, num_bytes);
-      if (error != cudaSuccess)
-      {
-         fprintf(stderr, "Failed to malloc device memory for mesh z coords (error code %s)!\n", cudaGetErrorString(error));
-         exit(EXIT_FAILURE);
-      }
+      device_samples = nullptr;
+      cuda_check_error( cudaMalloc((void **)&(device_samples), sizeof(struct DeviceSamples)) );
+      to_free_list.push_back(device_samples);
+      cuda_check_error( cudaMemcpy(device_samples, &host_samples_temp, sizeof(struct DeviceSamples), cudaMemcpyHostToDevice) );
       
-      meshes_on_device.push_back(std::make_shared<DeviceMesh>(d_x, d_y, d_z, num_bytes, num_vertices, num_faces, mesh));
+      // meshes
+      constexpr size_t device_mesh_size = sizeof(struct DeviceMesh);
+      
+      struct DeviceMesh* host_meshes_temp = nullptr;
+      cuda_check_error( cudaMalloc((void **)&(host_meshes_temp), device_mesh_size * scene->Shapes.size()) );
+      
+      size_t offset = 0;
+      
+      for (unsigned int i = 0; i < scene->Shapes.size(); i++) {
 
-      error = cudaMemcpy(d_x, &(mesh->x[0]), num_bytes, cudaMemcpyHostToDevice);
-      if (error != cudaSuccess)
-      {
-         fprintf(stderr, "Failed to copy mesh x coords to device (error code %s)!\n", cudaGetErrorString(error));
-         exit(EXIT_FAILURE);
+         const auto original_mesh = scene->Shapes.at(i);
+         assert(original_mesh != nullptr);
+         
+         const Polytope::MeshLinearSOA* host_mesh = reinterpret_cast<const Polytope::MeshLinearSOA *>(original_mesh);
+         assert(host_mesh != nullptr);
+         assert(host_mesh->x.size() == host_mesh->y.size());
+         assert(host_mesh->y.size() == host_mesh->z.size());
+
+         const size_t num_vertices = host_mesh->x.size();
+         const size_t num_faces = num_vertices / 3;
+         const size_t num_bytes = sizeof(float) * num_vertices;
+         
+         struct DeviceMesh host_mesh_temp { };
+         host_mesh_temp.num_bytes = num_bytes;
+         host_mesh_temp.num_vertices = num_vertices;
+         host_mesh_temp.num_faces = num_faces;
+         
+         cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.x), num_bytes) );
+         to_free_list.push_back(host_mesh_temp.x);
+         cuda_check_error( cudaMemcpy(host_mesh_temp.x, &(host_mesh->x[0]), num_bytes, cudaMemcpyHostToDevice) );
+         cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.y), num_bytes) );
+         to_free_list.push_back(host_mesh_temp.y);
+         cuda_check_error( cudaMemcpy(host_mesh_temp.y, &(host_mesh->y[0]), num_bytes, cudaMemcpyHostToDevice) );
+         cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.z), num_bytes) );
+         to_free_list.push_back(host_mesh_temp.z);
+         cuda_check_error( cudaMemcpy(host_mesh_temp.z, &(host_mesh->z[0]), num_bytes, cudaMemcpyHostToDevice) );
+
+         // TODO material / BRDF
+//         cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.src), sizeof(float) * 3) );
+//         cuda_check_error( cudaMemcpy(host_mesh_temp.src, &(host_mesh->src[0]), num_bytes, cudaMemcpyHostToDevice) );
+         
+         cuda_check_error( cudaMemcpy(host_meshes_temp + offset, &host_mesh_temp, device_mesh_size, cudaMemcpyHostToDevice));
+         offset += device_mesh_size;
       }
 
-      error = cudaMemcpy(d_y, &(mesh->y[0]), num_bytes, cudaMemcpyHostToDevice);
-      if (error != cudaSuccess)
-      {
-         fprintf(stderr, "Failed to copy mesh y coords to device (error code %s)!\n", cudaGetErrorString(error));
-         exit(EXIT_FAILURE);
-      }
-
-      error = cudaMemcpy(d_z, &(mesh->z[0]), num_bytes, cudaMemcpyHostToDevice);
-      if (error != cudaSuccess)
-      {
-         fprintf(stderr, "Failed to copy mesh z coords to device (error code %s)!\n", cudaGetErrorString(error));
-         exit(EXIT_FAILURE);
-      }
-   }
-
-   std::shared_ptr<CameraRays> GPUMemoryManager::MallocCameraRays() {
-      cudaError_t error = cudaSuccess;
-
-      camera_rays = std::make_shared<CameraRays>();
-
-      for (int i = 0; i < 3; i++) {
-         error = cudaMalloc((void **)&(camera_rays->d_o[i]), sizeof(float) * num_pixels);
-         if (error != cudaSuccess) {
-            fprintf(stderr, "Failed to malloc ray origin %i", i);
-            exit(EXIT_FAILURE);
-         }
-      };
-
-      for (int i = 0; i < 3; i++) {
-         error = cudaMalloc((void **)&(camera_rays->d_d[i]), sizeof(float) * num_pixels);
-         if (error != cudaSuccess) {
-            fprintf(stderr, "Failed to malloc ray direction (error code %s)!\n", cudaGetErrorString(error));
-            exit(EXIT_FAILURE);
-         }
-      };
-
-      return camera_rays;
-   }
-
-   void GPUMemoryManager::MallocSamples() {
-      cudaError_t error = cudaSuccess;
-      error = cudaMalloc((void **)&d_samples_r, sizeof(float) * num_pixels);
-      if (error != cudaSuccess) {
-         fprintf(stderr, "Failed to malloc for samples_r on device (error code %s)!\n", cudaGetErrorString(error));
-         exit(EXIT_FAILURE);
-      }
-
-      error = cudaMalloc((void **)&d_samples_g, sizeof(float) * num_pixels);
-      if (error != cudaSuccess) {
-         fprintf(stderr, "Failed to malloc for samples_g on device (error code %s)!\n", cudaGetErrorString(error));
-         exit(EXIT_FAILURE);
-      }
-
-      error = cudaMalloc((void **)&d_samples_b, sizeof(float) * num_pixels);
-      if (error != cudaSuccess) {
-         fprintf(stderr, "Failed to malloc for samples_b on device (error code %s)!\n", cudaGetErrorString(error));
-         exit(EXIT_FAILURE);
-      }
+      to_free_list.push_back(host_meshes_temp);
+      
    }
    
+   
    GPUMemoryManager::~GPUMemoryManager() {
-      for (const auto &device_mesh : meshes_on_device) {
-         if (device_mesh != nullptr) {
-            cudaFree(device_mesh->d_x);
-            cudaFree(device_mesh->d_y);
-            cudaFree(device_mesh->d_z);   
-         }
-      }
-      
-      if (camera_rays != nullptr) {
-         cudaFree(camera_rays->d_o[0]);
-         cudaFree(camera_rays->d_o[1]);
-         cudaFree(camera_rays->d_o[2]);
-         cudaFree(camera_rays->d_d[0]);
-         cudaFree(camera_rays->d_d[1]);
-         cudaFree(camera_rays->d_d[2]);
-      }
-
-      if (d_samples_r != nullptr) {
-         cudaFree(d_samples_r);
-      }
-
-      if (d_samples_g != nullptr) {
-         cudaFree(d_samples_g);
-      }
-
-      if (d_samples_b != nullptr) {
-         cudaFree(d_samples_b);
+      for (void* ptr : to_free_list) {
+         cuda_check_error( cudaFree(ptr) );
       }
    }
 }

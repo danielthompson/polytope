@@ -25,12 +25,7 @@ namespace Polytope {
          unsigned int width;
          unsigned int height;
          float fov;
-         float *d_ox;
-         float *d_oy;
-         float *d_oz;
-         float *d_dx;
-         float *d_dy;
-         float *d_dz;
+         struct DeviceCamera* camera;
       };
    };
 }
