@@ -18,9 +18,9 @@ namespace Polytope {
       float* h_samples_b = (float *)calloc(bytes, 1);
       
       
-      cuda_check_error( cudaMemcpy(h_samples_r, memory_manager->device_samples->r, bytes, cudaMemcpyDeviceToHost) );
-      cuda_check_error( cudaMemcpy(h_samples_g, memory_manager->device_samples->g, bytes, cudaMemcpyDeviceToHost) );
-      cuda_check_error( cudaMemcpy(h_samples_b, memory_manager->device_samples->b, bytes, cudaMemcpyDeviceToHost) );
+      cuda_check_error( cudaMemcpy(h_samples_r, memory_manager->host_samples.r, bytes, cudaMemcpyDeviceToHost) );
+      cuda_check_error( cudaMemcpy(h_samples_g, memory_manager->host_samples.g, bytes, cudaMemcpyDeviceToHost) );
+      cuda_check_error( cudaMemcpy(h_samples_b, memory_manager->host_samples.b, bytes, cudaMemcpyDeviceToHost) );
       
       // write them to file
       std::vector<unsigned char> data(4 * bytes);

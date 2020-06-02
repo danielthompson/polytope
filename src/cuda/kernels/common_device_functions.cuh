@@ -7,15 +7,19 @@
 
 namespace Polytope {
 
+
+   
    __device__ inline void normalize(float3 &v) {
-      const float one_over_length = 1.f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+      const float one_over_length = 1.f / norm3df(v.x, v.y, v.z);
+//      const float one_over_length = 1.f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
       v.x *= one_over_length;
       v.y *= one_over_length;
       v.z *= one_over_length;
    }
 
    __device__ inline float3 normalize(const float3 &v) {
-      const float one_over_length = 1.f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+//      const float one_over_length = 1.f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+      const float one_over_length = 1.f / norm3df(v.x, v.y, v.z);;
       return {
             v.x * one_over_length,
             v.y * one_over_length,
@@ -53,6 +57,10 @@ namespace Polytope {
    __device__ inline float3 operator*(const float3 &a, const float t) {
       return {a.x * t, a.y * t, a.z * t};
    }
+   
+   __device__ inline float3 fma3(const float3 &a, const float3 &b, const float3 &c) {
+      return {fma(a.x, b.x, c.x), fma(a.y, b.y, c.y), fma(a.z, b.z, c.z)};
+   }
 
    __device__ inline float3 operator*(const float3 &a, const float3 b) {
       return {a.x * b.x, a.y * b.y, a.z * b.z};
@@ -62,6 +70,12 @@ namespace Polytope {
       a.x *= t;
       a.y *= t;
       a.z *= t;
+   }
+
+   __device__ inline void operator+=(float3 &a, const float3 &b) {
+      a.x += b.x;
+      a.y += b.y;
+      a.z += b.z;
    }
 
    __device__ inline float3 cross(const float3 &a, const float3 &b) {
@@ -75,6 +89,17 @@ namespace Polytope {
    __device__ inline float dot(const float3 &a, const float3 &b) {
       return a.x * b.x + a.y * b.y + a.z * b.z;
    }
+   
+   __device__ inline float3 cosine_sample_hemisphere(const float u0, const float u1) {
+      const float r = sqrtf(u0);
+      const float theta = M_PI * 2 * u1;
+
+      const float x = r * cosf(theta);
+      const float y = sqrtf(max(0.0f, 1.0f - u0));
+      const float z = r * sinf(theta);
+
+      return make_float3(x, y, z);
+   } 
 
 }
 

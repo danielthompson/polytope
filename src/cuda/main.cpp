@@ -128,9 +128,9 @@ void cuda_run(Polytope::AbstractScene* scene) {
    memory_manager->MallocScene(scene);
    //memory_manager->MallocSamples();
    
-   Polytope::RayGeneratorKernel ray_kernel(scene, memory_manager);
-   ray_kernel.GenerateRays();
-   ray_kernel.CheckRays();
+//   Polytope::RayGeneratorKernel ray_kernel(scene, memory_manager);
+//   ray_kernel.GenerateRays();
+//   ray_kernel.CheckRays();
    
 //   // push geometry
 //   for (const auto mesh : scene->Shapes) {

@@ -5,11 +5,12 @@
 #ifndef POLYTOPE_GPU_MEMORY_MANAGER_H
 #define POLYTOPE_GPU_MEMORY_MANAGER_H
 
+#include <cuda_runtime.h>
 #include "../cpu/shapes/linear_soa/mesh_linear_soa.h"
 #include "../cpu/scenes/AbstractScene.h"
 
 namespace Polytope {
-
+   
    struct DeviceCamera {
       // origin
       float* ox;
@@ -24,6 +25,7 @@ namespace Polytope {
       // camera matrix
       float* cm;
       
+      float fov;
       size_t num_pixels;
    };
    
@@ -35,9 +37,10 @@ namespace Polytope {
       // color.. need to fix this to properly use brdf
       float* src;
       size_t num_bytes, num_vertices, num_faces;
+      float aabb[6];
    };
 
-   struct DeviceSamples {
+   struct Samples {
       float* r;
       float* g;
       float* b;
@@ -48,6 +51,7 @@ namespace Polytope {
       GPUMemoryManager(const unsigned int width, const unsigned int height) 
       : width(width), height(height), device_camera(nullptr), meshes(nullptr) { 
          num_pixels = width * height;
+         
       }
       ~GPUMemoryManager();
       
@@ -56,7 +60,10 @@ namespace Polytope {
       struct DeviceMesh* meshes;
       unsigned int num_meshes;
       
-      struct DeviceSamples* device_samples;
+      float camera_to_world_matrix[16];
+      
+      struct Samples* device_samples;
+      struct Samples host_samples;
       
       unsigned int width, height, num_pixels;
       

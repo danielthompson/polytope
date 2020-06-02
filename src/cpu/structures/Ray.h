@@ -18,7 +18,7 @@ namespace Polytope {
       float MinT = Infinity;
       float MaxT = Infinity;
 
-      int x, y;
+      int x, y, bounce;
 
       Ray() : MinT(Infinity), MaxT(Infinity) { };
       Ray(const Point &origin, const Vector &direction);

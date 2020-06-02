@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(tests "Build all tests." OFF) # Makes boolean 'tests' available.
-# set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Make PROJECT_SOURCE_DIR, PROJECT_BINARY_DIR, and PROJECT_NAME available.
 set(PROJECT_NAME polytope)
@@ -22,8 +22,13 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-error=unused-function -pthread")
 
 set(ispc_options -g --pic)
 
+SET(CMAKE_CUDA_FLAGS_DEBUG "-G -g")
+SET(CMAKE_CUDA_FLAGS_RELEASE "--generate-line-info")
+
 IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
    set(ispc_options --pic -O3)
+# ELSE()
+#    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G -g")
 ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
 # set (ISPC_EXECUTABLE $<TARGET_FILE:ispc>)
@@ -40,12 +45,10 @@ SET(COVERAGE OFF CACHE BOOL "Coverage")
 ################################
 
 add_custom_command(
-        OUTPUT ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o
-        COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.h -o ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.ispc
-        MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.ispc
-        BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o)
-
-
+        OUTPUT ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.o
+        COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.h -o ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.o ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.ispc
+        MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.ispc
+        BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.h)
 
 add_library(polytope_lib
         lib/lodepng.cpp

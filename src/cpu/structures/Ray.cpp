@@ -33,7 +33,12 @@ namespace Polytope {
    }
 
    Point Ray::GetPointAtT(const float t) const {
-      return Origin + (Direction * t);
+      return {
+         std::fma(Direction.x, t, Origin.x),
+         std::fma(Direction.y, t, Origin.y),
+         std::fma(Direction.z, t, Origin.z),
+      };
+      //return Origin + (Direction * t);
    }
 
    void Ray::OffsetOriginForward(const float t) {
@@ -41,6 +46,9 @@ namespace Polytope {
    }
 
    void Ray::OffsetOrigin(const Normal &normal, const float t) {
-      Origin += normal * t;
+      Origin.x = std::fma(normal.x, t, Origin.x);
+      Origin.y = std::fma(normal.y, t, Origin.y);
+      Origin.z = std::fma(normal.z, t, Origin.z);
+//      Origin += normal * t;
    }
 }

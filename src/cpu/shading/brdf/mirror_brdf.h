@@ -20,11 +20,14 @@ namespace Polytope {
 
       Vector sample(const Vector &incoming, Polytope::ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
          //const Normal normal = Normal(0, 1, 0);
-         const float factor = incoming.Dot(normal) * 2;
-         const Vector scaled = Vector(normal * factor);
+//         const float factor = incoming.Dot(normal) * 2;
+//         const Vector scaled = Vector(normal * factor);
+//         pdf = 1.0f;
+//         const Vector outgoing = incoming - scaled;
+//         return outgoing;
+
          pdf = 1.0f;
-         const Vector outgoing = incoming - scaled;
-         return outgoing;
+         return {incoming.x, -incoming.y, incoming.z};
       }
 
       float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const override {

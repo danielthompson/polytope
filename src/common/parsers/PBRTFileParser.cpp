@@ -602,10 +602,10 @@ namespace Polytope {
          if (directive->Name == str::Sampler) {
             missingSampler = false;
             if (directive->Identifier == str::halton) {
-               _sampler = std::make_unique<HaltonSampler>();
+               _sampler = std::make_unique<CenterSampler>();
             } else {
                LogUnknownIdentifier(directive);
-               _sampler = std::make_unique<HaltonSampler>();
+               _sampler = std::make_unique<CenterSampler>();
             }
 
             for (const PBRTArgument& arg : directive->Arguments) {
@@ -632,10 +632,10 @@ namespace Polytope {
       }
 
       if (_sampler == nullptr) {
-         _sampler = std::make_unique<HaltonSampler>();
+         _sampler = std::make_unique<CenterSampler>();
       }
 
-      Log.WithTime("Made sampler.");
+      Log.WithTime("Made (center) sampler.");
 
       // film
 

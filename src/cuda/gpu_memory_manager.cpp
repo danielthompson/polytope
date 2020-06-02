@@ -4,15 +4,20 @@
 
 #include <cuda_runtime.h>
 #include <cassert>
+#include <cstring>
 #include "gpu_memory_manager.h"
-#include "kernels/common_device_functions.cuh"
 #include "check_error.h"
 namespace Polytope {
 
+//   __constant__ float camera_to_world_matrix[16];
+   
    void GPUMemoryManager::MallocScene(Polytope::AbstractScene *scene) {
 
+      cuda_check_error( cudaSetDevice(1) );
+      
       // camera
       struct DeviceCamera host_camera_temp { };
+      host_camera_temp.fov = scene->Camera->Settings.FieldOfView;
       cuda_check_error( cudaMalloc((void **)&(host_camera_temp.ox), sizeof(float) * num_pixels) );
       to_free_list.push_back(host_camera_temp.ox);
       cuda_check_error( cudaMalloc((void **)&(host_camera_temp.oy), sizeof(float) * num_pixels) );
@@ -34,20 +39,26 @@ namespace Polytope {
       cuda_check_error( cudaMalloc((void **)&(device_camera), sizeof(struct DeviceCamera)) );
       to_free_list.push_back(device_camera);
       cuda_check_error( cudaMemcpy(device_camera, &host_camera_temp, sizeof(struct DeviceCamera), cudaMemcpyHostToDevice) );
+
+      memcpy(camera_to_world_matrix, scene->Camera->CameraToWorld.Matrix.Matrix, 16 * sizeof(float));
+      //camera_to_world_matrix = scene->Camera->CameraToWorld.Matrix.Matrix
       
+//      // camera to world matrix
+//      cuda_check_error( cudaMemcpyToSymbol(camera_to_world_matrix, scene->Camera->CameraToWorld.Matrix.Matrix, 16 * sizeof(float), 0, cudaMemcpyHostToDevice) );
+//      
       // samples
-      struct DeviceSamples host_samples_temp { };
-      cuda_check_error( cudaMalloc((void **)&(host_samples_temp.r), sizeof(float) * num_pixels) );
-      to_free_list.push_back(host_samples_temp.r);
-      cuda_check_error( cudaMalloc((void **)&(host_samples_temp.g), sizeof(float) * num_pixels) );
-      to_free_list.push_back(host_samples_temp.g);
-      cuda_check_error( cudaMalloc((void **)&(host_samples_temp.b), sizeof(float) * num_pixels) );
-      to_free_list.push_back(host_samples_temp.b);
+      
+      cuda_check_error( cudaMalloc((void **)&(host_samples.r), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_samples.r);
+      cuda_check_error( cudaMalloc((void **)&(host_samples.g), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_samples.g);
+      cuda_check_error( cudaMalloc((void **)&(host_samples.b), sizeof(float) * num_pixels) );
+      to_free_list.push_back(host_samples.b);
       
       device_samples = nullptr;
-      cuda_check_error( cudaMalloc((void **)&(device_samples), sizeof(struct DeviceSamples)) );
+      cuda_check_error( cudaMalloc((void **)&(device_samples), sizeof(struct Samples)) );
       to_free_list.push_back(device_samples);
-      cuda_check_error( cudaMemcpy(device_samples, &host_samples_temp, sizeof(struct DeviceSamples), cudaMemcpyHostToDevice) );
+      cuda_check_error( cudaMemcpy(device_samples, &host_samples, sizeof(struct Samples), cudaMemcpyHostToDevice) );
       
       // meshes
       constexpr size_t device_mesh_size = sizeof(struct DeviceMesh);
@@ -55,6 +66,8 @@ namespace Polytope {
       struct DeviceMesh* host_meshes_temp = nullptr;
       cuda_check_error( cudaMalloc((void **)&(host_meshes_temp), device_mesh_size * scene->Shapes.size()) );
       
+      meshes = host_meshes_temp;
+      num_meshes = scene->Shapes.size();
       size_t offset = 0;
       
       for (unsigned int i = 0; i < scene->Shapes.size(); i++) {
@@ -75,6 +88,12 @@ namespace Polytope {
          host_mesh_temp.num_bytes = num_bytes;
          host_mesh_temp.num_vertices = num_vertices;
          host_mesh_temp.num_faces = num_faces;
+         host_mesh_temp.aabb[0] = host_mesh->BoundingBox->p0.x;
+         host_mesh_temp.aabb[1] = host_mesh->BoundingBox->p0.y;
+         host_mesh_temp.aabb[2] = host_mesh->BoundingBox->p0.z;
+         host_mesh_temp.aabb[3] = host_mesh->BoundingBox->p1.x;
+         host_mesh_temp.aabb[4] = host_mesh->BoundingBox->p1.y;
+         host_mesh_temp.aabb[5] = host_mesh->BoundingBox->p1.z;
          
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.x), num_bytes) );
          to_free_list.push_back(host_mesh_temp.x);

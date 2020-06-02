@@ -195,12 +195,23 @@ namespace Polytope {
             t,
             face_index,
             hits,
-            num_faces);
+            num_faces,
+            worldSpaceRay.x,
+            worldSpaceRay.y,
+            worldSpaceRay.bounce);
 
       if (!hits || worldSpaceRay.MinT <= t) {
          return;
       }
 
+      bool debug = false;
+      if (worldSpaceRay.x == 245 && worldSpaceRay.y == 64) {
+         debug = true;
+         printf("t: %f\n", t);
+      }
+      
+      
+      
       // now we have the closest face, if any
 
       intersection->Hits = true;
