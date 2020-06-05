@@ -26,6 +26,8 @@ namespace Polytope {
 //         const Vector outgoing = incoming - scaled;
 //         return outgoing;
 
+         refl_spectrum = refl;
+
          pdf = 1.0f;
          return {incoming.x, -incoming.y, incoming.z};
       }

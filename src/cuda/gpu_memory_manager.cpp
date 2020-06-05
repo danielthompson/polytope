@@ -64,7 +64,8 @@ namespace Polytope {
       constexpr size_t device_mesh_size = sizeof(struct DeviceMesh);
       
       struct DeviceMesh* host_meshes_temp = nullptr;
-      cuda_check_error( cudaMalloc((void **)&(host_meshes_temp), device_mesh_size * scene->Shapes.size()) );
+      size_t device_meshes_size = device_mesh_size * scene->Shapes.size();
+      cuda_check_error( cudaMalloc((void **)&(host_meshes_temp), device_meshes_size) );
       
       meshes = host_meshes_temp;
       num_meshes = scene->Shapes.size();
@@ -98,9 +99,11 @@ namespace Polytope {
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.x), num_bytes) );
          to_free_list.push_back(host_mesh_temp.x);
          cuda_check_error( cudaMemcpy(host_mesh_temp.x, &(host_mesh->x[0]), num_bytes, cudaMemcpyHostToDevice) );
+         
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.y), num_bytes) );
          to_free_list.push_back(host_mesh_temp.y);
          cuda_check_error( cudaMemcpy(host_mesh_temp.y, &(host_mesh->y[0]), num_bytes, cudaMemcpyHostToDevice) );
+         
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.z), num_bytes) );
          to_free_list.push_back(host_mesh_temp.z);
          cuda_check_error( cudaMemcpy(host_mesh_temp.z, &(host_mesh->z[0]), num_bytes, cudaMemcpyHostToDevice) );
@@ -110,13 +113,10 @@ namespace Polytope {
 //         cuda_check_error( cudaMemcpy(host_mesh_temp.src, &(host_mesh->src[0]), num_bytes, cudaMemcpyHostToDevice) );
          
          cuda_check_error( cudaMemcpy(host_meshes_temp + offset, &host_mesh_temp, device_mesh_size, cudaMemcpyHostToDevice));
-         offset += device_mesh_size;
+         offset++;
       }
-
       to_free_list.push_back(host_meshes_temp);
-      
    }
-   
    
    GPUMemoryManager::~GPUMemoryManager() {
       for (void* ptr : to_free_list) {

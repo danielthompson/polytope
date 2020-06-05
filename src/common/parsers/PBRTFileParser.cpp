@@ -602,10 +602,10 @@ namespace Polytope {
          if (directive->Name == str::Sampler) {
             missingSampler = false;
             if (directive->Identifier == str::halton) {
-               _sampler = std::make_unique<CenterSampler>();
+               _sampler = std::make_unique<GridSampler>();
             } else {
                LogUnknownIdentifier(directive);
-               _sampler = std::make_unique<CenterSampler>();
+               _sampler = std::make_unique<GridSampler>();
             }
 
             for (const PBRTArgument& arg : directive->Arguments) {

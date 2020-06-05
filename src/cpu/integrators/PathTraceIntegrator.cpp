@@ -16,11 +16,11 @@ namespace Polytope {
       float back_pdf = 1;
       
       bool debug = false;
-      if (x == 245 && y == 64) {
+      if (x == 225 && y == 115) {
          debug = true;
          
-         printf("ro: %f %f %f\n", ray.Origin.x, ray.Origin.y, ray.Origin.z);
-         printf("rd: %f %f %f\n", ray.Direction.x, ray.Direction.y, ray.Direction.z);
+//         printf("ro: %f %f %f\n", ray.Origin.x, ray.Origin.y, ray.Origin.z);
+//         printf("rd: %f %f %f\n", ray.Direction.x, ray.Direction.y, ray.Direction.z);
       }
       
       while (true) {

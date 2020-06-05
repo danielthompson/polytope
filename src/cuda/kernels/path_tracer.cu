@@ -12,6 +12,8 @@
 
 namespace Polytope {
 
+   constexpr unsigned int threads_per_block = 32;
+   
    __constant__ float camera_to_world_matrix[16];
    
    struct device_pointers {
@@ -109,22 +111,33 @@ namespace Polytope {
       
       // const unsigned int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
 
-      __shared__ float v0x[32];
-      __shared__ float v0y[32];
-      __shared__ float v0z[32];
+      __shared__ float v0x[threads_per_block];
+      __shared__ float v0y[threads_per_block];
+      __shared__ float v0z[threads_per_block];
 
-      __shared__ float v1x[32];
-      __shared__ float v1y[32];
-      __shared__ float v1z[32];
+      __shared__ float v1x[threads_per_block];
+      __shared__ float v1y[threads_per_block];
+      __shared__ float v1z[threads_per_block];
 
-      __shared__ float v2x[32];
-      __shared__ float v2y[32];
-      __shared__ float v2z[32];
-      
+      __shared__ float v2x[threads_per_block];
+      __shared__ float v2y[threads_per_block];
+      __shared__ float v2z[threads_per_block];
+
+      if (debug) {
+         printf("  intersection\n");
+      }
+
       // for each mesh on the device
       for (unsigned int mesh_index = 0; mesh_index < device_pointers.num_meshes; mesh_index++) {
          DeviceMesh mesh = device_pointers.device_meshes[mesh_index];
-
+         if (debug) {
+            printf("    mesh_index %i\n", mesh_index);
+            printf("      %p\n", &(device_pointers.device_meshes[mesh_index]));
+            printf("      aabb (%f, %f, %f), (%f, %f, %f)\n", mesh.aabb[0], mesh.aabb[1], mesh.aabb[2], mesh.aabb[3], mesh.aabb[4], mesh.aabb[5]);
+            printf("      num_faces %i\n", mesh.num_faces);
+            printf("      num_vertices %i\n", mesh.num_vertices);
+            printf("      num_bytes %i\n", mesh.num_bytes);
+         }
          bool all_samples_miss = true;
          
          // check to see if all samples miss the mesh's AABB
@@ -135,8 +148,12 @@ namespace Polytope {
          }
 
          // if all samples miss, we can safely skip the mesh
-         if (__all_sync(0xFFFFFFFF, all_samples_miss))
+         if (__all_sync(0xFFFFFFFF, all_samples_miss)) {
+            if (debug) {
+               printf("      all samples in the warp missed the mesh's aabb\n");   
+            }
             continue;
+         }
          
          const float* mesh_x = mesh.x;
          const float* mesh_y = mesh.y;
@@ -144,7 +161,8 @@ namespace Polytope {
          
          // for each face in the mesh
          for (unsigned int face_index = 0; face_index < mesh.num_faces; face_index++) {
-
+            bool debug2 = debug && face_index == 1509;
+            
             // every 32 faces, have the threads in the warp coordinate to load the next 32 faces' vertices from global to shared memory
             const unsigned int shared_index = face_index & 0x0000001Fu;
             const unsigned int thread_face_index = face_index + threadIdx.x;
@@ -166,24 +184,14 @@ namespace Polytope {
             
             __syncthreads();
             
-            // skip this face if all the samples are done with it
-            bool all_samples_done = true;
-            for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
-               if (!active_mask[sample_index])
-                  all_samples_done = false;
-            }
-            if (!all_samples_done) {
-               continue;
-            }
-
-            //            assert(v0x[shared_index] == mesh.x[face_index]);
+//            assert(v0x[shared_index] == mesh.x[face_index]);
 //            assert(v0y[face_index % 32] == mesh.y[face_index]);
 //            assert(v0z[face_index % 32] == mesh.z[face_index]);
 //
 //            assert(v1x[face_index % 32] == mesh.x[face_index + v1_index_offset]);
 //            assert(v1y[face_index % 32] == mesh.y[face_index + v1_index_offset]);
 //            assert(v1z[face_index % 32] == mesh.z[face_index + v1_index_offset]);
-//
+//        
 //            assert(v2x[face_index % 32] == mesh.x[face_index + v2_index_offset]);
 //            assert(v2y[face_index % 32] == mesh.y[face_index + v2_index_offset]);
 //            assert(v2z[face_index % 32] == mesh.z[face_index + v2_index_offset]);
@@ -200,7 +208,6 @@ namespace Polytope {
             //const float oneOverLength = 1.0f / sqrt(dot(pn, pn));
             pn *= __frsqrt_rn(dot(pn, pn));
 //            pn *= (1.0f / sqrtf(dot(pn, pn)));
-
             
             // TODO do all samples for a vertex batch at once, since loading the vertices from global to shared memory is the bottleneck
             for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
@@ -267,7 +274,7 @@ namespace Polytope {
             }
          }
       }
-
+      
       for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
          device_intersection& intersection = sample_intersections[sample_index];
          if (intersection.hits) {
@@ -349,7 +356,7 @@ namespace Polytope {
       // generate camera rays
 
       constexpr float PIOver360 = M_PI / 360.f;
-      constexpr unsigned int samples = 1 * 1;
+      constexpr unsigned int samples = 1;
       
       const float aspect = (float) width / (float) height;
       const float tan_fov_half = tan(device_pointers.device_camera->fov * PIOver360);
@@ -365,8 +372,8 @@ namespace Polytope {
       const float offset_step_initial = offset_step / 2.f;
 
       bool debug = false;
-      if (pixel_x == 196 && pixel_y == 179) {
-         debug = true;
+      if (pixel_x == 275 && pixel_y == 275) {
+         debug = false;
       }
 
       curandState state;
@@ -398,30 +405,32 @@ namespace Polytope {
             normalize(world_direction);
             sample_origins[sample_index] = world_origin;
             sample_directions[sample_index] = world_direction;
-            
-//            sample_intersections[sample_index].face_index = 0;
-//            sample_intersections[sample_index].mesh_index = 0;
-//            sample_intersections[sample_index].hit_point = { 0.f, 0.f, 0.f };
-//            sample_intersections[sample_index].t = INFINITY;
-//            sample_intersections[sample_index].hits = false;
          }
       }
-            
-      unsigned int num_bounces = 0;
-      float3 src[samples] = { { 1.0f, 1.0f, 1.0f} };
 
-      bool active[samples] = { true };
-      
+      float3 src[samples];
+      bool active[samples];
+      for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
+         // TODO initialize
+         src[sample_index] = { 1.0f, 1.0f, 1.0f};
+         active[sample_index] = true;
+      }
+
+      unsigned int num_bounces = 0;
       while (true) {
-//         if (debug) {
-//            printf("thread %i: bounce %i\n", threadIdx.x, num_bounces);
-//         }
+         if (debug) {
+            printf("thread %i: bounce %i\n", threadIdx.x, num_bounces);
+         }
          
          if (num_bounces > 5) {
             // kill any samples that are still active
             for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
-               if (active[sample_index]) 
-                  src[sample_index] = { 0, 0, 0};
+               if (active[sample_index]) {
+                  src[sample_index] = {0, 0, 0};
+                  if (debug) {
+                     printf("  sample %i: killed\n", sample_index);
+                  }
+               }
             }
             break;
          }
@@ -429,17 +438,18 @@ namespace Polytope {
          // if no samples are active in this warp, we're done
          bool any_sample_active = false;
          for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
+            
             if (active[sample_index])
                any_sample_active = true;
          }
          
          if (__all_sync(0xFFFFFFFF, !any_sample_active)) {
-//            if (debug) {
-//               printf("thread %i: exited loop before bounce %i (all non-active)\n", threadIdx.x, num_bounces);
-//            }
+            if (debug) {
+               printf("  exited loop before intersecting bounce %i (all samples in warp inactive)\n", num_bounces);
+            }
             break;
          }
-
+         
          // reset all intersections
          for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
             sample_intersections[sample_index].face_index = 0;
@@ -448,7 +458,6 @@ namespace Polytope {
             sample_intersections[sample_index].t = INFINITY;
             sample_intersections[sample_index].hits = false;
          }
-         
          linear_intersect(
             sample_intersections,
             sample_origins,
@@ -460,31 +469,29 @@ namespace Polytope {
          
          // process each sample
          for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
+            if (debug) {
+               printf("  sample %i: \n", sample_index);
+            }
             if (active[sample_index]) {
-//               if (debug) {
-//                  printf("bounce %i: \n", num_bounces);
-//                  printf("t: %f\n", intersection.t);
-//               }
                device_intersection intersection = sample_intersections[sample_index];
                float3 ro = sample_origins[sample_index];
                float3 rd = sample_directions[sample_index];
                
                if (!intersection.hits) {
-//                  if (debug) {
-//                     printf("no hit at bounce: %i\n", num_bounces);
-//                     printf("o: %f %f %f\n", ro.x, ro.y, ro.z);
-//                     printf("d: %f %f %f\n", rd.x, rd.y, rd.z);
-//                  }
+                  if (debug) {
+                     printf("    no hit, becoming inactive\n");
+//                     printf("    o: %f %f %f\n", ro.x, ro.y, ro.z);
+//                     printf("    d: %f %f %f\n", rd.x, rd.y, rd.z);
+                  }
                   active[sample_index] = false;
-                  //printf("thread %i: became inactive at bounce %i (no hit)\n", threadIdx.x, num_bounces);
                   continue;
                }
 
-//               if (debug) {
-//                  printf("hit face index %i\n", intersection.face_index);
-//                  printf("o: %f %f %f\n", ro.x, ro.y, ro.z);
-//                  printf("d: %f %f %f\n", rd.x, rd.y, rd.z);
-//               }
+               if (debug) {
+                  printf("    hit mesh_index %i face_index %i\n", intersection.mesh_index, intersection.face_index);
+                  printf("    o: %f %f %f\n", ro.x, ro.y, ro.z);
+                  printf("    d: %f %f %f\n", rd.x, rd.y, rd.z);
+               }
 
                // todo hit light
 
@@ -492,16 +499,10 @@ namespace Polytope {
                // const Polytope::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
                float3 local_incoming = normalize(make_float3(dot(rd, intersection.tangent1), dot(rd, intersection.normal), dot(rd, intersection.tangent2)));
 
-               // mirror brdf
+               // mirror
 //               const float3 local_outgoing = make_float3(local_incoming.x, -local_incoming.y, local_incoming.z); 
-//               if (debug) {
-//                  printf("li: %f %f %f\n", local_incoming.x, local_incoming.y, local_incoming.z);
-//                  printf("lo: %f %f %f\n", local_outgoing.x, local_outgoing.y, local_outgoing.z);
-//
-//               }
 
-               // lambert brdf
-
+               // lambert
                float u0 = curand_uniform(&state);
                float u1 = curand_uniform(&state);
                float3 local_outgoing = cosine_sample_hemisphere(u0, u1);
@@ -523,16 +524,21 @@ namespace Polytope {
                sample_origins[sample_index] = intersection.hit_point;
                sample_directions[sample_index] = world_outgoing;
                // TODO replace with BRDF refl
-               src[sample_index] = src[sample_index] * make_float3(0.75f, 0.5f, 0.5f);
+               src[sample_index] = src[sample_index] * make_float3(0.8f, 0.5f, 0.5f);
 
-//               if (debug) {
-//                  printf("bounce ray:\n");
-//                  printf("o: %f %f %f\n", sample_origins[sample_index].x, sample_origins[sample_index].y, sample_origins[sample_index].z);
-//                  printf("d: %f %f %f\n", sample_directions[sample_index].x, sample_directions[sample_index].y, sample_directions[sample_index].z);
-//               }
+               if (debug) {
+                  printf("    bounce ray:\n");
+                  printf("    o: %f %f %f\n", sample_origins[sample_index].x, sample_origins[sample_index].y, sample_origins[sample_index].z);
+                  printf("    d: %f %f %f\n", sample_directions[sample_index].x, sample_directions[sample_index].y, sample_directions[sample_index].z);
+               }
                
                // todo reflect / bounce according to BRDF
                
+            }
+            else {
+               if (debug) {
+                  printf("    inactive\n");
+               }
             }
          }
          num_bounces++;
@@ -541,8 +547,12 @@ namespace Polytope {
 //            if (debug)
 //               printf("%f %f %f\n", src.x, src.y, src.z);
 
-      for (auto sample_index : src) {
-         sample_sum += sample_index;
+      for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
+         if (debug) {
+            float3 sample = src[sample_index];
+            printf("sample %i src: %f %f %f\n", sample_index, sample.x, sample.y, sample.z);
+         }
+         sample_sum += src[sample_index];
       }
 
 //      if (debug)
@@ -571,14 +581,14 @@ namespace Polytope {
       
       cuda_check_error( cudaMemcpyToSymbol(camera_to_world_matrix, memory_manager->camera_to_world_matrix, sizeof(float) * 16));
       
-      constexpr unsigned int threadsPerBlock = 32;
-      const unsigned int blocksPerGrid = (memory_manager->num_pixels + threadsPerBlock - 1) / threadsPerBlock;
+      
+      const unsigned int blocksPerGrid = (memory_manager->num_pixels + threads_per_block - 1) / threads_per_block;
 
       const unsigned int width = memory_manager->width;
       const unsigned int height = memory_manager->height;
       
       cudaError_t error = cudaSuccess;
-      path_trace_kernel<<<blocksPerGrid, threadsPerBlock>>>(width, height, device_pointers);
+      path_trace_kernel<<<blocksPerGrid, threads_per_block>>>(width, height, device_pointers);
 
       cudaDeviceSynchronize();
       error = cudaGetLastError();

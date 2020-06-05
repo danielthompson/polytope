@@ -204,11 +204,11 @@ namespace Polytope {
          return;
       }
 
-      bool debug = false;
-      if (worldSpaceRay.x == 245 && worldSpaceRay.y == 64) {
-         debug = true;
-         printf("t: %f\n", t);
-      }
+//      bool debug = false;
+//      if (worldSpaceRay.x == 245 && worldSpaceRay.y == 64) {
+//         debug = true;
+//         printf("t: %f\n", t);
+//      }
       
       
       

@@ -64,8 +64,8 @@ export void soa_linear_intersect (
 
       bool debug = false;
       if (pixel_x == 245 && pixel_y == 64 && bounce == 2 && index == 6175) {
-         debug = true;
-         print("foo");
+         debug = false;
+//         print("foo");
       }
       
       const unsigned int v1index = index + v1_index_offset;
