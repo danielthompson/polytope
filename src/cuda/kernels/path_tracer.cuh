@@ -12,12 +12,12 @@
 namespace Polytope {
    class PathTracerKernel {
    public:
-      explicit PathTracerKernel(std::shared_ptr<Polytope::GPUMemoryManager> memory_manager) 
-         : memory_manager(std::move(memory_manager)) { }
+      explicit PathTracerKernel(Polytope::GPUMemoryManager* memory_manager) 
+         : memory_manager(memory_manager) { }
          
       void Trace();
 
-      std::shared_ptr<Polytope::GPUMemoryManager> memory_manager;
+      Polytope::GPUMemoryManager* memory_manager;
    };
 }
 

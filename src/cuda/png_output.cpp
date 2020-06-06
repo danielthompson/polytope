@@ -8,7 +8,7 @@
 #include "check_error.h"
 
 namespace Polytope {
-   void OutputPNG::Output(const std::shared_ptr<Polytope::GPUMemoryManager>& memory_manager) {
+   void OutputPNG::Output(const Polytope::GPUMemoryManager* memory_manager) {
       // copy samples from device to host
 
       const unsigned int bytes = sizeof(float) * memory_manager->num_pixels;

@@ -55,7 +55,7 @@ namespace Polytope {
       }
       ~GPUMemoryManager();
       
-      void MallocScene(Polytope::AbstractScene* scene);
+      size_t MallocScene(Polytope::AbstractScene* scene);
       struct DeviceCamera* device_camera;
       struct DeviceMesh* meshes;
       unsigned int num_meshes;

@@ -5,19 +5,46 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <sstream>
 #include "../common/utilities/Common.h"
 #include "../common/utilities/OptionsParser.h"
 #include "../common/structures/Point2.h"
 #include "../common/parsers/PBRTFileParser.h"
 #include "kernels/generate_rays.cuh"
-#include "../cpu/shapes/linear_soa/mesh_linear_soa.h"
 #include "gpu_memory_manager.h"
 #include "kernels/path_tracer.cuh"
 #include "png_output.h"
 
 Polytope::Logger Log;
 
-void cuda_run(Polytope::AbstractScene* scene);
+float roundOff(float n) {
+   float d = n * 100.0f;
+   int i = d + 0.5;
+   d = (float)i / 100.0f;
+   return d;
+}
+
+std::string convertToString(float num) {
+   std::ostringstream convert;
+   convert << num;
+   return convert.str();
+}
+
+std::string convertSize(size_t size) {
+   static const char *SIZES[] = { "B/s", "KB/s", "MB/s", "GB/s" };
+   int div = 0;
+   size_t rem = 0;
+
+   while (size >= 1024 && div < (sizeof SIZES / sizeof *SIZES)) {
+      rem = (size % 1024);
+      div++;
+      size /= 1024;
+   }
+
+   float size_d = (float)size + (float)rem / 1024.0f;
+   std::string result = convertToString(roundOff(size_d)) + " " + SIZES[div];
+   return result;
+}
 
 int main(int argc, char* argv[]) {
    try {
@@ -55,11 +82,6 @@ Other:
 
       const auto totalRunTimeStart = std::chrono::system_clock::now();
 
-      constexpr unsigned int width = 640;
-      constexpr unsigned int height = 640;
-
-      const Polytope::Bounds bounds(width, height);
-
       Log.WithTime("Using 1 CPU thread.");
 
       {
@@ -86,63 +108,46 @@ Other:
                std::to_string(runner->NumSamples) + " spp.");
 
 
+         Log.WithTime("Copying data to GPU...");
+
+         const auto copy_start_time = std::chrono::system_clock::now();
+         const unsigned int width = runner->Scene->Camera->Settings.Bounds.x;
+         const unsigned int height = runner->Scene->Camera->Settings.Bounds.y;
+
+         Polytope::GPUMemoryManager memory_manager = Polytope::GPUMemoryManager(width, height);
+         size_t bytes_copied = memory_manager.MallocScene(runner->Scene);
+         const auto copy_end_time = std::chrono::system_clock::now();
+         const std::chrono::duration<double> copy_duration = copy_end_time - copy_start_time;
+         
+         float effective_bandwidth = ((float) bytes_copied) / (float)copy_duration.count();
+         std::string bandwidth_string = convertSize((size_t)effective_bandwidth);
+         Log.WithTime("Copied " + std::to_string(bytes_copied) + " bytes in " + std::to_string(copy_duration.count()) + "s (" + bandwidth_string + ").");
          Log.WithTime("Rendering...");
-
-         const auto renderingStart = std::chrono::system_clock::now();
-         cuda_run(runner->Scene);
-         const auto renderingEnd = std::chrono::system_clock::now();
-
-         const std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
-         Log.WithTime("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
+         
+         Polytope::PathTracerKernel path_tracer_kernel(&memory_manager);
+         const auto render_start_time = std::chrono::system_clock::now();
+         path_tracer_kernel.Trace();
+         const auto render_end_time = std::chrono::system_clock::now();
+         const std::chrono::duration<double> render_duration = render_end_time - render_start_time;
+         Log.WithTime("Render complete in " + std::to_string(render_duration.count()) + "s.");
 
          Log.WithTime("Outputting to film...");
-         const auto outputStart = std::chrono::system_clock::now();
-         //runner->Output();
-         const auto outputEnd = std::chrono::system_clock::now();
+         const auto output_start_time = std::chrono::system_clock::now();
+         Polytope::OutputPNG output;
+         output.Output(&memory_manager);
+         const auto output_end_time = std::chrono::system_clock::now();
 
-         const std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
-         Log.WithTime("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
+         const std::chrono::duration<double> output_duration = output_end_time - output_start_time;
+         Log.WithTime("Output complete in " + std::to_string(output_duration.count()) + "s.");
       }
 
       const auto totalRunTimeEnd = std::chrono::system_clock::now();
       const std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
 
       Log.WithTime("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
-
       Log.WithTime("Exiting Polytope.");
    }
    catch (const std::exception&) {
       return EXIT_FAILURE;
    }
-}
-
-void cuda_run(Polytope::AbstractScene* scene) {
-   // put pixels 
-   // determine ray sample positions
-   // generate rays
-
-   const unsigned int width = scene->Camera->Settings.Bounds.x;
-   const unsigned int height = scene->Camera->Settings.Bounds.y;
-   
-   std::shared_ptr<Polytope::GPUMemoryManager> memory_manager = std::make_shared<Polytope::GPUMemoryManager>(width, height);
-   memory_manager->MallocScene(scene);
-   //memory_manager->MallocSamples();
-   
-//   Polytope::RayGeneratorKernel ray_kernel(scene, memory_manager);
-//   ray_kernel.GenerateRays();
-//   ray_kernel.CheckRays();
-   
-//   // push geometry
-//   for (const auto mesh : scene->Shapes) {
-//      auto* cast_mesh = dynamic_cast<Polytope::MeshLinearSOA*>(mesh);
-//      memory_manager->AddMesh(cast_mesh);
-//   }
-//   
-   // walk rays through the scene
-   Polytope::PathTracerKernel path_tracer_kernel(memory_manager);
-   path_tracer_kernel.Trace();
-   
-   // output to file
-   Polytope::OutputPNG output;
-   output.Output(memory_manager);
 }

@@ -356,7 +356,7 @@ namespace Polytope {
       // generate camera rays
 
       constexpr float PIOver360 = M_PI / 360.f;
-      constexpr unsigned int samples = 1;
+      constexpr unsigned int samples = 1 * 1;
       
       const float aspect = (float) width / (float) height;
       const float tan_fov_half = tan(device_pointers.device_camera->fov * PIOver360);

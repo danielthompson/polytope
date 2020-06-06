@@ -7,6 +7,13 @@
 
 #include "Logger.h"
 
+#define ERROR(fmt, ...) \
+            do { fprintf(stderr, "Error: "); fprintf(stderr, fmt, __VA_ARGS__); fprintf(stderr, "\n"); exit(1); } while (0)
+
+#define WARNING(fmt, ...) \
+            do { fprintf(stderr, "Warning: "); fprintf(stderr, fmt, __VA_ARGS__); fprintf(stderr, "\n"); } while (0)
+
+
 extern Polytope::Logger Log;
 
 std::string GetCurrentWorkingDirectory();

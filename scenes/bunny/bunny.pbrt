@@ -12,6 +12,6 @@ WorldBegin
     TransformBegin
         Translate .0175 -.105 0
         # Rotate -90 1 0 0
-        Shape "plymesh" "string filename" [ bunny.ply ]
+        Shape "plymesh" "string filename" [ "bunny.ply" ]
     TransformEnd
 WorldEnd

@@ -45,28 +45,32 @@ namespace Polytope {
 
       std::string line;
 
+      unsigned int line_number = 0;
+      
       // ply header
       if (getline(*stream, line)) {
+         line_number++;
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
          if (!(iss >> word) || word != "ply") {
-            throw std::invalid_argument(filepath + ": Missing PLY header");
+            ERROR("%s:%i Missing PLY header", filepath.c_str(), line_number);
          }
       }
       else {
-         throw std::invalid_argument(filepath + ": Read error when trying to read PLY header");
+         ERROR("%s:%i Read error when trying to read PLY header", filepath.c_str(), line_number);
       }
 
       // format
       if (getline(*stream, line)) {
+         line_number++;
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
 
          if (!(iss >> word) || word != "format") {
-            throw std::invalid_argument(filepath + ": Missing \"format\" header");
+            ERROR("%s:%i Missing \"format\" header", filepath.c_str(), line_number);
          }
          if (!(iss >> word)) {
-            throw std::invalid_argument(filepath + ": Unsupported format");
+            ERROR("%s:%i Read error when reading format type", filepath.c_str(), line_number);
          }
          if (word == "ascii") {
             *format = ply_format::ascii;
@@ -78,26 +82,41 @@ namespace Polytope {
             *format = ply_format::binary_be;
          }
          else {
-            throw std::invalid_argument(filepath + ": Read error when reading format type");
+            ERROR("%s:%i Unsupported format [%s]", filepath.c_str(), line_number, word.c_str());
          }
          
-         if (!(iss >> word) || word != "1.0") {
-            throw std::invalid_argument(filepath + ": Unsupported format version");
+         if (!(iss >> word)) {
+            ERROR("%s:%i Read error when reading format version", filepath.c_str(), line_number);
+         }
+         if (word != "1.0") {
+            ERROR("%s:%i Unsupported format version [%s]", filepath.c_str(), line_number, word.c_str());
          }
       }
       else {
-         throw std::invalid_argument(filepath + ": Read error when reading format line");
+         ERROR("%s:%i Read error when reading format line", filepath.c_str(), line_number);
       }
 
       // rest of header
 
+      bool has_x, has_y, has_z;
+      
       bool in_vertex = false;
       bool in_face = false;
       while (getline(*stream, line)) {
+         line_number++;
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
          iss >> word;
          if (word == "end_header") {
+            if (!has_x) {
+               ERROR("%s:%i Header missing element x property", filepath.c_str(), line_number);
+            }
+            if (!has_y) {
+               ERROR("%s:%i Header missing element y property", filepath.c_str(), line_number);
+            }
+            if (!has_z) {
+               ERROR("%s:%i Header missing element z property", filepath.c_str(), line_number);
+            }
             break;
          }
          else if (word == "element") {
@@ -119,28 +138,41 @@ namespace Polytope {
             if (in_vertex) {
                iss >> word;
                if (word != "float32" && word != "float") {
-                  throw std::invalid_argument(filepath + ": Unknown property datatype");
+                  WARNING("%s:%i Unknown property type [%s]", filepath.c_str(), line_number, word.c_str());
+                  continue;
                }
                iss >> word;
-               if (!(word == "x" || word == "y" || word == "z")) {
-                  throw std::invalid_argument(filepath + ": Unknown property name");
+               if (word == "x") {
+                  has_x = true;
+                  continue;
+               }
+               else if (word == "y") {
+                  has_y = true;
+                  continue;
+               }
+               else if (word == "z") {
+                  has_z = true;
+                  continue;
+               }
+               else {
+                  WARNING("%s:%i Ignoring unknown property name [%s]", filepath.c_str(), line_number, word.c_str());
                }
             }
             else if (in_face) {
 
             }
             else {
-               throw std::invalid_argument(filepath + ": Property outside of element");
+               ERROR("%s:%i Property outside of element", filepath.c_str(), line_number);
             }
          }
       }
-
+      
       if (*num_vertices == 0) {
-         throw std::invalid_argument(filepath + ": Header contains no vertices");
+         ERROR("%s:%i Header contains no vertices", filepath.c_str(), line_number);
       }
 
       if (*num_faces == 0) {
-         throw std::invalid_argument(filepath + ": Header contains no faces");
+         ERROR("%s:%i Header contains no faces", filepath.c_str(), line_number);
       }
 
       if (*format == ply_format::binary_le || *format == ply_format::binary_be) {

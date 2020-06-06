@@ -17,7 +17,7 @@ namespace Polytope {
       
       bool debug = false;
       if (x == 225 && y == 115) {
-         debug = true;
+         debug = false;
          
 //         printf("ro: %f %f %f\n", ray.Origin.x, ray.Origin.y, ray.Origin.z);
 //         printf("rd: %f %f %f\n", ray.Direction.x, ray.Direction.y, ray.Direction.z);

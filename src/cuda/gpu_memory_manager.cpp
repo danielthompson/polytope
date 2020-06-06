@@ -11,8 +11,10 @@ namespace Polytope {
 
 //   __constant__ float camera_to_world_matrix[16];
    
-   void GPUMemoryManager::MallocScene(Polytope::AbstractScene *scene) {
+   size_t GPUMemoryManager::MallocScene(Polytope::AbstractScene *scene) {
 
+      size_t bytes_copied = 0;
+      
       cuda_check_error( cudaSetDevice(1) );
       
       // camera
@@ -40,6 +42,8 @@ namespace Polytope {
       to_free_list.push_back(device_camera);
       cuda_check_error( cudaMemcpy(device_camera, &host_camera_temp, sizeof(struct DeviceCamera), cudaMemcpyHostToDevice) );
 
+      bytes_copied += sizeof(struct DeviceCamera);
+      
       memcpy(camera_to_world_matrix, scene->Camera->CameraToWorld.Matrix.Matrix, 16 * sizeof(float));
       //camera_to_world_matrix = scene->Camera->CameraToWorld.Matrix.Matrix
       
@@ -59,6 +63,8 @@ namespace Polytope {
       cuda_check_error( cudaMalloc((void **)&(device_samples), sizeof(struct Samples)) );
       to_free_list.push_back(device_samples);
       cuda_check_error( cudaMemcpy(device_samples, &host_samples, sizeof(struct Samples), cudaMemcpyHostToDevice) );
+
+      bytes_copied += sizeof(struct Samples);
       
       // meshes
       constexpr size_t device_mesh_size = sizeof(struct DeviceMesh);
@@ -70,6 +76,8 @@ namespace Polytope {
       meshes = host_meshes_temp;
       num_meshes = scene->Shapes.size();
       size_t offset = 0;
+      
+      // TODO try creating one stream per mesh and copying them async
       
       for (unsigned int i = 0; i < scene->Shapes.size(); i++) {
 
@@ -99,23 +107,34 @@ namespace Polytope {
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.x), num_bytes) );
          to_free_list.push_back(host_mesh_temp.x);
          cuda_check_error( cudaMemcpy(host_mesh_temp.x, &(host_mesh->x[0]), num_bytes, cudaMemcpyHostToDevice) );
+
+         bytes_copied += num_bytes;
          
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.y), num_bytes) );
          to_free_list.push_back(host_mesh_temp.y);
          cuda_check_error( cudaMemcpy(host_mesh_temp.y, &(host_mesh->y[0]), num_bytes, cudaMemcpyHostToDevice) );
+
+         bytes_copied += num_bytes;
          
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.z), num_bytes) );
          to_free_list.push_back(host_mesh_temp.z);
          cuda_check_error( cudaMemcpy(host_mesh_temp.z, &(host_mesh->z[0]), num_bytes, cudaMemcpyHostToDevice) );
 
+         bytes_copied += num_bytes;
+         
          // TODO material / BRDF
 //         cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.src), sizeof(float) * 3) );
 //         cuda_check_error( cudaMemcpy(host_mesh_temp.src, &(host_mesh->src[0]), num_bytes, cudaMemcpyHostToDevice) );
          
          cuda_check_error( cudaMemcpy(host_meshes_temp + offset, &host_mesh_temp, device_mesh_size, cudaMemcpyHostToDevice));
+
+         bytes_copied += device_mesh_size;
+         
          offset++;
       }
       to_free_list.push_back(host_meshes_temp);
+      
+      return bytes_copied;
    }
    
    GPUMemoryManager::~GPUMemoryManager() {

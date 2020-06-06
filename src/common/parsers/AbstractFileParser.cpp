@@ -33,10 +33,8 @@ namespace Polytope {
 
       if (stream->good()) {
          Log.WithTime("Opened " + mode_string + " stream on [" + absolute_path + "].");
-
       } else {
-         Log.WithTime("Couldn't open stream on [" + absolute_path + "] due to [" + strerror(errno));
-         throw std::invalid_argument("Couldn't open stream on [" + absolute_path + "].");
+         ERROR("Couldn't open stream on [%s] due to [%s]", absolute_path.c_str(), strerror(errno));
       }
 
       return stream;
@@ -53,5 +51,4 @@ namespace Polytope {
    unsigned int AbstractFileParser::stoui(const std::string &text) const {
       return static_cast<unsigned int>(stoi(text));
    }
-
 }

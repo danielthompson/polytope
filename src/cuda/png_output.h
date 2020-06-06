@@ -10,7 +10,7 @@
 namespace Polytope {
    class OutputPNG {
    public:
-      static void Output(const std::shared_ptr<Polytope::GPUMemoryManager>& memory_manager);
+      static void Output(const Polytope::GPUMemoryManager* memory_manager);
    };
 }
 
