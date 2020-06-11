@@ -7,7 +7,7 @@
 #include "../utilities/Common.h"
 #include "errno.h"
 
-namespace Polytope {
+namespace poly {
 
    std::unique_ptr<std::ifstream> AbstractFileParser::open_stream(const std::string &filepath, const bool binary) const {
       std::string absolute_path;

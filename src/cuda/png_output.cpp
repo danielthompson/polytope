@@ -7,8 +7,8 @@
 #include "../../lib/lodepng.h"
 #include "check_error.h"
 
-namespace Polytope {
-   void OutputPNG::Output(const Polytope::GPUMemoryManager* memory_manager) {
+namespace poly {
+   void OutputPNG::Output(const poly::GPUMemoryManager* memory_manager) {
       // copy samples from device to host
 
       const unsigned int bytes = sizeof(float) * memory_manager->num_pixels;

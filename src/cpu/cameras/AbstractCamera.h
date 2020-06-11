@@ -2,15 +2,15 @@
 // Created by Daniel on 20-Feb-18.
 //
 
-#ifndef POLYTOPE_ABSTRACTCAMERA_H
-#define POLYTOPE_ABSTRACTCAMERA_H
+#ifndef POLY_ABSTRACTCAMERA_H
+#define POLY_ABSTRACTCAMERA_H
 
 #include "../structures/Vectors.h"
 #include "../../common/structures/Point2.h"
 #include "../structures/Transform.h"
 #include "CameraSettings.h"
 
-namespace Polytope {
+namespace poly {
 
    class AbstractCamera {
    public:
@@ -35,4 +35,4 @@ namespace Polytope {
 }
 
 
-#endif //POLYTOPE_ABSTRACTCAMERA_H
+#endif //POLY_ABSTRACTCAMERA_H

@@ -6,11 +6,11 @@
 namespace Tests {
 
    namespace Intersection {
-      using Polytope::Intersection;
-      using Polytope::Vector;
-      using Polytope::Normal;
-      using Polytope::Ray;
-      using Polytope::BoundingBox;
+      using poly::Intersection;
+      using poly::Vector;
+      using poly::Normal;
+      using poly::Ray;
+      using poly::BoundingBox;
 
       namespace Transformation {
          TEST(Intersection, WorldToLocal1) {

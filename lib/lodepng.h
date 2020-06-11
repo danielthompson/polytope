@@ -1,5 +1,5 @@
-#ifndef POLYTOPE_LODEPNG_H
-#define POLYTOPE_LODEPNG_H
+#ifndef POLY_LODEPNG_H
+#define POLY_LODEPNG_H
 
 /*
 LodePNG version 20180114
@@ -1772,4 +1772,4 @@ Copyright (c) 2005-2017 Lode Vandevenne
 */
 
 
-#endif //POLYTOPE_LODEPNG_H
+#endif //POLY_LODEPNG_H

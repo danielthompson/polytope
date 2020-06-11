@@ -6,10 +6,12 @@
 #include <cstring>
 #include "PLYParser.h"
 #include "../../utilities/Common.h"
+#include "../../../cpu/shapes/linear_soa/mesh_linear_soa.h"
 
-namespace Polytope {
+namespace poly {
 
-   float PLYParser::read_float(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
+   template <class TMesh>
+   float PLYParser<TMesh>::read_float(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
       char buffer[4];
       float value;
       stream->read(buffer, 4);
@@ -21,7 +23,8 @@ namespace Polytope {
       return value;
    }
 
-   int PLYParser::read_int(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
+   template <class TMesh>
+   int PLYParser<TMesh>::read_int(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
       char buffer[4];
       int value;
       stream->read(buffer, 4);
@@ -33,15 +36,17 @@ namespace Polytope {
       return value;
    }
 
-   unsigned char PLYParser::read_uchar(const std::unique_ptr<std::ifstream> &stream) {
+   template <class TMesh>
+   unsigned char PLYParser<TMesh>::read_uchar(const std::unique_ptr<std::ifstream> &stream) {
       char value;
       stream->read(&value, 1);
       unsigned char unsigned_value = reinterpret_cast<unsigned char&>(value);
       return unsigned_value;
    }
-   
-   std::unique_ptr<std::ifstream> PLYParser::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
-      std::unique_ptr<std::ifstream> stream = open_ascii_stream(filepath);
+
+   template <class TMesh>
+   std::unique_ptr<std::ifstream> PLYParser<TMesh>::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
+      std::unique_ptr<std::ifstream> stream = AbstractFileParser::open_ascii_stream(filepath);
 
       std::string line;
 
@@ -138,7 +143,7 @@ namespace Polytope {
             if (in_vertex) {
                iss >> word;
                if (word != "float32" && word != "float") {
-                  WARNING("%s:%i Unknown property type [%s]", filepath.c_str(), line_number, word.c_str());
+                  WARNING("%s:%i Ignoring unknown property type [%s]", filepath.c_str(), line_number, word.c_str());
                   continue;
                }
                iss >> word;
@@ -178,14 +183,15 @@ namespace Polytope {
       if (*format == ply_format::binary_le || *format == ply_format::binary_be) {
          std::streampos offset = stream->tellg();
          stream->close();
-         stream = open_binary_stream(filepath);
+         stream = AbstractFileParser::open_binary_stream(filepath);
          stream->seekg(offset);
       }
       
       return stream;
    }
 
-   void PLYParser::ParseFile(AbstractMesh *mesh, const std::string &filepath) const {
+   template <class TMesh>
+   void PLYParser<TMesh>::ParseFile(TMesh *mesh, const std::string &filepath) const {
       int num_vertices = -1;
       int num_faces = -1;
 
@@ -252,11 +258,11 @@ namespace Polytope {
 
             iss >> word;
             // TODO error handling for non-existent face
-            v0 = stoui(word);
+            v0 = AbstractFileParser::stoui(word);
             iss >> word;
-            v1 = stoui(word);
+            v1 = AbstractFileParser::stoui(word);
             iss >> word;
-            v2 = stoui(word);
+            v2 = AbstractFileParser::stoui(word);
             mesh->add_packed_face(v0, v1, v2);
          }
       }
@@ -278,4 +284,6 @@ namespace Polytope {
       mesh->unpack_faces();
       Log.WithTime("Parsed " + std::to_string(mesh->num_faces) + " faces.");
    }
+
+   template class poly::PLYParser<poly::MeshLinearSOA>;
 }

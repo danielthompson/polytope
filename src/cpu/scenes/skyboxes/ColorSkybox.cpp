@@ -4,8 +4,8 @@
 
 #include "ColorSkybox.h"
 
-namespace Polytope {
-   Polytope::SpectralPowerDistribution ColorSkybox::GetSpd(const Polytope::Vector &v) const {
+namespace poly {
+   poly::SpectralPowerDistribution ColorSkybox::GetSpd(const poly::Vector &v) const {
       return spd;
    }
 }

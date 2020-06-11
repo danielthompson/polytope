@@ -9,7 +9,7 @@
 #include "../structures/Vectors.h"
 
 
-namespace Polytope {
+namespace poly {
 
    PerspectiveCamera::PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld,
                                         const bool leftHanded)

@@ -2,13 +2,13 @@
 // Created by daniel on 5/15/20.
 //
 
-#ifndef POLYTOPE_MESH_FACTORY_H
-#define POLYTOPE_MESH_FACTORY_H
+#ifndef POLY_MESH_FACTORY_H
+#define POLY_MESH_FACTORY_H
 
-namespace Polytope {
+namespace poly {
    
    
 }
 
 
-#endif //POLYTOPE_MESH_FACTORY_H
+#endif //POLY_MESH_FACTORY_H

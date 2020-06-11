@@ -7,7 +7,7 @@
 #include <cassert>
 #include "Vectors.h"
 
-namespace Polytope {
+namespace poly {
    void Normal::Normalize() {
       const float lengthDivisor = 1.0f / std::sqrt(x * x + y * y + z * z);
       x *= lengthDivisor;
@@ -124,7 +124,7 @@ namespace Polytope {
       return p.x * x + p.y * y + p.z * z;
    }
 
-   float Point::Dot(const Polytope::Vector &v) const {
+   float Point::Dot(const poly::Vector &v) const {
       return v.x * x + v.y * y + v.z * z;
    }
 
@@ -142,11 +142,11 @@ namespace Polytope {
       return Point(x + rhs.x, y + rhs.y, z + rhs.z);
    }
 
-   Polytope::Vector Point::operator-(const Point &rhs) const {
-      return Polytope::Vector(x - rhs.x, y - rhs.y, z - rhs.z);
+   poly::Vector Point::operator-(const Point &rhs) const {
+      return poly::Vector(x - rhs.x, y - rhs.y, z - rhs.z);
    }
 
-   Point Point::operator+(const Polytope::Vector &rhs) const {
+   Point Point::operator+(const poly::Vector &rhs) const {
       return Point(x + rhs.x, y + rhs.y, z + rhs.z);
    }
 

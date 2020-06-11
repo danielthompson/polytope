@@ -2,12 +2,12 @@
 // Created by daniel on 5/7/20.
 //
 
-#ifndef POLYTOPE_SPECTRUM_H
-#define POLYTOPE_SPECTRUM_H
+#ifndef POLY_SPECTRUM_H
+#define POLY_SPECTRUM_H
 
 #include "../constants.h"
 
-namespace Polytope {
+namespace poly {
    class ReflectanceSpectrum {
    public:
 
@@ -15,7 +15,7 @@ namespace Polytope {
       explicit ReflectanceSpectrum() : r(1.f), g(1.f), b(1.f) { };
       ReflectanceSpectrum(float r, float g, float b) : r(r), g(g), b(b) { };
       ReflectanceSpectrum(int r, int g, int b)
-            : r(r * Polytope::OneOver255), g(g * Polytope::OneOver255), b(b * Polytope::OneOver255) { };
+            : r(r * poly::OneOver255), g(g * poly::OneOver255), b(b * poly::OneOver255) { };
 
       bool is_black() {
          return (r <= 0.0001f && g <= 0.0001f && b <= 0.0001f);
@@ -123,4 +123,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_SPECTRUM_H
+#endif //POLY_SPECTRUM_H

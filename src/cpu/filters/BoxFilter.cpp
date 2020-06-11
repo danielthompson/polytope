@@ -7,7 +7,7 @@
 #include "../../common/structures/Point2.h"
 #include "../../common/utilities/Common.h"
 
-namespace Polytope {
+namespace poly {
 
    //std::mutex BoxFilter::_mutex;
 

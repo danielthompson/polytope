@@ -4,7 +4,7 @@
 
 #include "DebugIntegrator.h"
 
-namespace Polytope {
+namespace poly {
 
    Sample DebugIntegrator::GetSample(Ray &ray, const int depth, const int x, const int y) {
 

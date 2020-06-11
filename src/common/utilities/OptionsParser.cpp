@@ -10,7 +10,7 @@
 #include "OptionsParser.h"
 #include "Common.h"
 
-namespace Polytope {
+namespace poly {
 
    OptionsParser::OptionsParser(int &argc, char **argv) {
       for (int i=1; i < argc; ++i)
@@ -33,9 +33,9 @@ namespace Polytope {
              != this->_tokens.end();
    }
 
-   Polytope::Options OptionsParser::Parse() {
+   poly::Options OptionsParser::Parse() {
 
-      Polytope::Options options = Polytope::Options();
+      poly::Options options = poly::Options();
 
       if (OptionExists("--help")) {
          options.help = true;

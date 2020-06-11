@@ -10,7 +10,7 @@
 #include "../check_error.h"
 
 
-namespace Polytope {
+namespace poly {
 
    constexpr unsigned int threads_per_block = 32;
    
@@ -37,11 +37,11 @@ namespace Polytope {
    };
    
    __device__ bool aabb_hits(const DeviceMesh &mesh, const float3 ro, const float3 rd ) {
-      float maxBoundFarT = Polytope::FloatMax;
+      float maxBoundFarT = poly::FloatMax;
       float minBoundNearT = 0;
 
       // TODO
-      //const float gammaMultiplier = 1 + 2 * Polytope::Gamma(3);
+      //const float gammaMultiplier = 1 + 2 * poly::Gamma(3);
 
       // X
       float divisor = 1.f / rd.x;
@@ -347,19 +347,16 @@ namespace Polytope {
       }
    }
    
-   __global__ void path_trace_kernel(const unsigned int width, const unsigned int height, struct device_pointers device_pointers) {
+   __global__ void path_trace_kernel(const unsigned int width, const unsigned int height, const float tan_fov_half, struct device_pointers device_pointers) {
       // loop over pixels
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
       const unsigned int pixel_x = pixel_index % width;
       const unsigned int pixel_y = pixel_index / width;
 
       // generate camera rays
-
-      constexpr float PIOver360 = M_PI / 360.f;
       constexpr unsigned int samples = 1 * 1;
       
       const float aspect = (float) width / (float) height;
-      const float tan_fov_half = tan(device_pointers.device_camera->fov * PIOver360);
 
       const float3 camera_origin = {0, 0, 0};
       const float3 world_origin_orig = matrix_apply_point(camera_to_world_matrix, camera_origin);
@@ -496,7 +493,7 @@ namespace Polytope {
                // todo hit light
 
                // TODO put this into a lambert_brdf function
-               // const Polytope::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
+               // const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
                float3 local_incoming = normalize(make_float3(dot(rd, intersection.tangent1), dot(rd, intersection.normal), dot(rd, intersection.tangent2)));
 
                // mirror
@@ -507,7 +504,7 @@ namespace Polytope {
                float u1 = curand_uniform(&state);
                float3 local_outgoing = cosine_sample_hemisphere(u0, u1);
 
-               // const Polytope::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
+               // const poly::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
                float3 world_outgoing = normalize(make_float3(
                      intersection.tangent1.x * local_outgoing.x + intersection.normal.x * local_outgoing.y + intersection.tangent2.x * local_outgoing.z,
                      intersection.tangent1.y * local_outgoing.x + intersection.normal.y * local_outgoing.y + intersection.tangent2.y * local_outgoing.z,
@@ -569,18 +566,18 @@ namespace Polytope {
       
    }
    
-   void PathTracerKernel::Trace() {
+   void PathTracerKernel::Trace() const {
 
       struct device_pointers device_pointers {
          memory_manager->device_camera,
          memory_manager->meshes,
          memory_manager->num_meshes,
          memory_manager->device_samples
-         
       };
+
+      const float tan_fov_half = std::tan(memory_manager->camera_fov * poly::PIOver360);
       
       cuda_check_error( cudaMemcpyToSymbol(camera_to_world_matrix, memory_manager->camera_to_world_matrix, sizeof(float) * 16));
-      
       
       const unsigned int blocksPerGrid = (memory_manager->num_pixels + threads_per_block - 1) / threads_per_block;
 
@@ -588,7 +585,7 @@ namespace Polytope {
       const unsigned int height = memory_manager->height;
       
       cudaError_t error = cudaSuccess;
-      path_trace_kernel<<<blocksPerGrid, threads_per_block>>>(width, height, device_pointers);
+      path_trace_kernel<<<blocksPerGrid, threads_per_block>>>(width, height, tan_fov_half, device_pointers);
 
       cudaDeviceSynchronize();
       error = cudaGetLastError();

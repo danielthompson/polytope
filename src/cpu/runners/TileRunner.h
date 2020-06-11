@@ -2,27 +2,27 @@
 // Created by Daniel on 19-Mar-18.
 //
 
-#ifndef POLYTOPE_TILERUNNER_H
-#define POLYTOPE_TILERUNNER_H
+#ifndef POLY_TILERUNNER_H
+#define POLY_TILERUNNER_H
 
 #include <mutex>
 #include "AbstractRunner.h"
 #include "../../common/utilities/Logger.h"
 
-namespace Polytope {
+namespace poly {
 
    class TileRunner : public AbstractRunner {
    public:
       explicit TileRunner(
             std::unique_ptr<AbstractSampler> sampler,
-            AbstractScene *scene,
+            poly::Scene *scene,
             std::unique_ptr<AbstractIntegrator> integrator,
             std::unique_ptr<AbstractFilm> film,
-            Polytope::Bounds bounds,
+            poly::Bounds bounds,
             unsigned int numSamples);
 
       void Run(int threadId) override;
    };
 }
 
-#endif //POLYTOPE_TILERUNNER_H
+#endif //POLY_TILERUNNER_H

@@ -5,10 +5,10 @@
 #include "Ray.h"
 #include "Vectors.h"
 
-namespace Polytope {
+namespace poly {
 
-   using Polytope::Point;
-   using Polytope::Vector;
+   using poly::Point;
+   using poly::Vector;
 
    Ray::Ray(const Point &origin, const Vector &direction) :
          Origin(origin),

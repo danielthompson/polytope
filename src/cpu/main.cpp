@@ -16,12 +16,13 @@
 #include "films/PNGFilm.h"
 #include "../common/parsers/PBRTFileParser.h"
 #include "../gl/GLRenderer.h"
+#include "shapes/linear_soa/mesh_linear_soa.h"
 
 #ifdef __CYGWIN__
 #include "platforms/win32-cygwin.h"
 #endif
 
-Polytope::Logger Log;
+poly::Logger Log;
 
 void segfaultHandler(int signalNumber) {
    Log.WithTime("Detected a segfault. Stacktrace to be implemented...");
@@ -54,12 +55,12 @@ void userAbortHandler(int signalNumber) {
 int main(int argc, char* argv[]) {
 
    try {
-      Log = Polytope::Logger();
+      Log = poly::Logger();
 
-      Polytope::Options options = Polytope::Options();
+      poly::Options options = poly::Options();
 
       if (argc > 0) {
-         Polytope::OptionsParser parser(argc, argv);
+         poly::OptionsParser parser(argc, argv);
          options = parser.Parse();
       }
 
@@ -95,7 +96,7 @@ Other:
       constexpr unsigned int width = 640;
       constexpr unsigned int height = 480;
 
-      const Polytope::Bounds bounds(width, height);
+      const poly::Bounds bounds(width, height);
 
       const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
       Log.WithTime("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
@@ -109,36 +110,48 @@ Other:
       Log.WithTime("Using " + std::to_string(usingThreads) + " threads.");
 
       {
-         std::unique_ptr<Polytope::AbstractRunner> runner;
-         if (!options.inputSpecified) {
-            Log.WithTime("No input file specified, using default scene.");
-            Polytope::SceneBuilder sceneBuilder = Polytope::SceneBuilder(bounds);
-            Polytope::AbstractScene *scene = sceneBuilder.Default();
-
-            // TODO fix
-            // Compile(scene);
-
-            std::unique_ptr<Polytope::AbstractSampler> sampler = std::make_unique<Polytope::HaltonSampler>();
-            std::unique_ptr<Polytope::AbstractIntegrator> integrator = std::make_unique<Polytope::PathTraceIntegrator>(scene, 5);
-
-            std::unique_ptr<Polytope::BoxFilter> filter = std::make_unique<Polytope::BoxFilter>(bounds);
-            filter->SetSamples(options.samples);
-            std::unique_ptr<Polytope::AbstractFilm> film = std::make_unique<Polytope::PNGFilm>(bounds, options.output_filename, std::move(filter));
-
-            runner = std::make_unique<Polytope::TileRunner>(std::move(sampler), scene, std::move(integrator), std::move(film), bounds, options.samples);
-
-         }
-         else {
+         std::unique_ptr<poly::AbstractRunner> runner;
+         if (options.inputSpecified) {
             // load file
-            Polytope::PBRTFileParser parser = Polytope::PBRTFileParser();
+            const auto parse_start = std::chrono::system_clock::now();
+            poly::PBRTFileParser parser = poly::PBRTFileParser();
             runner = parser.ParseFile(options.input_filename);
-
+            const auto parse_end = std::chrono::system_clock::now();
+            const std::chrono::duration<double> parse_duration = parse_end - parse_start;
+            Log.WithTime("Parsed scene description in " + std::to_string(parse_duration.count()) + "s.");
+            
+            
+            
+            
             // override parsed with options here
             if (options.samplesSpecified) {
                runner->NumSamples = options.samples;
             }
-         }
+         } else {
+            Log.WithTime("No input file specified, using default scene.");
+            poly::SceneBuilder sceneBuilder = poly::SceneBuilder(bounds);
+            poly::Scene *scene = sceneBuilder.Default();
 
+            // TODO fix
+            // Compile(scene);
+
+            std::unique_ptr<poly::AbstractSampler> sampler = std::make_unique<poly::HaltonSampler>();
+            std::unique_ptr<poly::AbstractIntegrator> integrator = std::make_unique<poly::PathTraceIntegrator>(scene,
+                                                                                                               5);
+
+            std::unique_ptr<poly::BoxFilter> filter = std::make_unique<poly::BoxFilter>(bounds);
+            filter->SetSamples(options.samples);
+            std::unique_ptr<poly::AbstractFilm> film = std::make_unique<poly::PNGFilm>(bounds, options.output_filename,
+                                                                                       std::move(filter));
+
+            runner = std::make_unique<poly::TileRunner>(std::move(sampler), scene, std::move(integrator),
+                                                        std::move(film), bounds, options.samples);
+         }
+         
+         runner->Scene->bvh_root.bound(runner->Scene->Shapes.at(0));
+         
+         runner->Scene->bvh_root.metrics();
+         
          Log.WithTime(
                std::string("Image is [") +
                std::to_string(runner->Bounds.x) +
@@ -149,7 +162,7 @@ Other:
 
          if (options.gl) {
             Log.WithTime("Rasterizing with OpenGL...");
-            Polytope::GLRenderer renderer;
+            poly::GLRenderer renderer;
             renderer.Render(runner->Scene);
          }
          else {
@@ -161,19 +174,19 @@ Other:
 
             std::map<std::thread::id, int> threadMap;
             std::vector<std::thread> threads;
-            for (int i = 0; i < usingThreads; i++) {
-
-               Log.WithTime(std::string("Starting thread " + std::to_string(i) + std::string("...")));
-               threads.emplace_back(runner->Spawn(i));
-               const std::thread::id threadID = threads[i].get_id();
-               threadMap[threadID] = i;
-
-            }
-
-            for (int i = 0; i < usingThreads; i++) {
-               threads[i].join();
-               Log.WithTime(std::string("Joined thread " + std::to_string(i) + std::string(".")));
-            }
+//            for (int i = 0; i < usingThreads; i++) {
+//
+//               Log.WithTime(std::string("Starting thread " + std::to_string(i) + std::string("...")));
+//               threads.emplace_back(runner->Spawn(i));
+//               const std::thread::id threadID = threads[i].get_id();
+//               threadMap[threadID] = i;
+//
+//            }
+//
+//            for (int i = 0; i < usingThreads; i++) {
+//               threads[i].join();
+//               Log.WithTime(std::string("Joined thread " + std::to_string(i) + std::string(".")));
+//            }
 
             const auto renderingEnd = std::chrono::system_clock::now();
 

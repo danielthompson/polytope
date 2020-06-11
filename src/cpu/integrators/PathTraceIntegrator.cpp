@@ -5,7 +5,7 @@
 #include "PathTraceIntegrator.h"
 #include "../structures/Sample.h"
 
-namespace Polytope {
+namespace poly {
 
    Sample PathTraceIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
       Ray current_ray = ray;
@@ -65,14 +65,14 @@ namespace Polytope {
             
             ReflectanceSpectrum refl;
             
-            const Polytope::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
-            const Polytope::Vector local_outgoing = intersection.Shape->Material->BRDF->sample(local_incoming, refl,
+            const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
+            const poly::Vector local_outgoing = intersection.Shape->Material->BRDF->sample(local_incoming, refl,
                                                                                                current_pdf);
-            const Polytope::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
+            const poly::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
 
 
             current_ray = Ray(intersection.Location, world_outgoing);
-            current_ray.OffsetOrigin(intersection.Normal, Polytope::OffsetEpsilon);
+            current_ray.OffsetOrigin(intersection.Normal, poly::OffsetEpsilon);
             if (debug) {
                printf("n: %f %f %f\n", intersection.Normal.x, intersection.Normal.y, intersection.Normal.z);
                printf("o: %f %f %f\n", current_ray.Origin.x, current_ray.Origin.y, current_ray.Origin.z);

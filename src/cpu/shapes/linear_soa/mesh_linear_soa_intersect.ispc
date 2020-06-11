@@ -77,13 +77,13 @@ export void soa_linear_intersect (
 
       //print("v0: % % %\n", v0x, v0y, v0z);
 
-      // const Polytope::Vector edge0 = vertex1 - vertex0;
+      // const poly::Vector edge0 = vertex1 - vertex0;
       const float3 e0 = v1 - v0;
 
-      // const Polytope::Vector edge1 = vertex2 - vertex1;
+      // const poly::Vector edge1 = vertex2 - vertex1;
       const float3 e1 = v2 - v1;
 
-      //Polytope::Vector planeNormal = edge0.Cross(edge1);
+      //poly::Vector planeNormal = edge0.Cross(edge1);
       float3 pn = cross(e0, e1);
 
       //planeNormal.Normalize();
@@ -106,7 +106,7 @@ export void soa_linear_intersect (
       }
       // t[index] = ft;
 
-      // const Polytope::Point hitPoint = ray.GetPointAtT(t);
+      // const poly::Point hitPoint = ray.GetPointAtT(t);
       const float3 hp = ro + rd * ft;
       const float3 e2 = v0 - v2;
 

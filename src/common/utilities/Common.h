@@ -2,8 +2,8 @@
 // Created by Daniel on 09-Dec-19.
 //
 
-#ifndef POLYTOPE_COMMON_H
-#define POLYTOPE_COMMON_H
+#ifndef POLY_COMMON_H
+#define POLY_COMMON_H
 
 #include "Logger.h"
 
@@ -14,11 +14,16 @@
             do { fprintf(stderr, "Warning: "); fprintf(stderr, fmt, __VA_ARGS__); fprintf(stderr, "\n"); } while (0)
 
 
-extern Polytope::Logger Log;
+extern poly::Logger Log;
 
 std::string GetCurrentWorkingDirectory();
+namespace poly {
+   class MeshLinearSOA;
+   typedef MeshLinearSOA TMesh;
+}
+
 
 extern std::string WindowsPathSeparator;
 extern std::string UnixPathSeparator;
 
-#endif //POLYTOPE_COMMON_H
+#endif //POLY_COMMON_H

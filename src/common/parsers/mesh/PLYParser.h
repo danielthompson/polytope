@@ -2,17 +2,18 @@
 // Created by Daniel on 27-Dec-19.
 //
 
-#ifndef POLYTOPE_PLYPARSER_H
-#define POLYTOPE_PLYPARSER_H
+#ifndef POLY_PLYPARSER_H
+#define POLY_PLYPARSER_H
 
 #include "../AbstractFileParser.h"
 #include "AbstractMeshParser.h"
 
 
-namespace Polytope {
-   class PLYParser : public AbstractMeshParser {
+namespace poly {
+   template <class TMesh>
+   class PLYParser : public AbstractMeshParser<TMesh> {
    public:
-      void ParseFile(AbstractMesh *mesh, const std::string &filepath) const override;
+      void ParseFile(TMesh *mesh, const std::string &filepath) const override;
 
    private:
       enum ply_format {
@@ -31,4 +32,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_PLYPARSER_H
+#endif //POLY_PLYPARSER_H

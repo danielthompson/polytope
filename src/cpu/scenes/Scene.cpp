@@ -2,13 +2,17 @@
 // Created by Daniel on 20-Feb-18.
 //
 
-#include "AbstractScene.h"
+#include "Scene.h"
 #include "../constants.h"
 #include <cmath>
 
-namespace Polytope {
+namespace poly {
 
-   Intersection AbstractScene::GetNearestShapeIteratively(std::vector<AbstractMesh*> &shapes, Ray &ray) const {
+   Intersection Scene::GetNearestShape(Ray &ray, int x, int y) {
+      return GetNearestShapeIteratively(this->Shapes, ray);
+   }
+
+   Intersection Scene::GetNearestShapeIteratively(std::vector<TMesh*> &shapes, Ray &ray) const {
 
       Intersection intersection;
 

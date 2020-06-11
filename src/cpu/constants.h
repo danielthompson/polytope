@@ -2,8 +2,8 @@
 // Created by Daniel Thompson on 2/18/18.
 //
 
-#ifndef POLYTOPE_CONSTANTS_H
-#define POLYTOPE_CONSTANTS_H
+#ifndef POLY_CONSTANTS_H
+#define POLY_CONSTANTS_H
 
 #include <cmath>
 #include <limits>
@@ -24,7 +24,7 @@
 #define M_SQRT3 1.73205080757
 #endif
 
-namespace Polytope {
+namespace poly {
 
    constexpr float Epsilon = .00001f;
    constexpr float HalfEpsilon = Epsilon * 0.5f;
@@ -32,7 +32,8 @@ namespace Polytope {
    constexpr float OffsetEpsilon = 0.002f;
    constexpr float PI = float(M_PI);
    constexpr float OneOverPi = 1.0f / PI;
-   constexpr float PIOver180 = PI / 180.0f;
+   constexpr float PIOver180 = M_PI / 180.0f;
+   constexpr float PIOver360 = M_PI / 360.0f;
    constexpr float TwoPI = 2.0f * PI;
 
    constexpr float OneThird = 1.0f / 3.0f;
@@ -122,4 +123,4 @@ namespace Polytope {
    }
 }
 
-#endif //POLYTOPE_CONSTANTS_H
+#endif //POLY_CONSTANTS_H

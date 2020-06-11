@@ -2,13 +2,13 @@
 // Created by Daniel on 15-Dec-19.
 //
 
-#ifndef POLYTOPE_ABSTRACTFILEPARSER_H
-#define POLYTOPE_ABSTRACTFILEPARSER_H
+#ifndef POLY_ABSTRACTFILEPARSER_H
+#define POLY_ABSTRACTFILEPARSER_H
 
 #include <fstream>
 #include <memory>
 
-namespace Polytope {
+namespace poly {
    class AbstractFileParser {
    public:
       std::unique_ptr<std::ifstream> open_ascii_stream(const std::string &filepath) const;
@@ -19,4 +19,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_ABSTRACTFILEPARSER_H
+#endif //POLY_ABSTRACTFILEPARSER_H

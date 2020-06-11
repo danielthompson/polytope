@@ -2,12 +2,12 @@
 // Created by Daniel on 21-Mar-18.
 //
 
-#ifndef POLYTOPE_LOGGER_H
-#define POLYTOPE_LOGGER_H
+#ifndef POLY_LOGGER_H
+#define POLY_LOGGER_H
 
 #include <string>
 
-namespace Polytope {
+namespace poly {
 
    class Logger {
    public:
@@ -25,4 +25,4 @@ namespace Polytope {
 }
 
 
-#endif //POLYTOPE_LOGGER_H
+#endif //POLY_LOGGER_H

@@ -2,32 +2,14 @@
 // Created by daniel on 5/15/20.
 //
 
-#ifndef POLYTOPE_GPU_MEMORY_MANAGER_H
-#define POLYTOPE_GPU_MEMORY_MANAGER_H
+#ifndef POLY_GPU_MEMORY_MANAGER_H
+#define POLY_GPU_MEMORY_MANAGER_H
 
 #include <cuda_runtime.h>
 #include "../cpu/shapes/linear_soa/mesh_linear_soa.h"
-#include "../cpu/scenes/AbstractScene.h"
+#include "../cpu/scenes/Scene.h"
 
-namespace Polytope {
-   
-   struct DeviceCamera {
-      // origin
-      float* ox;
-      float* oy;
-      float* oz;
-      
-      // direction
-      float* dx;
-      float* dy;
-      float* dz;
-      
-      // camera matrix
-      float* cm;
-      
-      float fov;
-      size_t num_pixels;
-   };
+namespace poly {
    
    struct DeviceMesh {
       float* x;
@@ -51,16 +33,16 @@ namespace Polytope {
       GPUMemoryManager(const unsigned int width, const unsigned int height) 
       : width(width), height(height), device_camera(nullptr), meshes(nullptr) { 
          num_pixels = width * height;
-         
       }
       ~GPUMemoryManager();
       
-      size_t MallocScene(Polytope::AbstractScene* scene);
+      size_t MallocScene(poly::Scene* scene);
       struct DeviceCamera* device_camera;
       struct DeviceMesh* meshes;
       unsigned int num_meshes;
       
       float camera_to_world_matrix[16];
+      float camera_fov;
       
       struct Samples* device_samples;
       struct Samples host_samples;
@@ -72,5 +54,4 @@ namespace Polytope {
 
 }
 
-
-#endif //POLYTOPE_GPU_MEMORY_MANAGER_H
+#endif //POLY_GPU_MEMORY_MANAGER_H

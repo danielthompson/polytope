@@ -6,11 +6,11 @@
 namespace Tests {
 
    namespace BoundingBox {
-      using Polytope::Point;
-      using Polytope::Vector;
-      using Polytope::Ray;
-      using Polytope::Intersection;
-      using Polytope::BoundingBox;
+      using poly::Point;
+      using poly::Vector;
+      using poly::Ray;
+      using poly::Intersection;
+      using poly::BoundingBox;
 
       namespace Hit {
          TEST(BoundingBox, Hits1) {

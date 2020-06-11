@@ -2,28 +2,28 @@
 // Created by Daniel Thompson on 12/23/19.
 //
 
-#ifndef POLYTOPE_BOUNDINGBOX_H
-#define POLYTOPE_BOUNDINGBOX_H
+#ifndef POLY_BOUNDINGBOX_H
+#define POLY_BOUNDINGBOX_H
 
 #include "Vectors.h"
 #include "Ray.h"
 
-namespace Polytope {
+namespace poly {
 
    class BoundingBox {
    public:
-      Polytope::Point p0, p1;
+      poly::Point p0, p1;
 
       BoundingBox() = default;
-      BoundingBox(const Polytope::Point &min, const Polytope::Point &max) : p0(min), p1(max) {}
+      BoundingBox(const poly::Point &min, const poly::Point &max) : p0(min), p1(max) {}
 
-      bool Hits(const Polytope::Ray &worldSpaceRay) const;
+      bool Hits(const poly::Ray &worldSpaceRay) const;
       BoundingBox Union(const BoundingBox &b) const;
-      BoundingBox Union(const Polytope::Point &p) const;
-      void UnionInPlace(const Polytope::Point &p);
+      BoundingBox Union(const poly::Point &p) const;
+      void UnionInPlace(const poly::Point &p);
    };
 
 }
 
 
-#endif //POLYTOPE_BOUNDINGBOX_H
+#endif //POLY_BOUNDINGBOX_H

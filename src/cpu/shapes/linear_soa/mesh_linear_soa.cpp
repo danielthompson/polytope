@@ -5,7 +5,7 @@
 #include "mesh_linear_soa.h"
 #include "mesh_linear_soa_intersect.h"
 
-namespace Polytope {
+namespace poly {
    
    void MeshLinearSOA::add_vertex(Point &v) {
       ObjectToWorld->ApplyInPlace(v);
@@ -105,17 +105,17 @@ namespace Polytope {
 
          // step 1 - intersect with plane
 
-         // const Polytope::Vector edge0 = vertex1 - vertex0;
+         // const poly::Vector edge0 = vertex1 - vertex0;
          const float e0x = v1x - v0x;
          const float e0y = v1y - v0y;
          const float e0z = v1z - v0z;
 
-         // const Polytope::Vector edge1 = vertex2 - vertex1;
+         // const poly::Vector edge1 = vertex2 - vertex1;
          const float e1x = v2x - v1x;
          const float e1y = v2y - v1y;
          const float e1z = v2z - v1z;
 
-         // Polytope::Vector planeNormal = edge0.Cross(edge1);
+         // poly::Vector planeNormal = edge0.Cross(edge1);
          float pnx = e0y * e1z - e0z * e1y;
          float pny = e0z * e1x - e0x * e1z;
          float pnz = e0x * e1y - e0y * e1x;
@@ -177,8 +177,8 @@ namespace Polytope {
       }
    }
 
-   void MeshLinearSOA::intersect(Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) {
-      float t = Polytope::FloatMax;
+   void MeshLinearSOA::intersect(poly::Ray &worldSpaceRay, poly::Intersection *intersection) {
+      float t = poly::FloatMax;
       unsigned int face_index = 0;
       bool hits = false;
       
@@ -227,13 +227,13 @@ namespace Polytope {
       const Point v1 = Point(x_packed[v1_index], y_packed[v1_index], z_packed[v1_index]);
       const Point v2 = Point(x_packed[v2_index], y_packed[v2_index], z_packed[v2_index]);
 
-      const Polytope::Vector edge0 = v1 - v0;
-      const Polytope::Vector edge1 = v2 - v1;
-      const Polytope::Vector edge2 = v0 - v2;
-      const Polytope::Vector planeNormal = edge0.Cross(edge1);
+      const poly::Vector edge0 = v1 - v0;
+      const poly::Vector edge1 = v2 - v1;
+      const poly::Vector edge2 = v0 - v2;
+      const poly::Vector planeNormal = edge0.Cross(edge1);
 
       // flip normal if needed
-      Polytope::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
+      poly::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
       if (worldSpaceRay.Direction.Dot(n) > 0) {
          n.Flip();
       }

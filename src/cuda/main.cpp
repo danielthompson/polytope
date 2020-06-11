@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <chrono>
-#include <thread>
 #include <sstream>
 #include "../common/utilities/Common.h"
 #include "../common/utilities/OptionsParser.h"
@@ -14,8 +13,9 @@
 #include "gpu_memory_manager.h"
 #include "kernels/path_tracer.cuh"
 #include "png_output.h"
+#include "mesh/cuda_mesh_soa.h"
 
-Polytope::Logger Log;
+poly::Logger Log;
 
 float roundOff(float n) {
    float d = n * 100.0f;
@@ -48,12 +48,12 @@ std::string convertSize(size_t size) {
 
 int main(int argc, char* argv[]) {
    try {
-      Log = Polytope::Logger();
+      Log = poly::Logger();
 
-      Polytope::Options options = Polytope::Options();
+      poly::Options options = poly::Options();
 
       if (argc > 0) {
-         Polytope::OptionsParser parser(argc, argv);
+         poly::OptionsParser parser(argc, argv);
          options = parser.Parse();
       }
 
@@ -91,7 +91,7 @@ Other:
          }
          
          // load file
-         Polytope::PBRTFileParser parser = Polytope::PBRTFileParser();
+         poly::PBRTFileParser parser = poly::PBRTFileParser();
          const auto runner = parser.ParseFile(options.input_filename);
          
          // override parsed with options here
@@ -106,15 +106,14 @@ Other:
                std::to_string(runner->Bounds.y) +
                std::string("], ") +
                std::to_string(runner->NumSamples) + " spp.");
-
-
+         
          Log.WithTime("Copying data to GPU...");
 
          const auto copy_start_time = std::chrono::system_clock::now();
          const unsigned int width = runner->Scene->Camera->Settings.Bounds.x;
          const unsigned int height = runner->Scene->Camera->Settings.Bounds.y;
 
-         Polytope::GPUMemoryManager memory_manager = Polytope::GPUMemoryManager(width, height);
+         poly::GPUMemoryManager memory_manager = poly::GPUMemoryManager(width, height);
          size_t bytes_copied = memory_manager.MallocScene(runner->Scene);
          const auto copy_end_time = std::chrono::system_clock::now();
          const std::chrono::duration<double> copy_duration = copy_end_time - copy_start_time;
@@ -124,7 +123,7 @@ Other:
          Log.WithTime("Copied " + std::to_string(bytes_copied) + " bytes in " + std::to_string(copy_duration.count()) + "s (" + bandwidth_string + ").");
          Log.WithTime("Rendering...");
          
-         Polytope::PathTracerKernel path_tracer_kernel(&memory_manager);
+         poly::PathTracerKernel path_tracer_kernel(&memory_manager);
          const auto render_start_time = std::chrono::system_clock::now();
          path_tracer_kernel.Trace();
          const auto render_end_time = std::chrono::system_clock::now();
@@ -133,7 +132,7 @@ Other:
 
          Log.WithTime("Outputting to film...");
          const auto output_start_time = std::chrono::system_clock::now();
-         Polytope::OutputPNG output;
+         poly::OutputPNG output;
          output.Output(&memory_manager);
          const auto output_end_time = std::chrono::system_clock::now();
 

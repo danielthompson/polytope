@@ -2,21 +2,21 @@
 // Created by Daniel Thompson on 2/24/18.
 //
 
-#ifndef POLYTOPE_SCENEBUILDER_H
-#define POLYTOPE_SCENEBUILDER_H
+#ifndef POLY_SCENEBUILDER_H
+#define POLY_SCENEBUILDER_H
 
-#include "AbstractScene.h"
+#include "Scene.h"
 #include "../shading/spectrum.h"
 
-namespace Polytope {
+namespace poly {
 
    class SceneBuilder {
    public:
-      SceneBuilder(Polytope::Bounds bounds) : _bounds(bounds) { }
-      AbstractScene *Default();
+      SceneBuilder(poly::Bounds bounds) : _bounds(bounds) { }
+      Scene *Default();
 
    private:
-      Polytope::Bounds _bounds;
+      poly::Bounds _bounds;
 
       ReflectanceSpectrum FirenzeGreen = ReflectanceSpectrum(70, 137, 102);
       ReflectanceSpectrum FirenzeBeige = ReflectanceSpectrum(255, 240, 165);
@@ -43,4 +43,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_SCENEBUILDER_H
+#endif //POLY_SCENEBUILDER_H

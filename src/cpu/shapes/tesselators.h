@@ -2,12 +2,12 @@
 // Created by Daniel Thompson on 12/28/19.
 //
 
-#ifndef POLYTOPE_TESSELATORS_H
-#define POLYTOPE_TESSELATORS_H
+#ifndef POLY_TESSELATORS_H
+#define POLY_TESSELATORS_H
 
 #include "abstract_mesh.h"
 
-namespace Polytope {
+namespace poly {
    class SphereTesselator {
    public:
       static void Create(unsigned int meridians, unsigned int parallels, AbstractMesh* mesh);
@@ -25,4 +25,4 @@ namespace Polytope {
 }
 
 
-#endif //POLYTOPE_TESSELATORS_H
+#endif //POLY_TESSELATORS_H

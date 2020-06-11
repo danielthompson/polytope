@@ -2,8 +2,8 @@
 // Created by Daniel Thompson on 2/19/18.
 //
 
-#ifndef POLYTOPE_TRANSFORM_H
-#define POLYTOPE_TRANSFORM_H
+#ifndef POLY_TRANSFORM_H
+#define POLY_TRANSFORM_H
 
 #include "Vectors.h"
 #include "Ray.h"
@@ -11,7 +11,7 @@
 #include "Matrix4x4.h"
 //#include "../shapes/abstract_mesh.h"
 
-namespace Polytope {
+namespace poly {
 
    class Transform {
    public:
@@ -75,4 +75,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_TRANSFORM_H
+#endif //POLY_TRANSFORM_H

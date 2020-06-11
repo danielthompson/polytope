@@ -2,23 +2,23 @@
 // Created by daniel on 5/2/20.
 //
 
-#ifndef POLYTOPE_MESH_LINEAR_SOA_H
-#define POLYTOPE_MESH_LINEAR_SOA_H
+#ifndef POLY_MESH_LINEAR_SOA_H
+#define POLY_MESH_LINEAR_SOA_H
 
 #include "../abstract_mesh.h"
 
-namespace Polytope {
+namespace poly {
    class MeshLinearSOA : public AbstractMesh {
    public:
       MeshLinearSOA(
-            const std::shared_ptr<Polytope::Transform> &objectToWorld,
-            const std::shared_ptr<Polytope::Transform> &worldToObject,
-            const std::shared_ptr<Polytope::Material> &material) 
+            const std::shared_ptr<poly::Transform> &objectToWorld,
+            const std::shared_ptr<poly::Transform> &worldToObject,
+            const std::shared_ptr<poly::Material> &material) 
             : AbstractMesh(objectToWorld, worldToObject, material) { }
       ~MeshLinearSOA() override;
 
 
-      void intersect(Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) override;
+      void intersect(poly::Ray &worldSpaceRay, poly::Intersection *intersection) override;
       void CalculateVertexNormals() override;
 
       Point random_surface_point() const override;
@@ -55,4 +55,4 @@ namespace Polytope {
 }
 
 
-#endif //POLYTOPE_MESH_LINEAR_SOA_H
+#endif //POLY_MESH_LINEAR_SOA_H

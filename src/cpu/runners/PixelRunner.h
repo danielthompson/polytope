@@ -2,14 +2,14 @@
 // Created by Daniel Thompson on 2/21/18.
 //
 
-#ifndef POLYTOPE_PIXELRUNNER_H
-#define POLYTOPE_PIXELRUNNER_H
+#ifndef POLY_PIXELRUNNER_H
+#define POLY_PIXELRUNNER_H
 
 #include "AbstractRunner.h"
 #include "../integrators/AbstractIntegrator.h"
 #include "../films/AbstractFilm.h"
 
-namespace Polytope {
+namespace poly {
 
    class PixelRunner : public AbstractRunner {
    public:
@@ -18,10 +18,10 @@ namespace Polytope {
 
       PixelRunner(
             std::unique_ptr<AbstractSampler> sampler,
-            AbstractScene *scene,
+            poly::Scene *scene,
             std::unique_ptr<AbstractIntegrator> integrator,
             std::unique_ptr<AbstractFilm> film,
-            const Polytope::Bounds bounds,
+            const poly::Bounds bounds,
             const unsigned int numSamples)
             : AbstractRunner(
                std::move(sampler),
@@ -43,4 +43,4 @@ namespace Polytope {
 }
 
 
-#endif //POLYTOPE_PIXELRUNNER_H
+#endif //POLY_PIXELRUNNER_H

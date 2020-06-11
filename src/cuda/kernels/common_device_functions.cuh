@@ -2,10 +2,10 @@
 // Created by daniel on 5/17/20.
 //
 
-#ifndef POLYTOPE_COMMON_DEVICE_FUNCTIONS_CUH
-#define POLYTOPE_COMMON_DEVICE_FUNCTIONS_CUH
+#ifndef POLY_COMMON_DEVICE_FUNCTIONS_CUH
+#define POLY_COMMON_DEVICE_FUNCTIONS_CUH
 
-namespace Polytope {
+namespace poly {
 
 
    
@@ -103,4 +103,4 @@ namespace Polytope {
 
 }
 
-#endif //POLYTOPE_COMMON_DEVICE_FUNCTIONS_CUH
+#endif //POLY_COMMON_DEVICE_FUNCTIONS_CUH

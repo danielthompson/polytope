@@ -2,13 +2,13 @@
 // Created by Daniel on 20-Feb-18.
 //
 
-#ifndef POLYTOPE_RAY_H
-#define POLYTOPE_RAY_H
+#ifndef POLY_RAY_H
+#define POLY_RAY_H
 
 #include "Vectors.h"
 #include "../constants.h"
 
-namespace Polytope {
+namespace poly {
 
    class Ray {
    public:
@@ -33,4 +33,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_RAY_H
+#endif //POLY_RAY_H

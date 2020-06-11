@@ -7,7 +7,7 @@
 #include "Vectors.h"
 #include "BoundingBox.h"
 
-namespace Polytope {
+namespace poly {
 
    const Vector Transform::xDir = Vector(1, 0, 0);
    const Vector Transform::yDir = Vector(0, 1, 0);

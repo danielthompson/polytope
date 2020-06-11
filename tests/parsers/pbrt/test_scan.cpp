@@ -10,15 +10,16 @@
 #include "../../../src/cpu/films/PNGFilm.h"
 #include "../../../src/cpu/filters/BoxFilter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
-#include "../../../src/cpu/scenes/NaiveScene.h"
+#include "../../../src/cpu/scenes/Scene.h"
 #include "../../../src/cpu/cameras/PerspectiveCamera.h"
+#include "../../../src/cpu/shapes/linear_soa/mesh_linear_soa.h"
 
 // TODO - put all test globals somewhere
-Polytope::Logger Log;
+poly::Logger Log;
 
 namespace Tests {
 
-   using Polytope::PBRTFileParser;
+   using poly::PBRTFileParser;
    
    namespace Scan {
       

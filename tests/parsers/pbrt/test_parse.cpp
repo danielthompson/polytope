@@ -10,21 +10,22 @@
 #include "../../../src/cpu/films/PNGFilm.h"
 #include "../../../src/cpu/filters/BoxFilter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
-#include "../../../src/cpu/scenes/NaiveScene.h"
+#include "../../../src/cpu/scenes/Scene.h"
 #include "../../../src/cpu/cameras/PerspectiveCamera.h"
+#include "../../../src/cpu/shapes/linear_soa/mesh_linear_soa.h"
 
 // TODO - put all test globals somewhere
 
 namespace Tests {
 
-   using Polytope::PBRTFileParser;
+   using poly::PBRTFileParser;
 
    namespace Parse {
       TEST(PBRTParse, EmptyWorld) {
 
-         PBRTFileParser fp = PBRTFileParser();
+         auto fp = PBRTFileParser();
          std::string file = "../scenes/minimum-emptyworld.pbrt";
-         std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseFile(file);
+         std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
 
          // ensure nothing is null
          ASSERT_NE(nullptr, runner);
@@ -38,40 +39,40 @@ namespace Tests {
          ASSERT_NE(nullptr, runner->Scene);
 
          // sampler
-         std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
-         Polytope::HaltonSampler *actualSampler = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
+         std::unique_ptr<poly::AbstractSampler> sampler = std::move(runner->Sampler);
+         poly::HaltonSampler *actualSampler = dynamic_cast<poly::HaltonSampler *>(sampler.get());
          ASSERT_NE(nullptr, actualSampler);
 
          ASSERT_NE(nullptr, runner->Film);
 
          // filter
-         std::unique_ptr<Polytope::AbstractFilter> filter = std::move(runner->Film->Filter);
-         Polytope::BoxFilter *actualFilter = dynamic_cast<Polytope::BoxFilter *>(filter.get());
+         std::unique_ptr<poly::AbstractFilter> filter = std::move(runner->Film->Filter);
+         poly::BoxFilter *actualFilter = dynamic_cast<poly::BoxFilter *>(filter.get());
          ASSERT_NE(nullptr, actualFilter);
 
          // film
-         std::unique_ptr<Polytope::AbstractFilm> film = std::move(runner->Film);
-         Polytope::PNGFilm *actualFilm = dynamic_cast<Polytope::PNGFilm *>(film.get());
+         std::unique_ptr<poly::AbstractFilm> film = std::move(runner->Film);
+         poly::PNGFilm *actualFilm = dynamic_cast<poly::PNGFilm *>(film.get());
          ASSERT_NE(nullptr, actualFilm);
          EXPECT_EQ("minimum.png", actualFilm->Filename);
          EXPECT_EQ(640, actualFilm->Bounds.x);
          EXPECT_EQ(640, actualFilm->Bounds.y);
 
          // integrator
-         std::unique_ptr<Polytope::AbstractIntegrator> integrator = std::move(runner->Integrator);
-         Polytope::PathTraceIntegrator *actualIntegrator = dynamic_cast<Polytope::PathTraceIntegrator *>(integrator.get());
+         std::unique_ptr<poly::AbstractIntegrator> integrator = std::move(runner->Integrator);
+         poly::PathTraceIntegrator *actualIntegrator = dynamic_cast<poly::PathTraceIntegrator *>(integrator.get());
          ASSERT_NE(nullptr, actualIntegrator);
 
          // integrator's scene
-         Polytope::AbstractScene* scene = actualIntegrator->Scene;
-         Polytope::NaiveScene* actualScene = dynamic_cast<Polytope::NaiveScene *>(scene);
+         poly::Scene* scene = actualIntegrator->Scene;
+         poly::Scene* actualScene = dynamic_cast<poly::Scene *>(scene);
          ASSERT_NE(nullptr, actualScene);
          EXPECT_EQ(0, actualScene->Lights.size());
          EXPECT_EQ(0, actualScene->Shapes.size());
 
          // camera
-         std::unique_ptr<Polytope::AbstractCamera> camera = std::move(scene->Camera);
-         Polytope::PerspectiveCamera* actualCamera = dynamic_cast<Polytope::PerspectiveCamera *>(camera.get());
+         std::unique_ptr<poly::AbstractCamera> camera = std::move(scene->Camera);
+         poly::PerspectiveCamera* actualCamera = dynamic_cast<poly::PerspectiveCamera *>(camera.get());
          ASSERT_NE(nullptr, actualCamera);
          EXPECT_EQ(640, actualCamera->Settings.Bounds.x);
          EXPECT_EQ(640, actualCamera->Settings.Bounds.y);
@@ -107,7 +108,7 @@ namespace Tests {
 
          PBRTFileParser fp = PBRTFileParser();
          std::string file = "../scenes/minimum-emptyworld-missingcamera.pbrt";
-         std::unique_ptr<Polytope::AbstractRunner> runner = fp.ParseFile(file);
+         std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
 
          // ensure nothing is null
          ASSERT_NE(nullptr, runner);
@@ -120,40 +121,40 @@ namespace Tests {
          ASSERT_NE(nullptr, runner->Scene);
 
          // sampler
-         std::unique_ptr<Polytope::AbstractSampler> sampler = std::move(runner->Sampler);
-         Polytope::HaltonSampler *actualSampler = dynamic_cast<Polytope::HaltonSampler *>(sampler.get());
+         std::unique_ptr<poly::AbstractSampler> sampler = std::move(runner->Sampler);
+         poly::HaltonSampler *actualSampler = dynamic_cast<poly::HaltonSampler *>(sampler.get());
          ASSERT_NE(nullptr, actualSampler);
 
          // filter
-         std::unique_ptr<Polytope::AbstractFilter> filter = std::move(runner->Film->Filter);
-         Polytope::BoxFilter *actualFilter = dynamic_cast<Polytope::BoxFilter *>(filter.get());
+         std::unique_ptr<poly::AbstractFilter> filter = std::move(runner->Film->Filter);
+         poly::BoxFilter *actualFilter = dynamic_cast<poly::BoxFilter *>(filter.get());
          ASSERT_NE(nullptr, actualFilter);
 
          // film
-         std::unique_ptr<Polytope::AbstractFilm> film = std::move(runner->Film);
-         Polytope::PNGFilm *actualFilm = dynamic_cast<Polytope::PNGFilm *>(film.get());
+         std::unique_ptr<poly::AbstractFilm> film = std::move(runner->Film);
+         poly::PNGFilm *actualFilm = dynamic_cast<poly::PNGFilm *>(film.get());
          ASSERT_NE(nullptr, actualFilm);
          EXPECT_EQ("minimum.png", actualFilm->Filename);
          EXPECT_EQ(640, actualFilm->Bounds.x);
          EXPECT_EQ(640, actualFilm->Bounds.y);
 
          // integrator
-         std::unique_ptr<Polytope::AbstractIntegrator> integrator = std::move(runner->Integrator);
-         Polytope::PathTraceIntegrator *actualIntegrator = dynamic_cast<Polytope::PathTraceIntegrator *>(integrator.get());
+         std::unique_ptr<poly::AbstractIntegrator> integrator = std::move(runner->Integrator);
+         poly::PathTraceIntegrator *actualIntegrator = dynamic_cast<poly::PathTraceIntegrator *>(integrator.get());
          ASSERT_NE(nullptr, actualIntegrator);
          EXPECT_EQ(7, actualIntegrator->MaxDepth);
 
 
          // integrator's scene
-         Polytope::AbstractScene* scene = actualIntegrator->Scene;
-         Polytope::NaiveScene* actualScene = dynamic_cast<Polytope::NaiveScene *>(scene);
+         poly::Scene* scene = actualIntegrator->Scene;
+         poly::Scene* actualScene = dynamic_cast<poly::Scene *>(scene);
          ASSERT_NE(nullptr, actualScene);
          EXPECT_EQ(0, actualScene->Lights.size());
          EXPECT_EQ(0, actualScene->Shapes.size());
 
          // camera
-         std::unique_ptr<Polytope::AbstractCamera> camera = std::move(scene->Camera);
-         Polytope::PerspectiveCamera* actualCamera = dynamic_cast<Polytope::PerspectiveCamera *>(camera.get());
+         std::unique_ptr<poly::AbstractCamera> camera = std::move(scene->Camera);
+         poly::PerspectiveCamera* actualCamera = dynamic_cast<poly::PerspectiveCamera *>(camera.get());
          ASSERT_NE(nullptr, actualCamera);
          EXPECT_EQ(640, actualCamera->Settings.Bounds.x);
          EXPECT_EQ(640, actualCamera->Settings.Bounds.y);

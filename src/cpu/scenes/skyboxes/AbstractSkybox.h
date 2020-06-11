@@ -2,19 +2,19 @@
 // Created by Daniel Thompson on 2019-06-26.
 //
 
-#ifndef POLYTOPE_ABSTRACTSKYBOX_H
-#define POLYTOPE_ABSTRACTSKYBOX_H
+#ifndef POLY_ABSTRACTSKYBOX_H
+#define POLY_ABSTRACTSKYBOX_H
 
 #include "../../shading/spectrum.h"
 
-namespace Polytope {
+namespace poly {
    class AbstractSkybox {
 
    public:
-      virtual Polytope::SpectralPowerDistribution GetSpd(const Polytope::Vector &v) const = 0;
+      virtual poly::SpectralPowerDistribution GetSpd(const poly::Vector &v) const = 0;
 
       virtual ~AbstractSkybox() { }
    };
 }
 
-#endif //POLYTOPE_ABSTRACTSKYBOX_H
+#endif //POLY_ABSTRACTSKYBOX_H

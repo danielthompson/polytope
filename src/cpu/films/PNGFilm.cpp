@@ -11,7 +11,7 @@
 
 // TODO include linux / osx defines
 
-namespace Polytope {
+namespace poly {
 
    void PNGFilm::AddSample(const Point2f &location, const Sample &sample) {
       Filter->AddSample(location, sample);
@@ -45,7 +45,7 @@ namespace Polytope {
       }
 
       std::string cwd = GetCurrentWorkingDirectory();
-      Log.WithTime("Outputting to file [" + cwd + "\\" + Filename + "]...");
+      Log.WithTime("Outputting to file " + cwd + "/" + Filename + "...");
 
       unsigned error = lodepng::encode(Filename, Data, Bounds.x, Bounds.y);
 

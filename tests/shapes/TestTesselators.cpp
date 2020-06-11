@@ -11,10 +11,10 @@ namespace Tests {
    // TODO fix this up
 //   class TesselatorTests : public ::testing::Test {
 //   public:
-//      void Output(const std::string& filename, Polytope::AbstractMesh* mesh) const {
+//      void Output(const std::string& filename, poly::AbstractMesh* mesh) const {
 //         std::ofstream filestream;
 //         filestream.open (filename);
-//         Polytope::OBJExporter exporter;
+//         poly::OBJExporter exporter;
 //         exporter.Export(filestream, mesh, false);
 //         filestream.close();
 //      }
@@ -22,8 +22,8 @@ namespace Tests {
 //
 //   class DiskTesselatorTests : public TesselatorTests {
 //   protected:
-//      void CreateTest(Polytope::AbstractMesh* mesh, const unsigned int meridians) {
-//         Polytope::DiskTesselator tesselator;
+//      void CreateTest(poly::AbstractMesh* mesh, const unsigned int meridians) {
+//         poly::DiskTesselator tesselator;
 //         tesselator.Create(meridians, mesh);
 //
 //         const unsigned int expectedVertices = meridians + 1;
@@ -38,9 +38,9 @@ namespace Tests {
 //   };
 //
 //   TEST_F(DiskTesselatorTests, Create1) {
-//      std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
+//      std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 //      for (unsigned int meridians = 3; meridians <= 30; meridians += 3) {
-//         Polytope::TriangleMesh mesh = Polytope::TriangleMesh(identity, identity, nullptr);
+//         poly::TriangleMesh mesh = poly::TriangleMesh(identity, identity, nullptr);
 //         CreateTest(&mesh, meridians);
 //
 //      }
@@ -48,8 +48,8 @@ namespace Tests {
 //
 //   class ConeTesselatorTests : public TesselatorTests {
 //   protected:
-//      void CreateTest(Polytope::AbstractMesh* mesh, const unsigned int meridians) {
-//         Polytope::ConeTesselator tesselator;
+//      void CreateTest(poly::AbstractMesh* mesh, const unsigned int meridians) {
+//         poly::ConeTesselator tesselator;
 //         tesselator.Create(meridians, mesh);
 //
 //         const unsigned int expectedVertices = meridians + 1;
@@ -64,9 +64,9 @@ namespace Tests {
 //   };
 //
 //   TEST_F(ConeTesselatorTests, Create1) {
-//      std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
+//      std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 //      for (unsigned int meridians = 3; meridians <= 30; meridians += 3) {
-//         Polytope::TriangleMesh mesh = Polytope::TriangleMesh(identity, identity, nullptr);
+//         poly::TriangleMesh mesh = poly::TriangleMesh(identity, identity, nullptr);
 //         CreateTest(&mesh, meridians);
 //      }
 //   }
@@ -74,8 +74,8 @@ namespace Tests {
 //
 //   class SphereTesselatorTests : public TesselatorTests {
 //   protected:
-//      void CreateTest(Polytope::AbstractMesh* mesh, const unsigned int meridians, const unsigned int parallels) {
-//         Polytope::SphereTesselator tesselator;
+//      void CreateTest(poly::AbstractMesh* mesh, const unsigned int meridians, const unsigned int parallels) {
+//         poly::SphereTesselator tesselator;
 //         tesselator.Create(meridians, parallels, mesh);
 //
 //         const unsigned int expectedVertices = 2 + meridians * parallels;
@@ -90,10 +90,10 @@ namespace Tests {
 //   };
 //
 //   TEST_F(SphereTesselatorTests, Create1) {
-//      std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
+//      std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 //      for (unsigned int meridians = 3; meridians <= 30; meridians += 3) {
 //         for (unsigned int parallels = 3; parallels <= 30; parallels += 3) {
-//            Polytope::TriangleMesh mesh = Polytope::TriangleMesh(identity, identity, nullptr);
+//            poly::TriangleMesh mesh = poly::TriangleMesh(identity, identity, nullptr);
 //            CreateTest(&mesh, meridians, parallels);
 //         }
 //      }

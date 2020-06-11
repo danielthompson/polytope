@@ -2,27 +2,27 @@
 // Created by Daniel Thompson on 3/5/18.
 //
 
-#ifndef POLYTOPE_ABSTRACTLIGHT_H
-#define POLYTOPE_ABSTRACTLIGHT_H
+#ifndef POLY_ABSTRACTLIGHT_H
+#define POLY_ABSTRACTLIGHT_H
 
 #include "../shading/spectrum.h"
 #include "../structures/Vectors.h"
 
-namespace Polytope {
+namespace poly {
 
    class AbstractLight {
    public:
 
       // constructors
-      explicit AbstractLight(const Polytope::SpectralPowerDistribution &spectralPowerDistribution) :
+      explicit AbstractLight(const poly::SpectralPowerDistribution &spectralPowerDistribution) :
             SpectralPowerDistribution(spectralPowerDistribution) {  };
 
 
       // data
-      Polytope::SpectralPowerDistribution SpectralPowerDistribution;
+      poly::SpectralPowerDistribution SpectralPowerDistribution;
    };
 
 }
 
 
-#endif //POLYTOPE_ABSTRACTLIGHT_H
+#endif //POLY_ABSTRACTLIGHT_H

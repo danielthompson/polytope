@@ -8,11 +8,11 @@
 namespace Tests {
 
    namespace Common {
-      using Polytope::Normal;
-      using Polytope::Point;
-      using Polytope::Vector;
-      using Polytope::Transform;
-      using Polytope::AbstractMesh;
+      using poly::Normal;
+      using poly::Point;
+      using poly::Vector;
+      using poly::Transform;
+      using poly::AbstractMesh;
 
       TEST(Common, SignedDistanceFromPlane1) {
          Point pointOnPlane(0, 0, 0);
@@ -21,8 +21,8 @@ namespace Tests {
 
          Point p(1, 1, 1);
 
-         float actual = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, p);
-         EXPECT_EQ(actual, Polytope::Root3);
+         float actual = poly::SignedDistanceFromPlane(pointOnPlane, normal, p);
+         EXPECT_EQ(actual, poly::Root3);
       }
 
       TEST(Common, SignedDistanceFromPlane2) {
@@ -32,8 +32,8 @@ namespace Tests {
 
          Point p(-1, -1, -1);
 
-         float actual = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, p);
-         EXPECT_EQ(actual, -Polytope::Root3);
+         float actual = poly::SignedDistanceFromPlane(pointOnPlane, normal, p);
+         EXPECT_EQ(actual, -poly::Root3);
       }
 
       TEST(Common, SignedDistanceFromPlane3) {
@@ -43,8 +43,8 @@ namespace Tests {
 
          Point p(1, 1, 4);
 
-         float actual = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, p);
-         EXPECT_EQ(actual, 2 * Polytope::Root3);
+         float actual = poly::SignedDistanceFromPlane(pointOnPlane, normal, p);
+         EXPECT_EQ(actual, 2 * poly::Root3);
       }
 
       TEST(Common, SignedDistanceFromPlane4) {
@@ -54,7 +54,7 @@ namespace Tests {
 
          Point p(1, 15, 4);
 
-         float actual = Polytope::SignedDistanceFromPlane(pointOnPlane, normal, p);
+         float actual = poly::SignedDistanceFromPlane(pointOnPlane, normal, p);
          EXPECT_EQ(actual, 15);
       }
    }

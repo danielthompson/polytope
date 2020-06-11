@@ -4,7 +4,7 @@
 
 #include "tesselators.h"
 
-namespace Polytope {
+namespace poly {
 
    void SphereTesselator::Create(unsigned int meridians, unsigned int parallels, AbstractMesh *mesh) {
 

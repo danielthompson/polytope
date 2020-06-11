@@ -2,8 +2,8 @@
 //// Created by Daniel on 15-Dec-19.
 ////
 //
-//#ifndef POLYTOPE_WIN32_CYGWIN_H
-//#define POLYTOPE_WIN32_CYGWIN_H
+//#ifndef POLY_WIN32_CYGWIN_H
+//#define POLY_WIN32_CYGWIN_H
 //
 //#ifdef __CYGWIN__
 //
@@ -47,4 +47,4 @@
 //
 //#endif //__CYGWIN__
 //
-//#endif //POLYTOPE_WIN32_CYGWIN_H
+//#endif //POLY_WIN32_CYGWIN_H

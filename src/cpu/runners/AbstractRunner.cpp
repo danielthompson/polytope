@@ -6,7 +6,7 @@
 #include "AbstractRunner.h"
 #include "../structures/Ray.h"
 
-namespace Polytope {
+namespace poly {
 
    void AbstractRunner::Trace(const int x, const int y) const {
 

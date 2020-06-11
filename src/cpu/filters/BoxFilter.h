@@ -2,20 +2,20 @@
 // Created by Daniel on 16-Mar-18.
 //
 
-#ifndef POLYTOPE_BOXFILTER_H
-#define POLYTOPE_BOXFILTER_H
+#ifndef POLY_BOXFILTER_H
+#define POLY_BOXFILTER_H
 
 #include <vector>
 #include <mutex>
 #include "AbstractFilter.h"
 #include "../../common/structures/Point2.h"
 
-namespace Polytope {
+namespace poly {
 
    class BoxFilter : public AbstractFilter {
    public:
 
-      explicit BoxFilter(const Polytope::Bounds &bounds)
+      explicit BoxFilter(const poly::Bounds &bounds)
             : AbstractFilter(bounds), _data(bounds.x * bounds.y, std::vector<Sample>()) { }
 
       void SetSamples(unsigned int samples);
@@ -28,4 +28,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_BOXFILTER_H
+#endif //POLY_BOXFILTER_H

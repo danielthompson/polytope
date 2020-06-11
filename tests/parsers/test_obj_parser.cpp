@@ -7,14 +7,14 @@
 #include "../../src/common/utilities/Logger.h"
 #include "../../src/common/parsers/mesh/OBJParser.h"
 #include "../../src/cpu/shapes/linear_aos/mesh_linear_aos.h"
-#include "../../src/cpu/shapes/bvh_split/mesh_bvh_split.h"
 
 namespace Tests {
 
    namespace Parse {
       
-      void test_parse_obj_helper(Polytope::AbstractMesh* mesh) {
-         const Polytope::OBJParser parser;
+      template <class TMesh>
+      void test_parse_obj_helper(TMesh* mesh) {
+         const poly::OBJParser<TMesh> parser;
          const std::string file = "../scenes/teapot/teapot.obj";
          parser.ParseFile(mesh, file);
 
@@ -23,7 +23,7 @@ namespace Tests {
          ASSERT_EQ(3644, mesh->num_vertices_packed);
 
          // check a random-ish vertex for correctness
-         const Polytope::Point secondToLastVertex = mesh->get_vertex(3642);
+         const poly::Point secondToLastVertex = mesh->get_vertex(3642);
 
          // EXPECT_FLOAT_EQ allows 4 ulps difference
          EXPECT_FLOAT_EQ(3.428125, secondToLastVertex.x);
@@ -34,7 +34,7 @@ namespace Tests {
          ASSERT_EQ(6320, mesh->num_faces);
 
          // check a random-ish face for correctness
-         const Polytope::Point3ui secondToLastFace = mesh->get_vertex_indices_for_face(6318);
+         const poly::Point3ui secondToLastFace = mesh->get_vertex_indices_for_face(6318);
 
          EXPECT_EQ(3021, secondToLastFace.x);
          EXPECT_EQ(3020, secondToLastFace.y);
@@ -42,21 +42,15 @@ namespace Tests {
       }
       
       TEST(OBJParser, MeshLinearSOA) {
-         const std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
-         Polytope::MeshLinearAOS mesh(identity, identity, nullptr);
+         const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
+         poly::MeshLinearAOS mesh(identity, identity, nullptr);
          test_parse_obj_helper(&mesh);
       }
 
       TEST(OBJParser, MeshLinearAOS) {
-         const std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
-         Polytope::MeshLinearAOS mesh(identity, identity, nullptr);
+         const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
+         poly::MeshLinearAOS mesh(identity, identity, nullptr);
          test_parse_obj_helper(&mesh);
      }
-
-      TEST(OBJParser, MeshBVHSplit) {
-         const std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
-         Polytope::MeshBVHSplit mesh(identity, identity, nullptr);
-         test_parse_obj_helper(&mesh);
-      }
    }
 }

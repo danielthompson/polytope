@@ -2,23 +2,23 @@
 // Created by Daniel Thompson on 2/24/18.
 //
 
-#ifndef POLYTOPE_MIRRORBRDF_H
-#define POLYTOPE_MIRRORBRDF_H
+#ifndef POLY_MIRRORBRDF_H
+#define POLY_MIRRORBRDF_H
 
 #include "abstract_brdf.h"
 
-namespace Polytope {
+namespace poly {
 
    class MirrorBRDF : public AbstractBRDF {
    public:
       MirrorBRDF(const ReflectanceSpectrum &refl) : refl(refl) { }
       float f(const float thetaIncoming, const float thetaOutgoing) const override {
-         if (Polytope::WithinEpsilon(thetaIncoming, thetaOutgoing))
+         if (poly::WithinEpsilon(thetaIncoming, thetaOutgoing))
             return 1.0f;
          return 0.0f;
       }
 
-      Vector sample(const Vector &incoming, Polytope::ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
+      Vector sample(const Vector &incoming, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
          //const Normal normal = Normal(0, 1, 0);
 //         const float factor = incoming.Dot(normal) * 2;
 //         const Vector scaled = Vector(normal * factor);
@@ -47,4 +47,4 @@ namespace Polytope {
 
 }
 
-#endif //POLYTOPE_MIRRORBRDF_H
+#endif //POLY_MIRRORBRDF_H

@@ -2,13 +2,13 @@
 // Created by dthompson on 20 Feb 18.
 //
 
-#ifndef POLYTOPE_PERSPECTIVECAMERA_H
-#define POLYTOPE_PERSPECTIVECAMERA_H
+#ifndef POLY_PERSPECTIVECAMERA_H
+#define POLY_PERSPECTIVECAMERA_H
 
 #include "AbstractCamera.h"
 #include "../../common/structures/Point2.h"
 
-namespace Polytope {
+namespace poly {
    class PerspectiveCamera : public AbstractCamera {
    public:
       PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld, bool leftHanded);
@@ -24,4 +24,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_PERSPECTIVECAMERA_H
+#endif //POLY_PERSPECTIVECAMERA_H

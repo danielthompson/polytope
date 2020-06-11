@@ -5,9 +5,9 @@
 namespace Tests {
 
    namespace Point {
-      using Polytope::Normal;
-      using Polytope::Point;
-      using Polytope::Vector;
+      using poly::Normal;
+      using poly::Point;
+      using poly::Vector;
 
       namespace Equality {
          TEST(Point, Equals) {

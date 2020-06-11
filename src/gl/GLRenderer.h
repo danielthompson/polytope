@@ -2,18 +2,18 @@
 // Created by daniel on 1/8/20.
 //
 
-#ifndef POLYTOPE_GLRENDERER_H
-#define POLYTOPE_GLRENDERER_H
+#ifndef POLY_GLRENDERER_H
+#define POLY_GLRENDERER_H
 
-#include "../cpu/scenes/AbstractScene.h"
+#include "../cpu/scenes/Scene.h"
 
-namespace Polytope {
+namespace poly {
    class GLRenderer {
    public:
-      void Render(Polytope::AbstractScene* scene);
+      void Render(poly::Scene* scene);
    };
 }
 
 
 
-#endif //POLYTOPE_GLRENDERER_H
+#endif //POLY_GLRENDERER_H

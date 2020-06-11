@@ -2,13 +2,13 @@
 // Created by daniel on 5/3/20.
 //
 
-#ifndef POLYTOPE_MESH_LINEAR_AOS_H
-#define POLYTOPE_MESH_LINEAR_AOS_H
+#ifndef POLY_MESH_LINEAR_AOS_H
+#define POLY_MESH_LINEAR_AOS_H
 
 #include "../abstract_mesh.h"
 
 
-namespace Polytope {
+namespace poly {
    class MeshLinearAOS : public AbstractMesh {
    public:
       std::vector<Point> Vertices;
@@ -16,9 +16,9 @@ namespace Polytope {
       std::vector<Normal> Normals;
 
       MeshLinearAOS(
-            const std::shared_ptr<Polytope::Transform> &objectToWorld,
-            const std::shared_ptr<Polytope::Transform> &worldToObject,
-            const std::shared_ptr<Polytope::Material> &material)
+            const std::shared_ptr<poly::Transform> &objectToWorld,
+            const std::shared_ptr<poly::Transform> &worldToObject,
+            const std::shared_ptr<poly::Material> &material)
             : AbstractMesh(objectToWorld, worldToObject, material) {}
       ~MeshLinearAOS() override = default;
 
@@ -58,4 +58,4 @@ namespace Polytope {
 
 
 
-#endif //POLYTOPE_MESH_LINEAR_AOS_H
+#endif //POLY_MESH_LINEAR_AOS_H

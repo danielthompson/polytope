@@ -4,12 +4,12 @@
 
 #include "BoundingBox.h"
 
-namespace Polytope {
-   bool BoundingBox::Hits(const Polytope::Ray &worldSpaceRay) const {
-      float maxBoundFarT = Polytope::FloatMax;
+namespace poly {
+   bool BoundingBox::Hits(const poly::Ray &worldSpaceRay) const {
+      float maxBoundFarT = poly::FloatMax;
       float minBoundNearT = 0;
 
-      const float gammaMultiplier = 1 + 2 * Polytope::Gamma(3);
+      const float gammaMultiplier = 1 + 2 * poly::Gamma(3);
 
       // X
       float tNear = (p0.x - worldSpaceRay.Origin.x) * worldSpaceRay.DirectionInverse.x;
@@ -62,7 +62,7 @@ namespace Polytope {
    }
 
    BoundingBox BoundingBox::Union(const BoundingBox &b) const {
-      Polytope::Point min, max;
+      poly::Point min, max;
       min.x = p0.x < b.p0.x ? p0.x : b.p0.x;
       min.y = p0.y < b.p0.y ? p0.y : b.p0.y;
       min.z = p0.z < b.p0.z ? p0.z : b.p0.z;
@@ -74,8 +74,8 @@ namespace Polytope {
       return BoundingBox(min, max);
    }
 
-   BoundingBox BoundingBox::Union(const Polytope::Point &p) const {
-      Polytope::Point min = p0, max = p1;
+   BoundingBox BoundingBox::Union(const poly::Point &p) const {
+      poly::Point min = p0, max = p1;
 
       if (p.x < min.x)
          min.x = p.x;
@@ -94,7 +94,7 @@ namespace Polytope {
       return BoundingBox(min, max);
    }
 
-   void BoundingBox::UnionInPlace(const Polytope::Point &p) {
+   void BoundingBox::UnionInPlace(const poly::Point &p) {
       if (p.x < p0.x)
          p0.x = p.x;
       if (p.y < p0.y)

@@ -4,7 +4,7 @@
 
 #include "mesh_linear_aos.h"
 
-namespace Polytope {
+namespace poly {
 
    void MeshLinearAOS::intersect(Ray &ray, Intersection *intersection) {
       unsigned int faceIndex = 0;
@@ -20,10 +20,10 @@ namespace Polytope {
 
          // step 1 - intersect with plane
 
-         const Polytope::Vector edge0 = vertex1 - vertex0;
-         const Polytope::Vector edge1 = vertex2 - vertex1;
+         const poly::Vector edge0 = vertex1 - vertex0;
+         const poly::Vector edge1 = vertex2 - vertex1;
 
-         Polytope::Vector planeNormal = edge0.Cross(edge1);
+         poly::Vector planeNormal = edge0.Cross(edge1);
          planeNormal.Normalize();
 
          const float divisor = planeNormal.Dot(ray.Direction);
@@ -43,25 +43,25 @@ namespace Polytope {
 
          t_values.push_back(t);
 
-         const Polytope::Point hitPoint = ray.GetPointAtT(t);
+         const poly::Point hitPoint = ray.GetPointAtT(t);
 
          // step 2 - inside/outside test
 
-         const Polytope::Vector edge2 = vertex0 - vertex2;
+         const poly::Vector edge2 = vertex0 - vertex2;
 
-         const Polytope::Vector p0 = hitPoint - vertex0;
-         const Polytope::Vector cross0 = edge0.Cross(p0);
+         const poly::Vector p0 = hitPoint - vertex0;
+         const poly::Vector cross0 = edge0.Cross(p0);
          const float normal0 = cross0.Dot(planeNormal);
          const bool pos0 = normal0 > 0;
 
          // 4. Repeat for all 3 edges
-         const Polytope::Vector p1 = hitPoint - vertex1;
-         const Polytope::Vector cross1 = edge1.Cross(p1);
+         const poly::Vector p1 = hitPoint - vertex1;
+         const poly::Vector cross1 = edge1.Cross(p1);
          const float normal1 = cross1.Dot(planeNormal);
          const bool pos1 = normal1 > 0;
 
-         const Polytope::Vector p2 = hitPoint - vertex2;
-         const Polytope::Vector cross2 = edge2.Cross(p2);
+         const poly::Vector p2 = hitPoint - vertex2;
+         const poly::Vector cross2 = edge2.Cross(p2);
          const float normal2 = cross2.Dot(planeNormal);
          const bool pos2 = normal2 > 0;
 
@@ -77,7 +77,7 @@ namespace Polytope {
             intersection->Location = hitPoint;
 
             // flip normal if needed
-            Polytope::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
+            poly::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
             if (ray.Direction.Dot(n) > 0) {
                n.Flip();
             }

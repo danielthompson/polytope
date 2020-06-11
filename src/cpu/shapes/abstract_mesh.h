@@ -2,8 +2,8 @@
 // Created by Daniel on 20-Feb-18.
 //
 
-#ifndef POLYTOPE_ABSTRACT_MESH_H
-#define POLYTOPE_ABSTRACT_MESH_H
+#ifndef POLY_ABSTRACT_MESH_H
+#define POLY_ABSTRACT_MESH_H
 
 #include "../structures/Vectors.h"
 #include "../structures/Ray.h"
@@ -13,7 +13,7 @@
 #include "../structures/Transform.h"
 #include "../shading/spectrum.h"
 
-namespace Polytope {
+namespace poly {
 
    // forward declaration
    //class Transform;
@@ -21,26 +21,26 @@ namespace Polytope {
    class AbstractMesh {
    public:
       AbstractMesh(
-            std::shared_ptr<Polytope::Transform> object_to_world,
-            std::shared_ptr<Polytope::Transform> world_to_object,
-            std::shared_ptr<Polytope::Material> material)
+            std::shared_ptr<poly::Transform> object_to_world,
+            std::shared_ptr<poly::Transform> world_to_object,
+            std::shared_ptr<poly::Material> material)
             : ObjectToWorld(std::move(object_to_world)),
               WorldToObject(std::move(world_to_object)),
               Material(std::move(material)),
-              BoundingBox(std::make_unique<Polytope::BoundingBox>()) {   }
+              BoundingBox(std::make_unique<poly::BoundingBox>()) {   }
       virtual ~AbstractMesh() { }
               
-      std::shared_ptr<Polytope::Transform> ObjectToWorld;
-      std::shared_ptr<Polytope::Transform> WorldToObject;
-      std::shared_ptr<Polytope::Material> Material;
-      std::unique_ptr<Polytope::BoundingBox> BoundingBox;
-      std::shared_ptr<Polytope::SpectralPowerDistribution> spd;
+      std::shared_ptr<poly::Transform> ObjectToWorld;
+      std::shared_ptr<poly::Transform> WorldToObject;
+      std::shared_ptr<poly::Material> Material;
+      std::unique_ptr<poly::BoundingBox> BoundingBox;
+      std::shared_ptr<poly::SpectralPowerDistribution> spd;
 
       unsigned int num_vertices_packed = 0;
       unsigned int num_vertices = 0;
       unsigned int num_faces = 0;
       
-      virtual void intersect(Polytope::Ray &world_ray, Polytope::Intersection *intersection) = 0;
+      virtual void intersect(poly::Ray &world_ray, poly::Intersection *intersection) = 0;
       virtual Point random_surface_point() const = 0;
       bool is_light() const {
          return (spd != nullptr);
@@ -67,4 +67,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_ABSTRACT_MESH_H
+#endif //POLY_ABSTRACT_MESH_H

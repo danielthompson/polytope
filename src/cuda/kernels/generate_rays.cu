@@ -9,11 +9,11 @@
 //#include "common_device_functions.cuh"
 //
 //
-//namespace Polytope {
+//namespace poly {
 //   
 //   
 //
-//   RayGeneratorKernel::RayGeneratorKernel(Polytope::AbstractScene *scene, std::shared_ptr<Polytope::GPUMemoryManager> memory_manager) 
+//   RayGeneratorKernel::RayGeneratorKernel(poly::Scene *scene, std::shared_ptr<poly::GPUMemoryManager> memory_manager) 
 //      : scene(scene), memory_manager(std::move(memory_manager)) {
 //      
 ////      cudaError_t error = cudaMemcpyToSymbol(camera_to_world_matrix, scene->Camera->CameraToWorld.Matrix.Matrix, 16 * sizeof(float), 0, cudaMemcpyHostToDevice);

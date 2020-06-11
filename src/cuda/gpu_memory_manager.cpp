@@ -7,49 +7,19 @@
 #include <cstring>
 #include "gpu_memory_manager.h"
 #include "check_error.h"
-namespace Polytope {
+namespace poly {
 
 //   __constant__ float camera_to_world_matrix[16];
    
-   size_t GPUMemoryManager::MallocScene(Polytope::AbstractScene *scene) {
+   size_t GPUMemoryManager::MallocScene(poly::Scene *scene) {
 
       size_t bytes_copied = 0;
       
       cuda_check_error( cudaSetDevice(1) );
       
-      // camera
-      struct DeviceCamera host_camera_temp { };
-      host_camera_temp.fov = scene->Camera->Settings.FieldOfView;
-      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.ox), sizeof(float) * num_pixels) );
-      to_free_list.push_back(host_camera_temp.ox);
-      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.oy), sizeof(float) * num_pixels) );
-      to_free_list.push_back(host_camera_temp.oy);
-      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.oz), sizeof(float) * num_pixels) );
-      to_free_list.push_back(host_camera_temp.oz);
-      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.dx), sizeof(float) * num_pixels) );
-      to_free_list.push_back(host_camera_temp.dx);
-      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.dy), sizeof(float) * num_pixels) );
-      to_free_list.push_back(host_camera_temp.dy);
-      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.dz), sizeof(float) * num_pixels) );
-      to_free_list.push_back(host_camera_temp.dz);
-      cuda_check_error( cudaMalloc((void **)&(host_camera_temp.cm), sizeof(float) * 16) );
-      to_free_list.push_back(host_camera_temp.cm);
-      host_camera_temp.num_pixels = num_pixels;
-      // data will be provided by camera method
-
-      device_camera = nullptr;
-      cuda_check_error( cudaMalloc((void **)&(device_camera), sizeof(struct DeviceCamera)) );
-      to_free_list.push_back(device_camera);
-      cuda_check_error( cudaMemcpy(device_camera, &host_camera_temp, sizeof(struct DeviceCamera), cudaMemcpyHostToDevice) );
-
-      bytes_copied += sizeof(struct DeviceCamera);
-      
       memcpy(camera_to_world_matrix, scene->Camera->CameraToWorld.Matrix.Matrix, 16 * sizeof(float));
-      //camera_to_world_matrix = scene->Camera->CameraToWorld.Matrix.Matrix
-      
-//      // camera to world matrix
-//      cuda_check_error( cudaMemcpyToSymbol(camera_to_world_matrix, scene->Camera->CameraToWorld.Matrix.Matrix, 16 * sizeof(float), 0, cudaMemcpyHostToDevice) );
-//      
+      camera_fov = scene->Camera->Settings.FieldOfView;
+
       // samples
       
       cuda_check_error( cudaMalloc((void **)&(host_samples.r), sizeof(float) * num_pixels) );
@@ -84,7 +54,7 @@ namespace Polytope {
          const auto original_mesh = scene->Shapes.at(i);
          assert(original_mesh != nullptr);
          
-         const Polytope::MeshLinearSOA* host_mesh = reinterpret_cast<const Polytope::MeshLinearSOA *>(original_mesh);
+         const poly::MeshLinearSOA* host_mesh = reinterpret_cast<const poly::MeshLinearSOA *>(original_mesh);
          assert(host_mesh != nullptr);
          assert(host_mesh->x.size() == host_mesh->y.size());
          assert(host_mesh->y.size() == host_mesh->z.size());

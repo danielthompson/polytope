@@ -9,7 +9,7 @@
 
 namespace Tests {
 
-   using Polytope::Matrix4x4;
+   using poly::Matrix4x4;
 
    namespace Equality {
       TEST(Matrix4x4, Equals) {
