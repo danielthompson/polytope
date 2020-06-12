@@ -10,8 +10,8 @@
 
 namespace poly {
 
-   class AbstractMesh; // predeclared to avoid circular header references
-
+   class Mesh;
+   
    class Intersection {
    public:
 
@@ -21,7 +21,7 @@ namespace poly {
 
       // data
 
-      AbstractMesh *Shape = nullptr;
+      Mesh *Shape = nullptr;
       unsigned int faceIndex;
       Point Location;
       poly::Normal Normal;

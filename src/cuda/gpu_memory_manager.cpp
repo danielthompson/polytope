@@ -54,7 +54,7 @@ namespace poly {
          const auto original_mesh = scene->Shapes.at(i);
          assert(original_mesh != nullptr);
          
-         const poly::MeshLinearSOA* host_mesh = reinterpret_cast<const poly::MeshLinearSOA *>(original_mesh);
+         const poly::Mesh* host_mesh = reinterpret_cast<const poly::Mesh *>(original_mesh);
          assert(host_mesh != nullptr);
          assert(host_mesh->x.size() == host_mesh->y.size());
          assert(host_mesh->y.size() == host_mesh->z.size());

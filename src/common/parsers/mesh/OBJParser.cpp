@@ -5,13 +5,10 @@
 #include <sstream>
 #include "OBJParser.h"
 #include "../../utilities/Common.h"
-#include "../../../cpu/shapes/linear_soa/mesh_linear_soa.h"
-#include "../../../cpu/shapes/linear_aos/mesh_linear_aos.h"
+#include "../../../cpu/shapes/mesh.h"
 
 namespace poly {
-   
-   template <class TMesh>
-   void OBJParser<TMesh>::ParseFile(TMesh *mesh, const std::string &filepath) const {
+   void OBJParser::ParseFile(Mesh *mesh, const std::string &filepath) const {
 
       std::unique_ptr<std::istream> stream = AbstractFileParser::open_ascii_stream(filepath);
       std::string line;
@@ -66,7 +63,4 @@ namespace poly {
 
       mesh->unpack_faces();
    }
-
-   template class poly::OBJParser<poly::MeshLinearSOA>;
-   template class poly::OBJParser<poly::MeshLinearAOS>;
 }

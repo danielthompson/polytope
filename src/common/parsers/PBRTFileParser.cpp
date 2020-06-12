@@ -22,7 +22,7 @@
 #include "../../cpu/structures/Vectors.h"
 #include "../../cpu/shading/brdf/lambert_brdf.h"
 #include "../../cpu/shading/brdf/mirror_brdf.h"
-#include "../../cpu/shapes/linear_soa/mesh_linear_soa.h"
+#include "../../cpu/shapes/mesh.h"
 #include "../../cpu/shapes/tesselators.h"
 #include "../../cpu/shading/brdf/glossy_brdf.h"
 
@@ -1206,12 +1206,12 @@ namespace poly {
                         break;
                      }
 
-                     TMesh* mesh = new TMesh(activeTransform, activeInverse, activeMaterial);
+                     Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial);
 
-                     const OBJParser<TMesh> parser;
+                     const OBJParser parser;
                      const std::string absoluteObjFilepath = _basePathFromCWD + mesh_filename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
-                     mesh->Bound();
+                     //mesh->Bound();
                      mesh->CalculateVertexNormals();
                      //mesh->ObjectToWorld = *activeTransform;
 
@@ -1258,9 +1258,9 @@ namespace poly {
                         break;
                      }
 
-                     TMesh* mesh = new TMesh(activeTransform, activeInverse, activeMaterial);
+                     Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial);
 
-                     const PLYParser<TMesh> parser;
+                     const PLYParser parser;
                      const std::string absoluteObjFilepath = /*GetCurrentWorkingDirectory() + UnixPathSeparator +*/ _basePathFromCWD + mesh_filename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
                      //mesh->Bound();
@@ -1286,7 +1286,7 @@ namespace poly {
                            std::shared_ptr<poly::Transform> temp_radius_transform = std::make_shared<poly::Transform>((*activeTransform) * radius_transform);
                            std::shared_ptr<poly::Transform> temp_radius_inverse = std::make_shared<poly::Transform>(temp_radius_transform->Invert());
                            
-                           poly::TMesh* mesh = new MeshLinearSOA(temp_radius_transform, temp_radius_inverse, activeMaterial);
+                           poly::Mesh* mesh = new Mesh(temp_radius_transform, temp_radius_inverse, activeMaterial);
                            const int subdivisions = std::max((int)radius, 20);
                            poly::SphereTesselator::Create(subdivisions, subdivisions, mesh);
                            mesh->ObjectToWorld = activeTransform;

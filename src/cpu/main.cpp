@@ -16,7 +16,7 @@
 #include "films/PNGFilm.h"
 #include "../common/parsers/PBRTFileParser.h"
 #include "../gl/GLRenderer.h"
-#include "shapes/linear_soa/mesh_linear_soa.h"
+#include "shapes/mesh.h"
 
 #ifdef __CYGWIN__
 #include "platforms/win32-cygwin.h"
@@ -174,19 +174,19 @@ Other:
 
             std::map<std::thread::id, int> threadMap;
             std::vector<std::thread> threads;
-//            for (int i = 0; i < usingThreads; i++) {
-//
-//               Log.WithTime(std::string("Starting thread " + std::to_string(i) + std::string("...")));
-//               threads.emplace_back(runner->Spawn(i));
-//               const std::thread::id threadID = threads[i].get_id();
-//               threadMap[threadID] = i;
-//
-//            }
-//
-//            for (int i = 0; i < usingThreads; i++) {
-//               threads[i].join();
-//               Log.WithTime(std::string("Joined thread " + std::to_string(i) + std::string(".")));
-//            }
+            for (int i = 0; i < usingThreads; i++) {
+
+               Log.WithTime(std::string("Starting thread " + std::to_string(i) + std::string("...")));
+               threads.emplace_back(runner->Spawn(i));
+               const std::thread::id threadID = threads[i].get_id();
+               threadMap[threadID] = i;
+
+            }
+
+            for (int i = 0; i < usingThreads; i++) {
+               threads[i].join();
+               Log.WithTime(std::string("Joined thread " + std::to_string(i) + std::string(".")));
+            }
 
             const auto renderingEnd = std::chrono::system_clock::now();
 

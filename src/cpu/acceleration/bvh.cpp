@@ -13,7 +13,8 @@ namespace poly {
       poly::Point centroid;
    };
    
-   void bvh::bound(poly::TMesh* mesh) {
+   void bvh::bound(poly::Mesh* mesh) {
+      single_mesh = mesh;
       std::queue<std::pair<bvh_node*, unsigned int>> q;
       
       // generate index vector
@@ -223,10 +224,12 @@ namespace poly {
          node->low = low_child;
          
          q.emplace(low_child, depth + 1);
+         
+         node->face_indices.clear();
       }
    }
 
-   bool bvh::hits(const poly::Ray &ray) {
+   bool bvh::hits(const poly::Ray &ray) const {
       std::queue<bvh_node *> q;
       q.push(root);
       while (!q.empty()) {
@@ -236,9 +239,11 @@ namespace poly {
             // if leaf node
             if (node->high == nullptr && node->low == nullptr) {
                // intersect faces
-               
-               // if anything hits, return true
-               
+               if (single_mesh->hits(ray, node->face_indices)) {
+                  // if anything hits, return true
+                  return true;
+               }
+               // otherwise, keep traversing               
                continue;
             }
             
@@ -248,7 +253,48 @@ namespace poly {
             q.push(node->low);
          }
       }
+      // we made it all the way through the tree and nothing hit, so no hit
       return false;
+   }
+   
+   void bvh::intersect(poly::Ray& ray, poly::Intersection& intersection) const {
+      
+      std::queue<bvh_node *> q;
+      q.push(root);
+      
+      while (!q.empty()) {
+         bvh_node* node = q.front();
+         q.pop();
+         
+//         bool debug = false;
+//         if (ray.x == 254 && ray.y == 20) {
+//            auto it = std::find(node->face_indices.begin(), node->face_indices.end(), 46809u);
+//            if (it != node->face_indices.end())
+//               debug = true;
+//         }
+            
+         // TODO add tmax optimization for BBox hit
+         if (node->bb.Hits(ray)) {
+            // if leaf node
+            if (node->high == nullptr && node->low == nullptr) {
+               // intersect faces
+//               if (debug) {
+//                  single_mesh->intersect(ray, intersection, node->face_indices);
+//               }
+//               else {
+//                  single_mesh->intersect(ray, intersection, node->face_indices);
+//               }
+
+               single_mesh->intersect(ray, intersection, node->face_indices);
+               continue;
+            }
+
+            // if interior node
+            // TODO push closer child node first (use node's split axis and ray's direction's sign for that axis
+            q.push(node->high);
+            q.push(node->low);
+         }
+      }
    }
    
    void bvh::metrics() const {

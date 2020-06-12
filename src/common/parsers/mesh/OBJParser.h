@@ -8,13 +8,11 @@
 
 #include "../AbstractFileParser.h"
 #include "AbstractMeshParser.h"
-#include "../../../cpu/shapes/abstract_mesh.h"
 
 namespace poly {
-   template <class TMesh>
-   class OBJParser : public AbstractMeshParser<TMesh> {
+   class OBJParser : public AbstractMeshParser {
    public:
-      void ParseFile(TMesh *mesh, const std::string &filepath) const override;
+      void ParseFile(Mesh *mesh, const std::string &filepath) const override;
    };
 }
 

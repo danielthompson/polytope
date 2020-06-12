@@ -6,7 +6,7 @@
 #define POLY_BVH_H
 
 #include "../structures/BoundingBox.h"
-#include "../shapes/linear_soa/mesh_linear_soa.h"
+#include "../shapes/mesh.h"
 #include "../../common/utilities/Common.h"
 
 namespace poly {
@@ -22,11 +22,14 @@ namespace poly {
    
    class bvh {
    public:
+      
       ~bvh();
-      void bound(poly::TMesh* mesh);
+      void bound(poly::Mesh* mesh);
       void metrics() const;
-      bool hits(const poly::Ray &ray);
+      bool hits(const poly::Ray &ray) const;
+      void intersect(poly::Ray &ray, poly::Intersection& intersection) const;
       bvh_node* root;
+      poly::Mesh* single_mesh;
    };
    
 }

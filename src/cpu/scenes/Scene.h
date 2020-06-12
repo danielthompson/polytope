@@ -10,7 +10,6 @@
 #include <vector>
 #include <string>
 #include "../cameras/AbstractCamera.h"
-#include "../shapes/abstract_mesh.h"
 #include "../structures/Intersection.h"
 #include "../lights/AbstractLight.h"
 #include "skyboxes/AbstractSkybox.h"
@@ -27,11 +26,11 @@ namespace poly {
 
       Intersection GetNearestShape(Ray &ray, int x, int y);
       
-      Intersection GetNearestShapeIteratively(std::vector<TMesh*> &shapes, Ray &ray) const;
+      Intersection GetNearestShapeIteratively(std::vector<Mesh*> &shapes, Ray &ray) const;
 
       std::unique_ptr<AbstractCamera> Camera{};
-      std::vector<TMesh*> Shapes;
-      std::vector<TMesh*> Lights;
+      std::vector<Mesh*> Shapes;
+      std::vector<Mesh*> Lights;
       std::unique_ptr<AbstractSkybox> Skybox;
       
       bvh bvh_root;

@@ -6,12 +6,11 @@
 #define POLY_ABSTRACTMESHPARSER_H
 
 #include "../AbstractFileParser.h"
-#include "../../../cpu/shapes/abstract_mesh.h"
+#include "../../../cpu/shapes/mesh.h"
 
 namespace poly {
-   template <class TMesh>
    class AbstractMeshParser : public AbstractFileParser {
-      virtual void ParseFile(TMesh *mesh, const std::string &filepath) const = 0;
+      virtual void ParseFile(Mesh *mesh, const std::string &filepath) const = 0;
    };
 }
 

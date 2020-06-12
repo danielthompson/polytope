@@ -17,11 +17,6 @@
 extern poly::Logger Log;
 
 std::string GetCurrentWorkingDirectory();
-namespace poly {
-   class MeshLinearSOA;
-   typedef MeshLinearSOA TMesh;
-}
-
 
 extern std::string WindowsPathSeparator;
 extern std::string UnixPathSeparator;

@@ -5,22 +5,22 @@
 #ifndef POLY_TESSELATORS_H
 #define POLY_TESSELATORS_H
 
-#include "abstract_mesh.h"
+#include "mesh.h"
 
 namespace poly {
    class SphereTesselator {
    public:
-      static void Create(unsigned int meridians, unsigned int parallels, AbstractMesh* mesh);
+      static void Create(unsigned int meridians, unsigned int parallels, poly::Mesh* mesh);
    };
 
    class DiskTesselator {
    public:
-      static void Create(unsigned int meridians, AbstractMesh* mesh);
+      static void Create(unsigned int meridians, poly::Mesh* mesh);
    };
 
    class ConeTesselator {
    public:
-      static void Create(unsigned int meridians, AbstractMesh* mesh);
+      static void Create(unsigned int meridians, poly::Mesh* mesh);
    };
 }
 

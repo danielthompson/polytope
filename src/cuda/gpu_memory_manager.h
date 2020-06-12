@@ -6,7 +6,7 @@
 #define POLY_GPU_MEMORY_MANAGER_H
 
 #include <cuda_runtime.h>
-#include "../cpu/shapes/linear_soa/mesh_linear_soa.h"
+#include "../cpu/shapes/mesh.h"
 #include "../cpu/scenes/Scene.h"
 
 namespace poly {

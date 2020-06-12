@@ -6,12 +6,11 @@
 #include <cstring>
 #include "PLYParser.h"
 #include "../../utilities/Common.h"
-#include "../../../cpu/shapes/linear_soa/mesh_linear_soa.h"
+#include "../../../cpu/shapes/mesh.h"
 
 namespace poly {
 
-   template <class TMesh>
-   float PLYParser<TMesh>::read_float(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
+   float PLYParser::read_float(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
       char buffer[4];
       float value;
       stream->read(buffer, 4);
@@ -23,8 +22,7 @@ namespace poly {
       return value;
    }
 
-   template <class TMesh>
-   int PLYParser<TMesh>::read_int(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
+   int PLYParser::read_int(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
       char buffer[4];
       int value;
       stream->read(buffer, 4);
@@ -36,16 +34,14 @@ namespace poly {
       return value;
    }
 
-   template <class TMesh>
-   unsigned char PLYParser<TMesh>::read_uchar(const std::unique_ptr<std::ifstream> &stream) {
+   unsigned char PLYParser::read_uchar(const std::unique_ptr<std::ifstream> &stream) {
       char value;
       stream->read(&value, 1);
       unsigned char unsigned_value = reinterpret_cast<unsigned char&>(value);
       return unsigned_value;
    }
 
-   template <class TMesh>
-   std::unique_ptr<std::ifstream> PLYParser<TMesh>::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
+   std::unique_ptr<std::ifstream> PLYParser::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
       std::unique_ptr<std::ifstream> stream = AbstractFileParser::open_ascii_stream(filepath);
 
       std::string line;
@@ -190,8 +186,7 @@ namespace poly {
       return stream;
    }
 
-   template <class TMesh>
-   void PLYParser<TMesh>::ParseFile(TMesh *mesh, const std::string &filepath) const {
+   void PLYParser::ParseFile(Mesh *mesh, const std::string &filepath) const {
       int num_vertices = -1;
       int num_faces = -1;
 
@@ -284,6 +279,4 @@ namespace poly {
       mesh->unpack_faces();
       Log.WithTime("Parsed " + std::to_string(mesh->num_faces) + " faces.");
    }
-
-   template class poly::PLYParser<poly::MeshLinearSOA>;
 }

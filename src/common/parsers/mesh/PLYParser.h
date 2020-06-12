@@ -8,12 +8,10 @@
 #include "../AbstractFileParser.h"
 #include "AbstractMeshParser.h"
 
-
 namespace poly {
-   template <class TMesh>
-   class PLYParser : public AbstractMeshParser<TMesh> {
+   class PLYParser : public AbstractMeshParser {
    public:
-      void ParseFile(TMesh *mesh, const std::string &filepath) const override;
+      void ParseFile(Mesh *mesh, const std::string &filepath) const override;
 
    private:
       enum ply_format {
