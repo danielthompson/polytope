@@ -32,7 +32,7 @@ namespace ispc { /* namespace */
 #if defined(__cplusplus) && (! defined(__ISPC_NO_EXTERN_C) || !__ISPC_NO_EXTERN_C )
 extern "C" {
 #endif // __cplusplus
-    extern void soa_linear_intersect(const float * vx, const float * vy, const float * vz, float rox, float roy, float roz, float rdx, float rdy, float rdz, float &return_t, uint32_t &return_face_index, bool &return_hits, uint32_t num_faces, const int32_t pixel_x, const int32_t pixel_y, const int32_t bounce);
+    extern void soa_linear_intersect(const float * vx, const float * vy, const float * vz, float rox, float roy, float roz, float rdx, float rdy, float rdz, float &return_t, uint32_t &return_face_index, bool &return_hits, uint32_t num_faces);
 #if defined(__cplusplus) && (! defined(__ISPC_NO_EXTERN_C) || !__ISPC_NO_EXTERN_C )
 } /* end extern C */
 #endif // __cplusplus

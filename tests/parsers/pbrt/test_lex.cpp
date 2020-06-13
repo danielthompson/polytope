@@ -5,7 +5,7 @@
 #include "gtest/gtest.h"
 
 #include "../../../src/common/parsers/PBRTFileParser.h"
-#include "../../../src/cpu/shapes/linear_soa/mesh_linear_soa.h"
+#include "../../../src/cpu/shapes/mesh.h"
 
 namespace Tests {
 

@@ -8,17 +8,17 @@
 #include "../../src/common/parsers/mesh/PLYParser.h"
 #include "../../src/cpu/structures/Vectors.h"
 #include "../../src/common/parsers/mesh/OBJParser.h"
-#include "../../src/cpu/shapes/linear_soa/mesh_linear_soa.h"
+#include "../../src/cpu/shapes/mesh.h"
 
 namespace Tests {
 
    namespace Parse {
       TEST(PLYParser, Teapot) {
 
-         const poly::PLYParser<poly::MeshLinearSOA> parser;
+         const poly::PLYParser parser;
          const std::string file = "../scenes/teapot/teapot.ply";
          const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
-         auto mesh = new poly::MeshLinearSOA(identity, identity, nullptr);
+         auto mesh = new poly::Mesh(identity, identity, nullptr);
 
          parser.ParseFile(mesh, file);
 
@@ -52,16 +52,16 @@ namespace Tests {
       TEST(PLYParser, TeapotConverted) {
 
          const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
-         poly::MeshLinearSOA* ply_mesh = new poly::MeshLinearSOA(identity, identity, nullptr);
+         poly::Mesh* ply_mesh = new poly::Mesh(identity, identity, nullptr);
          {
-            const poly::PLYParser<poly::MeshLinearSOA> ply_parser;
+            const poly::PLYParser ply_parser;
             const std::string file = "../scenes/teapot/teapot_converted.ply";
             ply_parser.ParseFile(ply_mesh, file);
          }
 
-         poly::MeshLinearSOA* obj_mesh = new poly::MeshLinearSOA(identity, identity, nullptr);
+         poly::Mesh* obj_mesh = new poly::Mesh(identity, identity, nullptr);
          {
-            const poly::OBJParser<poly::MeshLinearSOA> obj_parser;
+            const poly::OBJParser obj_parser;
             const std::string file = "../scenes/teapot/teapot.obj";
             obj_parser.ParseFile(obj_mesh, file);
          }
@@ -119,14 +119,14 @@ namespace Tests {
       }
       
       TEST(PLYParser, Binary) {
-         const poly::PLYParser<poly::MeshLinearSOA> parser;
+         const poly::PLYParser parser;
          const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
          constexpr unsigned int expected_num_vertices = 8;
          constexpr unsigned int expected_num_faces = 4;
 
          // binary file
          const std::string binary_file = "../scenes/test/floor-binary-le.ply";
-         auto binary_mesh = new poly::MeshLinearSOA(identity, identity, nullptr);
+         auto binary_mesh = new poly::Mesh(identity, identity, nullptr);
 
          parser.ParseFile(binary_mesh, binary_file);
          // ensure nothing is null
@@ -136,7 +136,7 @@ namespace Tests {
          
          // ascii file
          const std::string ascii_file = "../scenes/test/floor-ascii.ply";
-         auto ascii_mesh = new poly::MeshLinearSOA(identity, identity, nullptr);
+         auto ascii_mesh = new poly::Mesh(identity, identity, nullptr);
 
          parser.ParseFile(ascii_mesh, ascii_file);
          // ensure nothing is null

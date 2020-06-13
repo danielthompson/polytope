@@ -3,12 +3,12 @@
 #include "../../src/cpu/structures/Vectors.h"
 #include "../../src/cpu/constants.h"
 #include "../../src/cpu/structures/Intersection.h"
-#include "../../src/cpu/shapes/linear_soa/mesh_linear_soa.h"
+#include "../../src/cpu/shapes/mesh.h"
 
 namespace Tests {
-   TEST(MeshLinearSOA, Intersects) {
+   TEST(Mesh, Intersects) {
       std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
-      poly::MeshLinearSOA tm(identity, identity, nullptr);
+      poly::Mesh tm(identity, identity, nullptr);
 
       // face 0
       
@@ -56,7 +56,7 @@ namespace Tests {
       {
          poly::Ray ray(poly::Point(0.2f, 0.2f, -10), poly::Vector(0, 0, 1));
          poly::Intersection intersection;
-         tm.intersect(ray, &intersection);
+         tm.intersect(ray, intersection);
          EXPECT_TRUE(intersection.Hits);
          EXPECT_EQ(&tm, intersection.Shape);
          EXPECT_EQ(poly::Normal(0, 0, -1), intersection.Normal);
@@ -66,7 +66,7 @@ namespace Tests {
       {
          poly::Ray ray = poly::Ray(poly::Point(0.2f, 0.2f, 10), poly::Vector(0, 0, -1));
          poly::Intersection intersection;
-         tm.intersect(ray, &intersection);
+         tm.intersect(ray, intersection);
          EXPECT_TRUE(intersection.Hits);
          EXPECT_EQ(&tm, intersection.Shape);
          EXPECT_EQ(poly::Normal(0, 0, 1), intersection.Normal);
@@ -76,14 +76,14 @@ namespace Tests {
       {
          poly::Ray ray = poly::Ray(poly::Point(0.2f, 0.2f, 10), poly::Vector(0, 0, 1));
          poly::Intersection intersection;
-         tm.intersect(ray, &intersection);
+         tm.intersect(ray, intersection);
          EXPECT_FALSE(intersection.Hits);
       }
 
       {
          poly::Ray ray = poly::Ray(poly::Point(0.2f, 0.2f, -10), poly::Vector(0, 0, -1));
          poly::Intersection intersection;
-         tm.intersect(ray, &intersection);
+         tm.intersect(ray, intersection);
          EXPECT_FALSE(intersection.Hits);
       }
 
@@ -91,7 +91,7 @@ namespace Tests {
       {
          poly::Ray ray = poly::Ray(poly::Point(0.2f, 0.2f, 0.5f), poly::Vector(0, 1, 0));
          poly::Intersection intersection;
-         tm.intersect(ray, &intersection);
+         tm.intersect(ray, intersection);
          EXPECT_FALSE(intersection.Hits);
       }
    }

@@ -36,10 +36,10 @@ export void soa_linear_intersect (
       uniform float &return_t,
       uniform unsigned int &return_face_index,
       uniform bool &return_hits,
-      uniform unsigned int num_faces,
+      uniform unsigned int num_faces/*,
       uniform const int pixel_x,
       uniform const int pixel_y,
-      uniform const int bounce) {
+      uniform const int bounce*/) {
 
    uniform const float3 ro = { rox, roy, roz };
    uniform const float3 rd = { rdx, rdy, rdz };
@@ -62,11 +62,11 @@ export void soa_linear_intersect (
 
       //const unsigned int v0index = fv0[index];
 
-      bool debug = false;
-      if (pixel_x == 245 && pixel_y == 64 && bounce == 2 && index == 6175) {
-         debug = false;
-//         print("foo");
-      }
+//      bool debug = false;
+//      if (pixel_x == 245 && pixel_y == 64 && bounce == 2 && index == 6175) {
+//         debug = false;
+////         print("foo");
+//      }
       
       const unsigned int v1index = index + v1_index_offset;
       const unsigned int v2index = index + v2_index_offset;

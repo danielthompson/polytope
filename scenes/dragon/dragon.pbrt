@@ -1,22 +1,25 @@
 Integrator "path" "integer maxdepth" [ 7 ] 
-LookAt 0 -0.05 10 # eye
-       0 -10 -1 # look at point
+LookAt 0.125 3 4 # eye
+       0 0 0 # look at point
        0 1 0 # up
-Sampler "halton" "integer pixelsamples" [ 1 ]
+Sampler "halton" "integer pixelsamples" [ 16 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
-Film "image" "integer xresolution" [ 256 ] "integer yresolution" [ 256 ] "string filename" [ "dragon.png" ]
-Camera "perspective" "float fov" [ 1 ]
+Film "image" "integer xresolution" [ 1920 ] "integer yresolution" [ 1080 ] "string filename" [ "dragon.png" ]
+Camera "perspective" "float fov" [ 2 ]
 WorldBegin
-    Material "matte" "rgb Kd" [ 1 1 1 ]
-    Shape "objmesh" "string filename" [ TriangleMesh-one.obj ]
-
     LightSource "infinite" "rgb L" [1 1 1]
-    Material "matte" "rgb Kd" [ .7  .5  .7 ]
-    TransformBegin
-        # Translate 0 -0.0528440997 0
-        Translate 0 -0.055 0
-        Shape "plymesh" "string filename" [ dragon_vrip_res4.ply ]
-    TransformEnd
+
+    AttributeBegin
+        Translate 0 -0.125 0
+        Material "matte" "rgb Kd" [ 1  1  1 ]
+        # Shape "objmesh" "string filename" [ "triangle-one.obj" ]
+    AttributeEnd
+
+    AttributeBegin
+        Translate 0 -0.125 0
+        Material "matte" "rgb Kd" [ .2  .5  .7 ]
+        Shape "plymesh" "string filename" [ "dragon_vrip.ply" ]
+    AttributeEnd
 
 
 WorldEnd

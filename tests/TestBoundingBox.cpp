@@ -1,28 +1,22 @@
 #include "gtest/gtest.h"
 
 #include "../src/cpu/structures/Vectors.h"
-#include "../src/cpu/shapes/abstract_mesh.h"
+#include "../src/cpu/structures/BoundingBox.h"
+
 
 namespace Tests {
-
    namespace BoundingBox {
-      using poly::Point;
-      using poly::Vector;
-      using poly::Ray;
-      using poly::Intersection;
-      using poly::BoundingBox;
-
       namespace Hit {
          TEST(BoundingBox, Hits1) {
-            Point min(0.0f, 0.0f, 0.0f);
-            Point max(1.0f, 1.0f, 1.0f);
+            poly::Point min(0.0f, 0.0f, 0.0f);
+            poly::Point max(1.0f, 1.0f, 1.0f);
 
-            BoundingBox b(min, max);
+            poly::BoundingBox b(min, max);
 
-            Point origin(0.5, 0.5, 10);
-            Vector direction(0, 0, -1);
+            poly::Point origin(0.5, 0.5, 10);
+            poly::Vector direction(0, 0, -1);
 
-            Ray ray(origin, direction);
+            poly::Ray ray(origin, direction);
 
             bool actual = b.Hits(ray);
 
@@ -32,12 +26,12 @@ namespace Tests {
 
       namespace Union {
          TEST(BoundingBox, UnionSelf) {
-            Point min(0.0f, 0.0f, 0.0f);
-            Point max(1.0f, 1.0f, 1.0f);
+            poly::Point min(0.0f, 0.0f, 0.0f);
+            poly::Point max(1.0f, 1.0f, 1.0f);
 
-            BoundingBox b(min, max);
+            poly::BoundingBox b(min, max);
 
-            BoundingBox actual = b.Union(b);
+            poly::BoundingBox actual = b.Union(b);
 
             EXPECT_EQ(actual.p0.x, min.x);
             EXPECT_EQ(actual.p0.y, min.y);
@@ -49,17 +43,17 @@ namespace Tests {
          }
 
          TEST(BoundingBox, UnionWithBox) {
-            Point min(0.0f, 0.0f, 0.0f);
-            Point max(1.0f, 1.0f, 1.0f);
+            poly::Point min(0.0f, 0.0f, 0.0f);
+            poly::Point max(1.0f, 1.0f, 1.0f);
 
-            BoundingBox b(min, max);
+            poly::BoundingBox b(min, max);
 
-            Point othermin(0.25f, 0.25f, 0.0f);
-            Point othermax(1.25f, 0.5f, 1.0f);
+            poly::Point othermin(0.25f, 0.25f, 0.0f);
+            poly::Point othermax(1.25f, 0.5f, 1.0f);
 
-            BoundingBox other(othermin, othermax);
+            poly::BoundingBox other(othermin, othermax);
 
-            BoundingBox actual = b.Union(other);
+            poly::BoundingBox actual = b.Union(other);
 
             EXPECT_EQ(actual.p0.x, 0);
             EXPECT_EQ(actual.p0.y, 0);
@@ -71,14 +65,14 @@ namespace Tests {
          }
 
          TEST(BoundingBox, UnionWithPoint1) {
-            Point min(0.0f, 0.0f, 0.0f);
-            Point max(1.0f, 1.0f, 1.0f);
+            poly::Point min(0.0f, 0.0f, 0.0f);
+            poly::Point max(1.0f, 1.0f, 1.0f);
 
-            BoundingBox b(min, max);
+            poly::BoundingBox b(min, max);
 
-            Point p(0.25f, 0.25f, 0.25f);
+            poly::Point p(0.25f, 0.25f, 0.25f);
 
-            BoundingBox actual = b.Union(p);
+            poly::BoundingBox actual = b.Union(p);
 
             EXPECT_EQ(actual.p0.x, 0);
             EXPECT_EQ(actual.p0.y, 0);
@@ -90,14 +84,14 @@ namespace Tests {
          }
 
          TEST(BoundingBox, UnionWithPoint2) {
-            Point min(0.0f, 0.0f, 0.0f);
-            Point max(1.0f, 1.0f, 1.0f);
+            poly::Point min(0.0f, 0.0f, 0.0f);
+            poly::Point max(1.0f, 1.0f, 1.0f);
 
-            BoundingBox b(min, max);
+            poly::BoundingBox b(min, max);
 
-            Point p(1.25f, 1.5f, 1.75f);
+            poly::Point p(1.25f, 1.5f, 1.75f);
 
-            BoundingBox actual = b.Union(p);
+            poly::BoundingBox actual = b.Union(p);
 
             EXPECT_EQ(actual.p0.x, 0);
             EXPECT_EQ(actual.p0.y, 0);
@@ -109,14 +103,14 @@ namespace Tests {
          }
 
          TEST(BoundingBox, UnionWithPoint3) {
-            Point min(0.0f, 0.0f, 0.0f);
-            Point max(1.0f, 1.0f, 1.0f);
+            poly::Point min(0.0f, 0.0f, 0.0f);
+            poly::Point max(1.0f, 1.0f, 1.0f);
 
-            BoundingBox b(min, max);
+            poly::BoundingBox b(min, max);
 
-            Point p(-1.25f, -1.5f, -1.75f);
+            poly::Point p(-1.25f, -1.5f, -1.75f);
 
-            BoundingBox actual = b.Union(p);
+            poly::BoundingBox actual = b.Union(p);
 
             EXPECT_EQ(actual.p0.x, -1.25);
             EXPECT_EQ(actual.p0.y, -1.5);

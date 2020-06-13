@@ -45,10 +45,10 @@ SET(COVERAGE OFF CACHE BOOL "Coverage")
 ################################
 
 add_custom_command(
-        OUTPUT ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.o
-        COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.h -o ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.o ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.ispc
-        MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.ispc
-        BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.h)
+        OUTPUT ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.o
+        COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.h -o ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.o ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.ispc
+        MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.ispc
+        BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.h)
 
 add_library(polytope_lib
         lib/lodepng.cpp
@@ -95,7 +95,6 @@ add_library(polytope_lib
         src/cpu/shading/brdf/mirror_brdf.h
         src/cpu/shading/brdf/glossy_brdf.h
         src/cpu/shading/spectrum.h
-        src/cpu/shapes/abstract_mesh.h
         src/cpu/structures/Intersection.cpp
         src/cpu/structures/Intersection.h
         src/cpu/structures/Matrix4x4.cpp
@@ -128,12 +127,10 @@ add_library(polytope_lib
         src/common/parsers/mesh/AbstractMeshParser.h
         src/cpu/shapes/tesselators.cpp
         src/cpu/shapes/tesselators.h
-        src/cpu/shapes/linear_soa/mesh_linear_soa.cpp
-        src/cpu/shapes/linear_soa/mesh_linear_soa.h
-        src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.h
-        src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.o
-        src/cpu/shapes/linear_aos/mesh_linear_aos.cpp
-        src/cpu/shapes/linear_aos/mesh_linear_aos.h
+        src/cpu/shapes/mesh.cpp
+        src/cpu/shapes/mesh.h
+        src/cpu/shapes/mesh_intersect.h
+        src/cpu/shapes/mesh_intersect.o
         src/common/utilities/mesh_factory.cpp 
         src/common/utilities/mesh_factory.h 
         src/common/parsers/mesh/AbstractMeshAllocator.h 
@@ -251,10 +248,11 @@ add_executable(runUnitTests
         tests/parsers/test_ply_parser.cpp
         tests/TestPoint.cpp
         tests/TestTransform.cpp
-        tests/shapes/test_mesh_linear_aos.cpp
+        tests/shapes/test_mesh_linear_soa.cpp
         tests/TestVector.cpp
         tests/shapes/TestTesselators.cpp
-        tests/shapes/test_mesh_linear_aos.cpp)
+        tests/test_bvh.cpp
+        )
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 # if (COVERAGE)

@@ -12,7 +12,7 @@
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
 #include "../../../src/cpu/scenes/Scene.h"
 #include "../../../src/cpu/cameras/PerspectiveCamera.h"
-#include "../../../src/cpu/shapes/linear_soa/mesh_linear_soa.h"
+#include "../../../src/cpu/shapes/mesh.h"
 
 // TODO - put all test globals somewhere
 

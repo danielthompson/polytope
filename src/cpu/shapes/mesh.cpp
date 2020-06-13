@@ -326,10 +326,10 @@ namespace poly {
             t,
             face_index,
             hits,
-            num_faces,
+            num_faces/*,
             worldSpaceRay.x,
             worldSpaceRay.y,
-            worldSpaceRay.bounce);
+            worldSpaceRay.bounce*/);
 
       if (!hits || worldSpaceRay.MinT <= t) {
          return;

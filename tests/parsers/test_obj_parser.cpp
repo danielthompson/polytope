@@ -6,15 +6,15 @@
 
 #include "../../src/common/utilities/Logger.h"
 #include "../../src/common/parsers/mesh/OBJParser.h"
-#include "../../src/cpu/shapes/linear_aos/mesh_linear_aos.h"
+#include "../../src/cpu/shapes/mesh.h"
+
 
 namespace Tests {
 
    namespace Parse {
       
-      template <class TMesh>
-      void test_parse_obj_helper(TMesh* mesh) {
-         const poly::OBJParser<TMesh> parser;
+      void test_parse_obj_helper(poly::Mesh* mesh) {
+         const poly::OBJParser parser;
          const std::string file = "../scenes/teapot/teapot.obj";
          parser.ParseFile(mesh, file);
 
@@ -41,16 +41,10 @@ namespace Tests {
          EXPECT_EQ(3000, secondToLastFace.z);
       }
       
-      TEST(OBJParser, MeshLinearSOA) {
+      TEST(OBJParser, Mesh) {
          const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
-         poly::MeshLinearAOS mesh(identity, identity, nullptr);
+         poly::Mesh mesh(identity, identity, nullptr);
          test_parse_obj_helper(&mesh);
       }
-
-      TEST(OBJParser, MeshLinearAOS) {
-         const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
-         poly::MeshLinearAOS mesh(identity, identity, nullptr);
-         test_parse_obj_helper(&mesh);
-     }
    }
 }

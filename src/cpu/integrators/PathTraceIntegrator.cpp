@@ -24,9 +24,9 @@ namespace poly {
       }
       
       while (true) {
-         current_ray.x = x;
-         current_ray.y = y;
-         current_ray.bounce = num_bounces;
+//         current_ray.x = x;
+//         current_ray.y = y;
+//         current_ray.bounce = num_bounces;
          Intersection intersection = Scene->GetNearestShape(current_ray, x, y);
          
          if (debug) {
