@@ -40,9 +40,6 @@ namespace poly {
       Ray worldSpaceRay = CameraToWorld.Apply(cameraSpaceRay);
 
       worldSpaceRay.Direction.Normalize();
-      
-      // hmm... doubt
-      worldSpaceRay.DirectionInverse.Normalize();
 
       return worldSpaceRay;
    }

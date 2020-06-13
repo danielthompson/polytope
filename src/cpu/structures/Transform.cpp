@@ -146,12 +146,7 @@ namespace poly {
 
    void Transform::ApplyInPlace(Ray &ray) const {
       ApplyInPlace(ray.Origin);
-
       ApplyInPlace(ray.Direction);
-//      ray.Direction.Normalize();
-
-      ApplyInPlace(ray.DirectionInverse);
-//      ray.DirectionInverse.Normalize();
    }
 
    Ray Transform::Apply(const Ray &ray) const {

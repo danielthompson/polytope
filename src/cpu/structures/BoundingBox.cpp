@@ -5,15 +5,15 @@
 #include "BoundingBox.h"
 
 namespace poly {
-   bool BoundingBox::Hits(const poly::Ray &worldSpaceRay) const {
+   bool BoundingBox::Hits(const poly::Ray &worldSpaceRay, const poly::Vector& inverse_direction) const {
       float maxBoundFarT = poly::FloatMax;
       float minBoundNearT = 0;
 
       const float gammaMultiplier = 1 + 2 * poly::Gamma(3);
 
       // X
-      float tNear = (p0.x - worldSpaceRay.Origin.x) * worldSpaceRay.DirectionInverse.x;
-      float tFar = (p1.x - worldSpaceRay.Origin.x) * worldSpaceRay.DirectionInverse.x;
+      float tNear = (p0.x - worldSpaceRay.Origin.x) * inverse_direction.x;
+      float tFar = (p1.x - worldSpaceRay.Origin.x) * inverse_direction.x;
 
       float swap = tNear;
       tNear = tNear > tFar ? tFar : tNear;
@@ -28,8 +28,8 @@ namespace poly {
       }
 
       // Y
-      tNear = (p0.y - worldSpaceRay.Origin.y) * worldSpaceRay.DirectionInverse.y;
-      tFar = (p1.y - worldSpaceRay.Origin.y) * worldSpaceRay.DirectionInverse.y;
+      tNear = (p0.y - worldSpaceRay.Origin.y) * inverse_direction.y;
+      tFar = (p1.y - worldSpaceRay.Origin.y) * inverse_direction.y;
 
       swap = tNear;
       tNear = tNear > tFar ? tFar : tNear;
@@ -45,8 +45,8 @@ namespace poly {
       }
 
       // z
-      tNear = (p0.z - worldSpaceRay.Origin.z) * worldSpaceRay.DirectionInverse.z;
-      tFar = (p1.z - worldSpaceRay.Origin.z) * worldSpaceRay.DirectionInverse.z;
+      tNear = (p0.z - worldSpaceRay.Origin.z) * inverse_direction.z;
+      tFar = (p1.z - worldSpaceRay.Origin.z) * inverse_direction.z;
 
       swap = tNear;
       tNear = tNear > tFar ? tFar : tNear;

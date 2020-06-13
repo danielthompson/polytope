@@ -14,7 +14,7 @@ namespace poly {
    public:
       Point Origin;
       Vector Direction;
-      Vector DirectionInverse;
+      //Vector DirectionInverse;
       float MinT = Infinity;
       float MaxT = Infinity;
 

@@ -18,7 +18,13 @@ namespace Tests {
 
             poly::Ray ray(origin, direction);
 
-            bool actual = b.Hits(ray);
+            const poly::Vector inverse_direction = {
+                  1.f / ray.Direction.x,
+                  1.f / ray.Direction.y,
+                  1.f / ray.Direction.z
+            };
+            
+            bool actual = b.Hits(ray, inverse_direction);
 
             EXPECT_TRUE(actual);
          }

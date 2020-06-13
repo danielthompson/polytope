@@ -17,7 +17,7 @@ namespace poly {
       BoundingBox() = default;
       BoundingBox(const poly::Point &min, const poly::Point &max) : p0(min), p1(max) {}
 
-      bool Hits(const poly::Ray &worldSpaceRay) const;
+      bool Hits(const poly::Ray &worldSpaceRay, const poly::Vector& inverse_direction) const;
       BoundingBox Union(const BoundingBox &b) const;
       BoundingBox Union(const poly::Point &p) const;
       void UnionInPlace(const poly::Point &p);

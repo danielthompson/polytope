@@ -238,12 +238,17 @@ namespace poly {
    }
 
    bool bvh::hits_compact(const poly::Ray &ray) const {
+      const poly::Vector inverse_direction = {
+            1.f / ray.Direction.x,
+            1.f / ray.Direction.y,
+            1.f / ray.Direction.z
+      };
       std::queue<compact_bvh_node *> q;
       q.push(compact_root->nodes);
       while (!q.empty()) {
          compact_bvh_node* node = q.front();
          q.pop();
-         if (node->bb.Hits(ray)) {
+         if (node->bb.Hits(ray, inverse_direction)) {
             // if leaf node
             if (node->face_indices != nullptr) {
                // intersect faces
@@ -266,12 +271,17 @@ namespace poly {
    }
    
    bool bvh::hits(const poly::Ray &ray) const {
+      const poly::Vector inverse_direction = {
+            1.f / ray.Direction.x,
+            1.f / ray.Direction.y,
+            1.f / ray.Direction.z
+      }; 
       std::queue<bvh_node *> q;
       q.push(root);
       while (!q.empty()) {
          bvh_node* node = q.front();
          q.pop();
-         if (node->bb.Hits(ray)) {
+         if (node->bb.Hits(ray, inverse_direction)) {
             // if leaf node
             if (node->high == nullptr && node->low == nullptr) {
                // intersect faces
@@ -294,6 +304,11 @@ namespace poly {
    }
 
    void bvh::intersect_compact(poly::Ray& ray, poly::Intersection& intersection) const {
+      const poly::Vector inverse_direction = {
+            1.f / ray.Direction.x,
+            1.f / ray.Direction.y,
+            1.f / ray.Direction.z
+      };
       std::queue<compact_bvh_node *> q;
       q.push(compact_root->nodes);
 
@@ -302,7 +317,7 @@ namespace poly {
          q.pop();
 
          // TODO add tmax optimization for BBox hit
-         if (node->bb.Hits(ray)) {
+         if (node->bb.Hits(ray, inverse_direction)) {
             // if leaf node
             if (node->face_indices != nullptr) {
                single_mesh->intersect(ray, intersection, node->face_indices, node->num_face_indices);
@@ -318,7 +333,11 @@ namespace poly {
    }
    
    void bvh::intersect(poly::Ray& ray, poly::Intersection& intersection) const {
-      
+      const poly::Vector inverse_direction = {
+            1.f / ray.Direction.x,
+            1.f / ray.Direction.y,
+            1.f / ray.Direction.z
+      };
       std::queue<bvh_node *> q;
       q.push(root);
       
@@ -327,7 +346,7 @@ namespace poly {
          q.pop();
             
          // TODO add tmax optimization for BBox hit
-         if (node->bb.Hits(ray)) {
+         if (node->bb.Hits(ray, inverse_direction)) {
             // if leaf node
             if (node->high == nullptr && node->low == nullptr) {
                single_mesh->intersect(ray, intersection, node->face_indices);
