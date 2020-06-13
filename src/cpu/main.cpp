@@ -144,9 +144,18 @@ Other:
             runner = std::make_unique<poly::TileRunner>(std::move(sampler), scene, std::move(integrator),
                                                         std::move(film), bounds, options.samples);
          }
-         
+
+         const auto bound_start = std::chrono::system_clock::now();
          unsigned int num_nodes = runner->Scene->bvh_root.bound(runner->Scene->Shapes.at(0));
+         const auto bound_end = std::chrono::system_clock::now();
+         const std::chrono::duration<double> bound_duration = bound_end - bound_start;
+         Log.WithTime("Created BVH in " + std::to_string(bound_duration.count()) + "s.");
+
+         const auto compact_start = std::chrono::system_clock::now();
          runner->Scene->bvh_root.compact();
+         const auto compact_end = std::chrono::system_clock::now();
+         const std::chrono::duration<double> compact_duration = compact_end - compact_start;
+         Log.WithTime("Compacted BVH in " + std::to_string(compact_duration.count()) + "s.");
          
          runner->Scene->bvh_root.metrics();
          
@@ -179,6 +188,14 @@ Other:
                const std::thread::id threadID = threads[i].get_id();
                threadMap[threadID] = i;
 
+               // set thread affinity
+               // linux only
+               cpu_set_t cpuset;
+               CPU_ZERO(&cpuset);
+               CPU_SET(i, &cpuset);
+               int rc = pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
+               if (rc != 0)
+                  Log.WithTime("Couldn't set thread affinity :/");
             }
 
             for (int i = 0; i < usingThreads; i++) {
