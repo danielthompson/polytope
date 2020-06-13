@@ -22,8 +22,10 @@ namespace poly {
       ~Mesh();
       
       bool hits(const poly::Ray& world_ray, const std::vector<unsigned int>& face_indices);
+      bool hits(const poly::Ray& world_ray, const unsigned int* face_indices, unsigned int num_face_indices);
       void intersect(poly::Ray& worldSpaceRay, poly::Intersection& intersection);
       void intersect(poly::Ray& world_ray, poly::Intersection& intersection, const std::vector<unsigned int>& face_indices);
+      void intersect(poly::Ray& world_ray, poly::Intersection& intersection, const unsigned int* face_indices, unsigned int num_face_indices);
       void CalculateVertexNormals();
 
       Point random_surface_point() const;

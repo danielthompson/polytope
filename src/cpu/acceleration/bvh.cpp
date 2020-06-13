@@ -13,7 +13,8 @@ namespace poly {
       poly::Point centroid;
    };
    
-   void bvh::bound(poly::Mesh* mesh) {
+   unsigned int bvh::bound(poly::Mesh* mesh) {
+      unsigned int num_nodes = 0;
       single_mesh = mesh;
       std::queue<std::pair<bvh_node*, unsigned int>> q;
       
@@ -85,6 +86,7 @@ namespace poly {
       root->bb = { root_min, root_max };
       root->face_indices = indices;
       q.emplace(root, 0);
+      num_nodes++;
       
       // subdivide
       while (!q.empty()) {
@@ -95,7 +97,7 @@ namespace poly {
          std::vector<unsigned int> indices = node->face_indices;
 
          // base case 0
-         if (depth > 20)
+         if (depth > 25)
             continue;
          
          // base case 1
@@ -184,7 +186,7 @@ namespace poly {
          }
          
          bvh_node* high_child = new bvh_node();
-         high_child->axis = next_axis;
+         //high_child->axis = next_axis;
          high_child->face_indices = high_indices;
          high_child->high = nullptr;
          high_child->low = nullptr;
@@ -192,7 +194,8 @@ namespace poly {
          node->high = high_child;
          
          q.emplace(high_child, depth + 1);
-
+         num_nodes++;
+         
          Point low_min = {
                std::numeric_limits<float>::infinity(),
                std::numeric_limits<float>::infinity(),
@@ -216,7 +219,7 @@ namespace poly {
          }
          
          bvh_node* low_child = new bvh_node();
-         low_child->axis = next_axis;
+         //low_child->axis = next_axis;
          low_child->face_indices = low_indices;
          low_child->low = nullptr;
          low_child->low = nullptr;
@@ -224,11 +227,44 @@ namespace poly {
          node->low = low_child;
          
          q.emplace(low_child, depth + 1);
+         num_nodes++;
          
          node->face_indices.clear();
       }
+      
+      this->num_nodes = num_nodes;
+      
+      return num_nodes;
    }
 
+   bool bvh::hits_compact(const poly::Ray &ray) const {
+      std::queue<compact_bvh_node *> q;
+      q.push(compact_root->nodes);
+      while (!q.empty()) {
+         compact_bvh_node* node = q.front();
+         q.pop();
+         if (node->bb.Hits(ray)) {
+            // if leaf node
+            if (node->face_indices != nullptr) {
+               // intersect faces
+               if (single_mesh->hits(ray, node->face_indices, node->num_face_indices)) {
+                  // if anything hits, return true
+                  return true;
+               }
+               // otherwise, keep traversing               
+               continue;
+            }
+
+            // if interior node
+            // TODO push closer child node first (use node's split axis and ray's direction's sign for that axis
+            q.push(node + 1);
+            q.push(node + node->high_offset);
+         }
+      }
+      // we made it all the way through the tree and nothing hit, so no hit
+      return false;
+   }
+   
    bool bvh::hits(const poly::Ray &ray) const {
       std::queue<bvh_node *> q;
       q.push(root);
@@ -256,6 +292,30 @@ namespace poly {
       // we made it all the way through the tree and nothing hit, so no hit
       return false;
    }
+
+   void bvh::intersect_compact(poly::Ray& ray, poly::Intersection& intersection) const {
+      std::queue<compact_bvh_node *> q;
+      q.push(compact_root->nodes);
+
+      while (!q.empty()) {
+         compact_bvh_node* node = q.front();
+         q.pop();
+
+         // TODO add tmax optimization for BBox hit
+         if (node->bb.Hits(ray)) {
+            // if leaf node
+            if (node->face_indices != nullptr) {
+               single_mesh->intersect(ray, intersection, node->face_indices, node->num_face_indices);
+               continue;
+            }
+
+            // if interior node
+            // TODO push closer child node first (use node's split axis and ray's direction's sign for that axis
+            q.push(node + 1);
+            q.push(node + node->high_offset);
+         }
+      }
+   }
    
    void bvh::intersect(poly::Ray& ray, poly::Intersection& intersection) const {
       
@@ -265,26 +325,11 @@ namespace poly {
       while (!q.empty()) {
          bvh_node* node = q.front();
          q.pop();
-         
-//         bool debug = false;
-//         if (ray.x == 254 && ray.y == 20) {
-//            auto it = std::find(node->face_indices.begin(), node->face_indices.end(), 46809u);
-//            if (it != node->face_indices.end())
-//               debug = true;
-//         }
             
          // TODO add tmax optimization for BBox hit
          if (node->bb.Hits(ray)) {
             // if leaf node
             if (node->high == nullptr && node->low == nullptr) {
-               // intersect faces
-//               if (debug) {
-//                  single_mesh->intersect(ray, intersection, node->face_indices);
-//               }
-//               else {
-//                  single_mesh->intersect(ray, intersection, node->face_indices);
-//               }
-
                single_mesh->intersect(ray, intersection, node->face_indices);
                continue;
             }
@@ -385,5 +430,37 @@ namespace poly {
             delete node;
          }
       }
+      
+      delete compact_root;
+   }
+
+   unsigned int bvh::compact_helper(bvh_node* node, unsigned int index) {
+      if (node != nullptr) {
+         int num_child_nodes = 0;
+         compact_bvh_node& compact_node = compact_root->nodes[index];
+         compact_node.bb = node->bb;
+
+         // leaf
+         if (node->low == nullptr) {
+            compact_node.face_indices = &node->face_indices[0];
+            compact_node.num_face_indices = node->face_indices.size();
+         } 
+         // interior
+         else {
+            num_child_nodes = 0;
+            num_child_nodes += 1 + compact_helper(node->low, index + 1);
+            compact_node.high_offset = num_child_nodes + 1;
+            compact_node.face_indices = nullptr;
+            num_child_nodes += 1 + compact_helper(node->high, index + 1 + num_child_nodes);
+            
+         }
+
+         return num_child_nodes;
+      }
+   }
+   
+   void bvh::compact() {
+      compact_root = new compact_bvh(num_nodes);
+      compact_helper(root, 0);
    }
 }

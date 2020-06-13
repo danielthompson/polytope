@@ -602,10 +602,10 @@ namespace poly {
          if (directive->Name == str::Sampler) {
             missingSampler = false;
             if (directive->Identifier == str::halton) {
-               Sampler = std::make_unique<GridSampler>();
+               Sampler = std::make_unique<HaltonSampler>();
             } else {
                LogUnknownIdentifier(directive);
-               Sampler = std::make_unique<GridSampler>();
+               Sampler = std::make_unique<HaltonSampler>();
             }
 
             for (const PBRTArgument& arg : directive->Arguments) {

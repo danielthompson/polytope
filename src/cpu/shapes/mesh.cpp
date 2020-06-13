@@ -177,13 +177,19 @@ namespace poly {
       }
    }
 
-   void Mesh::intersect(poly::Ray& world_ray, poly::Intersection& intersection, const std::vector<unsigned int>& face_indices) {
+   void Mesh::intersect(
+         poly::Ray& world_ray, 
+         poly::Intersection& intersection, 
+         const unsigned int* face_indices, 
+         const unsigned int num_face_indices) {
       //float t = poly::FloatMax;
       unsigned int hit_face_index = 0;
       bool hits = false;
 
-      for (const unsigned int face_index : face_indices) {
-
+      for (unsigned int face_index_index = 0; face_index_index < num_face_indices; face_index_index++) {
+         
+         unsigned int face_index = face_indices[face_index_index];
+         
          const Point v0 = { x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]] };
          const Point v1 = { x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]] };
          const Point v2 = { x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]] };
@@ -296,6 +302,10 @@ namespace poly {
 
       intersection.Tangent1.Normalize();
       intersection.Tangent2.Normalize();
+   }
+   
+   void Mesh::intersect(poly::Ray& world_ray, poly::Intersection& intersection, const std::vector<unsigned int>& face_indices) {
+      intersect(world_ray, intersection, &face_indices[0], face_indices.size());
    }
    
    void Mesh::intersect(poly::Ray& worldSpaceRay, poly::Intersection& intersection) {
@@ -448,9 +458,9 @@ namespace poly {
 
    }
 
-   bool Mesh::hits(const Ray& world_ray, const std::vector<unsigned int>& face_indices) {
-      for (const unsigned int face_index : face_indices) {
-      
+   bool Mesh::hits(const Ray &world_ray, const unsigned int *face_indices, unsigned int num_face_indices) {
+      for (unsigned int face_index = 0; face_index < num_face_indices; face_index++) {
+
          const Point v0 = { x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]] };
          const Point v1 = { x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]] };
          const Point v2 = { x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]] };
@@ -459,22 +469,22 @@ namespace poly {
          const poly::Vector e1 = v2 - v1;
          poly::Vector plane_normal = e0.Cross(e1);
          plane_normal.Normalize();
-         
+
          const float divisor = plane_normal.Dot(world_ray.Direction);
-         
+
          if (divisor == 0.0f) {
             // parallel
             continue;
          }
 
          const float t = plane_normal.Dot(v0 - world_ray.Origin) / divisor;
-         
+
          if (t <= 0) {
             continue;
          }
          // TODO fix this imprecise garbage
          const poly::Point hit_point = world_ray.GetPointAtT(t);
-         
+
          const poly::Vector e2 = v0 - v2;
          const poly::Vector p0 = hit_point - v0;
          const poly::Vector cross0 = e0.Cross(p0);
@@ -503,7 +513,12 @@ namespace poly {
          // hits
          return true;
       }
-      
+
       return false;
    }
+   
+   bool Mesh::hits(const Ray& world_ray, const std::vector<unsigned int>& face_indices) {
+      return hits(world_ray, &face_indices[0], face_indices.size());
+   }
+
 }

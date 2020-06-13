@@ -120,9 +120,6 @@ Other:
             const std::chrono::duration<double> parse_duration = parse_end - parse_start;
             Log.WithTime("Parsed scene description in " + std::to_string(parse_duration.count()) + "s.");
             
-            
-            
-            
             // override parsed with options here
             if (options.samplesSpecified) {
                runner->NumSamples = options.samples;
@@ -148,7 +145,8 @@ Other:
                                                         std::move(film), bounds, options.samples);
          }
          
-         runner->Scene->bvh_root.bound(runner->Scene->Shapes.at(0));
+         unsigned int num_nodes = runner->Scene->bvh_root.bound(runner->Scene->Shapes.at(0));
+         runner->Scene->bvh_root.compact();
          
          runner->Scene->bvh_root.metrics();
          

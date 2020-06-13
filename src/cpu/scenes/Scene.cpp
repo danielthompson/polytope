@@ -15,7 +15,8 @@ namespace poly {
 //      return linear_intersection;
 
       Intersection bvh_intersection;
-      bvh_root.intersect(ray, bvh_intersection);
+      bvh_root.intersect_compact(ray, bvh_intersection);
+//      bvh_root.intersect(ray, bvh_intersection);
       return bvh_intersection;
 
       //      if (linear_intersection.Hits != bvh_intersection.Hits)
