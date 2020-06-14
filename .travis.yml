@@ -21,7 +21,7 @@ jobs:
         - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
         - sudo apt-key add 7fa2af80.pub
         - sudo apt update -qq
-        - sudo apt-add-repository ppa:cginternals/ppa
+        - sudo apt-add-repository -y ppa:cginternals/ppa
         - sudo apt-get update
         - sudo apt install -y cuda-compiler-10-2 libglfw3 libglfw3-dev libglfw3-doc libglbinding-dev libglbinding-dbg
         - sudo apt clean
