@@ -3,6 +3,7 @@ language: cpp
 jobs:
   include:
     - os: linux
+      dist: bionic
       compiler: gcc
       before_install:
         - pip install --user cpp-coveralls
