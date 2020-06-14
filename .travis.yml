@@ -12,14 +12,15 @@ jobs:
       dist: bionic
       compiler: gcc
       before_install:
+        # coveralls
         - pip install --user cpp-coveralls
-        - INSTALLER=cuda-repo-${UBUNTU_VERSION}_${CUDA}_amd64.deb
-        - wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-10-2_10.2.89-1_amd64.deb
-        - sudo dpkg -i cuda-10-2_10.2.89-1_amd64.deb
+        # repo meta
+        - wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-repo-ubuntu1804_10.2.89-1_amd64.deb
+        - sudo dpkg -i cuda-repo-ubuntu1804_10.2.89-1_amd64.deb
         - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
         - sudo apt-key add 7fa2af80.pub
         - sudo apt update -qq
-        - sudo apt install -y cuda-core-10-2 cuda-cudart-dev-10-2 cuda-cufft-dev-10-2
+        - sudo apt install -y cuda 
         - sudo apt clean
         - CUDA_HOME=/usr/local/cuda-10.2
         - LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
