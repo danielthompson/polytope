@@ -6,8 +6,8 @@
 namespace Tests {
 
    namespace Vector {
-      using Polytope::Vector;
-      using Polytope::Normal;
+      using poly::Vector;
+      using poly::Normal;
 
       namespace Equality {
          TEST(Vector, Equals) {

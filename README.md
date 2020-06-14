@@ -12,11 +12,15 @@ Hobby ray/path tracer in C++.
   * BVH
   * kd-tree
 * Import a variety of scene / object description grammars
-  * pbrt
-  * obj
-  * ply
+  * `.pbrt`
+  * `.obj`
+  * `.ply`
 * Rasterization output path with OpenGL (or Vulkan)
 * Stream processing, perhaps with CUDA and/or ISPC
+
+#### Renders
+
+![dragon](renders/dragon.png)
 
 #### What's a polytope?
 
@@ -26,9 +30,7 @@ Hobby ray/path tracer in C++.
 
 #### Does polytope render polytopes?
 
-Polytope represents all shapes internally as TriangleMesh meshes, which are 3-polytopes. Input grammars that specify other types of geometry (implicit surfaces, etc) are tesselated on import to TriangleMesh meshes.
-
-So, yes.
+Polytope represents all shapes internally as triangle meshes, which are 3-polytopes. Input grammars that specify other types of geometry (implicit surfaces, etc) are tesselated on import to triangle meshes.
 
 #### Attribution
 

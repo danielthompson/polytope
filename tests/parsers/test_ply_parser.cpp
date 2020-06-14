@@ -8,17 +8,17 @@
 #include "../../src/common/parsers/mesh/PLYParser.h"
 #include "../../src/cpu/structures/Vectors.h"
 #include "../../src/common/parsers/mesh/OBJParser.h"
-#include "../../src/cpu/shapes/linear_soa/mesh_linear_soa.h"
+#include "../../src/cpu/shapes/mesh.h"
 
 namespace Tests {
 
    namespace Parse {
       TEST(PLYParser, Teapot) {
 
-         const Polytope::PLYParser parser;
+         const poly::PLYParser parser;
          const std::string file = "../scenes/teapot/teapot.ply";
-         const std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
-         Polytope::AbstractMesh* mesh = new Polytope::MeshLinearSOA(identity, identity, nullptr);
+         const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
+         auto mesh = new poly::Mesh(identity, identity, nullptr);
 
          parser.ParseFile(mesh, file);
 
@@ -28,7 +28,7 @@ namespace Tests {
          ASSERT_EQ(1177, mesh->num_vertices_packed);
 
          // check a random-ish vertex for correctness
-         const Polytope::Point secondToLastVertex = mesh->get_vertex(1175);
+         const poly::Point secondToLastVertex = mesh->get_vertex(1175);
 
          // EXPECT_FLOAT_EQ allows 4 ulps difference
 
@@ -40,7 +40,7 @@ namespace Tests {
          ASSERT_EQ(2256, mesh->num_faces);
 
          // check a random-ish face for correctness
-         const Polytope::Point3ui secondToLastFace = mesh->get_vertex_indices_for_face(2254);
+         const poly::Point3ui secondToLastFace = mesh->get_vertex_indices_for_face(2254);
 
          EXPECT_EQ(623, secondToLastFace.x);
          EXPECT_EQ(1176, secondToLastFace.y);
@@ -51,17 +51,17 @@ namespace Tests {
 
       TEST(PLYParser, TeapotConverted) {
 
-         const std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
-         Polytope::MeshLinearSOA* ply_mesh = new Polytope::MeshLinearSOA(identity, identity, nullptr);
+         const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
+         poly::Mesh* ply_mesh = new poly::Mesh(identity, identity, nullptr);
          {
-            const Polytope::PLYParser ply_parser;
+            const poly::PLYParser ply_parser;
             const std::string file = "../scenes/teapot/teapot_converted.ply";
             ply_parser.ParseFile(ply_mesh, file);
          }
 
-         Polytope::MeshLinearSOA* obj_mesh = new Polytope::MeshLinearSOA(identity, identity, nullptr);
+         poly::Mesh* obj_mesh = new poly::Mesh(identity, identity, nullptr);
          {
-            const Polytope::OBJParser obj_parser;
+            const poly::OBJParser obj_parser;
             const std::string file = "../scenes/teapot/teapot.obj";
             obj_parser.ParseFile(obj_mesh, file);
          }
@@ -119,14 +119,14 @@ namespace Tests {
       }
       
       TEST(PLYParser, Binary) {
-         const Polytope::PLYParser parser;
-         const std::shared_ptr<Polytope::Transform> identity = std::make_shared<Polytope::Transform>();
+         const poly::PLYParser parser;
+         const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
          constexpr unsigned int expected_num_vertices = 8;
          constexpr unsigned int expected_num_faces = 4;
 
          // binary file
          const std::string binary_file = "../scenes/test/floor-binary-le.ply";
-         Polytope::AbstractMesh* binary_mesh = new Polytope::MeshLinearSOA(identity, identity, nullptr);
+         auto binary_mesh = new poly::Mesh(identity, identity, nullptr);
 
          parser.ParseFile(binary_mesh, binary_file);
          // ensure nothing is null
@@ -136,7 +136,7 @@ namespace Tests {
          
          // ascii file
          const std::string ascii_file = "../scenes/test/floor-ascii.ply";
-         Polytope::AbstractMesh* ascii_mesh = new Polytope::MeshLinearSOA(identity, identity, nullptr);
+         auto ascii_mesh = new poly::Mesh(identity, identity, nullptr);
 
          parser.ParseFile(ascii_mesh, ascii_file);
          // ensure nothing is null

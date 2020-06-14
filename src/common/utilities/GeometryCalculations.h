@@ -2,14 +2,14 @@
 // Created by Daniel Thompson on 3/9/18.
 //
 
-#ifndef POLYTOPE_GEOMETRYCALCULATIONS_H
-#define POLYTOPE_GEOMETRYCALCULATIONS_H
+#ifndef POLY_GEOMETRYCALCULATIONS_H
+#define POLY_GEOMETRYCALCULATIONS_H
 
 #include <random>
 #include "../structures/Point.h"
 #include "../../cpu/constants.h"
 //
-//namespace Polytope {
+//namespace poly {
 //
 //   class GeometryCalculations {
 //   public:
@@ -37,4 +37,4 @@
 //
 //}
 
-#endif //POLYTOPE_GEOMETRYCALCULATIONS_H
+#endif //POLY_GEOMETRYCALCULATIONS_H

@@ -2,10 +2,10 @@
 // Created by Daniel Thompson on 2/19/18.
 //
 
-#ifndef POLYTOPE_MATRIX4X4_H
-#define POLYTOPE_MATRIX4X4_H
+#ifndef POLY_MATRIX4X4_H
+#define POLY_MATRIX4X4_H
 
-namespace Polytope {
+namespace poly {
    class Matrix4x4 {
    public:
 
@@ -37,4 +37,4 @@ namespace Polytope {
       float Matrix[4][4]{};
    };
 }
-#endif //POLYTOPE_MATRIX4X4_H
+#endif //POLY_MATRIX4X4_H

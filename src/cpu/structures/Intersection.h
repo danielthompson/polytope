@@ -2,16 +2,16 @@
 // Created by dthompson on 20 Feb 18.
 //
 
-#ifndef POLYTOPE_INTERSECTION_H
-#define POLYTOPE_INTERSECTION_H
+#ifndef POLY_INTERSECTION_H
+#define POLY_INTERSECTION_H
 
 #include <memory>
 #include "Vectors.h"
 
-namespace Polytope {
+namespace poly {
 
-   class AbstractMesh; // predeclared to avoid circular header references
-
+   class Mesh;
+   
    class Intersection {
    public:
 
@@ -21,10 +21,10 @@ namespace Polytope {
 
       // data
 
-      AbstractMesh *Shape = nullptr;
+      Mesh *Shape = nullptr;
       unsigned int faceIndex;
       Point Location;
-      Polytope::Normal Normal;
+      poly::Normal Normal;
       Vector Tangent1;
       Vector Tangent2;
       bool Hits = false;
@@ -36,4 +36,4 @@ namespace Polytope {
 }
 
 
-#endif //POLYTOPE_INTERSECTION_H
+#endif //POLY_INTERSECTION_H

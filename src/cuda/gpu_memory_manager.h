@@ -2,30 +2,14 @@
 // Created by daniel on 5/15/20.
 //
 
-#ifndef POLYTOPE_GPU_MEMORY_MANAGER_H
-#define POLYTOPE_GPU_MEMORY_MANAGER_H
+#ifndef POLY_GPU_MEMORY_MANAGER_H
+#define POLY_GPU_MEMORY_MANAGER_H
 
-#include "../cpu/shapes/linear_soa/mesh_linear_soa.h"
-#include "../cpu/scenes/AbstractScene.h"
+#include <cuda_runtime.h>
+#include "../cpu/shapes/mesh.h"
+#include "../cpu/scenes/Scene.h"
 
-namespace Polytope {
-
-   struct DeviceCamera {
-      // origin
-      float* ox;
-      float* oy;
-      float* oz;
-      
-      // direction
-      float* dx;
-      float* dy;
-      float* dz;
-      
-      // camera matrix
-      float* cm;
-      
-      size_t num_pixels;
-   };
+namespace poly {
    
    struct DeviceMesh {
       float* x;
@@ -35,9 +19,10 @@ namespace Polytope {
       // color.. need to fix this to properly use brdf
       float* src;
       size_t num_bytes, num_vertices, num_faces;
+      float aabb[6];
    };
 
-   struct DeviceSamples {
+   struct Samples {
       float* r;
       float* g;
       float* b;
@@ -51,12 +36,16 @@ namespace Polytope {
       }
       ~GPUMemoryManager();
       
-      void MallocScene(Polytope::AbstractScene* scene);
+      size_t MallocScene(poly::Scene* scene);
       struct DeviceCamera* device_camera;
       struct DeviceMesh* meshes;
       unsigned int num_meshes;
       
-      struct DeviceSamples* device_samples;
+      float camera_to_world_matrix[16];
+      float camera_fov;
+      
+      struct Samples* device_samples;
+      struct Samples host_samples;
       
       unsigned int width, height, num_pixels;
       
@@ -65,5 +54,4 @@ namespace Polytope {
 
 }
 
-
-#endif //POLYTOPE_GPU_MEMORY_MANAGER_H
+#endif //POLY_GPU_MEMORY_MANAGER_H

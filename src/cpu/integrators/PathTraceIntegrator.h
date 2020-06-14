@@ -2,16 +2,16 @@
 // Created by Daniel Thompson on 3/5/18.
 //
 
-#ifndef POLYTOPE_PATHTRACEINTEGRATOR_H
-#define POLYTOPE_PATHTRACEINTEGRATOR_H
+#ifndef POLY_PATHTRACEINTEGRATOR_H
+#define POLY_PATHTRACEINTEGRATOR_H
 
 #include "AbstractIntegrator.h"
 
-namespace Polytope {
+namespace poly {
 
    class PathTraceIntegrator : public AbstractIntegrator {
    public:
-      PathTraceIntegrator(AbstractScene *scene, int maxDepth)
+      PathTraceIntegrator(poly::Scene *scene, int maxDepth)
             : AbstractIntegrator(scene, maxDepth) { }
       explicit PathTraceIntegrator(int maxDepth)
          : AbstractIntegrator(maxDepth) { }
@@ -22,4 +22,4 @@ namespace Polytope {
 
 }
 
-#endif //POLYTOPE_PATHTRACEINTEGRATOR_H
+#endif //POLY_PATHTRACEINTEGRATOR_H

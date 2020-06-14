@@ -2,18 +2,18 @@
 // Created by Daniel on 29-Mar-18.
 //
 
-#ifndef POLYTOPE_OPTIONSPARSER_H
-#define POLYTOPE_OPTIONSPARSER_H
+#ifndef POLY_OPTIONSPARSER_H
+#define POLY_OPTIONSPARSER_H
 
 #include <vector>
 #include "Options.h"
 
-namespace Polytope {
+namespace poly {
 
    class OptionsParser {
    public:
       OptionsParser(int &argc, char **argv);
-      Polytope::Options Parse();
+      poly::Options Parse();
 
    private:
       std::vector<std::string> _tokens;
@@ -26,4 +26,4 @@ namespace Polytope {
 }
 
 
-#endif //POLYTOPE_OPTIONSPARSER_H
+#endif //POLY_OPTIONSPARSER_H

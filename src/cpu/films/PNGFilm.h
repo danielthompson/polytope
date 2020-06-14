@@ -2,22 +2,22 @@
 // Created by Daniel Thompson on 3/6/18.
 //
 
-#ifndef POLYTOPE_PNGFILM_H
-#define POLYTOPE_PNGFILM_H
+#ifndef POLY_PNGFILM_H
+#define POLY_PNGFILM_H
 
 #include <string>
 #include <utility>
 #include <vector>
 #include "AbstractFilm.h"
 
-namespace Polytope {
+namespace poly {
 
    class PNGFilm : public AbstractFilm {
    public:
       const std::string Filename;
 
       PNGFilm(
-         const Polytope::Bounds bounds,
+         const poly::Bounds bounds,
          std::string filename,
          std::unique_ptr<AbstractFilter> filter)
          : AbstractFilm(bounds, std::move(filter)),
@@ -28,4 +28,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_PNGFILM_H
+#endif //POLY_PNGFILM_H

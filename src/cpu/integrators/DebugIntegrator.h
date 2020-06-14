@@ -2,16 +2,16 @@
 // Created by Daniel Thompson on 3/7/18.
 //
 
-#ifndef POLYTOPE_DEBUGINTEGRATOR_H
-#define POLYTOPE_DEBUGINTEGRATOR_H
+#ifndef POLY_DEBUGINTEGRATOR_H
+#define POLY_DEBUGINTEGRATOR_H
 
 #include "AbstractIntegrator.h"
 
-namespace Polytope {
+namespace poly {
 
    class DebugIntegrator : public AbstractIntegrator {
    public:
-      DebugIntegrator(AbstractScene *scene, int maxDepth)
+      DebugIntegrator(poly::Scene *scene, int maxDepth)
       : AbstractIntegrator(scene, maxDepth) { };
 
       explicit DebugIntegrator(int maxDepth)
@@ -22,4 +22,4 @@ namespace Polytope {
 
 }
 
-#endif //POLYTOPE_DEBUGINTEGRATOR_H
+#endif //POLY_DEBUGINTEGRATOR_H

@@ -3,10 +3,11 @@
 //
 
 #include "tesselators.h"
+#include "mesh.h"
 
-namespace Polytope {
+namespace poly {
 
-   void SphereTesselator::Create(unsigned int meridians, unsigned int parallels, AbstractMesh *mesh) {
+   void SphereTesselator::Create(unsigned int meridians, unsigned int parallels, poly::Mesh *mesh) {
 
       std::vector<unsigned int> parallelStartIndices;
 
@@ -88,7 +89,7 @@ namespace Polytope {
       mesh->unpack_faces();
    }
 
-   void DiskTesselator::Create(unsigned int meridians, AbstractMesh *mesh) {
+   void DiskTesselator::Create(unsigned int meridians, poly::Mesh *mesh) {
       // center
       mesh->add_vertex(0, 0, 0);
 
@@ -107,7 +108,7 @@ namespace Polytope {
       mesh->add_packed_face(0, meridians, 1);
    }
 
-   void ConeTesselator::Create(unsigned int meridians, AbstractMesh *mesh) {
+   void ConeTesselator::Create(unsigned int meridians, poly::Mesh *mesh) {
       // center
       mesh->add_vertex(0, 1, 0);
 

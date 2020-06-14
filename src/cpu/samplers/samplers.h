@@ -2,12 +2,12 @@
 // Created by Daniel Thompson on 2/21/18.
 //
 
-#ifndef POLYTOPE_SAMPLERS_H
-#define POLYTOPE_SAMPLERS_H
+#ifndef POLY_SAMPLERS_H
+#define POLY_SAMPLERS_H
 
 #include "../../common/structures/Point2.h"
 
-namespace Polytope {
+namespace poly {
 
    class AbstractSampler {
    public:
@@ -52,4 +52,4 @@ namespace Polytope {
 }
 
 
-#endif //POLYTOPE_SAMPLERS_H
+#endif //POLY_SAMPLERS_H

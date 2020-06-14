@@ -2,17 +2,17 @@
 // Created by Daniel Thompson on 2/21/18.
 //
 
-#ifndef POLYTOPE_ABSTRACTRUNNER_H
-#define POLYTOPE_ABSTRACTRUNNER_H
+#ifndef POLY_ABSTRACTRUNNER_H
+#define POLY_ABSTRACTRUNNER_H
 
 #include <memory>
 #include <thread>
 #include "../samplers/samplers.h"
-#include "../scenes/AbstractScene.h"
+#include "../scenes/Scene.h"
 #include "../integrators/AbstractIntegrator.h"
 #include "../films/AbstractFilm.h"
 
-namespace Polytope {
+namespace poly {
 
    class AbstractRunner {
    public:
@@ -21,11 +21,11 @@ namespace Polytope {
 
       explicit AbstractRunner(
             std::unique_ptr<AbstractSampler> sampler,
-            AbstractScene *scene,
+            Scene *scene,
             std::unique_ptr<AbstractIntegrator> integrator,
             std::unique_ptr<AbstractFilm> film,
             const unsigned int numSamples,
-            const Polytope::Bounds bounds)
+            const poly::Bounds bounds)
             : Sampler(std::move(sampler)),
               Scene(scene),
               Integrator(std::move(integrator)),
@@ -50,12 +50,12 @@ namespace Polytope {
       unsigned int NumSamples;
       std::unique_ptr<AbstractSampler> Sampler;
       std::unique_ptr<AbstractFilm> Film;
-      AbstractScene *Scene;
+      poly::Scene *Scene;
       std::unique_ptr<AbstractIntegrator> Integrator;
 
-      const Polytope::Bounds Bounds;
+      const poly::Bounds Bounds;
    };
 
 }
 
-#endif //POLYTOPE_ABSTRACTRUNNER_H
+#endif //POLY_ABSTRACTRUNNER_H

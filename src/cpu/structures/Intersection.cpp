@@ -5,7 +5,7 @@
 #include "Intersection.h"
 #include "Vectors.h"
 
-namespace Polytope {
+namespace poly {
 
    Intersection::Intersection()
          : Location(Point(0, 0, 0)) { }

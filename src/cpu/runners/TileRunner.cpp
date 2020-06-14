@@ -6,7 +6,7 @@
 #include "TileRunner.h"
 #include "../../common/utilities/Common.h"
 
-namespace Polytope {
+namespace poly {
 
    namespace {
       constexpr unsigned int _xTileWidth = 16;
@@ -23,7 +23,7 @@ namespace Polytope {
 
       std::mutex _mutex;
 
-      unsigned int getXLastTileWidth(const Polytope::TileRunner &runner) {
+      unsigned int getXLastTileWidth(const poly::TileRunner &runner) {
 
          unsigned int n = runner.Bounds.x % _xTileWidth;
          if (n == 0)
@@ -31,14 +31,14 @@ namespace Polytope {
          return n;
       }
 
-      unsigned int getYLastTileWidth(const Polytope::TileRunner &runner) {
+      unsigned int getYLastTileWidth(const poly::TileRunner &runner) {
          unsigned int n = runner.Bounds.x % _yTileWidth;
          if (n == 0)
             n = _yTileWidth;
          return n;
       }
 
-      unsigned int getXTiles(const Polytope::TileRunner &runner) {
+      unsigned int getXTiles(const poly::TileRunner &runner) {
          if (runner.Bounds.x % _xTileWidth > 0)
             return (runner.Bounds.x / _xTileWidth) + 1;
 
@@ -46,7 +46,7 @@ namespace Polytope {
             return (runner.Bounds.x / _xTileWidth);
       }
 
-      unsigned int getYTiles(const Polytope::TileRunner &runner) {
+      unsigned int getYTiles(const poly::TileRunner &runner) {
          if (runner.Bounds.y % _yTileWidth > 0)
             return (runner.Bounds.y / _yTileWidth) + 1;
 
@@ -108,8 +108,8 @@ namespace Polytope {
          if (tile.y == _numYTiles - 1)
             yMax = tile.y * _yTileWidth + _yLastTileWidth;
 
-         xMax = std::min(xMax, Bounds.x - 1);
-         yMax = std::min(yMax, Bounds.y - 1);
+         xMax = std::min(xMax, Bounds.x);
+         yMax = std::min(yMax, Bounds.y);
          
          for (unsigned int y = yMin; y < yMax; y++) {
             for (unsigned int x = xMin; x < xMax; x++) {
@@ -129,10 +129,10 @@ namespace Polytope {
 
    TileRunner::TileRunner(
          std::unique_ptr<AbstractSampler> sampler,
-         AbstractScene *scene,
+         poly::Scene *scene,
          std::unique_ptr<AbstractIntegrator> integrator,
          std::unique_ptr<AbstractFilm> film,
-         const Polytope::Bounds bounds,
+         const poly::Bounds bounds,
          unsigned int numSamples)
          : AbstractRunner(
             std::move(sampler),

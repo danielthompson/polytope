@@ -2,20 +2,20 @@
 // Created by Daniel Thompson on 3/5/18.
 //
 
-#ifndef POLYTOPE_ABSTRACTINTEGRATOR_H
-#define POLYTOPE_ABSTRACTINTEGRATOR_H
+#ifndef POLY_ABSTRACTINTEGRATOR_H
+#define POLY_ABSTRACTINTEGRATOR_H
 
-#include "../scenes/AbstractScene.h"
+#include "../scenes/Scene.h"
 #include "../structures/Sample.h"
 
-namespace Polytope {
+namespace poly {
 
    class AbstractIntegrator {
    public:
-      AbstractScene *Scene;
+      poly::Scene *Scene;
       int MaxDepth;
 
-      AbstractIntegrator(AbstractScene *scene, int maxDepth)
+      AbstractIntegrator(poly::Scene *scene, int maxDepth)
          : Scene(scene), MaxDepth(maxDepth) { };
 
       AbstractIntegrator(int maxDepth)
@@ -27,4 +27,4 @@ namespace Polytope {
    };
 }
 
-#endif //POLYTOPE_ABSTRACTINTEGRATOR_H
+#endif //POLY_ABSTRACTINTEGRATOR_H

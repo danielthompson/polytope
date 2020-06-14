@@ -7,7 +7,7 @@
 #include "Vectors.h"
 #include "BoundingBox.h"
 
-namespace Polytope {
+namespace poly {
 
    const Vector Transform::xDir = Vector(1, 0, 0);
    const Vector Transform::yDir = Vector(0, 1, 0);
@@ -146,12 +146,7 @@ namespace Polytope {
 
    void Transform::ApplyInPlace(Ray &ray) const {
       ApplyInPlace(ray.Origin);
-
       ApplyInPlace(ray.Direction);
-//      ray.Direction.Normalize();
-
-      ApplyInPlace(ray.DirectionInverse);
-//      ray.DirectionInverse.Normalize();
    }
 
    Ray Transform::Apply(const Ray &ray) const {

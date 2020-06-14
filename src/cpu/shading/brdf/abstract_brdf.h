@@ -2,14 +2,14 @@
 // Created by Daniel Thompson on 2/24/18.
 //
 
-#ifndef POLYTOPE_ABSTRACTBRDF_H
-#define POLYTOPE_ABSTRACTBRDF_H
+#ifndef POLY_ABSTRACTBRDF_H
+#define POLY_ABSTRACTBRDF_H
 
 #include "../../constants.h"
 #include "../../structures/Vectors.h"
 #include "../spectrum.h"
 
-namespace Polytope {
+namespace poly {
 
    class AbstractBRDF {
    public:
@@ -22,7 +22,7 @@ namespace Polytope {
        * @param pdf The pdf of the returned vector.
        * @return A vector randomly samplb
        */
-      virtual Vector sample(const Vector &incoming, Polytope::ReflectanceSpectrum &refl_spectrum, float &pdf) const {
+      virtual Vector sample(const Vector &incoming, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const {
          const float u0 = NormalizedUniformRandom();
          const float u1 = NormalizedUniformRandom();
 
@@ -51,4 +51,4 @@ namespace Polytope {
 
 }
 
-#endif //POLYTOPE_ABSTRACTBRDF_H
+#endif //POLY_ABSTRACTBRDF_H

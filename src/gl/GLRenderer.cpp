@@ -6,7 +6,6 @@
 
 #include "GLRenderer.h"
 #include "../common/utilities/Common.h"
-#include "../cpu/scenes/BVHNode.h"
 
 #define GLFW_INCLUDE_NONE
 #include <glbinding/gl/gl.h>
@@ -23,7 +22,7 @@
 #include <queue>
 #include <utility>
 
-namespace Polytope {
+namespace poly {
 
    using namespace gl;
 
@@ -32,8 +31,8 @@ namespace Polytope {
       fprintf(stderr, "Error: %s\n", description);
    }
 
-   Polytope::BVHNode* rootNode = nullptr;
-   Polytope::BVHNode* currentNode = nullptr;
+   poly::bvh_node* rootNode = nullptr;
+   poly::bvh_node* currentNode = nullptr;
 
    GLuint bbSelectedNodeVaoHandle;
    GLuint bbSelectedNodeIndexBufferHandle;
@@ -60,9 +59,9 @@ namespace Polytope {
    };
    std::vector<float> bbSelectedVertexVector(24, 0);
 
-   static void selectNode(BVHNode* node) {
-      const Point low = node->bbox.p0;
-      const Point high = node->bbox.p1;
+   static void selectNode(bvh_node* node) {
+      const Point low = node->bb.p0;
+      const Point high = node->bb.p1;
       
       bbSelectedVertexVector[0] = low.x;
       bbSelectedVertexVector[1] = low.y;
@@ -111,17 +110,17 @@ namespace Polytope {
                break;
             }
             case GLFW_KEY_S: {
-               if (currentNode && currentNode->parent) {
-                  currentNode = currentNode->parent;
-                  Log.WithTime("Moving up to parent node.");
-                  selectNode(currentNode);
-               }
-               else {
-                  if (currentNode == rootNode)
-                     Log.WithTime("Can't move to parent (already at root).");
-                  else
-                     Log.WithTime("Can't move to parent, but not at root either (probably a bug). :/");
-               }
+//               if (currentNode && currentNode->parent) {
+//                  currentNode = currentNode->parent;
+//                  Log.WithTime("Moving up to parent node.");
+//                  selectNode(currentNode);
+//               }
+//               else {
+//                  if (currentNode == rootNode)
+//                     Log.WithTime("Can't move to parent (already at root).");
+//                  else
+//                     Log.WithTime("Can't move to parent, but not at root either (probably a bug). :/");
+//               }
                break;
             }
             case GLFW_KEY_Z: {
@@ -309,7 +308,7 @@ namespace Polytope {
       }
    }
 
-   void GLRenderer::Render(Polytope::AbstractScene* scene)
+   void GLRenderer::Render(poly::Scene* scene)
    {
 //      // glfw init
 //
@@ -353,7 +352,7 @@ namespace Polytope {
 //
 //      // actual drawing code
 //
-//      Polytope::AbstractMesh* mesh = (scene->Shapes[0]);
+//      poly::AbstractMesh* mesh = (scene->Shapes[0]);
 //      const unsigned int indices = mesh->Faces.size() * 3;
 //
 //      rootNode = mesh->root;
@@ -365,7 +364,7 @@ namespace Polytope {
 //
 //      for (unsigned int i = 0; i < mesh->Faces.size(); i++) {
 //
-//         const Polytope::Point3ui face = mesh->Faces[i];
+//         const poly::Point3ui face = mesh->Faces[i];
 //         shapeVertexVector[9 * i] = mesh->Vertices[face.x].x;
 //         shapeVertexVector[9 * i + 1] = mesh->Vertices[face.x].y;
 //         shapeVertexVector[9 * i + 2] = mesh->Vertices[face.x].z;
@@ -399,7 +398,7 @@ namespace Polytope {
 //      std::vector<float> bbVertexVector;
 //      std::vector<unsigned int> bbLinesIndexVector;
 //
-//      std::queue<std::pair<Polytope::BVHNode*, unsigned int>> queue;
+//      std::queue<std::pair<poly::BVHNode*, unsigned int>> queue;
 //
 //      if (mesh->root != nullptr) {
 //         queue.push(std::make_pair(mesh->root, 0));

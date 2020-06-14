@@ -5,7 +5,7 @@
 #include "PathTraceIntegrator.h"
 #include "../structures/Sample.h"
 
-namespace Polytope {
+namespace poly {
 
    Sample PathTraceIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
       Ray current_ray = ray;
@@ -15,8 +15,24 @@ namespace Polytope {
       SpectralPowerDistribution direct_spd;
       float back_pdf = 1;
       
+      bool debug = false;
+      if (x == 225 && y == 115) {
+         debug = false;
+         
+//         printf("ro: %f %f %f\n", ray.Origin.x, ray.Origin.y, ray.Origin.z);
+//         printf("rd: %f %f %f\n", ray.Direction.x, ray.Direction.y, ray.Direction.z);
+      }
+      
       while (true) {
+//         current_ray.x = x;
+//         current_ray.y = y;
+//         current_ray.bounce = num_bounces;
          Intersection intersection = Scene->GetNearestShape(current_ray, x, y);
+         
+         if (debug) {
+            printf("bounce %i: \n", num_bounces);
+            //printf("t: %f\n", ray.MinT);
+         }
          
          if (!intersection.Hits) {
             SpectralPowerDistribution spd;
@@ -28,12 +44,19 @@ namespace Polytope {
             return Sample(spd);
          }
 
+         if (debug) {
+            printf("hit face index %i\n", intersection.faceIndex);
+         }
+         
          if (intersection.Shape->is_light()) {
             return Sample((*(intersection.Shape->spd) + direct_spd) * src);
          }
 
          // base case
          if (num_bounces >= MaxDepth) {
+            if (debug) {
+               printf("max depth\n");
+            }
             return Sample(SpectralPowerDistribution());
          } else {
             num_bounces++;
@@ -42,44 +65,52 @@ namespace Polytope {
             
             ReflectanceSpectrum refl;
             
-            const Polytope::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
-            const Polytope::Vector local_outgoing = intersection.Shape->Material->BRDF->sample(local_incoming, refl,
+            const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
+            const poly::Vector local_outgoing = intersection.Shape->Material->BRDF->sample(local_incoming, refl,
                                                                                                current_pdf);
-            const Polytope::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
+            const poly::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
+
+
             current_ray = Ray(intersection.Location, world_outgoing);
-            current_ray.OffsetOrigin(intersection.Normal, Polytope::OffsetEpsilon);
+            current_ray.OffsetOrigin(intersection.Normal, poly::OffsetEpsilon);
+            if (debug) {
+               printf("n: %f %f %f\n", intersection.Normal.x, intersection.Normal.y, intersection.Normal.z);
+               printf("o: %f %f %f\n", current_ray.Origin.x, current_ray.Origin.y, current_ray.Origin.z);
+               printf("d: %f %f %f\n", current_ray.Direction.x, current_ray.Direction.y, current_ray.Direction.z);
+
+            }
             src = src * refl; //intersection.Shape->Material->ReflectanceSpectrum;
 
             // add direct light 
             // 0. TODO if brdf is delta, continue 
             // 1. choose a light source
             
-            for (const auto light : Scene->Lights) {
-               // 2. get random point on light
-               Point light_point = light->random_surface_point();
-               
-               // 3. calculate reflected spd given BRDF for (intersection - light_point) -> -incoming
-               Vector light_to_intersection_local = intersection.Location - light_point;
-               Vector light_to_intersection_world = intersection.WorldToLocal(light_to_intersection_local);
-               
-               // 4. calculate BRDF for light_to_intersection -> incoming
-               ReflectanceSpectrum light_refl;
-               float light_pdf = 0.0f;
-               // TODO should use brdf->f()
-               intersection.Shape->Material->BRDF->sample(light_to_intersection_local, light_refl,light_pdf);
-               
-               // 5. if brdf == 0, continue
-               if (light_refl.is_black())
-                  continue;
-               
-               // 6. if light -> intersection is occluded, continue
-               Ray light_ray(current_ray.Origin, -light_to_intersection_world);
-               Intersection light_intersection = Scene->GetNearestShape(light_ray, x, y);
-               if (light_intersection.Hits && light_intersection.Shape != light)
-                  continue;
-               
-               direct_spd = direct_spd + ((*light->spd) * (src * light_refl));
-            }
+//            for (const auto light : Scene->Lights) {
+//               // 2. get random point on light
+//               Point light_point = light->random_surface_point();
+//               
+//               // 3. calculate reflected spd given BRDF for (intersection - light_point) -> -incoming
+//               Vector light_to_intersection_local = intersection.Location - light_point;
+//               Vector light_to_intersection_world = intersection.WorldToLocal(light_to_intersection_local);
+//               
+//               // 4. calculate BRDF for light_to_intersection -> incoming
+//               ReflectanceSpectrum light_refl;
+//               float light_pdf = 0.0f;
+//               // TODO should use brdf->f()
+//               intersection.Shape->Material->BRDF->sample(light_to_intersection_local, light_refl,light_pdf);
+//               
+//               // 5. if brdf == 0, continue
+//               if (light_refl.is_black())
+//                  continue;
+//               
+//               // 6. if light -> intersection is occluded, continue
+//               Ray light_ray(current_ray.Origin, -light_to_intersection_world);
+//               Intersection light_intersection = Scene->GetNearestShape(light_ray, x, y);
+//               if (light_intersection.Hits && light_intersection.Shape != light)
+//                  continue;
+//               
+//               direct_spd = direct_spd + ((*light->spd) * (src * light_refl));
+//            }
             
 
             

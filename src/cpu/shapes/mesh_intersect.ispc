@@ -36,7 +36,10 @@ export void soa_linear_intersect (
       uniform float &return_t,
       uniform unsigned int &return_face_index,
       uniform bool &return_hits,
-      uniform unsigned int num_faces) {
+      uniform unsigned int num_faces/*,
+      uniform const int pixel_x,
+      uniform const int pixel_y,
+      uniform const int bounce*/) {
 
    uniform const float3 ro = { rox, roy, roz };
    uniform const float3 rd = { rdx, rdy, rdz };
@@ -58,6 +61,12 @@ export void soa_linear_intersect (
       //      const int zindex = index + zOffset;
 
       //const unsigned int v0index = fv0[index];
+
+//      bool debug = false;
+//      if (pixel_x == 245 && pixel_y == 64 && bounce == 2 && index == 6175) {
+//         debug = false;
+////         print("foo");
+//      }
       
       const unsigned int v1index = index + v1_index_offset;
       const unsigned int v2index = index + v2_index_offset;
@@ -68,13 +77,13 @@ export void soa_linear_intersect (
 
       //print("v0: % % %\n", v0x, v0y, v0z);
 
-      // const Polytope::Vector edge0 = vertex1 - vertex0;
+      // const poly::Vector edge0 = vertex1 - vertex0;
       const float3 e0 = v1 - v0;
 
-      // const Polytope::Vector edge1 = vertex2 - vertex1;
+      // const poly::Vector edge1 = vertex2 - vertex1;
       const float3 e1 = v2 - v1;
 
-      //Polytope::Vector planeNormal = edge0.Cross(edge1);
+      //poly::Vector planeNormal = edge0.Cross(edge1);
       float3 pn = cross(e0, e1);
 
       //planeNormal.Normalize();
@@ -97,7 +106,7 @@ export void soa_linear_intersect (
       }
       // t[index] = ft;
 
-      // const Polytope::Point hitPoint = ray.GetPointAtT(t);
+      // const poly::Point hitPoint = ray.GetPointAtT(t);
       const float3 hp = ro + rd * ft;
       const float3 e2 = v0 - v2;
 

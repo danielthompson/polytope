@@ -1,27 +1,21 @@
 #include "gtest/gtest.h"
 
 #include "../src/cpu/structures/Vectors.h"
-#include "../src/cpu/shapes/abstract_mesh.h"
+#include "../src/cpu/structures/Intersection.h"
 
 namespace Tests {
 
    namespace Intersection {
-      using Polytope::Intersection;
-      using Polytope::Vector;
-      using Polytope::Normal;
-      using Polytope::Ray;
-      using Polytope::BoundingBox;
-
       namespace Transformation {
          TEST(Intersection, WorldToLocal1) {
-            Intersection intersection;
-            intersection.Normal = Normal(0, 0, 1);
-            intersection.Tangent1 = Vector(1, 0, 0);
-            intersection.Tangent2 = Vector(0, 1, 0);
+            poly::Intersection intersection;
+            intersection.Normal = poly::Normal(0, 0, 1);
+            intersection.Tangent1 = poly::Vector(1, 0, 0);
+            intersection.Tangent2 = poly::Vector(0, 1, 0);
 
-            Vector worldIncoming(0, 0, -1);
+            poly::Vector worldIncoming(0, 0, -1);
 
-            Vector localIncoming = intersection.WorldToLocal(worldIncoming);
+            poly::Vector localIncoming = intersection.WorldToLocal(worldIncoming);
 
             EXPECT_EQ(localIncoming.x, 0);
             EXPECT_EQ(localIncoming.y, -1);
@@ -29,14 +23,14 @@ namespace Tests {
          }
 
          TEST(Intersection, WorldToLocal2) {
-            Intersection intersection;
-            intersection.Normal = Normal(0, 0, 1);
-            intersection.Tangent1 = Vector(0, 1, 0);
-            intersection.Tangent2 = Vector(1, 0, 0);
+            poly::Intersection intersection;
+            intersection.Normal = poly::Normal(0, 0, 1);
+            intersection.Tangent1 = poly::Vector(0, 1, 0);
+            intersection.Tangent2 = poly::Vector(1, 0, 0);
 
-            Vector worldIncoming(0, 0, -1);
+            poly::Vector worldIncoming(0, 0, -1);
 
-            Vector localIncoming = intersection.WorldToLocal(worldIncoming);
+            poly::Vector localIncoming = intersection.WorldToLocal(worldIncoming);
 
             EXPECT_EQ(localIncoming.x, 0);
             EXPECT_EQ(localIncoming.y, -1);

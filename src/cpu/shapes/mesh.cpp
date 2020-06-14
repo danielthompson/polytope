@@ -2,12 +2,12 @@
 // Created by daniel on 5/2/20.
 //
 
-#include "mesh_linear_soa.h"
-#include "mesh_linear_soa_intersect.h"
+#include "mesh.h"
+#include "mesh_intersect.h"
 
-namespace Polytope {
+namespace poly {
    
-   void MeshLinearSOA::add_vertex(Point &v) {
+   void Mesh::add_vertex(Point &v) {
       ObjectToWorld->ApplyInPlace(v);
       x_packed.push_back(v.x);
       y_packed.push_back(v.y);
@@ -15,7 +15,7 @@ namespace Polytope {
       num_vertices_packed++;
    }
 
-   void MeshLinearSOA::add_vertex(float vx, float vy, float vz) {
+   void Mesh::add_vertex(float vx, float vy, float vz) {
       ObjectToWorld->ApplyPoint(vx, vy, vz);
       x_packed.push_back(vx);
       y_packed.push_back(vy);
@@ -23,7 +23,7 @@ namespace Polytope {
       num_vertices_packed++;
    }
    
-   void MeshLinearSOA::add_packed_face(const unsigned int v0, const unsigned int v1, const unsigned int v2) {
+   void Mesh::add_packed_face(const unsigned int v0, const unsigned int v1, const unsigned int v2) {
       fv0.push_back(v0);
       fv1.push_back(v1);
       fv2.push_back(v2);
@@ -84,7 +84,7 @@ namespace Polytope {
       }
    }
 
-   void MeshLinearSOA::CalculateVertexNormals() {
+   void Mesh::CalculateVertexNormals() {
 
       nx_packed = std::vector<float>(x_packed.size(), 0);
       ny_packed = std::vector<float>(y_packed.size(), 0);
@@ -105,17 +105,17 @@ namespace Polytope {
 
          // step 1 - intersect with plane
 
-         // const Polytope::Vector edge0 = vertex1 - vertex0;
+         // const poly::Vector edge0 = vertex1 - vertex0;
          const float e0x = v1x - v0x;
          const float e0y = v1y - v0y;
          const float e0z = v1z - v0z;
 
-         // const Polytope::Vector edge1 = vertex2 - vertex1;
+         // const poly::Vector edge1 = vertex2 - vertex1;
          const float e1x = v2x - v1x;
          const float e1y = v2y - v1y;
          const float e1z = v2z - v1z;
 
-         // Polytope::Vector planeNormal = edge0.Cross(edge1);
+         // poly::Vector planeNormal = edge0.Cross(edge1);
          float pnx = e0y * e1z - e0z * e1y;
          float pny = e0z * e1x - e0x * e1z;
          float pnz = e0x * e1y - e0y * e1x;
@@ -177,8 +177,139 @@ namespace Polytope {
       }
    }
 
-   void MeshLinearSOA::intersect(Polytope::Ray &worldSpaceRay, Polytope::Intersection *intersection) {
-      float t = Polytope::FloatMax;
+   void Mesh::intersect(
+         poly::Ray& world_ray, 
+         poly::Intersection& intersection, 
+         const unsigned int* face_indices, 
+         const unsigned int num_face_indices) {
+      //float t = poly::FloatMax;
+      unsigned int hit_face_index = 0;
+      bool hits = false;
+
+      for (unsigned int face_index_index = 0; face_index_index < num_face_indices; face_index_index++) {
+         
+         unsigned int face_index = face_indices[face_index_index];
+         
+         const Point v0 = { x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]] };
+         const Point v1 = { x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]] };
+         const Point v2 = { x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]] };
+
+         const poly::Vector e0 = v1 - v0;
+         const poly::Vector e1 = v2 - v1;
+         poly::Vector plane_normal = e0.Cross(e1);
+         plane_normal.Normalize();
+
+         const float divisor = plane_normal.Dot(world_ray.Direction);
+
+         if (divisor == 0.0f) {
+            // parallel
+            continue;
+         }
+
+         const float ft = plane_normal.Dot(v0 - world_ray.Origin) / divisor;
+
+         if (ft <= 0 || ft > world_ray.MinT) {
+            continue;
+         }
+         // TODO fix this imprecise garbage
+         const poly::Point hit_point = world_ray.GetPointAtT(ft);
+
+         const poly::Vector e2 = v0 - v2;
+         const poly::Vector p0 = hit_point - v0;
+         const poly::Vector cross0 = e0.Cross(p0);
+         const float normal0 = cross0.Dot(plane_normal);
+         const bool pos0 = normal0 > 0;
+
+         if (!pos0)
+            continue;
+
+         const poly::Vector p1 = hit_point - v1;
+         const poly::Vector cross1 = e1.Cross(p1);
+         const float normal1 = cross1.Dot(plane_normal);
+         const bool pos1 = normal1 > 0;
+
+         if (!pos1)
+            continue;
+
+         const poly::Vector p2 = hit_point - v2;
+         const poly::Vector cross2 = e2.Cross(p2);
+         const float normal2 = cross2.Dot(plane_normal);
+         const bool pos2 = normal2 > 0;
+
+         if (!pos2)
+            continue;
+
+         // hits
+         world_ray.MinT = ft;
+         hit_face_index = face_index;
+         hits = true;
+      }
+
+      if (!hits/* || world_ray.MinT <= t*/) {
+         return;
+      }
+
+//      bool debug = false;
+//      if (worldSpaceRay.x == 245 && worldSpaceRay.y == 64) {
+//         debug = true;
+//         printf("t: %f\n", t);
+//      }
+
+      // now we have the closest face, if any
+
+      intersection.Hits = true;
+      //world_ray.MinT = t;
+      intersection.faceIndex = hit_face_index;
+      intersection.Location = world_ray.GetPointAtT(world_ray.MinT);
+
+      const unsigned int v0_index = fv0[hit_face_index];
+      const unsigned int v1_index = fv1[hit_face_index];
+      const unsigned int v2_index = fv2[hit_face_index];
+
+      const Point v0 = Point(x_packed[v0_index], y_packed[v0_index], z_packed[v0_index]);
+      const Point v1 = Point(x_packed[v1_index], y_packed[v1_index], z_packed[v1_index]);
+      const Point v2 = Point(x_packed[v2_index], y_packed[v2_index], z_packed[v2_index]);
+
+      const poly::Vector edge0 = v1 - v0;
+      const poly::Vector edge1 = v2 - v1;
+      const poly::Vector edge2 = v0 - v2;
+      const poly::Vector planeNormal = edge0.Cross(edge1);
+
+      // flip normal if needed
+      poly::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
+      if (world_ray.Direction.Dot(n) > 0) {
+         n.Flip();
+      }
+
+      n.Normalize();
+
+      intersection.Normal = n;
+      intersection.Shape = this;
+
+      const float edge0dot = std::abs(edge0.Dot(edge1));
+      const float edge1dot = std::abs(edge1.Dot(edge2));
+      const float edge2dot = std::abs(edge2.Dot(edge0));
+
+      if (edge0dot > edge1dot && edge0dot > edge2dot) {
+         intersection.Tangent1 = edge0;
+      } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
+         intersection.Tangent1 = edge1;
+      } else {
+         intersection.Tangent1 = edge2;
+      }
+
+      intersection.Tangent2 = intersection.Tangent1.Cross(intersection.Normal);
+
+      intersection.Tangent1.Normalize();
+      intersection.Tangent2.Normalize();
+   }
+   
+   void Mesh::intersect(poly::Ray& world_ray, poly::Intersection& intersection, const std::vector<unsigned int>& face_indices) {
+      intersect(world_ray, intersection, &face_indices[0], face_indices.size());
+   }
+   
+   void Mesh::intersect(poly::Ray& worldSpaceRay, poly::Intersection& intersection) {
+      float t = poly::FloatMax;
       unsigned int face_index = 0;
       bool hits = false;
       
@@ -195,18 +326,29 @@ namespace Polytope {
             t,
             face_index,
             hits,
-            num_faces);
+            num_faces/*,
+            worldSpaceRay.x,
+            worldSpaceRay.y,
+            worldSpaceRay.bounce*/);
 
       if (!hits || worldSpaceRay.MinT <= t) {
          return;
       }
 
+//      bool debug = false;
+//      if (worldSpaceRay.x == 245 && worldSpaceRay.y == 64) {
+//         debug = true;
+//         printf("t: %f\n", t);
+//      }
+      
+      
+      
       // now we have the closest face, if any
 
-      intersection->Hits = true;
+      intersection.Hits = true;
       worldSpaceRay.MinT = t;
-      intersection->faceIndex = face_index;
-      intersection->Location = worldSpaceRay.GetPointAtT(t);
+      intersection.faceIndex = face_index;
+      intersection.Location = worldSpaceRay.GetPointAtT(t);
 
       const unsigned int v0_index = fv0[face_index];
       const unsigned int v1_index = fv1[face_index];
@@ -216,41 +358,41 @@ namespace Polytope {
       const Point v1 = Point(x_packed[v1_index], y_packed[v1_index], z_packed[v1_index]);
       const Point v2 = Point(x_packed[v2_index], y_packed[v2_index], z_packed[v2_index]);
 
-      const Polytope::Vector edge0 = v1 - v0;
-      const Polytope::Vector edge1 = v2 - v1;
-      const Polytope::Vector edge2 = v0 - v2;
-      const Polytope::Vector planeNormal = edge0.Cross(edge1);
+      const poly::Vector edge0 = v1 - v0;
+      const poly::Vector edge1 = v2 - v1;
+      const poly::Vector edge2 = v0 - v2;
+      const poly::Vector planeNormal = edge0.Cross(edge1);
 
       // flip normal if needed
-      Polytope::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
+      poly::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
       if (worldSpaceRay.Direction.Dot(n) > 0) {
          n.Flip();
       }
 
       n.Normalize();
 
-      intersection->Normal = n;
-      intersection->Shape = this;
+      intersection.Normal = n;
+      intersection.Shape = this;
 
       const float edge0dot = std::abs(edge0.Dot(edge1));
       const float edge1dot = std::abs(edge1.Dot(edge2));
       const float edge2dot = std::abs(edge2.Dot(edge0));
 
       if (edge0dot > edge1dot && edge0dot > edge2dot) {
-         intersection->Tangent1 = edge0;
+         intersection.Tangent1 = edge0;
       } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
-         intersection->Tangent1 = edge1;
+         intersection.Tangent1 = edge1;
       } else {
-         intersection->Tangent1 = edge2;
+         intersection.Tangent1 = edge2;
       }
 
-      intersection->Tangent2 = intersection->Tangent1.Cross(intersection->Normal);
+      intersection.Tangent2 = intersection.Tangent1.Cross(intersection.Normal);
 
-      intersection->Tangent1.Normalize();
-      intersection->Tangent2.Normalize();
+      intersection.Tangent1.Normalize();
+      intersection.Tangent2.Normalize();
    }
 
-   Point MeshLinearSOA::random_surface_point() const {
+   Point Mesh::random_surface_point() const {
       // TODO 1. generate a random point on a face instead of just using a vertex
       // TODO 2. weight face choice by face surface area
 
@@ -258,7 +400,7 @@ namespace Polytope {
       return Point(x[index], y[index], z[index]);
    }
 
-   void MeshLinearSOA::unpack_faces() {
+   void Mesh::unpack_faces() {
       x.reserve(num_faces * 3);
       y.reserve(num_faces * 3);
       z.reserve(num_faces * 3);
@@ -304,15 +446,79 @@ namespace Polytope {
       
    }
 
-   Point MeshLinearSOA::get_vertex(const unsigned int i) const {
+   Point Mesh::get_vertex(const unsigned int i) const {
       return { x_packed[i], y_packed[i], z_packed[i] };
    }
 
-   Point3ui MeshLinearSOA::get_vertex_indices_for_face(const unsigned int i) const {
+   Point3ui Mesh::get_vertex_indices_for_face(const unsigned int i) const {
       return { fv0[i], fv1[i], fv2[i] };
    }
 
-   MeshLinearSOA::~MeshLinearSOA() {
+   Mesh::~Mesh() {
 
    }
+
+   bool Mesh::hits(const Ray &world_ray, const unsigned int *face_indices, unsigned int num_face_indices) {
+      for (unsigned int face_index = 0; face_index < num_face_indices; face_index++) {
+
+         const Point v0 = { x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]] };
+         const Point v1 = { x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]] };
+         const Point v2 = { x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]] };
+
+         const poly::Vector e0 = v1 - v0;
+         const poly::Vector e1 = v2 - v1;
+         poly::Vector plane_normal = e0.Cross(e1);
+         plane_normal.Normalize();
+
+         const float divisor = plane_normal.Dot(world_ray.Direction);
+
+         if (divisor == 0.0f) {
+            // parallel
+            continue;
+         }
+
+         const float t = plane_normal.Dot(v0 - world_ray.Origin) / divisor;
+
+         if (t <= 0) {
+            continue;
+         }
+         // TODO fix this imprecise garbage
+         const poly::Point hit_point = world_ray.GetPointAtT(t);
+
+         const poly::Vector e2 = v0 - v2;
+         const poly::Vector p0 = hit_point - v0;
+         const poly::Vector cross0 = e0.Cross(p0);
+         const float normal0 = cross0.Dot(plane_normal);
+         const bool pos0 = normal0 > 0;
+
+         if (!pos0)
+            continue;
+
+         const poly::Vector p1 = hit_point - v1;
+         const poly::Vector cross1 = e1.Cross(p1);
+         const float normal1 = cross1.Dot(plane_normal);
+         const bool pos1 = normal1 > 0;
+
+         if (!pos1)
+            continue;
+
+         const poly::Vector p2 = hit_point - v2;
+         const poly::Vector cross2 = e2.Cross(p2);
+         const float normal2 = cross2.Dot(plane_normal);
+         const bool pos2 = normal2 > 0;
+
+         if (!pos2)
+            continue;
+
+         // hits
+         return true;
+      }
+
+      return false;
+   }
+   
+   bool Mesh::hits(const Ray& world_ray, const std::vector<unsigned int>& face_indices) {
+      return hits(world_ray, &face_indices[0], face_indices.size());
+   }
+
 }

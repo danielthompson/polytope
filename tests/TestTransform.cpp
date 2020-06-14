@@ -11,7 +11,7 @@
 
 namespace Tests {
 
-    using Polytope::Transform;
+    using poly::Transform;
 
     namespace Equality {
         TEST(Transform, Equals) {
@@ -41,7 +41,7 @@ namespace Tests {
       }
 
       TEST(Transform, DoesntHaveScale4) {
-         Polytope::Vector delta = Polytope::Vector(1, 1, 1);
+         poly::Vector delta = poly::Vector(1, 1, 1);
          Transform element = Transform::Scale(delta);
          bool actual = element.HasScale();
          EXPECT_FALSE(actual);
@@ -72,7 +72,7 @@ namespace Tests {
       }
 
       TEST(Transform, HasScale5) {
-         Polytope::Vector delta = Polytope::Vector(0, 1, 1);
+         poly::Vector delta = poly::Vector(0, 1, 1);
          Transform element = Transform::Scale(delta);
          bool actual = element.HasScale();
          EXPECT_TRUE(actual);
@@ -81,16 +81,16 @@ namespace Tests {
 
    TEST(Transform, LookAt1) {
 
-      const Polytope::Point eye = {0, 0, 35};
-      const Polytope::Point look_at = {0, 0, -1};
-      Polytope::Vector up = {0, 1, 0};
+      const poly::Point eye = {0, 0, 35};
+      const poly::Point look_at = {0, 0, -1};
+      poly::Vector up = {0, 1, 0};
 
       Transform t = Transform::LookAt(eye, look_at, up);
       
-      //Polytope::PerspectiveCamera camera = Polytope::PerspectiveCamera() 
-      Polytope::Ray cameraSpaceRay = {{0, 0, 0}, {0, 0, -1}};
+      //poly::PerspectiveCamera camera = poly::PerspectiveCamera() 
+      poly::Ray cameraSpaceRay = {{0, 0, 0}, {0, 0, -1}};
       
-      Polytope::Ray worldSpaceRay = t.Apply(cameraSpaceRay);
+      poly::Ray worldSpaceRay = t.Apply(cameraSpaceRay);
       
       EXPECT_EQ(worldSpaceRay.Origin.x, eye.x);
       EXPECT_EQ(worldSpaceRay.Origin.y, eye.y);
@@ -103,16 +103,16 @@ namespace Tests {
 
    TEST(Transform, LookAt2) {
 
-      const Polytope::Point eye = {0, 0, -35};
-      const Polytope::Point look_at = {0, 0, -1};
-      Polytope::Vector up = {0, 1, 0};
+      const poly::Point eye = {0, 0, -35};
+      const poly::Point look_at = {0, 0, -1};
+      poly::Vector up = {0, 1, 0};
 
       Transform t = Transform::LookAt(eye, look_at, up);
 
-      //Polytope::PerspectiveCamera camera = Polytope::PerspectiveCamera() 
-      Polytope::Ray cameraSpaceRay = {{0, 0, 0}, {0, 0, -1}};
+      //poly::PerspectiveCamera camera = poly::PerspectiveCamera() 
+      poly::Ray cameraSpaceRay = {{0, 0, 0}, {0, 0, -1}};
 
-      Polytope::Ray worldSpaceRay = t.Apply(cameraSpaceRay);
+      poly::Ray worldSpaceRay = t.Apply(cameraSpaceRay);
 
       EXPECT_EQ(worldSpaceRay.Origin.x, eye.x);
       EXPECT_EQ(worldSpaceRay.Origin.y, eye.y);

@@ -2,13 +2,13 @@
 // Created by daniel on 5/5/20.
 //
 
-#ifndef POLYTOPE_GLOSSY_BRDF_H
-#define POLYTOPE_GLOSSY_BRDF_H
+#ifndef POLY_GLOSSY_BRDF_H
+#define POLY_GLOSSY_BRDF_H
 
 #include "abstract_brdf.h"
 #include "../spectrum.h"
 
-namespace Polytope {
+namespace poly {
    class GlossyBRDF : public AbstractBRDF {
    public:
       GlossyBRDF(const ReflectanceSpectrum &specular, const ReflectanceSpectrum &diffuse, const float roughness)
@@ -63,4 +63,4 @@ namespace Polytope {
 }
 
 
-#endif //POLYTOPE_GLOSSY_BRDF_H
+#endif //POLY_GLOSSY_BRDF_H

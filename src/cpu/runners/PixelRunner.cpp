@@ -4,9 +4,9 @@
 
 #include "PixelRunner.h"
 
-namespace Polytope {
+namespace poly {
 
-   void Polytope::PixelRunner::Run(int threadId) {
+   void poly::PixelRunner::Run(int threadId) {
       for (int y = 0; y < Bounds.y; y++) {
          for (int x = 0; x < Bounds.x; x++) {
             Trace(x, y);

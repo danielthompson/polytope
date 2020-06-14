@@ -9,7 +9,7 @@
 #include <thread>
 #include "Logger.h"
 
-namespace Polytope {
+namespace poly {
 
    std::string Logger::time_in_HH_MM_SS_MMM() const {
       using namespace std::chrono;

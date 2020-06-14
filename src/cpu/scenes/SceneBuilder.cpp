@@ -4,7 +4,7 @@
 
 #include "SceneBuilder.h"
 #include "../cameras/PerspectiveCamera.h"
-#include "NaiveScene.h"
+#include "Scene.h"
 #include "../shading/Material.h"
 #include "../shading/brdf/mirror_brdf.h"
 #include "../shading/brdf/lambert_brdf.h"
@@ -13,14 +13,14 @@
 #include "../lights/PointLight.h"
 
 
-namespace Polytope {
+namespace poly {
 
-   AbstractScene* SceneBuilder::Default() {
+   Scene* SceneBuilder::Default() {
       CameraSettings settings = CameraSettings(_bounds, 50);
 
       Transform identity = Transform();
 
-      AbstractScene *scene = new NaiveScene(std::make_unique<PerspectiveCamera>(settings, identity, false));
+      Scene *scene = new Scene(std::make_unique<PerspectiveCamera>(settings, identity, false));
 
       // Orange ball
 

@@ -2,10 +2,10 @@
 // Created by Daniel Thompson on 2/21/18.
 //
 
-#ifndef POLYTOPE_POINT2_H
-#define POLYTOPE_POINT2_H
+#ifndef POLY_POINT2_H
+#define POLY_POINT2_H
 
-namespace Polytope {
+namespace poly {
 
    template <class T>
    class Point2 {
@@ -21,4 +21,4 @@ namespace Polytope {
 
 }
 
-#endif //POLYTOPE_POINT2_H
+#endif //POLY_POINT2_H

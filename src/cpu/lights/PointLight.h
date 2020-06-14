@@ -2,13 +2,13 @@
 // Created by Daniel Thompson on 3/5/18.
 //
 
-#ifndef POLYTOPE_POINTLIGHT_H
-#define POLYTOPE_POINTLIGHT_H
+#ifndef POLY_POINTLIGHT_H
+#define POLY_POINTLIGHT_H
 
 #include "AbstractLight.h"
 #include "../structures/Vectors.h"
 
-namespace Polytope {
+namespace poly {
 
    class PointLight : public AbstractLight {
    public:
@@ -24,4 +24,4 @@ namespace Polytope {
 
 }
 
-#endif //POLYTOPE_POINTLIGHT_H
+#endif //POLY_POINTLIGHT_H

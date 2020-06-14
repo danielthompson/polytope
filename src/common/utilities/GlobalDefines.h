@@ -2,8 +2,8 @@
 // Created by Daniel Thompson on 12/10/19.
 //
 
-#ifndef POLYTOPE_GLOBAL_DEFINES_H
-#define POLYTOPE_GLOBAL_DEFINES_H
+#ifndef POLY_GLOBAL_DEFINES_H
+#define POLY_GLOBAL_DEFINES_H
 
 #include <string>
 
@@ -52,4 +52,4 @@ std::string GetCurrentWorkingDirectory() {
 std::string WindowsPathSeparator = "\\";
 std::string UnixPathSeparator = "/";
 
-#endif // POLYTOPE_GLOBAL_DEFINES_H
+#endif // POLY_GLOBAL_DEFINES_H

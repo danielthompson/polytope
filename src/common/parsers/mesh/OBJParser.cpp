@@ -5,11 +5,12 @@
 #include <sstream>
 #include "OBJParser.h"
 #include "../../utilities/Common.h"
+#include "../../../cpu/shapes/mesh.h"
 
-namespace Polytope {
-   void OBJParser::ParseFile(AbstractMesh *mesh, const std::string &filepath) const {
+namespace poly {
+   void OBJParser::ParseFile(Mesh *mesh, const std::string &filepath) const {
 
-      std::unique_ptr<std::istream> stream = open_ascii_stream(filepath);
+      std::unique_ptr<std::istream> stream = AbstractFileParser::open_ascii_stream(filepath);
       std::string line;
       Point p;
       while (getline(*stream, line)) {
@@ -42,11 +43,11 @@ namespace Polytope {
                   iss >> word;
                   // TODO error handling for non-existent face
                   // obj faces are 1-indexed, but polytope is internally 0-indexed
-                  const unsigned int v0 = stoui(word) - 1;
+                  const unsigned int v0 = AbstractFileParser::stoui(word) - 1;
                   iss >> word;
-                  const unsigned int v1 = stoui(word) - 1;
+                  const unsigned int v1 = AbstractFileParser::stoui(word) - 1;
                   iss >> word;
-                  const unsigned int v2 = stoui(word) - 1;
+                  const unsigned int v2 = AbstractFileParser::stoui(word) - 1;
                   mesh->add_packed_face(v0, v1, v2);
                   continue;
                }

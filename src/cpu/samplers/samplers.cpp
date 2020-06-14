@@ -4,7 +4,7 @@
 
 #include "samplers.h"
 
-namespace Polytope {
+namespace poly {
 
    Point2f CenterSampler::GetSample(const int x, const int y) const {
       return Point2f(x + 0.5f, y + 0.5f);

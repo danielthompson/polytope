@@ -2,15 +2,15 @@
 // Created by Daniel on 07-Apr-18.
 //
 
-#ifndef POLYTOPE_FILEPARSER_H
-#define POLYTOPE_FILEPARSER_H
+#ifndef POLY_FILEPARSER_H
+#define POLY_FILEPARSER_H
 
 #include <iostream>
 #include <string>
 #include "../../cpu/runners/AbstractRunner.h"
 #include "AbstractFileParser.h"
 
-namespace Polytope {
+namespace poly {
 
    class PBRTArgument {
    public:
@@ -156,7 +156,7 @@ namespace Polytope {
    public:
       std::string Name;
       std::string Identifier;
-      std::vector<Polytope::PBRTArgument> Arguments;
+      std::vector<poly::PBRTArgument> Arguments;
    };
 
    class PBRTGraphicsState {
@@ -171,20 +171,19 @@ namespace Polytope {
       explicit PBRTFileParser() = default;
 
       std::unique_ptr<AbstractRunner> ParseFile(const std::string &filepath) noexcept(false);
-      static std::unique_ptr<PBRTDirective> Lex(std::vector<std::string> line);
+      
       std::unique_ptr<AbstractRunner> ParseString(const std::string &text) noexcept(false);
+      static std::unique_ptr<PBRTDirective> Lex(std::vector<std::string> line);
       static std::unique_ptr<std::vector<std::vector<std::string>>> Scan(const std::unique_ptr<std::istream>& stream);
-      std::unique_ptr<AbstractRunner> Runner;
-   private:
-      std::unique_ptr<AbstractRunner> Parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false);
-
-      std::unique_ptr<AbstractSampler> _sampler;
-      AbstractScene *_scene = nullptr;
+      std::unique_ptr<AbstractSampler> Sampler;
+      Scene* _scene = nullptr;
       std::unique_ptr<AbstractIntegrator> _integrator;
       std::unique_ptr<AbstractFilm> _film;
       std::unique_ptr<AbstractFilter> _filter;
-      Polytope::Bounds _bounds;
+      poly::Bounds _bounds;
+   
+   private:
+      std::unique_ptr<AbstractRunner> Parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false);
    };
 }
-
-#endif //POLYTOPE_FILEPARSER_H
+#endif //POLY_FILEPARSER_H

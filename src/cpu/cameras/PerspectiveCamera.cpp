@@ -9,7 +9,7 @@
 #include "../structures/Vectors.h"
 
 
-namespace Polytope {
+namespace poly {
 
    PerspectiveCamera::PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld,
                                         const bool leftHanded)
@@ -40,9 +40,6 @@ namespace Polytope {
       Ray worldSpaceRay = CameraToWorld.Apply(cameraSpaceRay);
 
       worldSpaceRay.Direction.Normalize();
-      
-      // hmm... doubt
-      worldSpaceRay.DirectionInverse.Normalize();
 
       return worldSpaceRay;
    }

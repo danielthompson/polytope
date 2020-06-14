@@ -6,8 +6,9 @@
 #include <cstring>
 #include "PLYParser.h"
 #include "../../utilities/Common.h"
+#include "../../../cpu/shapes/mesh.h"
 
-namespace Polytope {
+namespace poly {
 
    float PLYParser::read_float(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
       char buffer[4];
@@ -39,34 +40,38 @@ namespace Polytope {
       unsigned char unsigned_value = reinterpret_cast<unsigned char&>(value);
       return unsigned_value;
    }
-   
+
    std::unique_ptr<std::ifstream> PLYParser::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
-      std::unique_ptr<std::ifstream> stream = open_ascii_stream(filepath);
+      std::unique_ptr<std::ifstream> stream = AbstractFileParser::open_ascii_stream(filepath);
 
       std::string line;
 
+      unsigned int line_number = 0;
+      
       // ply header
       if (getline(*stream, line)) {
+         line_number++;
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
          if (!(iss >> word) || word != "ply") {
-            throw std::invalid_argument(filepath + ": Missing PLY header");
+            ERROR("%s:%i Missing PLY header", filepath.c_str(), line_number);
          }
       }
       else {
-         throw std::invalid_argument(filepath + ": Read error when trying to read PLY header");
+         ERROR("%s:%i Read error when trying to read PLY header", filepath.c_str(), line_number);
       }
 
       // format
       if (getline(*stream, line)) {
+         line_number++;
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
 
          if (!(iss >> word) || word != "format") {
-            throw std::invalid_argument(filepath + ": Missing \"format\" header");
+            ERROR("%s:%i Missing \"format\" header", filepath.c_str(), line_number);
          }
          if (!(iss >> word)) {
-            throw std::invalid_argument(filepath + ": Unsupported format");
+            ERROR("%s:%i Read error when reading format type", filepath.c_str(), line_number);
          }
          if (word == "ascii") {
             *format = ply_format::ascii;
@@ -78,26 +83,41 @@ namespace Polytope {
             *format = ply_format::binary_be;
          }
          else {
-            throw std::invalid_argument(filepath + ": Read error when reading format type");
+            ERROR("%s:%i Unsupported format [%s]", filepath.c_str(), line_number, word.c_str());
          }
          
-         if (!(iss >> word) || word != "1.0") {
-            throw std::invalid_argument(filepath + ": Unsupported format version");
+         if (!(iss >> word)) {
+            ERROR("%s:%i Read error when reading format version", filepath.c_str(), line_number);
+         }
+         if (word != "1.0") {
+            ERROR("%s:%i Unsupported format version [%s]", filepath.c_str(), line_number, word.c_str());
          }
       }
       else {
-         throw std::invalid_argument(filepath + ": Read error when reading format line");
+         ERROR("%s:%i Read error when reading format line", filepath.c_str(), line_number);
       }
 
       // rest of header
 
+      bool has_x, has_y, has_z;
+      
       bool in_vertex = false;
       bool in_face = false;
       while (getline(*stream, line)) {
+         line_number++;
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
          iss >> word;
          if (word == "end_header") {
+            if (!has_x) {
+               ERROR("%s:%i Header missing element x property", filepath.c_str(), line_number);
+            }
+            if (!has_y) {
+               ERROR("%s:%i Header missing element y property", filepath.c_str(), line_number);
+            }
+            if (!has_z) {
+               ERROR("%s:%i Header missing element z property", filepath.c_str(), line_number);
+            }
             break;
          }
          else if (word == "element") {
@@ -119,41 +139,54 @@ namespace Polytope {
             if (in_vertex) {
                iss >> word;
                if (word != "float32" && word != "float") {
-                  throw std::invalid_argument(filepath + ": Unknown property datatype");
+                  WARNING("%s:%i Ignoring unknown property type [%s]", filepath.c_str(), line_number, word.c_str());
+                  continue;
                }
                iss >> word;
-               if (!(word == "x" || word == "y" || word == "z")) {
-                  throw std::invalid_argument(filepath + ": Unknown property name");
+               if (word == "x") {
+                  has_x = true;
+                  continue;
+               }
+               else if (word == "y") {
+                  has_y = true;
+                  continue;
+               }
+               else if (word == "z") {
+                  has_z = true;
+                  continue;
+               }
+               else {
+                  WARNING("%s:%i Ignoring unknown property name [%s]", filepath.c_str(), line_number, word.c_str());
                }
             }
             else if (in_face) {
 
             }
             else {
-               throw std::invalid_argument(filepath + ": Property outside of element");
+               ERROR("%s:%i Property outside of element", filepath.c_str(), line_number);
             }
          }
       }
-
+      
       if (*num_vertices == 0) {
-         throw std::invalid_argument(filepath + ": Header contains no vertices");
+         ERROR("%s:%i Header contains no vertices", filepath.c_str(), line_number);
       }
 
       if (*num_faces == 0) {
-         throw std::invalid_argument(filepath + ": Header contains no faces");
+         ERROR("%s:%i Header contains no faces", filepath.c_str(), line_number);
       }
 
       if (*format == ply_format::binary_le || *format == ply_format::binary_be) {
          std::streampos offset = stream->tellg();
          stream->close();
-         stream = open_binary_stream(filepath);
+         stream = AbstractFileParser::open_binary_stream(filepath);
          stream->seekg(offset);
       }
       
       return stream;
    }
 
-   void PLYParser::ParseFile(AbstractMesh *mesh, const std::string &filepath) const {
+   void PLYParser::ParseFile(Mesh *mesh, const std::string &filepath) const {
       int num_vertices = -1;
       int num_faces = -1;
 
@@ -220,11 +253,11 @@ namespace Polytope {
 
             iss >> word;
             // TODO error handling for non-existent face
-            v0 = stoui(word);
+            v0 = AbstractFileParser::stoui(word);
             iss >> word;
-            v1 = stoui(word);
+            v1 = AbstractFileParser::stoui(word);
             iss >> word;
-            v2 = stoui(word);
+            v2 = AbstractFileParser::stoui(word);
             mesh->add_packed_face(v0, v1, v2);
          }
       }

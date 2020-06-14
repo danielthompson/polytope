@@ -12,7 +12,7 @@
 
 namespace Tests {
 
-   using namespace Polytope;
+   using namespace poly;
 
    namespace MirrorBRDF {
       // TODO fixme
@@ -22,7 +22,7 @@ namespace Tests {
 //         const Normal normal(0, 0, 1);
 //         const Vector expected(0, 0, 1);
 //
-//         Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF();
+//         poly::MirrorBRDF brdf = poly::MirrorBRDF();
 //
 //         float pdf = 0.0;
 //
@@ -44,7 +44,7 @@ namespace Tests {
          expected.Normalize();
 
          ReflectanceSpectrum refl;
-         Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF(refl);
+         poly::MirrorBRDF brdf = poly::MirrorBRDF(refl);
          
          float pdf = 0.0;
 
@@ -64,7 +64,7 @@ namespace Tests {
          expected.Normalize();
 
          ReflectanceSpectrum refl;
-         Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF(refl);
+         poly::MirrorBRDF brdf = poly::MirrorBRDF(refl);
          
          
          float pdf = 0.0;
@@ -86,7 +86,7 @@ namespace Tests {
          expected.Normalize();
          
          ReflectanceSpectrum refl;
-         Polytope::MirrorBRDF brdf = Polytope::MirrorBRDF(refl);
+         poly::MirrorBRDF brdf = poly::MirrorBRDF(refl);
          
          float pdf = 0.0;
 

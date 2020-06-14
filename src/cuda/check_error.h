@@ -2,8 +2,8 @@
 // Created by daniel on 5/21/20.
 //
 
-#ifndef POLYTOPE_CHECK_ERROR_H
-#define POLYTOPE_CHECK_ERROR_H
+#ifndef POLY_CHECK_ERROR_H
+#define POLY_CHECK_ERROR_H
 
 #include <cstdio>
 #include <cstdlib>
@@ -20,4 +20,4 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-#endif //POLYTOPE_CHECK_ERROR_H
+#endif //POLY_CHECK_ERROR_H

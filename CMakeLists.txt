@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(tests "Build all tests." OFF) # Makes boolean 'tests' available.
-# set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Make PROJECT_SOURCE_DIR, PROJECT_BINARY_DIR, and PROJECT_NAME available.
 set(PROJECT_NAME polytope)
@@ -22,8 +22,13 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-error=unused-function -pthread")
 
 set(ispc_options -g --pic)
 
+SET(CMAKE_CUDA_FLAGS_DEBUG "-G -g")
+SET(CMAKE_CUDA_FLAGS_RELEASE "--generate-line-info")
+
 IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
    set(ispc_options --pic -O3)
+# ELSE()
+#    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G -g")
 ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
 # set (ISPC_EXECUTABLE $<TARGET_FILE:ispc>)
@@ -40,12 +45,10 @@ SET(COVERAGE OFF CACHE BOOL "Coverage")
 ################################
 
 add_custom_command(
-        OUTPUT ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o
-        COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.h -o ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.ispc
-        MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.ispc
-        BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/shapes/linear_soa/mesh_linear_soa_intersect.o)
-
-
+        OUTPUT ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.o
+        COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.h -o ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.o ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.ispc
+        MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.ispc
+        BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.h)
 
 add_library(polytope_lib
         lib/lodepng.cpp
@@ -79,11 +82,8 @@ add_library(polytope_lib
         src/cpu/runners/TileRunner.h
         src/cpu/samplers/samplers.h
         src/cpu/samplers/samplers.cpp
-        src/cpu/scenes/AbstractScene.cpp
-        src/cpu/scenes/AbstractScene.h
-        src/cpu/scenes/BVHScene.h
-        src/cpu/scenes/NaiveScene.cpp
-        src/cpu/scenes/NaiveScene.h
+        src/cpu/scenes/Scene.cpp
+        src/cpu/scenes/Scene.h
         src/cpu/scenes/SceneBuilder.cpp
         src/cpu/scenes/SceneBuilder.h
         src/cpu/scenes/skyboxes/AbstractSkybox.h
@@ -95,7 +95,6 @@ add_library(polytope_lib
         src/cpu/shading/brdf/mirror_brdf.h
         src/cpu/shading/brdf/glossy_brdf.h
         src/cpu/shading/spectrum.h
-        src/cpu/shapes/abstract_mesh.h
         src/cpu/structures/Intersection.cpp
         src/cpu/structures/Intersection.h
         src/cpu/structures/Matrix4x4.cpp
@@ -128,18 +127,15 @@ add_library(polytope_lib
         src/common/parsers/mesh/AbstractMeshParser.h
         src/cpu/shapes/tesselators.cpp
         src/cpu/shapes/tesselators.h
-        src/cpu/scenes/BVHScene.cpp
-        src/cpu/scenes/BVHNode.cpp
-        src/cpu/scenes/BVHNode.h
-        src/cpu/shapes/linear_soa/mesh_linear_soa.cpp
-        src/cpu/shapes/linear_soa/mesh_linear_soa.h
-        src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.h
-        src/cpu/shapes/linear_soa/mesh_linear_soa_intersect.o
-        src/cpu/shapes/bvh_split/mesh_bvh_split.cpp
-        src/cpu/shapes/bvh_split/mesh_bvh_split.h
-        src/cpu/shapes/linear_aos/mesh_linear_aos.cpp
-        src/cpu/shapes/linear_aos/mesh_linear_aos.h
-        src/common/utilities/mesh_factory.cpp src/common/utilities/mesh_factory.h)
+        src/cpu/shapes/mesh.cpp
+        src/cpu/shapes/mesh.h
+        src/cpu/shapes/mesh_intersect.h
+        src/cpu/shapes/mesh_intersect.o
+        src/common/utilities/mesh_factory.cpp 
+        src/common/utilities/mesh_factory.h 
+        src/common/parsers/mesh/AbstractMeshAllocator.h 
+        src/cpu/acceleration/bvh.cpp 
+        src/cpu/acceleration/bvh.h )
 
 #set_target_properties(
 #        polytope_lib
@@ -161,7 +157,11 @@ add_executable(polytope_cuda
         src/cuda/gpu_memory_manager.h 
         src/cuda/png_output.cpp 
         src/cuda/png_output.h 
-        src/cuda/kernels/common_device_functions.cuh src/cuda/check_error.h)
+        src/cuda/kernels/common_device_functions.cuh 
+        src/cuda/check_error.h
+        src/cuda/mesh/cuda_pinned_allocator.h 
+        src/cuda/mesh/cuda_mesh_soa.cpp 
+        src/cuda/mesh/cuda_mesh_soa.h)
 
 set_target_properties(
         polytope_cuda
@@ -248,11 +248,11 @@ add_executable(runUnitTests
         tests/parsers/test_ply_parser.cpp
         tests/TestPoint.cpp
         tests/TestTransform.cpp
-        tests/shapes/test_mesh_linear_aos.cpp
+        tests/shapes/test_mesh_linear_soa.cpp
         tests/TestVector.cpp
         tests/shapes/TestTesselators.cpp
-        tests/shapes/test_mesh_bvh_split.cpp
-        tests/shapes/test_mesh_linear_aos.cpp)
+        tests/test_bvh.cpp
+        )
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 # if (COVERAGE)

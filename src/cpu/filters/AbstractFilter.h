@@ -2,14 +2,14 @@
 // Created by Daniel on 16-Mar-18.
 //
 
-#ifndef POLYTOPE_ABSTRACTFILTER_H
-#define POLYTOPE_ABSTRACTFILTER_H
+#ifndef POLY_ABSTRACTFILTER_H
+#define POLY_ABSTRACTFILTER_H
 
 #include <vector>
 #include "../structures/Sample.h"
 #include "../../common/structures/Point2.h"
 
-namespace Polytope {
+namespace poly {
 
    /**
     * The purpose of a filter is to hold all samples and then render a given pixel
@@ -17,9 +17,9 @@ namespace Polytope {
     */
    class AbstractFilter {
    public:
-      const Polytope::Bounds Bounds;
+      const poly::Bounds Bounds;
 
-      explicit AbstractFilter(const Polytope::Bounds &bounds) : Bounds(bounds) { }
+      explicit AbstractFilter(const poly::Bounds &bounds) : Bounds(bounds) { }
       virtual ~AbstractFilter() { }
 
       virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
@@ -32,4 +32,4 @@ namespace Polytope {
 }
 
 
-#endif //POLYTOPE_ABSTRACTFILTER_H
+#endif //POLY_ABSTRACTFILTER_H

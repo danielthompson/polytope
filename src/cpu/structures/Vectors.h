@@ -2,12 +2,12 @@
 // Created by Daniel on 17-Dec-19.
 //
 
-#ifndef POLYTOPE_VECTORS_H
-#define POLYTOPE_VECTORS_H
+#ifndef POLY_VECTORS_H
+#define POLY_VECTORS_H
 
 #include <functional>
 
-namespace Polytope {
+namespace poly {
    enum class Axis {
       x = 0,
       y,
@@ -96,9 +96,9 @@ namespace Polytope {
 
 namespace std {
    template <>
-   struct hash<Polytope::Point>
+   struct hash<poly::Point>
    {
-      std::size_t operator()(const Polytope::Point& k) const
+      std::size_t operator()(const poly::Point& k) const
       {
          // Compute individual hash values for first, second and third
          // http://stackoverflow.com/a/1646913/126995
@@ -111,4 +111,4 @@ namespace std {
    };
 }
 
-#endif //POLYTOPE_VECTORS_H
+#endif //POLY_VECTORS_H

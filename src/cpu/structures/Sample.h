@@ -2,13 +2,13 @@
 // Created by Daniel Thompson on 3/5/18.
 //
 
-#ifndef POLYTOPE_SAMPLE_H
-#define POLYTOPE_SAMPLE_H
+#ifndef POLY_SAMPLE_H
+#define POLY_SAMPLE_H
 
 #include <memory>
 #include "../shading/spectrum.h"
 
-namespace Polytope {
+namespace poly {
 
    class Sample {
    public:
@@ -16,19 +16,19 @@ namespace Polytope {
       // constructors
       Sample() : SpectralPowerDistribution() { }
 
-      Sample(const Polytope::SpectralPowerDistribution &spectralPowerDistribution)
+      Sample(const poly::SpectralPowerDistribution &spectralPowerDistribution)
             : SpectralPowerDistribution(spectralPowerDistribution) { }
 
-      Sample(const std::shared_ptr<Polytope::SpectralPowerDistribution> spd) {
+      Sample(const std::shared_ptr<poly::SpectralPowerDistribution> spd) {
          if (spd == nullptr) {
-            SpectralPowerDistribution = Polytope::SpectralPowerDistribution();
+            SpectralPowerDistribution = poly::SpectralPowerDistribution();
          }
          else {
             SpectralPowerDistribution = (*spd);
          }
       }
-      Polytope::SpectralPowerDistribution SpectralPowerDistribution;
+      poly::SpectralPowerDistribution SpectralPowerDistribution;
    };
 }
 
-#endif //POLYTOPE_SAMPLE_H
+#endif //POLY_SAMPLE_H
