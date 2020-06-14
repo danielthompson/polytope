@@ -24,7 +24,6 @@ namespace poly {
    class compact_bvh_node {
    public:
       poly::BoundingBox bb; // 24 bytes (both)
-//      std::vector<unsigned int> face_indices; // 24 bytes
       // TODO - at build time, sort face indices by the order in which they are put into the tree
       // then, this can just be a 4-byte offset, instead of an 8-byte pointer
       unsigned int* face_indices; // 8 bytes (interior if nullptr)

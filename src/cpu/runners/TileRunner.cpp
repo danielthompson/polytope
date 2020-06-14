@@ -108,8 +108,8 @@ namespace poly {
          if (tile.y == _numYTiles - 1)
             yMax = tile.y * _yTileWidth + _yLastTileWidth;
 
-         xMax = std::min(xMax, Bounds.x - 1);
-         yMax = std::min(yMax, Bounds.y - 1);
+         xMax = std::min(xMax, Bounds.x);
+         yMax = std::min(yMax, Bounds.y);
          
          for (unsigned int y = yMin; y < yMax; y++) {
             for (unsigned int x = xMin; x < xMax; x++) {
