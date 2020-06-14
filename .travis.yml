@@ -21,7 +21,7 @@ jobs:
         - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
         - sudo apt-key add 7fa2af80.pub
         - sudo apt update -qq
-        - sudo apt install -y cuda-10-2 libglfw3 libglfw3-dev libglfw3-doc
+        - sudo apt install -y cuda-10-2 libglfw3 libglfw3-dev libglfw3-doc libglbinding
         - sudo apt clean
         - CUDA_HOME=/usr/local/cuda-10.2
         - LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
