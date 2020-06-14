@@ -9,6 +9,7 @@ jobs:
         - CUDA=cuda-10-2_10.2.89-1
         - CUDA_SHORT=10.2
         - UBUNTU_VERSION=ubuntu1804
+        - CUDACXX=/usr/local/cuda-10.2/bin/nvcc
       dist: bionic
       compiler: gcc
       before_install:
@@ -20,7 +21,7 @@ jobs:
         - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
         - sudo apt-key add 7fa2af80.pub
         - sudo apt update -qq
-        - sudo apt install -y cuda 
+        - sudo apt install -y cuda-10-2
         - sudo apt clean
         - CUDA_HOME=/usr/local/cuda-10.2
         - LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
