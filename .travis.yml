@@ -23,7 +23,7 @@ jobs:
         - sudo apt update -qq
         - sudo apt-add-repository -y ppa:cginternals/ppa
         - sudo apt-get update
-        - sudo apt install -y cuda-10-2 libglfw3 libglfw3-dev libglfw3-doc libglbinding-dev libglbinding-dbg
+        - sudo apt install -y cuda-10-2 libglfw3 libglfw3-dev libglfw3-doc libglbinding-dev libglbinding-dbg libegl1-mesa-dev
         - sudo apt clean
         - CUDA_HOME=/usr/local/cuda-10.2
         - LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
