@@ -1,4 +1,4 @@
-Integrator "path" "integer maxdepth" [ 7 ] 
+Integrator "path" "integer maxdepth" [ 10 ] 
 LookAt 0.125 3 4 # eye
        0 0 0 # look at point
        0 1 0 # up
@@ -11,15 +11,17 @@ WorldBegin
 
     AttributeBegin
         Translate 0 -0.125 0
-        Material "matte" "rgb Kd" [ 1  1  1 ]
-        # Shape "objmesh" "string filename" [ "triangle-one.obj" ]
-    AttributeEnd
-
-    AttributeBegin
-        Translate 0 -0.125 0
         Material "matte" "rgb Kd" [ .2  .5  .7 ]
         Shape "plymesh" "string filename" [ "dragon_vrip.ply" ]
     AttributeEnd
+
+    AttributeBegin
+        Translate 0 -0.0722704977 0
+        Material "matte" "rgb Kd" [ 1  1  1 ]
+        Shape "objmesh" "string filename" [ "triangle-one.obj" ]
+    AttributeEnd
+
+
 
 
 WorldEnd

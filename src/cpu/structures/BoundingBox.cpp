@@ -6,6 +6,13 @@
 
 namespace poly {
    bool BoundingBox::Hits(const poly::Ray &worldSpaceRay, const poly::Vector& inverse_direction) const {
+//      const bool inside = worldSpaceRay.Origin.x > p0.x && worldSpaceRay.Origin.x < p1.x 
+//            && worldSpaceRay.Origin.y > p0.y && worldSpaceRay.Origin.y < p1.y
+//            && worldSpaceRay.Origin.z > p0.z && worldSpaceRay.Origin.z < p1.z;
+//
+//      if (inside)
+//         return true;
+      
       float maxBoundFarT = poly::FloatMax;
       float minBoundNearT = 0;
 

@@ -18,7 +18,7 @@ namespace poly {
       bvh_node* low; // interior
       //poly::Axis axis; // interior
       poly::BoundingBox bb; // both
-      std::vector<unsigned int> face_indices; // leaf
+      std::vector<std::pair<unsigned int, unsigned int>> indices; // leaf
    };
    
    class compact_bvh_node {
@@ -26,7 +26,7 @@ namespace poly {
       poly::BoundingBox bb; // 24 bytes (both)
       // TODO - at build time, sort face indices by the order in which they are put into the tree
       // then, this can just be a 4-byte offset, instead of an 8-byte pointer
-      unsigned int* face_indices; // 8 bytes (interior if nullptr)
+      std::pair<unsigned int, unsigned int>* indices; // 8 bytes (interior if nullptr)
       union {
          int high_offset; // only for interior 
          unsigned int num_face_indices; // only for leaf
@@ -52,7 +52,7 @@ namespace poly {
    public:
       bvh() = default;
       ~bvh();
-      unsigned int bound(poly::Mesh* mesh);
+      unsigned int bound(const std::vector<poly::Mesh*>& meshes);
       void compact();
       void metrics() const;
       bool hits(const poly::Ray &ray) const;
@@ -61,7 +61,7 @@ namespace poly {
       void intersect_compact(poly::Ray &ray, poly::Intersection& intersection) const;
       bvh_node* root;
       compact_bvh* compact_root;
-      poly::Mesh* single_mesh;
+      std::vector<poly::Mesh*> meshes;
       unsigned int num_nodes;
    private:
       unsigned int compact_helper(bvh_node* node, unsigned int index);

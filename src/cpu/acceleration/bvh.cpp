@@ -8,83 +8,101 @@
 
 namespace poly {
 
-   struct face_info {
+   struct node_info {
       poly::BoundingBox bb;
       poly::Point centroid;
+      std::pair<unsigned int, unsigned int> index;
    };
-   
-   unsigned int bvh::bound(poly::Mesh* mesh) {
-      unsigned int num_nodes = 0;
-      single_mesh = mesh;
-      std::queue<std::pair<bvh_node*, unsigned int>> q;
+
+   unsigned int bvh::bound(const std::vector<poly::Mesh*>& meshes) {
+      this->meshes = meshes;
       
-      // generate index vector
-      std::vector<unsigned int> indices;
-      indices.reserve(mesh->num_faces);
-      for (int i = 0; i < mesh->num_faces; i++) {
-         indices.push_back(i);
+      // reserve enough space for all mesh faces
+      unsigned int total_faces = 0;
+      for (const poly::Mesh* mesh : meshes) {
+         total_faces += mesh->num_faces;
       }
-      
+
+      std::vector<std::pair<unsigned int, unsigned int>> all_indices;
+      all_indices.reserve(total_faces);
+
       Point root_min = { std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
       Point root_max = { -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()};
+
+      std::vector<std::vector<struct node_info>> nodes_info;
       
-      // calculate bounding boxes and centroids for each face
-      std::vector<struct face_info> node_info;
-      node_info.reserve(mesh->num_faces);
-      for (int index : indices) {
-         Point face_min, face_max;
+      // generate index vector per mesh
+      for (unsigned int mesh_index = 0; mesh_index < meshes.size(); mesh_index++) {
+         const poly::Mesh* mesh = meshes[mesh_index];
          
-         // get face
-         const Point v0 = {
-               mesh->x_packed[mesh->fv0[index]],
-               mesh->y_packed[mesh->fv0[index]],
-               mesh->z_packed[mesh->fv0[index]] };
-
-         const Point v1 = {
-               mesh->x_packed[mesh->fv1[index]],
-               mesh->y_packed[mesh->fv1[index]],
-               mesh->z_packed[mesh->fv1[index]] };
-
-         const Point v2 = {
-               mesh->x_packed[mesh->fv2[index]],
-               mesh->y_packed[mesh->fv2[index]],
-               mesh->z_packed[mesh->fv2[index]] };
-
-         // calculate face's bounding box
-         face_min.x = v0.x < v1.x ? v0.x : v1.x;
-         face_min.x = face_min.x < v2.x ? face_min.x : v2.x;
-         face_min.y = v0.y < v1.y ? v0.y : v1.y;
-         face_min.y = face_min.y < v2.y ? face_min.y : v2.y;
-         face_min.z = v0.z < v1.z ? v0.z : v1.z;
-         face_min.z = face_min.z < v2.z ? face_min.z : v2.z;
-
-         face_max.x = v0.x > v1.x ? v0.x : v1.x;
-         face_max.x = face_max.x > v2.x ? face_max.x : v2.x;
-         face_max.y = v0.y > v1.y ? v0.y : v1.y;
-         face_max.y = face_max.y > v2.y ? face_max.y : v2.y;
-         face_max.z = v0.z > v1.z ? v0.z : v1.z;
-         face_max.z = face_max.z > v2.z ? face_max.z : v2.z;
-
-         // update root bounding box
-         root_min.x = root_min.x < face_min.x ? root_min.x : face_min.x;
-         root_min.y = root_min.y < face_min.y ? root_min.y : face_min.y;
-         root_min.z = root_min.z < face_min.z ? root_min.z : face_min.z;
-
-         root_max.x = root_max.x > face_max.x ? root_max.x : face_max.x;
-         root_max.y = root_max.y > face_max.y ? root_max.y : face_max.y;
-         root_max.z = root_max.z > face_max.z ? root_max.z : face_max.z;
+         // calculate bounding boxes and centroids for each face
+         std::vector<struct node_info> node_info;
+         node_info.reserve(mesh->num_faces);
          
-         node_info.push_back( {
-            poly::BoundingBox {face_min, face_max },
-            // calculate centroid
-            poly::Point {(v0.x + v1.x + v2.x) * OneThird, (v0.y + v1.y + v2.y) * OneThird, (v0.z + v1.z + v2.z) * OneThird }
-          });
+         for (unsigned int face_index = 0; face_index < mesh->num_faces; face_index++) {
+            Point face_min, face_max;
+
+            // get face
+            const Point v0 = {
+                  mesh->x_packed[mesh->fv0[face_index]],
+                  mesh->y_packed[mesh->fv0[face_index]],
+                  mesh->z_packed[mesh->fv0[face_index]] };
+
+            const Point v1 = {
+                  mesh->x_packed[mesh->fv1[face_index]],
+                  mesh->y_packed[mesh->fv1[face_index]],
+                  mesh->z_packed[mesh->fv1[face_index]] };
+
+            const Point v2 = {
+                  mesh->x_packed[mesh->fv2[face_index]],
+                  mesh->y_packed[mesh->fv2[face_index]],
+                  mesh->z_packed[mesh->fv2[face_index]] };
+
+            // calculate face's bounding box
+            face_min.x = v0.x < v1.x ? v0.x : v1.x;
+            face_min.x = face_min.x < v2.x ? face_min.x : v2.x;
+            face_min.y = v0.y < v1.y ? v0.y : v1.y;
+            face_min.y = face_min.y < v2.y ? face_min.y : v2.y;
+            face_min.z = v0.z < v1.z ? v0.z : v1.z;
+            face_min.z = face_min.z < v2.z ? face_min.z : v2.z;
+
+            face_max.x = v0.x > v1.x ? v0.x : v1.x;
+            face_max.x = face_max.x > v2.x ? face_max.x : v2.x;
+            face_max.y = v0.y > v1.y ? v0.y : v1.y;
+            face_max.y = face_max.y > v2.y ? face_max.y : v2.y;
+            face_max.z = v0.z > v1.z ? v0.z : v1.z;
+            face_max.z = face_max.z > v2.z ? face_max.z : v2.z;
+
+            // update root bounding box
+            root_min.x = root_min.x < face_min.x ? root_min.x : face_min.x;
+            root_min.y = root_min.y < face_min.y ? root_min.y : face_min.y;
+            root_min.z = root_min.z < face_min.z ? root_min.z : face_min.z;
+
+            root_max.x = root_max.x > face_max.x ? root_max.x : face_max.x;
+            root_max.y = root_max.y > face_max.y ? root_max.y : face_max.y;
+            root_max.z = root_max.z > face_max.z ? root_max.z : face_max.z;
+
+            node_info.push_back({
+               poly::BoundingBox {face_min, face_max },
+               // calculate centroid
+               poly::Point {(v0.x + v1.x + v2.x) * OneThird, 
+                            (v0.y + v1.y + v2.y) * OneThird, 
+                            (v0.z + v1.z + v2.z) * OneThird },
+               { mesh_index, face_index}
+            });
+            
+            all_indices.emplace_back(mesh_index, face_index);
+         }
+
+         nodes_info.push_back(node_info);
       }
-
+      
       // create root node
       root = new bvh_node();
       root->bb = { root_min, root_max };
-      root->face_indices = indices;
+      root->indices = all_indices;
+
+      std::queue<std::pair<bvh_node*, unsigned int>> q;
       q.emplace(root, 0);
       num_nodes++;
       
@@ -94,10 +112,10 @@ namespace poly {
          q.pop();
          bvh_node* node = element.first;
          const unsigned int depth = element.second;
-         std::vector<unsigned int> indices = node->face_indices;
+         std::vector<std::pair<unsigned int, unsigned int>> indices = node->indices;
 
          // base case 0
-         if (depth > 25)
+         if (depth > 35)
             continue;
          
          // base case 1
@@ -114,8 +132,10 @@ namespace poly {
          float z_max = -std::numeric_limits<float>::infinity();
 
          // calculate extents
-         for (int index : indices) {
-            poly::Point centroid = node_info[index].centroid;
+         for (const std::pair<unsigned int, unsigned int> &index : indices) {
+            unsigned int mesh_index = index.first;
+            unsigned int face_index = index.second;
+            poly::Point centroid = nodes_info[mesh_index][face_index].centroid;
             
             x_min = x_min < centroid.x ? x_min : centroid.x;
             y_min = y_min < centroid.y ? y_min : centroid.y;
@@ -146,10 +166,12 @@ namespace poly {
          }
 
          // partition & create child node bounding boxes
-         std::vector<unsigned int> low_indices, high_indices;
-         
-         for (unsigned int index : indices) {
-            poly::Point centroid = node_info[index].centroid;
+         std::vector<std::pair<unsigned int, unsigned int>> low_indices, high_indices;
+
+         for (const std::pair<unsigned int, unsigned int> &index : indices) {
+            unsigned int mesh_index = index.first;
+            unsigned int face_index = index.second;
+            poly::Point centroid = nodes_info[mesh_index][face_index].centroid;
             if (centroid[next_axis] < split)
                low_indices.push_back(index);
             else
@@ -157,7 +179,7 @@ namespace poly {
          }
          
          // base case 2 - we're not making any progress - turn the current node into a leaf
-         if (low_indices.size() == node->face_indices.size() || high_indices.size() == node->face_indices.size()) {
+         if (low_indices.size() == node->indices.size() || high_indices.size() == node->indices.size()) {
             continue;
          }
 
@@ -174,20 +196,22 @@ namespace poly {
                -std::numeric_limits<float>::infinity(),
                -std::numeric_limits<float>::infinity()
          };
-         
-         for (unsigned int index : high_indices) {
-            high_min.x = high_min.x < node_info[index].bb.p0.x ? high_min.x : node_info[index].bb.p0.x;
-            high_min.y = high_min.y < node_info[index].bb.p0.y ? high_min.y : node_info[index].bb.p0.y;
-            high_min.z = high_min.z < node_info[index].bb.p0.z ? high_min.z : node_info[index].bb.p0.z;
 
-            high_max.x = high_max.x > node_info[index].bb.p1.x ? high_max.x : node_info[index].bb.p1.x;
-            high_max.y = high_max.y > node_info[index].bb.p1.y ? high_max.y : node_info[index].bb.p1.y;
-            high_max.z = high_max.z > node_info[index].bb.p1.z ? high_max.z : node_info[index].bb.p1.z;
+         for (const std::pair<unsigned int, unsigned int> &index : high_indices) {
+            unsigned int mesh_index = index.first;
+            unsigned int face_index = index.second;
+            high_min.x = high_min.x < nodes_info[mesh_index][face_index].bb.p0.x ? high_min.x : nodes_info[mesh_index][face_index].bb.p0.x;
+            high_min.y = high_min.y < nodes_info[mesh_index][face_index].bb.p0.y ? high_min.y : nodes_info[mesh_index][face_index].bb.p0.y;
+            high_min.z = high_min.z < nodes_info[mesh_index][face_index].bb.p0.z ? high_min.z : nodes_info[mesh_index][face_index].bb.p0.z;
+
+            high_max.x = high_max.x > nodes_info[mesh_index][face_index].bb.p1.x ? high_max.x : nodes_info[mesh_index][face_index].bb.p1.x;
+            high_max.y = high_max.y > nodes_info[mesh_index][face_index].bb.p1.y ? high_max.y : nodes_info[mesh_index][face_index].bb.p1.y;
+            high_max.z = high_max.z > nodes_info[mesh_index][face_index].bb.p1.z ? high_max.z : nodes_info[mesh_index][face_index].bb.p1.z;
          }
          
          bvh_node* high_child = new bvh_node();
          //high_child->axis = next_axis;
-         high_child->face_indices = high_indices;
+         high_child->indices = high_indices;
          high_child->high = nullptr;
          high_child->low = nullptr;
          high_child->bb = { high_min, high_max};
@@ -208,19 +232,21 @@ namespace poly {
                -std::numeric_limits<float>::infinity()
          };
 
-         for (unsigned int index : low_indices) {
-            low_min.x = low_min.x < node_info[index].bb.p0.x ? low_min.x : node_info[index].bb.p0.x;
-            low_min.y = low_min.y < node_info[index].bb.p0.y ? low_min.y : node_info[index].bb.p0.y;
-            low_min.z = low_min.z < node_info[index].bb.p0.z ? low_min.z : node_info[index].bb.p0.z;
+         for (const std::pair<unsigned int, unsigned int> &index : low_indices) {
+            unsigned int mesh_index = index.first;
+            unsigned int face_index = index.second;
+            low_min.x = low_min.x < nodes_info[mesh_index][face_index].bb.p0.x ? low_min.x : nodes_info[mesh_index][face_index].bb.p0.x;
+            low_min.y = low_min.y < nodes_info[mesh_index][face_index].bb.p0.y ? low_min.y : nodes_info[mesh_index][face_index].bb.p0.y;
+            low_min.z = low_min.z < nodes_info[mesh_index][face_index].bb.p0.z ? low_min.z : nodes_info[mesh_index][face_index].bb.p0.z;
 
-            low_max.x = low_max.x > node_info[index].bb.p1.x ? low_max.x : node_info[index].bb.p1.x;
-            low_max.y = low_max.y > node_info[index].bb.p1.y ? low_max.y : node_info[index].bb.p1.y;
-            low_max.z = low_max.z > node_info[index].bb.p1.z ? low_max.z : node_info[index].bb.p1.z;
+            low_max.x = low_max.x > nodes_info[mesh_index][face_index].bb.p1.x ? low_max.x : nodes_info[mesh_index][face_index].bb.p1.x;
+            low_max.y = low_max.y > nodes_info[mesh_index][face_index].bb.p1.y ? low_max.y : nodes_info[mesh_index][face_index].bb.p1.y;
+            low_max.z = low_max.z > nodes_info[mesh_index][face_index].bb.p1.z ? low_max.z : nodes_info[mesh_index][face_index].bb.p1.z;
          }
          
          bvh_node* low_child = new bvh_node();
          //low_child->axis = next_axis;
-         low_child->face_indices = low_indices;
+         low_child->indices = low_indices;
          low_child->low = nullptr;
          low_child->low = nullptr;
          low_child->bb = { low_min, low_max};
@@ -229,7 +255,7 @@ namespace poly {
          q.emplace(low_child, depth + 1);
          num_nodes++;
          
-         node->face_indices.clear();
+         node->indices.clear();
       }
       
       this->num_nodes = num_nodes;
@@ -250,11 +276,17 @@ namespace poly {
          q.pop();
          if (node->bb.Hits(ray, inverse_direction)) {
             // if leaf node
-            if (node->face_indices != nullptr) {
+            if (node->indices != nullptr) {
                // intersect faces
-               if (single_mesh->hits(ray, node->face_indices, node->num_face_indices)) {
-                  // if anything hits, return true
-                  return true;
+               for (unsigned int i = 0; i < node->num_face_indices; i++) {
+                  const unsigned int mesh_index = node->indices[i].first;
+                  const poly::Mesh* mesh = meshes[mesh_index];
+                  const unsigned int face_index = node->indices[i].second;
+                  // TODO make this more efficient
+                  if (mesh->hits(ray, &face_index, 1)) {
+                     // if anything hits, return true
+                     return true;
+                  }
                }
                // otherwise, keep traversing               
                continue;
@@ -285,9 +317,16 @@ namespace poly {
             // if leaf node
             if (node->high == nullptr && node->low == nullptr) {
                // intersect faces
-               if (single_mesh->hits(ray, node->face_indices)) {
-                  // if anything hits, return true
-                  return true;
+               // TODO make this more efficient
+               for (const auto &index : node->indices) {
+                  const unsigned int mesh_index = index.first;
+                  const poly::Mesh* mesh = meshes[mesh_index];
+                  const unsigned int face_index = index.second;
+                  
+                  if (mesh->hits(ray, &face_index, 1)) {
+                     // if anything hits, return true
+                     return true;
+                  }
                }
                // otherwise, keep traversing               
                continue;
@@ -319,8 +358,15 @@ namespace poly {
          // TODO add tmax optimization for BBox hit
          if (node->bb.Hits(ray, inverse_direction)) {
             // if leaf node
-            if (node->face_indices != nullptr) {
-               single_mesh->intersect(ray, intersection, node->face_indices, node->num_face_indices);
+            if (node->indices != nullptr) {
+               // intersect faces
+               for (unsigned int i = 0; i < node->num_face_indices; i++) {
+                  const unsigned int mesh_index = node->indices[i].first;
+                  poly::Mesh* mesh = meshes[mesh_index];
+                  const unsigned int face_index = node->indices[i].second;
+                  mesh->intersect(ray, intersection, &face_index, 1);
+               }
+               // otherwise, keep traversing               
                continue;
             }
 
@@ -349,8 +395,14 @@ namespace poly {
          if (node->bb.Hits(ray, inverse_direction)) {
             // if leaf node
             if (node->high == nullptr && node->low == nullptr) {
-               single_mesh->intersect(ray, intersection, node->face_indices);
-               continue;
+               // intersect faces
+               // TODO make this more efficient
+               for (const auto &index : node->indices) {
+                  const unsigned int mesh_index = index.first;
+                  poly::Mesh* mesh = meshes[mesh_index];
+                  const unsigned int face_index = index.second;
+                  mesh->intersect(ray, intersection, &face_index, 1);
+               }
             }
 
             // if interior node
@@ -384,7 +436,7 @@ namespace poly {
          
          if (node->high == nullptr && node->low == nullptr) {
             num_leaf_nodes++;
-            leaf_counts.push_back(node->face_indices.size());
+            leaf_counts.push_back(node->indices.size());
          }
          else if (node->high == nullptr && node->low != nullptr) {
             num_single_low_child_nodes++;
@@ -461,15 +513,15 @@ namespace poly {
 
          // leaf
          if (node->low == nullptr) {
-            compact_node.face_indices = &node->face_indices[0];
-            compact_node.num_face_indices = node->face_indices.size();
+            compact_node.indices = &node->indices[0];
+            compact_node.num_face_indices = node->indices.size();
          } 
          // interior
          else {
             num_child_nodes = 0;
             num_child_nodes += 1 + compact_helper(node->low, index + 1);
             compact_node.high_offset = num_child_nodes + 1;
-            compact_node.face_indices = nullptr;
+            compact_node.indices = nullptr;
             num_child_nodes += 1 + compact_helper(node->high, index + 1 + num_child_nodes);
             
          }
