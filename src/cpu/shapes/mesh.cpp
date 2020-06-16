@@ -458,7 +458,7 @@ namespace poly {
 
    }
 
-   bool Mesh::hits(const Ray &world_ray, const unsigned int *face_indices, unsigned int num_face_indices) {
+   bool Mesh::hits(const Ray &world_ray, const unsigned int *face_indices, unsigned int num_face_indices) const {
       for (unsigned int face_index = 0; face_index < num_face_indices; face_index++) {
 
          const Point v0 = { x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]] };

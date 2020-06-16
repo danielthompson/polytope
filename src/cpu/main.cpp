@@ -146,7 +146,7 @@ Other:
          }
 
          const auto bound_start = std::chrono::system_clock::now();
-         unsigned int num_nodes = runner->Scene->bvh_root.bound(runner->Scene->Shapes.at(0));
+         unsigned int num_nodes = runner->Scene->bvh_root.bound(runner->Scene->Shapes);
          const auto bound_end = std::chrono::system_clock::now();
          const std::chrono::duration<double> bound_duration = bound_end - bound_start;
          Log.WithTime("Created BVH in " + std::to_string(bound_duration.count()) + "s.");
