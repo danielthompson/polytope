@@ -15,6 +15,20 @@ namespace poly {
       num_vertices_packed++;
    }
 
+   void Mesh::add_vertex(Point &v, Normal &n) {
+      ObjectToWorld->ApplyInPlace(v);
+      x_packed.push_back(v.x);
+      y_packed.push_back(v.y);
+      z_packed.push_back(v.z);
+
+      ObjectToWorld->ApplyInPlace(n);
+      nx_packed.push_back(n.x);
+      ny_packed.push_back(n.y);
+      nz_packed.push_back(n.z);
+      
+      num_vertices_packed++;
+   }
+
    void Mesh::add_vertex(float vx, float vy, float vz) {
       ObjectToWorld->ApplyPoint(vx, vy, vz);
       x_packed.push_back(vx);
@@ -23,65 +37,81 @@ namespace poly {
       num_vertices_packed++;
    }
    
-   void Mesh::add_packed_face(const unsigned int v0, const unsigned int v1, const unsigned int v2) {
-      fv0.push_back(v0);
-      fv1.push_back(v1);
-      fv2.push_back(v2);
-      num_faces++;
+   void Mesh::add_packed_face(const unsigned int v0_index, const unsigned int v1_index, const unsigned int v2_index) {
+      fv0.push_back(v0_index);
+      fv1.push_back(v1_index);
+      fv2.push_back(v2_index);
+      
 
       {
-         const float p0x = x_packed[v0];
+         const float p0x = x_packed[v0_index];
          BoundingBox->p0.x = p0x < BoundingBox->p0.x ? p0x : BoundingBox->p0.x;
          BoundingBox->p1.x = p0x > BoundingBox->p1.x ? p0x : BoundingBox->p1.x;
       }
 
       {
-         const float p0y = y_packed[v0];
+         const float p0y = y_packed[v0_index];
          BoundingBox->p0.y = p0y < BoundingBox->p0.y ? p0y : BoundingBox->p0.y;
          BoundingBox->p1.y = p0y > BoundingBox->p1.y ? p0y : BoundingBox->p1.y;
       }
 
       {
-         const float p0z = z_packed[v0];
+         const float p0z = z_packed[v0_index];
          BoundingBox->p0.z = p0z < BoundingBox->p0.z ? p0z : BoundingBox->p0.z;
          BoundingBox->p1.z = p0z > BoundingBox->p1.z ? p0z : BoundingBox->p1.z;
       }
 
       {
-         const float p1x = x_packed[v1];
+         const float p1x = x_packed[v1_index];
          BoundingBox->p0.x = p1x < BoundingBox->p0.x ? p1x : BoundingBox->p0.x;
          BoundingBox->p1.x = p1x > BoundingBox->p1.x ? p1x : BoundingBox->p1.x;
       }
 
       {
-         const float p1y = y_packed[v1];
+         const float p1y = y_packed[v1_index];
          BoundingBox->p0.y = p1y < BoundingBox->p0.y ? p1y : BoundingBox->p0.y;
          BoundingBox->p1.y = p1y > BoundingBox->p1.y ? p1y : BoundingBox->p1.y;
       }
 
       {
-         const float p1z = z_packed[v1];
+         const float p1z = z_packed[v1_index];
          BoundingBox->p0.z = p1z < BoundingBox->p0.z ? p1z : BoundingBox->p0.z;
          BoundingBox->p1.z = p1z > BoundingBox->p1.z ? p1z : BoundingBox->p1.z;
       }
 
       {
-         const float p2x = x_packed[v2];
+         const float p2x = x_packed[v2_index];
          BoundingBox->p0.x = p2x < BoundingBox->p0.x ? p2x : BoundingBox->p0.x;
          BoundingBox->p1.x = p2x > BoundingBox->p1.x ? p2x : BoundingBox->p1.x;
       }
 
       {
-         const float p2y = y_packed[v2];
+         const float p2y = y_packed[v2_index];
          BoundingBox->p0.y = p2y < BoundingBox->p0.y ? p2y : BoundingBox->p0.y;
          BoundingBox->p1.y = p2y > BoundingBox->p1.y ? p2y : BoundingBox->p1.y;
       }
 
       {
-         const float p2z = z_packed[v2];
+         const float p2z = z_packed[v2_index];
          BoundingBox->p0.z = p2z < BoundingBox->p0.z ? p2z : BoundingBox->p0.z;
          BoundingBox->p1.z = p2z > BoundingBox->p1.z ? p2z : BoundingBox->p1.z;
       }
+      
+      // calculate face normal
+      const Point v0 = { x_packed[fv0[num_faces]], y_packed[fv0[num_faces]], z_packed[fv0[num_faces]] };
+      const Point v1 = { x_packed[fv1[num_faces]], y_packed[fv1[num_faces]], z_packed[fv1[num_faces]] };
+      const Point v2 = { x_packed[fv2[num_faces]], y_packed[fv2[num_faces]], z_packed[fv2[num_faces]] };
+
+      const poly::Vector e0 = v1 - v0;
+      const poly::Vector e1 = v2 - v1;
+      poly::Vector plane_normal = e0.Cross(e1);
+      plane_normal.Normalize();
+      
+      fnx.push_back(plane_normal.x);
+      fny.push_back(plane_normal.y);
+      fnz.push_back(plane_normal.z);
+
+      num_faces++;
    }
 
    void Mesh::CalculateVertexNormals() {
@@ -189,32 +219,36 @@ namespace poly {
       for (unsigned int face_index_index = 0; face_index_index < num_face_indices; face_index_index++) {
          
          unsigned int face_index = face_indices[face_index_index];
-         
-         const Point v0 = { x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]] };
-         const Point v1 = { x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]] };
-         const Point v2 = { x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]] };
 
-         const poly::Vector e0 = v1 - v0;
-         const poly::Vector e1 = v2 - v1;
-         poly::Vector plane_normal = e0.Cross(e1);
-         plane_normal.Normalize();
-
+         const poly::Vector plane_normal = { fnx[face_index], fny[face_index], fnz[face_index] };
          const float divisor = plane_normal.Dot(world_ray.Direction);
 
          if (divisor == 0.0f) {
             // parallel
             continue;
          }
+         
+         const Point v0 = { x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]] };
+         
+//         poly::Vector plane_normal = e0.Cross(e1);
+//         plane_normal.Normalize();
 
          const float ft = plane_normal.Dot(v0 - world_ray.Origin) / divisor;
 
          if (ft <= 0 || ft > world_ray.MinT) {
             continue;
          }
+
+         const Point v1 = { x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]] };
+         const Point v2 = { x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]] };
+
+         const poly::Vector e0 = v1 - v0;
+         const poly::Vector e1 = v2 - v1;
+         const poly::Vector e2 = v0 - v2;
+         
          // TODO fix this imprecise garbage
          const poly::Point hit_point = world_ray.GetPointAtT(ft);
-
-         const poly::Vector e2 = v0 - v2;
+         
          const poly::Vector p0 = hit_point - v0;
          const poly::Vector cross0 = e0.Cross(p0);
          const float normal0 = cross0.Dot(plane_normal);
@@ -265,25 +299,47 @@ namespace poly {
       const unsigned int v0_index = fv0[hit_face_index];
       const unsigned int v1_index = fv1[hit_face_index];
       const unsigned int v2_index = fv2[hit_face_index];
-
+      
       const Point v0 = Point(x_packed[v0_index], y_packed[v0_index], z_packed[v0_index]);
       const Point v1 = Point(x_packed[v1_index], y_packed[v1_index], z_packed[v1_index]);
       const Point v2 = Point(x_packed[v2_index], y_packed[v2_index], z_packed[v2_index]);
-
+//      
+//      const Normal n0 = Normal(nx_packed[v0_index], ny_packed[v0_index], nz_packed[v0_index]);
+//      const Normal n1 = Normal(nx_packed[v1_index], ny_packed[v1_index], nz_packed[v1_index]);
+//      const Normal n2 = Normal(nx_packed[v2_index], ny_packed[v2_index], nz_packed[v2_index]);
+//
+//      // idea - use squared distance from intersection to each vertex to calculate vertex normal's weight for the interpolation
+//      float squared_dist_0 = intersection.Location.Dot(v0);
+//      float squared_dist_1 = intersection.Location.Dot(v1);
+//      float squared_dist_2 = intersection.Location.Dot(v2);
+//
+//      float total_weight = squared_dist_0 + squared_dist_1 + squared_dist_2;
+//      poly::Vector weights = {
+//            total_weight / squared_dist_0, 
+//            total_weight / squared_dist_1, 
+//            total_weight / squared_dist_2 
+//      };
+//      weights.Normalize();
+//
+//      Normal n = {n0.x * weights.x + n1.x + weights.y + n2.x + weights.z,
+//                  n0.y * weights.x + n1.y + weights.y + n2.y + weights.z,
+//                  n0.z * weights.x + n1.z + weights.y + n2.z + weights.z};
+//      n.Normalize();
+      
       const poly::Vector edge0 = v1 - v0;
       const poly::Vector edge1 = v2 - v1;
       const poly::Vector edge2 = v0 - v2;
-      const poly::Vector planeNormal = edge0.Cross(edge1);
+      //const poly::Vector planeNormal = {edge0.Cross(edge1);}
+      poly::Normal plane_normal = { fnx[hit_face_index], fny[hit_face_index], fnz[hit_face_index] };
 
       // flip normal if needed
-      poly::Normal n(planeNormal.x, planeNormal.y, planeNormal.z);
-      if (world_ray.Direction.Dot(n) > 0) {
-         n.Flip();
+      if (world_ray.Direction.Dot(plane_normal) > 0) {
+         plane_normal.Flip();
       }
 
-      n.Normalize();
+      //n.Normalize();
 
-      intersection.Normal = n;
+      intersection.Normal = plane_normal;
       intersection.Shape = this;
 
       const float edge0dot = std::abs(edge0.Dot(edge1));
@@ -522,3 +578,4 @@ namespace poly {
    }
 
 }
+

@@ -1,4 +1,4 @@
-Integrator "path" "integer maxdepth" [ 7 ] 
+Integrator "path" "integer maxdepth" [ 15 ] 
 LookAt 0 35 35 # eye
        0 0 -1 # look at point
        0 1 0 # up
@@ -21,7 +21,7 @@ WorldBegin
     AttributeBegin
         Translate -3 0 0
         # Rotate 45 1 0 0
-        # Material "mirror" "rgb Kr" [ .5  .8  .5 ]
+        Material "mirror" "rgb Kr" [ .5  .8  .5 ]
         # Shape "objmesh" "string filename" [ "teapot.obj" ]
         # Shape "plymesh" "string filename" [ "teapot.ply" ]
         Shape "plymesh" "string filename" [ "teapot_converted.ply" ]

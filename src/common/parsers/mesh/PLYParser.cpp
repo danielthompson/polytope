@@ -41,7 +41,7 @@ namespace poly {
       return unsigned_value;
    }
 
-   std::unique_ptr<std::ifstream> PLYParser::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
+   std::pair<std::unique_ptr<std::ifstream>, unsigned int> PLYParser::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
       std::unique_ptr<std::ifstream> stream = AbstractFileParser::open_ascii_stream(filepath);
 
       std::string line;
@@ -183,7 +183,7 @@ namespace poly {
          stream->seekg(offset);
       }
       
-      return stream;
+      return { std::move(stream), line_number };
    }
 
    void PLYParser::ParseFile(Mesh *mesh, const std::string &filepath) const {
@@ -191,30 +191,47 @@ namespace poly {
       int num_faces = -1;
 
       ply_format format = ply_format::ascii;
-      std::unique_ptr<std::ifstream> stream = parse_header(filepath, &num_vertices, &num_faces, &format);
-
+      auto pair = parse_header(filepath, &num_vertices, &num_faces, &format);
+      std::unique_ptr<std::ifstream> stream = std::move(pair.first);
+      unsigned int line_number = pair.second;
+      
       // data - vertices
 
       std::string line;
       
       if (format == ascii) {
          std::string word;
-         Point p;
+         Point v;
          for (int i = 0; i < num_vertices; i++) {
             if (!getline(*stream, line)) {
-               Log.WithTime("Failed to read line in vertices :/");
-               return;
+               ERROR("%s:%i Error reading vertex %i", filepath.c_str(), line_number, i);
             }
 
+            // TODO fix such that property order is not hardcoded
+            
             word.clear();
             std::istringstream iss(line, std::istringstream::in);
             iss >> word;
-            p.x = stof(word);
+            v.x = stof(word);
             iss >> word;
-            p.y = stof(word);
+            v.y = stof(word);
             iss >> word;
-            p.z = stof(word);
-            mesh->add_vertex(p);
+            v.z = stof(word);
+            
+            // if no normals, done
+            if (iss.eof()) {
+               Normal n;
+               iss >> word;
+               n.x = stof(word);
+               iss >> word;
+               n.y = stof(word);
+               iss >> word;
+               n.z = stof(word);
+               mesh->add_vertex(v, n);
+            }
+            else {
+               mesh->add_vertex(v);   
+            }
          }
       }
       
@@ -236,8 +253,7 @@ namespace poly {
          for (int i = 0; i < num_faces; i++) {
             unsigned int v0, v1, v2;
             if (!getline(*stream, line)) {
-               Log.WithTime("Failed to read line in faces :/");
-               return;
+               ERROR("%s:%i Failed to read face line", filepath.c_str(), line_number);
             }
             std::string word;
             std::istringstream iss(line, std::istringstream::in);
@@ -245,10 +261,9 @@ namespace poly {
             // parse vertex indices
 
             iss >> word;
-            int numVertexIndices = stoi(word);
-            if (numVertexIndices != 3) {
-               Log.WithTime("Face has too many vertex indices :/");
-               return;
+            int num_vertex_indices = stoi(word);
+            if (num_vertex_indices != 3) {
+               ERROR("%s:%i Face has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), line_number, num_vertex_indices);
             }
 
             iss >> word;
@@ -266,7 +281,7 @@ namespace poly {
             unsigned int v0, v1, v2;
             const unsigned char num_vertex_indices = read_uchar(stream);
             if (num_vertex_indices != 3) {
-               Log.WithTime("Face has too many vertex indices :/");
+               ERROR("%s:%i Face has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), line_number, num_vertex_indices);
                return;
             }
             v0 = read_int(stream, format);
