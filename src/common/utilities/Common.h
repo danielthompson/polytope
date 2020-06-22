@@ -5,6 +5,7 @@
 #ifndef POLY_COMMON_H
 #define POLY_COMMON_H
 
+#include <atomic>
 #include "Logger.h"
 
 #define ERROR(fmt, ...) \

@@ -4,6 +4,7 @@
 
 #include <queue>
 #include <algorithm>
+#include <stack>
 #include "bvh.h"
 
 namespace poly {
@@ -83,7 +84,7 @@ namespace poly {
             root_max.z = root_max.z > face_max.z ? root_max.z : face_max.z;
 
             node_info.push_back({
-               poly::BoundingBox {face_min, face_max },
+               poly::BoundingBox { face_min, face_max },
                // calculate centroid
                poly::Point {(v0.x + v1.x + v2.x) * OneThird, 
                             (v0.y + v1.y + v2.y) * OneThird, 
@@ -101,7 +102,7 @@ namespace poly {
       root = new bvh_node();
       root->bb = { root_min, root_max };
       root->indices = all_indices;
-
+      
       std::queue<std::pair<bvh_node*, unsigned int>> q;
       q.emplace(root, 0);
       num_nodes++;
@@ -256,9 +257,8 @@ namespace poly {
          num_nodes++;
          
          node->indices.clear();
+         node->axis = next_axis;
       }
-      
-      this->num_nodes = num_nodes;
       
       return num_nodes;
    }
@@ -269,11 +269,11 @@ namespace poly {
             1.f / ray.Direction.y,
             1.f / ray.Direction.z
       };
-      std::queue<compact_bvh_node *> q;
-      q.push(compact_root->nodes);
-      while (!q.empty()) {
-         compact_bvh_node* node = q.front();
-         q.pop();
+      std::stack<compact_bvh_node *> stack;
+      stack.push(compact_root->nodes);
+      while (!stack.empty()) {
+         compact_bvh_node* node = stack.top();
+         stack.pop();
          if (node->bb.Hits(ray, inverse_direction)) {
             // if leaf node
             if (node->indices != nullptr) {
@@ -294,8 +294,8 @@ namespace poly {
 
             // if interior node
             // TODO push closer child node first (use node's split axis and ray's direction's sign for that axis
-            q.push(node + 1);
-            q.push(node + node->high_offset);
+            stack.push(node + 1);
+            stack.push(node + node->high_offset);
          }
       }
       // we made it all the way through the tree and nothing hit, so no hit
@@ -308,11 +308,11 @@ namespace poly {
             1.f / ray.Direction.y,
             1.f / ray.Direction.z
       }; 
-      std::queue<bvh_node *> q;
-      q.push(root);
-      while (!q.empty()) {
-         bvh_node* node = q.front();
-         q.pop();
+      std::stack<bvh_node *> stack;
+      stack.push(root);
+      while (!stack.empty()) {
+         bvh_node* node = stack.top();
+         stack.pop();
          if (node->bb.Hits(ray, inverse_direction)) {
             // if leaf node
             if (node->high == nullptr && node->low == nullptr) {
@@ -334,8 +334,8 @@ namespace poly {
             
             // if interior node
             // TODO push closer child node first (use node's split axis and ray's direction's sign for that axis
-            q.push(node->high);
-            q.push(node->low);
+            stack.push(node->high);
+            stack.push(node->low);
          }
       }
       // we made it all the way through the tree and nothing hit, so no hit
@@ -348,14 +348,16 @@ namespace poly {
             1.f / ray.Direction.y,
             1.f / ray.Direction.z
       };
-      std::queue<compact_bvh_node *> q;
-      q.push(compact_root->nodes);
+      
+      bool neg_dir[3] = { inverse_direction.x < 0, inverse_direction.y < 0, inverse_direction.z < 0 };
+      
+      std::stack<compact_bvh_node *> stack;
+      stack.push(compact_root->nodes);
 
-      while (!q.empty()) {
-         compact_bvh_node* node = q.front();
-         q.pop();
+      while (!stack.empty()) {
+         compact_bvh_node* node = stack.top();
+         stack.pop();
 
-         // TODO add tmax optimization for BBox hit
          if (node->bb.Hits(ray, inverse_direction)) {
             // if leaf node
             if (node->indices != nullptr) {
@@ -371,9 +373,15 @@ namespace poly {
             }
 
             // if interior node
-            // TODO push closer child node first (use node's split axis and ray's direction's sign for that axis
-            q.push(node + 1);
-            q.push(node + node->high_offset);
+            // push closer child node first (use node's split axis and ray's direction's sign for that axis
+            if (neg_dir[(int)node->axis]) {
+               stack.push(node + 1);
+               stack.push(node + node->high_offset);
+            }
+            else {
+               stack.push(node + node->high_offset);
+               stack.push(node + 1);
+            }
          }
       }
    }
@@ -384,12 +392,12 @@ namespace poly {
             1.f / ray.Direction.y,
             1.f / ray.Direction.z
       };
-      std::queue<bvh_node *> q;
-      q.push(root);
+      std::stack<bvh_node *> stack;
+      stack.push(root);
       
-      while (!q.empty()) {
-         bvh_node* node = q.front();
-         q.pop();
+      while (!stack.empty()) {
+         bvh_node* node = stack.top();
+         stack.pop();
             
          // TODO add tmax optimization for BBox hit
          if (node->bb.Hits(ray, inverse_direction)) {
@@ -407,8 +415,8 @@ namespace poly {
 
             // if interior node
             // TODO push closer child node first (use node's split axis and ray's direction's sign for that axis
-            q.push(node->high);
-            q.push(node->low);
+            stack.push(node->high);
+            stack.push(node->low);
          }
       }
    }
@@ -456,7 +464,7 @@ namespace poly {
       std::sort(leaf_counts.begin(), leaf_counts.end());
       
       unsigned int total_faces = 0;
-      unsigned int faces_per_leaf_avg = 0;
+      float faces_per_leaf_avg = 0;
       unsigned int faces_per_leaf_min = std::numeric_limits<unsigned int>::max();
       unsigned int faces_per_leaf_max = 0;
       
@@ -470,7 +478,7 @@ namespace poly {
          }
       }
       
-      faces_per_leaf_avg = total_faces / num_leaf_nodes;
+      faces_per_leaf_avg = (float)total_faces / (float)num_leaf_nodes;
       
       printf("height: %i\n", tree_height);
       printf("leaves: %i\n", num_leaf_nodes);
@@ -478,7 +486,7 @@ namespace poly {
       printf("high interior: %i\n", num_single_high_child_nodes);
       printf("low interior : %i\n", num_single_low_child_nodes);
       printf("total faces : %i\n", total_faces);
-      printf("faces per leaf (avg): %i\n", faces_per_leaf_avg);
+      printf("faces per leaf (avg): %f\n", faces_per_leaf_avg);
       printf("faces per leaf (min): %i\n", faces_per_leaf_min);
       printf("faces per leaf (max): %i\n", faces_per_leaf_max);
       
@@ -487,22 +495,6 @@ namespace poly {
 //      for (unsigned int i = 0; i < 500; i++) {
 //         printf("%i\n", leaf_counts[bucket_index_width * i]);   
 //      }
-   }
-
-   bvh::~bvh() {
-      std::queue<bvh_node*> q;
-      q.push(root);
-      while (!q.empty()) {
-         bvh_node* node = q.front();
-         q.pop();
-         if (node != nullptr) {
-            q.push(node->low);
-            q.push(node->high);
-            delete node;
-         }
-      }
-      
-      delete compact_root;
    }
 
    unsigned int bvh::compact_helper(bvh_node* node, unsigned int index) {
@@ -518,12 +510,12 @@ namespace poly {
          } 
          // interior
          else {
+            compact_node.axis = node->axis;
             num_child_nodes = 0;
             num_child_nodes += 1 + compact_helper(node->low, index + 1);
             compact_node.high_offset = num_child_nodes + 1;
             compact_node.indices = nullptr;
             num_child_nodes += 1 + compact_helper(node->high, index + 1 + num_child_nodes);
-            
          }
 
          return num_child_nodes;
@@ -533,5 +525,21 @@ namespace poly {
    void bvh::compact() {
       compact_root = new compact_bvh(num_nodes);
       compact_helper(root, 0);
+   }
+
+   bvh::~bvh() {
+      std::queue<bvh_node *> q;
+      q.push(root);
+      while (!q.empty()) {
+         bvh_node *node = q.front();
+         q.pop();
+         if (node != nullptr) {
+            q.push(node->low);
+            q.push(node->high);
+            delete node;
+         }
+      }
+
+      delete compact_root;
    }
 }

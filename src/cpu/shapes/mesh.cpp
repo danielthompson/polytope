@@ -2,10 +2,62 @@
 // Created by daniel on 5/2/20.
 //
 
+#include <atomic>
+#include <cassert>
 #include "mesh.h"
 #include "mesh_intersect.h"
+#include "../structures/stats.h"
 
+#define assert_eq(a, b) do { if (a != b) fprintf(stderr, "a %f != b %f", a, b); assert(a == b); } while (0)
+
+#define assert_lte(a, b) do { \
+   if (a > b) \
+      fprintf(stderr, "a %f ! <= b %f\n", a, b); \
+      assert(a <= b); } while (0)
+      
+#define assert_gte(a, b) do { \
+   if (a < b) \
+      fprintf(stderr, "a %f ! >= b %f\n", a, b); \
+      assert(a >= b); } while (0)
+
+//extern std::atomic<int> num_triangle_intersections;   
+extern thread_local poly::stats thread_stats;
+      
 namespace poly {
+
+   float determinant(const float a1, const float a2, const float b1, const float b2) {
+      return a1 * b2 - b1 * a2;
+   }
+
+   inline float clamp(const float v, const float low, const float high) {
+      if (v < low)
+         return low;
+      if (v > high)
+         return high;
+      return v;
+   }
+   
+   inline float diff_product(float a, float b, float c, float d) {
+      float cd = c * d;
+      float err = std::fma(-c, d, cd);
+      float dop = std::fma(a, b, -cd);
+      return dop + err;
+   }
+   
+   std::pair<float, float> solve_linear_2x2(
+         const float a1,
+         const float a2,
+         const float b1,
+         const float b2,
+         const float c1,
+         const float c2) {
+      const float one_over_determinant = 1.f / diff_product(a1, b2, b1, a2);
+      const float x_numerator = diff_product(c1, b2, b1, c2);
+      const float y_numerator = diff_product(a1, c2, c1, a2);
+      const float x = x_numerator * one_over_determinant;
+      const float y = y_numerator * one_over_determinant;
+      return { x, y };
+   }
    
    void Mesh::add_vertex(Point &v) {
       ObjectToWorld->ApplyInPlace(v);
@@ -211,7 +263,11 @@ namespace poly {
          poly::Ray& world_ray, 
          poly::Intersection& intersection, 
          const unsigned int* face_indices, 
-         const unsigned int num_face_indices) {
+         const unsigned int num_face_indices) const {
+      
+      //num_triangle_intersections += num_face_indices;
+      thread_stats.num_triangle_intersections++;
+      
       //float t = poly::FloatMax;
       unsigned int hit_face_index = 0;
       bool hits = false;
@@ -283,6 +339,7 @@ namespace poly {
          return;
       }
 
+      thread_stats.num_triangle_intersections_hit++;
 //      bool debug = false;
 //      if (worldSpaceRay.x == 245 && worldSpaceRay.y == 64) {
 //         debug = true;
@@ -304,42 +361,86 @@ namespace poly {
       const Point v1 = Point(x_packed[v1_index], y_packed[v1_index], z_packed[v1_index]);
       const Point v2 = Point(x_packed[v2_index], y_packed[v2_index], z_packed[v2_index]);
 //      
-//      const Normal n0 = Normal(nx_packed[v0_index], ny_packed[v0_index], nz_packed[v0_index]);
-//      const Normal n1 = Normal(nx_packed[v1_index], ny_packed[v1_index], nz_packed[v1_index]);
-//      const Normal n2 = Normal(nx_packed[v2_index], ny_packed[v2_index], nz_packed[v2_index]);
+      const Normal n0 = Normal(nx_packed[v0_index], ny_packed[v0_index], nz_packed[v0_index]);
+      const Normal n1 = Normal(nx_packed[v1_index], ny_packed[v1_index], nz_packed[v1_index]);
+      const Normal n2 = Normal(nx_packed[v2_index], ny_packed[v2_index], nz_packed[v2_index]);
+
+      // 1. determine which axis has greatest magnitude in face normal
+      // 2. use other two axes to calculate lerp
+
+      poly::Normal face_normal = { fnx[hit_face_index], fny[hit_face_index], fnz[hit_face_index] };
+
+      if (world_ray.Direction.Dot(face_normal) > 0) {
+         face_normal.Flip();
+      }
+      
+      intersection.geo_normal = face_normal;
+      
+      // x has biggest magnitude
+      float a1 = v0.y - v2.y;
+      float a2 = v0.z - v2.z;
+      float b1 = v1.y - v2.y;
+      float b2 = v1.z - v2.z;
+      float c1 = intersection.Location.y - v2.y;
+      float c2 = intersection.Location.z - v2.z;
+      
+      // y has biggest magnitude
+      if (std::abs(face_normal.y) >= std::abs(face_normal.x) && std::abs(face_normal.y) >= std::abs(face_normal.z)) {
+         a1 = v0.x - v2.x;
+         a2 = v0.z - v2.z;
+         b1 = v1.x - v2.x;
+         b2 = v1.z - v2.z;
+         c1 = intersection.Location.x - v2.x;
+         c2 = intersection.Location.z - v2.z;
+      }
+      // z has biggest magnitude
+      else if (std::abs(face_normal.z) >= std::abs(face_normal.x) && std::abs(face_normal.z) >= std::abs(face_normal.y)) {
+         a1 = v0.x - v2.x;
+         a2 = v0.y - v2.y;
+         b1 = v1.x - v2.x;
+         b2 = v1.y - v2.y;
+         c1 = intersection.Location.x - v2.x;
+         c2 = intersection.Location.y - v2.y;
+      }
+      
+      std::pair<float, float> a_and_b = solve_linear_2x2(a1, a2, b1, b2, c1, c2);
+      
+      const float c = 1.f - a_and_b.first - a_and_b.second;
+
+      poly::Vector weights = {
+            clamp(a_and_b.first, 0.f, 1.f),
+            clamp(a_and_b.second, 0.f, 1.f),
+            clamp(c, 0.f, 1.f)  
+      };
+      
+      
+
+//      assert(!std::isnan(weights.x));
+//      assert(!std::isnan(weights.y));
+//      assert(!std::isnan(weights.z));
 //
-//      // idea - use squared distance from intersection to each vertex to calculate vertex normal's weight for the interpolation
-//      float squared_dist_0 = intersection.Location.Dot(v0);
-//      float squared_dist_1 = intersection.Location.Dot(v1);
-//      float squared_dist_2 = intersection.Location.Dot(v2);
-//
-//      float total_weight = squared_dist_0 + squared_dist_1 + squared_dist_2;
-//      poly::Vector weights = {
-//            total_weight / squared_dist_0, 
-//            total_weight / squared_dist_1, 
-//            total_weight / squared_dist_2 
-//      };
-//      weights.Normalize();
-//
-//      Normal n = {n0.x * weights.x + n1.x + weights.y + n2.x + weights.z,
-//                  n0.y * weights.x + n1.y + weights.y + n2.y + weights.z,
-//                  n0.z * weights.x + n1.z + weights.y + n2.z + weights.z};
-//      n.Normalize();
+//      assert_lte(weights.x, 1.f);
+//      assert_lte(weights.y, 1.f);
+//      assert_lte(weights.z, 1.f);
+//      assert_gte(weights.x, 0.f);
+//      assert_gte(weights.y, 0.f);
+//      assert_gte(weights.z, 0.f);
+      
+      Normal interpolated_normal = {n0.x * weights.x + n1.x * weights.y + n2.x * weights.z,
+                  n0.y * weights.x + n1.y * weights.y + n2.y * weights.z,
+                  n0.z * weights.x + n1.z * weights.y + n2.z * weights.z};
+      interpolated_normal.Normalize();
       
       const poly::Vector edge0 = v1 - v0;
       const poly::Vector edge1 = v2 - v1;
       const poly::Vector edge2 = v0 - v2;
-      //const poly::Vector planeNormal = {edge0.Cross(edge1);}
-      poly::Normal plane_normal = { fnx[hit_face_index], fny[hit_face_index], fnz[hit_face_index] };
 
       // flip normal if needed
-      if (world_ray.Direction.Dot(plane_normal) > 0) {
-         plane_normal.Flip();
+      if (world_ray.Direction.Dot(interpolated_normal) > 0) {
+         interpolated_normal.Flip();
       }
 
-      //n.Normalize();
-
-      intersection.Normal = plane_normal;
+      intersection.bent_normal = interpolated_normal;
       intersection.Shape = this;
 
       const float edge0dot = std::abs(edge0.Dot(edge1));
@@ -354,8 +455,9 @@ namespace poly {
          intersection.Tangent1 = edge2;
       }
 
-      intersection.Tangent2 = intersection.Tangent1.Cross(intersection.Normal);
-
+      intersection.Tangent2 = intersection.Tangent1.Cross(intersection.bent_normal);
+      intersection.Tangent1 = intersection.Tangent2.Cross(intersection.bent_normal);
+      
       intersection.Tangent1.Normalize();
       intersection.Tangent2.Normalize();
    }
@@ -427,7 +529,7 @@ namespace poly {
 
       n.Normalize();
 
-      intersection.Normal = n;
+      intersection.geo_normal = n;
       intersection.Shape = this;
 
       const float edge0dot = std::abs(edge0.Dot(edge1));
@@ -442,7 +544,7 @@ namespace poly {
          intersection.Tangent1 = edge2;
       }
 
-      intersection.Tangent2 = intersection.Tangent1.Cross(intersection.Normal);
+      intersection.Tangent2 = intersection.Tangent1.Cross(intersection.geo_normal);
 
       intersection.Tangent1.Normalize();
       intersection.Tangent2.Normalize();

@@ -62,6 +62,10 @@ namespace poly {
          };
       }
 
+      bool is_zero() {
+         return (r < 0.0039f && g < 0.0039f && b < 0.0039f);
+      }
+      
       // data
       float r, g, b;
    };

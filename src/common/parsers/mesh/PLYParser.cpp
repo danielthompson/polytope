@@ -220,6 +220,9 @@ namespace poly {
             
             // if no normals, done
             if (iss.eof()) {
+               mesh->add_vertex(v);
+            }
+            else {
                Normal n;
                iss >> word;
                n.x = stof(word);
@@ -228,9 +231,6 @@ namespace poly {
                iss >> word;
                n.z = stof(word);
                mesh->add_vertex(v, n);
-            }
-            else {
-               mesh->add_vertex(v);   
             }
          }
       }

@@ -4,13 +4,17 @@
 
 #include <sstream>
 #include "TileRunner.h"
+#include "../structures/stats.h"
 #include "../../common/utilities/Common.h"
+
+extern struct poly::stats main_stats;
+extern thread_local struct poly::stats thread_stats;
 
 namespace poly {
 
    namespace {
-      constexpr unsigned int _xTileWidth = 16;
-      constexpr unsigned int _yTileWidth = 16;
+      constexpr unsigned int _xTileWidth = 8;
+      constexpr unsigned int _yTileWidth = 8;
 
       unsigned int _xTilePointer = 0;
       unsigned int _yTilePointer = 0;
@@ -125,6 +129,10 @@ namespace poly {
          tile.y = -1;
          getNextTile(tile);
       }
+      
+      // do stats
+      std::lock_guard<std::mutex> lock(_mutex);
+      main_stats.add(thread_stats);
    }
 
    TileRunner::TileRunner(

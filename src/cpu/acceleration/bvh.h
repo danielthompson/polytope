@@ -16,13 +16,18 @@ namespace poly {
       // TODO tighten this up
       bvh_node* high; // interior
       bvh_node* low; // interior
-      //poly::Axis axis; // interior
+      poly::Axis axis; // interior
       poly::BoundingBox bb; // both
       std::vector<std::pair<unsigned int, unsigned int>> indices; // leaf
    };
    
+   
    class compact_bvh_node {
    public:
+      // if we can get this down to 32 bytes, and cache line size is 64 bytes, and we alloc the containing array on a 64 byte
+      // boundary, then we can get exactly 2 nodes per cache line, which will result in a cache hit for the case in which 
+      // a parent is at the first 32 bytes and its first child is at the 2nd 32 bytes
+      
       poly::BoundingBox bb; // 24 bytes (both)
       // TODO - at build time, sort face indices by the order in which they are put into the tree
       // then, this can just be a 4-byte offset, instead of an 8-byte pointer
@@ -31,18 +36,31 @@ namespace poly {
          int high_offset; // only for interior 
          unsigned int num_face_indices; // only for leaf
       }; // 4 bytes
+      poly::Axis axis;
+      
+//      long pad1; // 8 bytes
+//      long pad2; // 8 bytes
+//      long pad3; // 8 bytes
    };
    
    class compact_bvh {
    public:
       compact_bvh(unsigned int num_nodes) : num_nodes(num_nodes){
-         nodes = new compact_bvh_node [num_nodes];
+         printf("sizeof compact_bvh_node: %lu\n", sizeof(compact_bvh_node));
+//         nodes = static_cast<compact_bvh_node *>(malloc(sizeof(compact_bvh_node) * num_nodes));
+         nodes = static_cast<compact_bvh_node *>(aligned_alloc(64, sizeof(compact_bvh_node) * num_nodes));
+         if (nodes == nullptr) {
+            fprintf(stderr, "compact_bvh: couldn't get aligned address :/");
+            exit(1);
+         }
       }
       
       ~compact_bvh() {
          if (nodes)
-            delete[] nodes;
+            free(nodes);
       }
+      
+      std::vector<std::pair<unsigned int, unsigned int>> leaf_ordered_indices;
       
       compact_bvh_node* nodes;
       unsigned int num_nodes;
