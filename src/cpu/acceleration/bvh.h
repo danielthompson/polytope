@@ -21,7 +21,6 @@ namespace poly {
       std::vector<std::pair<unsigned int, unsigned int>> indices; // leaf
    };
    
-   
    class compact_bvh_node {
    public:
       // if we can get this down to 32 bytes, and cache line size is 64 bytes, and we alloc the containing array on a 64 byte
@@ -31,16 +30,26 @@ namespace poly {
       poly::BoundingBox bb; // 24 bytes (both)
       // TODO - at build time, sort face indices by the order in which they are put into the tree
       // then, this can just be a 4-byte offset, instead of an 8-byte pointer
-      std::pair<unsigned int, unsigned int>* indices; // 8 bytes (interior if nullptr)
       union {
-         int high_offset; // only for interior 
-         unsigned int num_face_indices; // only for leaf
+         unsigned int high_child_offset; // only for interior 
+         unsigned int face_index_offset; // only for leaf
       }; // 4 bytes
-      poly::Axis axis;
       
-//      long pad1; // 8 bytes
-//      long pad2; // 8 bytes
-//      long pad3; // 8 bytes
+      unsigned short num_faces; // 0 for leaf, >0 for interior (2 bytes) 
+      unsigned short flags; // both (2 bytes)
+      
+      inline bool is_leaf() const {
+         return num_faces > 0;
+      }
+      
+      inline poly::Axis get_axis() const {
+         return (poly::Axis)flags;
+      }
+      
+      inline void set_axis(poly::Axis axis) {
+         flags = (short)axis;
+      }
+
    };
    
    class compact_bvh {
@@ -53,6 +62,8 @@ namespace poly {
             fprintf(stderr, "compact_bvh: couldn't get aligned address :/");
             exit(1);
          }
+         
+         leaf_ordered_indices.reserve(num_nodes);
       }
       
       ~compact_bvh() {
@@ -81,7 +92,9 @@ namespace poly {
       compact_bvh* compact_root;
       std::vector<poly::Mesh*> meshes;
       unsigned int num_nodes;
+      std::vector<std::pair<unsigned int, unsigned int>> master_indices;
    private:
+      void compact_helper_iterative(bvh_node* root);
       unsigned int compact_helper(bvh_node* node, unsigned int index);
    };
    

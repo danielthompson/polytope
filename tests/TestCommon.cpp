@@ -3,9 +3,15 @@
 #include "../src/cpu/constants.h"
 #include "../src/cpu/structures/Vectors.h"
 #include "../src/cpu/structures/Transform.h"
+#include "../src/cpu/structures/stats.h"
+
+struct poly::stats main_stats;
+thread_local struct poly::stats thread_stats;
 
 namespace Tests {
 
+
+   
    namespace Common {
 
       TEST(Common, SignedDistanceFromPlane1) {
@@ -46,6 +52,9 @@ namespace Tests {
          poly::Normal normal(0, 1, 0);
          normal.Normalize();
 
+         main_stats.num_bb_intersections_miss++;
+         thread_stats.num_bb_intersections_miss++;
+         
          poly::Point p(1, 15, 4);
 
          float actual = poly::SignedDistanceFromPlane(pointOnPlane, normal, p);
