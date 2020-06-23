@@ -3,17 +3,26 @@
 //
 
 #include "BoundingBox.h"
+#include "stats.h"
+
+extern thread_local poly::stats thread_stats;
 
 namespace poly {
+   
    bool BoundingBox::Hits(const poly::Ray &worldSpaceRay, const poly::Vector& inverse_direction) const {
-//      const bool inside = worldSpaceRay.Origin.x > p0.x && worldSpaceRay.Origin.x < p1.x 
-//            && worldSpaceRay.Origin.y > p0.y && worldSpaceRay.Origin.y < p1.y
-//            && worldSpaceRay.Origin.z > p0.z && worldSpaceRay.Origin.z < p1.z;
-//
-//      if (inside)
-//         return true;
+      thread_stats.num_bb_intersections++;
+      const bool inside = worldSpaceRay.Origin.x > p0.x && worldSpaceRay.Origin.x < p1.x 
+            && worldSpaceRay.Origin.y > p0.y && worldSpaceRay.Origin.y < p1.y
+            && worldSpaceRay.Origin.z > p0.z && worldSpaceRay.Origin.z < p1.z;
+
+      if (inside) {
+         thread_stats.num_bb_intersections_hit_inside++;
+         return true;
+      }
+         
       
-      float maxBoundFarT = poly::FloatMax;
+      float maxBoundFarT = worldSpaceRay.MinT;
+//      float maxBoundFarT = poly::FloatMax;
       float minBoundNearT = 0;
 
       const float gammaMultiplier = 1 + 2 * poly::Gamma(3);
@@ -31,6 +40,7 @@ namespace poly {
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
       if (minBoundNearT > maxBoundFarT) {
+         thread_stats.num_bb_intersections_miss++;
          return false;
       }
 
@@ -48,6 +58,7 @@ namespace poly {
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
 
       if (minBoundNearT > maxBoundFarT) {
+         thread_stats.num_bb_intersections_miss++;
          return false;
       }
 
@@ -64,8 +75,14 @@ namespace poly {
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
 
-      return minBoundNearT <= maxBoundFarT;
-
+      if (minBoundNearT <= maxBoundFarT) {
+         thread_stats.num_bb_intersections_hit_outside++;
+         return true;
+      }
+      else {
+         thread_stats.num_bb_intersections_miss++;
+         return false;
+      }
    }
 
    BoundingBox BoundingBox::Union(const BoundingBox &b) const {

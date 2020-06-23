@@ -20,7 +20,9 @@ Hobby ray/path tracer in C++.
 
 #### Renders
 
-![dragon](renders/dragon.png)
+![dragon](renders/dragon-diffuse.png)
+
+![dragon](renders/dragon-specular.png)
 
 #### What's a polytope?
 

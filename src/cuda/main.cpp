@@ -5,6 +5,7 @@
 #include <iostream>
 #include <chrono>
 #include <sstream>
+#include <atomic>
 #include "../common/utilities/Common.h"
 #include "../common/utilities/OptionsParser.h"
 #include "../common/structures/Point2.h"
@@ -14,8 +15,15 @@
 #include "kernels/path_tracer.cuh"
 #include "png_output.h"
 #include "mesh/cuda_mesh_soa.h"
+#include "../cpu/structures/stats.h"
 
 poly::Logger Log;
+struct poly::stats main_stats;
+thread_local struct poly::stats thread_stats;
+
+std::atomic<int> num_bb_intersections;
+std::atomic<int> num_bb_intersections_origin_inside;
+std::atomic<int> num_triangle_intersections;
 
 float roundOff(float n) {
    float d = n * 100.0f;

@@ -59,7 +59,7 @@ namespace Tests {
          tm.intersect(ray, intersection);
          EXPECT_TRUE(intersection.Hits);
          EXPECT_EQ(&tm, intersection.Shape);
-         EXPECT_EQ(poly::Normal(0, 0, -1), intersection.Normal);
+         EXPECT_EQ(poly::Normal(0, 0, -1), intersection.geo_normal);
          EXPECT_EQ(poly::Point(0.2f, 0.2f, 0), intersection.Location);
       }
 
@@ -69,7 +69,7 @@ namespace Tests {
          tm.intersect(ray, intersection);
          EXPECT_TRUE(intersection.Hits);
          EXPECT_EQ(&tm, intersection.Shape);
-         EXPECT_EQ(poly::Normal(0, 0, 1), intersection.Normal);
+         EXPECT_EQ(poly::Normal(0, 0, 1), intersection.geo_normal);
          EXPECT_EQ(poly::Point(0.2f, 0.2f, 1), intersection.Location);
       }
 

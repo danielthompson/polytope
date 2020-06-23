@@ -39,7 +39,7 @@ namespace Tests {
          ASSERT_EQ(compact->num_nodes, 3);
 
          EXPECT_EQ(compact->nodes[0].bb.p1.x, 0);
-         EXPECT_EQ(compact->nodes[0].high_offset, 2);
+         EXPECT_EQ(compact->nodes[0].high_child_offset, 2);
 
          EXPECT_EQ(compact->nodes[1].bb.p1.x, 1);
 
@@ -72,10 +72,10 @@ namespace Tests {
          ASSERT_EQ(compact->num_nodes, 5);
 
          EXPECT_EQ(compact->nodes[0].bb.p1.x, 0);
-         EXPECT_EQ(compact->nodes[0].high_offset, 4);
+         EXPECT_EQ(compact->nodes[0].high_child_offset, 4);
 
          EXPECT_EQ(compact->nodes[1].bb.p1.x, 1);
-         EXPECT_EQ(compact->nodes[1].high_offset, 2);
+         EXPECT_EQ(compact->nodes[1].high_child_offset, 2);
 
          EXPECT_EQ(compact->nodes[2].bb.p1.x, 2);
          EXPECT_EQ(compact->nodes[3].bb.p1.x, 3);
@@ -108,11 +108,11 @@ namespace Tests {
          ASSERT_EQ(compact->num_nodes, 5);
 
          EXPECT_EQ(compact->nodes[0].bb.p1.x, 0);
-         EXPECT_EQ(compact->nodes[0].high_offset, 2);
+         EXPECT_EQ(compact->nodes[0].high_child_offset, 2);
 
          EXPECT_EQ(compact->nodes[1].bb.p1.x, 1);
          EXPECT_EQ(compact->nodes[2].bb.p1.x, 2);
-         EXPECT_EQ(compact->nodes[2].high_offset, 2);
+         EXPECT_EQ(compact->nodes[2].high_child_offset, 2);
          
          EXPECT_EQ(compact->nodes[3].bb.p1.x, 3);
          EXPECT_EQ(compact->nodes[4].bb.p1.x, 4);
@@ -150,10 +150,10 @@ namespace Tests {
          ASSERT_EQ(compact->num_nodes, 7);
 
          EXPECT_EQ(compact->nodes[0].bb.p1.x, 0);
-         EXPECT_EQ(compact->nodes[0].high_offset, 4);
+         EXPECT_EQ(compact->nodes[0].high_child_offset, 4);
 
          EXPECT_EQ(compact->nodes[1].bb.p1.x, 1);
-         EXPECT_EQ(compact->nodes[1].high_offset, 2);
+         EXPECT_EQ(compact->nodes[1].high_child_offset, 2);
 
          EXPECT_EQ(compact->nodes[2].bb.p1.x, 2);
          EXPECT_EQ(compact->nodes[3].bb.p1.x, 3);

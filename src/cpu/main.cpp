@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include <atomic>
 
 #include "../common/utilities/OptionsParser.h"
 #include "../common/utilities/Common.h"
@@ -17,6 +18,7 @@
 #include "../common/parsers/PBRTFileParser.h"
 #include "../gl/GLRenderer.h"
 #include "shapes/mesh.h"
+#include "structures/stats.h"
 
 #ifdef __CYGWIN__
 #include "platforms/win32-cygwin.h"
@@ -52,8 +54,18 @@ void userAbortHandler(int signalNumber) {
    }
 }
 
+std::atomic<int> num_bb_intersections;
+std::atomic<int> num_bb_intersections_origin_inside;
+std::atomic<int> num_triangle_intersections;
+
+struct poly::stats main_stats;
+thread_local struct poly::stats thread_stats;
+
 int main(int argc, char* argv[]) {
 
+   main_stats.num_triangle_intersections = 0;
+   main_stats.num_bb_intersections = 0;
+   
    try {
       Log = poly::Logger();
 
@@ -181,10 +193,12 @@ Other:
 
             std::map<std::thread::id, int> threadMap;
             std::vector<std::thread> threads;
+            poly::stats stats;
+            
             for (int i = 0; i < usingThreads; i++) {
 
                Log.WithTime(std::string("Starting thread " + std::to_string(i) + std::string("...")));
-               threads.emplace_back(runner->Spawn(i));
+               threads.emplace_back(runner->Spawn(i/*, stats*/));
                const std::thread::id threadID = threads[i].get_id();
                threadMap[threadID] = i;
 
@@ -222,7 +236,14 @@ Other:
       const std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
 
       Log.WithTime("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
-
+      Log.WithTime("Bounding box intersections: " + std::to_string(main_stats.num_bb_intersections));
+      Log.WithTime("Bounding box hits (inside): " + std::to_string(main_stats.num_bb_intersections_hit_inside));
+      Log.WithTime("Bounding box hits (outside): " + std::to_string(main_stats.num_bb_intersections_hit_outside));
+      Log.WithTime("Bounding box misses: " + std::to_string(main_stats.num_bb_intersections_miss));
+      Log.WithTime("Bounding box hit %: " + std::to_string(100.f * (float)(main_stats.num_bb_intersections_hit_inside + main_stats.num_bb_intersections_hit_outside) / (float)main_stats.num_bb_intersections));
+      Log.WithTime("Triangle intersections: " + std::to_string(main_stats.num_triangle_intersections));
+      Log.WithTime("Triangle hits: " + std::to_string(main_stats.num_triangle_intersections_hit));
+      Log.WithTime("Triangle hit %: " + std::to_string(100.f * (float)main_stats.num_triangle_intersections_hit / (float)main_stats.num_triangle_intersections));
       Log.WithTime("Exiting Polytope.");
    }
    catch (const std::exception&) {

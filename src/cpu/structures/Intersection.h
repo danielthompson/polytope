@@ -5,7 +5,6 @@
 #ifndef POLY_INTERSECTION_H
 #define POLY_INTERSECTION_H
 
-#include <memory>
 #include "Vectors.h"
 
 namespace poly {
@@ -15,25 +14,19 @@ namespace poly {
    class Intersection {
    public:
 
-      // methods
-
-      Intersection();
-
-      // data
-
-      Mesh *Shape = nullptr;
-      unsigned int faceIndex;
-      Point Location;
-      poly::Normal Normal;
-      Vector Tangent1;
-      Vector Tangent2;
-      bool Hits = false;
-
+      Intersection() : Location(Point(0, 0, 0)) { }
       Vector WorldToLocal(const Vector &world) const;
       Vector LocalToWorld(const Vector &local) const;
+
+      const poly::Mesh *Shape = nullptr;
+      poly::Point Location;
+      poly::Normal geo_normal;
+      poly::Normal bent_normal;
+      poly::Vector Tangent1;
+      poly::Vector Tangent2;
+      unsigned int faceIndex;
+      bool Hits = false;
    };
-
 }
-
 
 #endif //POLY_INTERSECTION_H

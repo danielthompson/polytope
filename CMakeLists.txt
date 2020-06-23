@@ -135,7 +135,7 @@ add_library(polytope_lib
         src/common/utilities/mesh_factory.h 
         src/common/parsers/mesh/AbstractMeshAllocator.h 
         src/cpu/acceleration/bvh.cpp 
-        src/cpu/acceleration/bvh.h )
+        src/cpu/acceleration/bvh.h src/cpu/structures/stats.h)
 
 #set_target_properties(
 #        polytope_lib

@@ -25,14 +25,15 @@ namespace poly {
       bool hits(const poly::Ray& world_ray, const unsigned int* face_indices, unsigned int num_face_indices) const;
       void intersect(poly::Ray& worldSpaceRay, poly::Intersection& intersection);
       void intersect(poly::Ray& world_ray, poly::Intersection& intersection, const std::vector<unsigned int>& face_indices);
-      void intersect(poly::Ray& world_ray, poly::Intersection& intersection, const unsigned int* face_indices, unsigned int num_face_indices);
+      void intersect(poly::Ray& world_ray, poly::Intersection& intersection, const unsigned int* face_indices, unsigned int num_face_indices) const;
       void CalculateVertexNormals();
 
       Point random_surface_point() const;
 
       void add_vertex(Point &v);
+      void add_vertex(Point &v, Normal &n);
       void add_vertex(float x, float y, float z);
-      void add_packed_face(unsigned int v0, unsigned int v1, unsigned int v2);
+      void add_packed_face(unsigned int v0_index, unsigned int v1_index, unsigned int v2_index);
       void unpack_faces();
       Point get_vertex(unsigned int i) const;
       Point3ui get_vertex_indices_for_face(unsigned int i) const;
@@ -67,6 +68,11 @@ namespace poly {
       std::vector<unsigned int> fv0;
       std::vector<unsigned int> fv1;
       std::vector<unsigned int> fv2;
+      
+      // given a face index, returns that face's normal
+      std::vector<float> fnx;
+      std::vector<float> fny;
+      std::vector<float> fnz;
 
       unsigned int num_vertices_packed = 0;
       unsigned int num_vertices = 0;

@@ -11,6 +11,7 @@
 #include "../scenes/Scene.h"
 #include "../integrators/AbstractIntegrator.h"
 #include "../films/AbstractFilm.h"
+#include "../structures/stats.h"
 
 namespace poly {
 

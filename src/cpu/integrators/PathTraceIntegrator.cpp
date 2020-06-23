@@ -16,14 +16,17 @@ namespace poly {
       float back_pdf = 1;
       
       bool debug = false;
-      if (x == 225 && y == 115) {
+#ifndef NDEBUG
+      if (x == 665 && y == 347) {
          debug = false;
          
 //         printf("ro: %f %f %f\n", ray.Origin.x, ray.Origin.y, ray.Origin.z);
 //         printf("rd: %f %f %f\n", ray.Direction.x, ray.Direction.y, ray.Direction.z);
       }
-      
+#endif
       while (true) {
+         if (src.is_zero())
+            return Sample(SpectralPowerDistribution());
 //         current_ray.x = x;
 //         current_ray.y = y;
 //         current_ray.bounce = num_bounces;
@@ -72,9 +75,9 @@ namespace poly {
 
 
             current_ray = Ray(intersection.Location, world_outgoing);
-            current_ray.OffsetOrigin(intersection.Normal, poly::OffsetEpsilon);
+            current_ray.OffsetOrigin(intersection.bent_normal, poly::OffsetEpsilon);
             if (debug) {
-               printf("n: %f %f %f\n", intersection.Normal.x, intersection.Normal.y, intersection.Normal.z);
+               printf("n: %f %f %f\n", intersection.geo_normal.x, intersection.geo_normal.y, intersection.geo_normal.z);
                printf("o: %f %f %f\n", current_ray.Origin.x, current_ray.Origin.y, current_ray.Origin.z);
                printf("d: %f %f %f\n", current_ray.Direction.x, current_ray.Direction.y, current_ray.Direction.z);
 

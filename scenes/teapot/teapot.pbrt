@@ -1,8 +1,8 @@
-Integrator "path" "integer maxdepth" [ 7 ] 
+Integrator "path" "integer maxdepth" [ 15 ] 
 LookAt 0 35 35 # eye
        0 0 -1 # look at point
        0 1 0 # up
-Sampler "halton" "integer pixelsamples" [ 16 ]
+Sampler "halton" "integer pixelsamples" [ 1 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
 Film "image" "integer xresolution" [ 1024 ] "integer yresolution" [ 512 ] "string filename" [ "teapot.png" ]
 Camera "perspective" "float fov" [ 7.5 ]
@@ -21,17 +21,17 @@ WorldBegin
     AttributeBegin
         Translate -3 0 0
         # Rotate 45 1 0 0
-        # Material "mirror" "rgb Kr" [ .5  .8  .5 ]
+        Material "mirror" "rgb Kr" [ .5  .8  .5 ]
         # Shape "objmesh" "string filename" [ "teapot.obj" ]
         # Shape "plymesh" "string filename" [ "teapot.ply" ]
-        Shape "plymesh" "string filename" [ "teapot_converted.ply" ]
+        Shape "plymesh" "string filename" [ "teapot-normals.ply" ]
     AttributeEnd
     TransformBegin
         Translate 3 0 0
         Rotate -90 0 1 0
         # Rotate 45 0 0 1
         # Shape "objmesh" "string filename" [ "teapot.obj" ]
-        Shape "plymesh" "string filename" [ "teapot_converted.ply" ]
+        Shape "plymesh" "string filename" [ "teapot-normals.ply" ]
     TransformEnd
     AttributeBegin
         AreaLightSource "diffuse" "rgb L" [ .7 .7 .8 ]
