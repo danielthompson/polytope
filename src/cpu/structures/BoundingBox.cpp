@@ -133,4 +133,22 @@ namespace poly {
       if (p.z > p1.z)
          p1.z = p.z;
    }
+   
+   void BoundingBox::UnionInPlace(const poly::BoundingBox &b) {
+      p0.x = p0.x < b.p0.x ? p0.x : b.p0.x;
+      p0.y = p0.y < b.p0.y ? p0.y : b.p0.y;
+      p0.z = p0.z < b.p0.z ? p0.z : b.p0.z;
+
+      p1.x = p1.x > b.p1.x ? p1.x : b.p1.x;
+      p1.y = p1.y > b.p1.y ? p1.y : b.p1.y;
+      p1.z = p1.z > b.p1.z ? p1.z : b.p1.z;
+   }
+
+   float BoundingBox::surface_area() const {
+      const float x = p1.x - p0.x;
+      const float y = p1.y - p0.y;
+      const float z = p1.z - p0.z;
+      
+      return (2 * x * y) + (2 * y * z) + (2 * z * x);  
+   }
 }

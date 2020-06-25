@@ -161,5 +161,47 @@ namespace Tests {
          EXPECT_EQ(compact->nodes[5].bb.p1.x, 5);
          EXPECT_EQ(compact->nodes[6].bb.p1.x, 6);
       }
+      
+      TEST(bvh, bound1) {
+         poly::Mesh mesh(nullptr, nullptr, nullptr);
+         
+         mesh.add_vertex(0, 0, 0);
+         mesh.add_vertex(1, 0, 0);
+         mesh.add_vertex(0, 1, 0);
+         mesh.add_packed_face(0, 1, 2);
+         
+         std::vector<poly::Mesh *> meshes = {
+               &mesh
+         };
+         
+         poly::bvh bvh;
+         bvh.bound(meshes);
+         
+         ASSERT_NE(bvh.root, nullptr);
+      }
+
+      TEST(bvh, bound2) {
+         poly::Mesh mesh(nullptr, nullptr, nullptr);
+
+         unsigned int num_faces = 4;
+         float offset = 2.f;
+         for (unsigned int mesh_index = 0; mesh_index < num_faces; mesh_index++) {
+            mesh.add_vertex(0 + (mesh_index * offset), 0, 0);
+            mesh.add_vertex(1 + (mesh_index * offset), 0, 0);
+            mesh.add_vertex(0 + (mesh_index * offset), 1, 0);
+            mesh.add_packed_face(3 * mesh_index, 3 * mesh_index + 1, 3 * mesh_index + 2);
+         }
+
+         std::vector<poly::Mesh *> meshes = {
+               &mesh
+         };
+
+         poly::bvh bvh;
+         bvh.bound(meshes);
+
+         ASSERT_NE(bvh.root, nullptr);
+         ASSERT_NE(bvh.root->low, nullptr);
+         ASSERT_NE(bvh.root->high, nullptr);
+      }
    }
 }

@@ -28,6 +28,8 @@ namespace poly {
       void intersect(poly::Ray& world_ray, poly::Intersection& intersection, const unsigned int* face_indices, unsigned int num_face_indices) const;
       void CalculateVertexNormals();
 
+      float surface_area(unsigned int face_index) const;
+      
       Point random_surface_point() const;
 
       void add_vertex(Point &v);

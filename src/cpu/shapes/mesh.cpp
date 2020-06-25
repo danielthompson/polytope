@@ -36,14 +36,14 @@ namespace poly {
          return high;
       return v;
    }
-   
+
    inline float diff_product(float a, float b, float c, float d) {
       float cd = c * d;
       float err = std::fma(-c, d, cd);
       float dop = std::fma(a, b, -cd);
       return dop + err;
    }
-   
+
    std::pair<float, float> solve_linear_2x2(
          const float a1,
          const float a2,
@@ -56,11 +56,12 @@ namespace poly {
       const float y_numerator = diff_product(a1, c2, c1, a2);
       const float x = x_numerator * one_over_determinant;
       const float y = y_numerator * one_over_determinant;
-      return { x, y };
+      return {x, y};
    }
-   
+
    void Mesh::add_vertex(Point &v) {
-      ObjectToWorld->ApplyInPlace(v);
+      if (ObjectToWorld != nullptr)
+         ObjectToWorld->ApplyInPlace(v);
       x_packed.push_back(v.x);
       y_packed.push_back(v.y);
       z_packed.push_back(v.z);
@@ -68,32 +69,36 @@ namespace poly {
    }
 
    void Mesh::add_vertex(Point &v, Normal &n) {
-      ObjectToWorld->ApplyInPlace(v);
+
+      if (ObjectToWorld != nullptr)
+         ObjectToWorld->ApplyInPlace(v);
       x_packed.push_back(v.x);
       y_packed.push_back(v.y);
       z_packed.push_back(v.z);
 
-      ObjectToWorld->ApplyInPlace(n);
+      if (ObjectToWorld != nullptr)
+         ObjectToWorld->ApplyInPlace(n);
       nx_packed.push_back(n.x);
       ny_packed.push_back(n.y);
       nz_packed.push_back(n.z);
-      
+
       num_vertices_packed++;
    }
 
    void Mesh::add_vertex(float vx, float vy, float vz) {
-      ObjectToWorld->ApplyPoint(vx, vy, vz);
+      if (ObjectToWorld != nullptr)
+         ObjectToWorld->ApplyPoint(vx, vy, vz);
       x_packed.push_back(vx);
       y_packed.push_back(vy);
       z_packed.push_back(vz);
       num_vertices_packed++;
    }
-   
+
    void Mesh::add_packed_face(const unsigned int v0_index, const unsigned int v1_index, const unsigned int v2_index) {
       fv0.push_back(v0_index);
       fv1.push_back(v1_index);
       fv2.push_back(v2_index);
-      
+
 
       {
          const float p0x = x_packed[v0_index];
@@ -148,17 +153,17 @@ namespace poly {
          BoundingBox->p0.z = p2z < BoundingBox->p0.z ? p2z : BoundingBox->p0.z;
          BoundingBox->p1.z = p2z > BoundingBox->p1.z ? p2z : BoundingBox->p1.z;
       }
-      
+
       // calculate face normal
-      const Point v0 = { x_packed[fv0[num_faces]], y_packed[fv0[num_faces]], z_packed[fv0[num_faces]] };
-      const Point v1 = { x_packed[fv1[num_faces]], y_packed[fv1[num_faces]], z_packed[fv1[num_faces]] };
-      const Point v2 = { x_packed[fv2[num_faces]], y_packed[fv2[num_faces]], z_packed[fv2[num_faces]] };
+      const Point v0 = {x_packed[fv0[num_faces]], y_packed[fv0[num_faces]], z_packed[fv0[num_faces]]};
+      const Point v1 = {x_packed[fv1[num_faces]], y_packed[fv1[num_faces]], z_packed[fv1[num_faces]]};
+      const Point v2 = {x_packed[fv2[num_faces]], y_packed[fv2[num_faces]], z_packed[fv2[num_faces]]};
 
       const poly::Vector e0 = v1 - v0;
       const poly::Vector e1 = v2 - v1;
       poly::Vector plane_normal = e0.Cross(e1);
       plane_normal.Normalize();
-      
+
       fnx.push_back(plane_normal.x);
       fny.push_back(plane_normal.y);
       fnz.push_back(plane_normal.z);
@@ -171,7 +176,7 @@ namespace poly {
       nx_packed = std::vector<float>(x_packed.size(), 0);
       ny_packed = std::vector<float>(y_packed.size(), 0);
       nz_packed = std::vector<float>(z_packed.size(), 0);
-      
+
       for (unsigned int i = 0; i < num_faces; i++) {
          const float v0x = x_packed[fv0[i]];
          const float v0y = y_packed[fv0[i]];
@@ -224,14 +229,14 @@ namespace poly {
       nx = std::vector<float>(x.size(), 0);
       ny = std::vector<float>(y.size(), 0);
       nz = std::vector<float>(z.size(), 0);
-      
+
       for (unsigned int i = 0; i < num_vertices_packed; i++) {
          const float nx_packed_sq = nx_packed[i] * nx_packed[i];
          const float ny_packed_sq = ny_packed[i] * ny_packed[i];
          const float nz_packed_sq = nz_packed[i] * nz_packed[i];
-         
+
          const float one_over_normal_length = 1.0f / std::sqrt(nx_packed_sq + ny_packed_sq + nz_packed_sq);
-         
+
          nx_packed[i] *= one_over_normal_length;
          ny_packed[i] *= one_over_normal_length;
          nz_packed[i] *= one_over_normal_length;
@@ -260,32 +265,32 @@ namespace poly {
    }
 
    void Mesh::intersect(
-         poly::Ray& world_ray, 
-         poly::Intersection& intersection, 
-         const unsigned int* face_indices, 
+         poly::Ray &world_ray,
+         poly::Intersection &intersection,
+         const unsigned int *face_indices,
          const unsigned int num_face_indices) const {
-      
+
       //num_triangle_intersections += num_face_indices;
       thread_stats.num_triangle_intersections++;
-      
+
       //float t = poly::FloatMax;
       unsigned int hit_face_index = 0;
       bool hits = false;
 
       for (unsigned int face_index_index = 0; face_index_index < num_face_indices; face_index_index++) {
-         
+
          unsigned int face_index = face_indices[face_index_index];
 
-         const poly::Vector plane_normal = { fnx[face_index], fny[face_index], fnz[face_index] };
+         const poly::Vector plane_normal = {fnx[face_index], fny[face_index], fnz[face_index]};
          const float divisor = plane_normal.Dot(world_ray.Direction);
 
          if (divisor == 0.0f) {
             // parallel
             continue;
          }
-         
-         const Point v0 = { x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]] };
-         
+
+         const Point v0 = {x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]]};
+
 //         poly::Vector plane_normal = e0.Cross(e1);
 //         plane_normal.Normalize();
 
@@ -295,16 +300,16 @@ namespace poly {
             continue;
          }
 
-         const Point v1 = { x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]] };
-         const Point v2 = { x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]] };
+         const Point v1 = {x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]]};
+         const Point v2 = {x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]]};
 
          const poly::Vector e0 = v1 - v0;
          const poly::Vector e1 = v2 - v1;
          const poly::Vector e2 = v0 - v2;
-         
+
          // TODO fix this imprecise garbage
          const poly::Point hit_point = world_ray.GetPointAtT(ft);
-         
+
          const poly::Vector p0 = hit_point - v0;
          const poly::Vector cross0 = e0.Cross(p0);
          const float normal0 = cross0.Dot(plane_normal);
@@ -356,7 +361,7 @@ namespace poly {
       const unsigned int v0_index = fv0[hit_face_index];
       const unsigned int v1_index = fv1[hit_face_index];
       const unsigned int v2_index = fv2[hit_face_index];
-      
+
       const Point v0 = Point(x_packed[v0_index], y_packed[v0_index], z_packed[v0_index]);
       const Point v1 = Point(x_packed[v1_index], y_packed[v1_index], z_packed[v1_index]);
       const Point v2 = Point(x_packed[v2_index], y_packed[v2_index], z_packed[v2_index]);
@@ -368,14 +373,14 @@ namespace poly {
       // 1. determine which axis has greatest magnitude in face normal
       // 2. use other two axes to calculate lerp
 
-      poly::Normal face_normal = { fnx[hit_face_index], fny[hit_face_index], fnz[hit_face_index] };
+      poly::Normal face_normal = {fnx[hit_face_index], fny[hit_face_index], fnz[hit_face_index]};
 
       if (world_ray.Direction.Dot(face_normal) > 0) {
          face_normal.Flip();
       }
-      
+
       intersection.geo_normal = face_normal;
-      
+
       // x has biggest magnitude
       float a1 = v0.y - v2.y;
       float a2 = v0.z - v2.z;
@@ -383,7 +388,7 @@ namespace poly {
       float b2 = v1.z - v2.z;
       float c1 = intersection.Location.y - v2.y;
       float c2 = intersection.Location.z - v2.z;
-      
+
       // y has biggest magnitude
       if (std::abs(face_normal.y) >= std::abs(face_normal.x) && std::abs(face_normal.y) >= std::abs(face_normal.z)) {
          a1 = v0.x - v2.x;
@@ -393,8 +398,9 @@ namespace poly {
          c1 = intersection.Location.x - v2.x;
          c2 = intersection.Location.z - v2.z;
       }
-      // z has biggest magnitude
-      else if (std::abs(face_normal.z) >= std::abs(face_normal.x) && std::abs(face_normal.z) >= std::abs(face_normal.y)) {
+         // z has biggest magnitude
+      else if (std::abs(face_normal.z) >= std::abs(face_normal.x) &&
+               std::abs(face_normal.z) >= std::abs(face_normal.y)) {
          a1 = v0.x - v2.x;
          a2 = v0.y - v2.y;
          b1 = v1.x - v2.x;
@@ -402,18 +408,18 @@ namespace poly {
          c1 = intersection.Location.x - v2.x;
          c2 = intersection.Location.y - v2.y;
       }
-      
+
       std::pair<float, float> a_and_b = solve_linear_2x2(a1, a2, b1, b2, c1, c2);
-      
+
       const float c = 1.f - a_and_b.first - a_and_b.second;
 
       poly::Vector weights = {
             clamp(a_and_b.first, 0.f, 1.f),
             clamp(a_and_b.second, 0.f, 1.f),
-            clamp(c, 0.f, 1.f)  
+            clamp(c, 0.f, 1.f)
       };
-      
-      
+
+
 
 //      assert(!std::isnan(weights.x));
 //      assert(!std::isnan(weights.y));
@@ -425,12 +431,12 @@ namespace poly {
 //      assert_gte(weights.x, 0.f);
 //      assert_gte(weights.y, 0.f);
 //      assert_gte(weights.z, 0.f);
-      
+
       Normal interpolated_normal = {n0.x * weights.x + n1.x * weights.y + n2.x * weights.z,
-                  n0.y * weights.x + n1.y * weights.y + n2.y * weights.z,
-                  n0.z * weights.x + n1.z * weights.y + n2.z * weights.z};
+                                    n0.y * weights.x + n1.y * weights.y + n2.y * weights.z,
+                                    n0.z * weights.x + n1.z * weights.y + n2.z * weights.z};
       interpolated_normal.Normalize();
-      
+
       const poly::Vector edge0 = v1 - v0;
       const poly::Vector edge1 = v2 - v1;
       const poly::Vector edge2 = v0 - v2;
@@ -457,20 +463,21 @@ namespace poly {
 
       intersection.Tangent2 = intersection.Tangent1.Cross(intersection.bent_normal);
       intersection.Tangent1 = intersection.Tangent2.Cross(intersection.bent_normal);
-      
+
       intersection.Tangent1.Normalize();
       intersection.Tangent2.Normalize();
    }
-   
-   void Mesh::intersect(poly::Ray& world_ray, poly::Intersection& intersection, const std::vector<unsigned int>& face_indices) {
+
+   void Mesh::intersect(poly::Ray &world_ray, poly::Intersection &intersection,
+                        const std::vector<unsigned int> &face_indices) {
       intersect(world_ray, intersection, &face_indices[0], face_indices.size());
    }
-   
-   void Mesh::intersect(poly::Ray& worldSpaceRay, poly::Intersection& intersection) {
+
+   void Mesh::intersect(poly::Ray &worldSpaceRay, poly::Intersection &intersection) {
       float t = poly::FloatMax;
       unsigned int face_index = 0;
       bool hits = false;
-      
+
       ispc::soa_linear_intersect(
             &x[0],
             &y[0],
@@ -498,9 +505,9 @@ namespace poly {
 //         debug = true;
 //         printf("t: %f\n", t);
 //      }
-      
-      
-      
+
+
+
       // now we have the closest face, if any
 
       intersection.Hits = true;
@@ -601,15 +608,15 @@ namespace poly {
       }
 
       num_vertices = 3 * num_faces;
-      
+
    }
 
    Point Mesh::get_vertex(const unsigned int i) const {
-      return { x_packed[i], y_packed[i], z_packed[i] };
+      return {x_packed[i], y_packed[i], z_packed[i]};
    }
 
    Point3ui Mesh::get_vertex_indices_for_face(const unsigned int i) const {
-      return { fv0[i], fv1[i], fv2[i] };
+      return {fv0[i], fv1[i], fv2[i]};
    }
 
    Mesh::~Mesh() {
@@ -619,9 +626,9 @@ namespace poly {
    bool Mesh::hits(const Ray &world_ray, const unsigned int *face_indices, unsigned int num_face_indices) const {
       for (unsigned int face_index = 0; face_index < num_face_indices; face_index++) {
 
-         const Point v0 = { x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]] };
-         const Point v1 = { x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]] };
-         const Point v2 = { x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]] };
+         const Point v0 = {x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]]};
+         const Point v1 = {x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]]};
+         const Point v2 = {x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]]};
 
          const poly::Vector e0 = v1 - v0;
          const poly::Vector e1 = v2 - v1;
@@ -674,10 +681,42 @@ namespace poly {
 
       return false;
    }
-   
-   bool Mesh::hits(const Ray& world_ray, const std::vector<unsigned int>& face_indices) {
+
+   bool Mesh::hits(const Ray &world_ray, const std::vector<unsigned int> &face_indices) {
       return hits(world_ray, &face_indices[0], face_indices.size());
    }
 
-}
+   float Mesh::surface_area(const unsigned int face_index) const {
 
+      const poly::Point p0 = {x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]]};
+      const poly::Point p1 = {x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]]};
+      const poly::Point p2 = {x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]]};
+
+      const Vector e0 = p0 - p1;
+      const Vector e1 = p1 - p2;
+      const Vector e2 = p2 - p0;
+
+      float a = e0.Length();
+      float b = e1.Length();
+      float c = e2.Length();
+
+      if (a < b)
+         std::swap(a, b);
+      if (a < c)
+         std::swap(a, c);
+      if (b < c)
+         std::swap(b, c);
+
+      assert(a >= b);
+      assert(b >= c);
+      
+      if (c - (a - b) < 0.f) {
+         fprintf(stderr, "triangle side length fail :/\n");
+         exit(1);
+      }
+
+      const float sa = std::sqrt((a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c)));
+
+      return sa;
+   }
+}
