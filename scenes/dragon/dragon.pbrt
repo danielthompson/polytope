@@ -10,16 +10,15 @@ WorldBegin
     LightSource "infinite" "rgb L" [1 1 1]
 
     AttributeBegin
+        Translate 0 -0.0722704977 0
+        Material "matte" "rgb Kd" [ 1  1  1 ]
+        # Shape "plymesh" "string filename" [ "triangle-one.ply" ]
+    AttributeEnd
+
+    AttributeBegin
         Translate 0 -0.125 0
         # Material "matte" "rgb Kd" [ .2  .5  .7 ]
         Material "mirror" "rgb Kr" [ .2  .5  .7 ]
         Shape "plymesh" "string filename" [ "dragon_vrip-normals.ply" ]
     AttributeEnd
-
-    AttributeBegin
-        Translate 0 -0.0722704977 0
-        Material "matte" "rgb Kd" [ 1  1  1 ]
-        Shape "plymesh" "string filename" [ "triangle-one.ply" ]
-    AttributeEnd
-
 WorldEnd

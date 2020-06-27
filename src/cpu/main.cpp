@@ -158,11 +158,13 @@ Other:
          }
 
          const auto bound_start = std::chrono::system_clock::now();
+         thread_stats.num_bvh_bound_leaf_same_centroid = 0;
          unsigned int num_nodes = runner->Scene->bvh_root.bound(runner->Scene->Shapes);
          const auto bound_end = std::chrono::system_clock::now();
          const std::chrono::duration<double> bound_duration = bound_end - bound_start;
          Log.WithTime("Created BVH in " + std::to_string(bound_duration.count()) + "s.");
-
+         Log.WithTime("Number of leaves with multiple triangles with the same centroid: " + std::to_string(thread_stats.num_bvh_bound_leaf_same_centroid));
+         
          const auto compact_start = std::chrono::system_clock::now();
          runner->Scene->bvh_root.compact();
          const auto compact_end = std::chrono::system_clock::now();
@@ -236,6 +238,7 @@ Other:
       const std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
 
       Log.WithTime("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
+      Log.WithTime("Camera rays traced: " + std::to_string(main_stats.num_camera_rays));
       Log.WithTime("Bounding box intersections: " + std::to_string(main_stats.num_bb_intersections));
       Log.WithTime("Bounding box hits (inside): " + std::to_string(main_stats.num_bb_intersections_hit_inside));
       Log.WithTime("Bounding box hits (outside): " + std::to_string(main_stats.num_bb_intersections_hit_outside));

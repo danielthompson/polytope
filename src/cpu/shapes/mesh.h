@@ -39,6 +39,7 @@ namespace poly {
       void unpack_faces();
       Point get_vertex(unsigned int i) const;
       Point3ui get_vertex_indices_for_face(unsigned int i) const;
+      void get_vertices_for_face(unsigned int i, poly::Point vertices[3]) const;
 
       bool is_light() const {
          return (spd != nullptr);

@@ -615,6 +615,12 @@ namespace poly {
       return {x_packed[i], y_packed[i], z_packed[i]};
    }
 
+   void Mesh::get_vertices_for_face(unsigned int i, poly::Point vertices[3]) const {
+      vertices[0] = { x_packed[fv0[i]], y_packed[fv0[i]], z_packed[fv0[i]] };
+      vertices[1] = { x_packed[fv1[i]], y_packed[fv1[i]], z_packed[fv1[i]] };
+      vertices[2] = { x_packed[fv2[i]], y_packed[fv2[i]], z_packed[fv2[i]] };
+   }
+   
    Point3ui Mesh::get_vertex_indices_for_face(const unsigned int i) const {
       return {fv0[i], fv1[i], fv2[i]};
    }

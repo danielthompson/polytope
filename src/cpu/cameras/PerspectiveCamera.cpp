@@ -7,10 +7,12 @@
 #include "PerspectiveCamera.h"
 #include "../constants.h"
 #include "../structures/Vectors.h"
+#include "../structures/stats.h"
 
+extern thread_local poly::stats thread_stats;
 
 namespace poly {
-
+   
    PerspectiveCamera::PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld,
                                         const bool leftHanded)
          : AbstractCamera(settings, cameraToWorld),
@@ -41,6 +43,7 @@ namespace poly {
 
       worldSpaceRay.Direction.Normalize();
 
+      thread_stats.num_camera_rays++;
       return worldSpaceRay;
    }
 }
