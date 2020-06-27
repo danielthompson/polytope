@@ -14,7 +14,7 @@ namespace poly {
    class Intersection {
    public:
 
-      Intersection() : Location(Point(0, 0, 0)) { }
+      Intersection() : Location(Point(0, 0, 0)), num_bb_hits(0), num_bb_misses(0), num_triangle_isects(0) { }
       Vector WorldToLocal(const Vector &world) const;
       Vector LocalToWorld(const Vector &local) const;
 
@@ -26,6 +26,9 @@ namespace poly {
       poly::Vector Tangent2;
       unsigned int faceIndex;
       bool Hits = false;
+      unsigned int num_bb_hits;
+      unsigned int num_bb_misses;
+      unsigned int num_triangle_isects;
    };
 }
 

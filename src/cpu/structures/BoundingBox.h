@@ -21,6 +21,9 @@ namespace poly {
       BoundingBox Union(const BoundingBox &b) const;
       BoundingBox Union(const poly::Point &p) const;
       void UnionInPlace(const poly::Point &p);
+      void UnionInPlace(const poly::BoundingBox &b);
+      
+      float surface_area() const;
    };
 
 }

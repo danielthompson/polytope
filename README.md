@@ -9,7 +9,7 @@ Hobby ray/path tracer in C++.
 * Path tracer
 * Support a variety of materials and reflection / transmission models
 * Acceleration structures
-  * BVH
+  * bounding volume hierarchy
   * kd-tree
 * Import a variety of scene / object description grammars
   * `.pbrt`
@@ -20,9 +20,17 @@ Hobby ray/path tracer in C++.
 
 #### Renders
 
+Lambertian reflection:
 ![dragon](renders/dragon-diffuse.png)
 
+Specular reflection:
 ![dragon](renders/dragon-specular.png)
+
+Bounding-volume hierarchy heatmap:
+![dragon](renders/dragon-bb-heatmap.png)
+
+Triangle intersection heatmap:
+![dragon](renders/dragon-triangle-isect-heatmap.png)
 
 #### What's a polytope?
 

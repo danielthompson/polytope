@@ -32,6 +32,14 @@ namespace poly {
 //         current_ray.bounce = num_bounces;
          Intersection intersection = Scene->GetNearestShape(current_ray, x, y);
          
+         SpectralPowerDistribution bb_spd;
+         
+         bb_spd.r = 255.f - (float)(intersection.num_bb_hits) * 2.f;
+         bb_spd.g = 255.f - (float)(intersection.num_bb_hits)* 2.f;
+         bb_spd.b = 255.f - (float)(intersection.num_bb_hits)* 2.f;
+         
+         return Sample(bb_spd);
+         
          if (debug) {
             printf("bounce %i: \n", num_bounces);
             //printf("t: %f\n", ray.MinT);

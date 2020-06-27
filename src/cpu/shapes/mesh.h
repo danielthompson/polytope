@@ -28,6 +28,8 @@ namespace poly {
       void intersect(poly::Ray& world_ray, poly::Intersection& intersection, const unsigned int* face_indices, unsigned int num_face_indices) const;
       void CalculateVertexNormals();
 
+      float surface_area(unsigned int face_index) const;
+      
       Point random_surface_point() const;
 
       void add_vertex(Point &v);
@@ -37,6 +39,7 @@ namespace poly {
       void unpack_faces();
       Point get_vertex(unsigned int i) const;
       Point3ui get_vertex_indices_for_face(unsigned int i) const;
+      void get_vertices_for_face(unsigned int i, poly::Point vertices[3]) const;
 
       bool is_light() const {
          return (spd != nullptr);

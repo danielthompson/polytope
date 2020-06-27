@@ -13,8 +13,8 @@ extern thread_local struct poly::stats thread_stats;
 namespace poly {
 
    namespace {
-      constexpr unsigned int _xTileWidth = 8;
-      constexpr unsigned int _yTileWidth = 8;
+      constexpr unsigned int _xTileWidth = 2;
+      constexpr unsigned int _yTileWidth = 2;
 
       unsigned int _xTilePointer = 0;
       unsigned int _yTilePointer = 0;
@@ -59,23 +59,8 @@ namespace poly {
       }
 
       void getNextTile(Point2i &tile) {
-
-         //std::thread::id threadID = std::this_thread::get_id();
-         //std::cout << "Thread " << threadID << " entering critical section..." << std::endl;
-         //logger.logThread("Waiting for lock...");
-
-         //auto outputStart = std::chrono::system_clock::now();
-
          std::lock_guard<std::mutex> lock(_mutex);
-
-         //auto outputEnd = std::chrono::system_clock::now();
-         //std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
-         //logger.logThread("Entered lock in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
-
-         //std::cout << "Thread " << threadID << " entered critical section, " ;
-
          if (_xTilePointer < _numXTiles && _yTilePointer < _numYTiles) {
-            //std::cout << " passed if check." << std::endl;
             tile.x = _xTilePointer;
             tile.y = _yTilePointer;
 
@@ -86,10 +71,6 @@ namespace poly {
                _yTilePointer++;
             }
          }
-         //else {
-            //std::cout << " failed if check." << std::endl;
-         //};
-         //logger.logThread("Left lock.");
       }
    }
 
