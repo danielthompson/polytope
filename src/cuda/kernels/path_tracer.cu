@@ -433,13 +433,17 @@ namespace poly {
       int next_future_node_index = 0;
       future_node_stack[next_future_node_index] = 0;
 
+      int max_stack_pointer = 0;
+      
       poly::device_bvh_node node;
       int current_node_index = 0;
          
       do {
-         const bool is_leaf = node.is_leaf();
-
          node = device_pointers.device_bvh_node[current_node_index];
+         const bool is_leaf = node.is_leaf();
+         
+         if (next_future_node_index > max_stack_pointer)
+            max_stack_pointer = next_future_node_index;
          
          if (aabb_hits(node.aabb, sample_origins[0], sample_inverse_directions[0])) {
             if (is_leaf) {
@@ -517,38 +521,34 @@ namespace poly {
                }
                
                // next node should be from the stack, if any
-
-               if (blockIdx.x == 0 && threadIdx.x == 1) {
-                  printf("t%i\thit leaf, no more nodes on stack\n", threadIdx.x);
+               
+               if (next_future_node_index == 0) {
+                  //printf("hit leaf with empty stack and t: %f\n", sample_intersections[0].t);
                   break;
                }
-               
+//               else {
+//                  printf("hit leaf, stack depth %i, t %f\n", next_future_node_index, sample_intersections[0].t);
+//               } 
+              
                current_node_index = future_node_stack[--next_future_node_index];
-               if (blockIdx.x == 0 && threadIdx.x == 1)
-                  printf("t%i\thit leaf, moving on to node index %i\n", threadIdx.x, current_node_index);
                node = device_pointers.device_bvh_node[current_node_index];
             }
             else {
                // next node should be one of the two children, and
                // push the other node on the stack
                // TODO push closer node first
+//               printf("hit interior, stack depth %i, t %f\n", next_future_node_index, sample_intersections[0].t);
                future_node_stack[next_future_node_index++] = current_node_index + node.offset;
                current_node_index = current_node_index + 1;
                
-               if (blockIdx.x == 0 && threadIdx.x == 1)
-                  printf("t%i\thit interior, moving on to node index %i\n", threadIdx.x, current_node_index);
             }
          }
          else {
             // next node should be from the stack
             if (next_future_node_index == 0) {
-               if (blockIdx.x == 0 && threadIdx.x == 1)
-                  printf("t%i\tno hit, no more nodes on stack\n", threadIdx.x);
                break;
             }
             current_node_index = future_node_stack[--next_future_node_index];
-            if (blockIdx.x == 0 && threadIdx.x == 1)
-               printf("t%i\tno hit, moving on to node index %i\n", threadIdx.x, current_node_index);
             node = device_pointers.device_bvh_node[current_node_index];
          }
 
@@ -556,6 +556,8 @@ namespace poly {
          //assert(next_future_node_index <= 1023);
       } while (current_node_index >= 0);
 
+//      printf(" %i ", max_stack_pointer);
+      
       for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
          device_intersection& intersection = sample_intersections[sample_index];
          if (intersection.hits) {
@@ -703,13 +705,7 @@ namespace poly {
       }
 
       unsigned int num_bounces = 0;
-      if (threadIdx.x == 0) {
-         printf("Block %i made it out of sample generation loop\n", blockIdx.x);
-      }
       while (true) {
-         if (threadIdx.x == 0) {
-            printf("Block %i starting main loop\n", blockIdx.x);
-         }
          if (debug) {
             printf("thread %i: bounce %i\n", threadIdx.x, num_bounces);
          }
@@ -746,9 +742,9 @@ namespace poly {
          
          // reset all intersections
          for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
-            if (sample_intersections[sample_index].hits) {
-               printf("<<<%i, %i>>> sample hit\n", blockIdx.x, threadIdx.x);
-            }
+//            if (sample_intersections[sample_index].hits) {
+//               printf("<<<%i, %i>>> sample hit\n", blockIdx.x, threadIdx.x);
+//            }
             sample_intersections[sample_index].face_index = 0;
             sample_intersections[sample_index].mesh_index = 0;
             sample_intersections[sample_index].hit_point = { 0.f, 0.f, 0.f };
@@ -862,7 +858,7 @@ namespace poly {
       for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
          
          float3 sample = src[sample_index];
-         printf("sample %i src: %f %f %f\n", sample_index, sample.x, sample.y, sample.z);
+         //printf("sample %i src: %f %f %f\n", sample_index, sample.x, sample.y, sample.z);
          sample_sum += src[sample_index];
       }
       
@@ -878,9 +874,9 @@ namespace poly {
       device_pointers.device_samples->g[pixel_index] = sample_sum.y;
       device_pointers.device_samples->b[pixel_index] = sample_sum.z;
 
-      if (threadIdx.x == 0) {
-         printf("Block %i done\n", blockIdx.x);
-      }
+//      if (threadIdx.x == 0) {
+//         printf("Block %i done\n", blockIdx.x);
+//      }
    }
    
    void PathTracerKernel::Trace() const {
