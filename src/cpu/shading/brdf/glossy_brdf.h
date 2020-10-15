@@ -23,6 +23,11 @@ namespace poly {
       }
 
       Vector sample(const Vector &incoming, ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
+         
+         assert(!std::isnan(incoming.x));
+         assert(!std::isnan(incoming.y));
+         assert(!std::isnan(incoming.z));
+         
          float lambert_pdf = 1;
          
          while (true) {

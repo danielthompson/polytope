@@ -17,8 +17,8 @@ WorldBegin
 
     AttributeBegin
         Translate 0 -0.125 0
-        # Material "matte" "rgb Kd" [ .2  .5  .7 ]
-        Material "mirror" "rgb Kr" [ .2  .5  .7 ]
+        Material "matte" "rgb Kd" [ .2  .5  .7 ]
+        # Material "plastic" "rgb Kr" [ .2  .5  .7 ] "rgb Kd" [ .2  .5  .7 ]
         Shape "plymesh" "string filename" [ "dragon_vrip-normals.ply" ]
     AttributeEnd
 WorldEnd

@@ -131,8 +131,6 @@ add_library(polytope_lib
         src/cpu/shapes/mesh.h
         src/cpu/shapes/mesh_intersect.h
         src/cpu/shapes/mesh_intersect.o
-        src/common/utilities/mesh_factory.cpp 
-        src/common/utilities/mesh_factory.h 
         src/common/parsers/mesh/AbstractMeshAllocator.h 
         src/cpu/acceleration/bvh.cpp 
         src/cpu/acceleration/bvh.h src/cpu/structures/stats.h)
@@ -149,8 +147,6 @@ add_executable(${PROJECT_NAME} src/cpu/main.cpp
 
 add_executable(polytope_cuda 
         src/cuda/main.cpp
-        src/cuda/kernels/generate_rays.cu
-        src/cuda/kernels/generate_rays.cuh
         src/cuda/kernels/path_tracer.cu 
         src/cuda/kernels/path_tracer.cuh 
         src/cuda/gpu_memory_manager.cpp 
@@ -192,11 +188,11 @@ if (UNIX)
 
    target_link_libraries(polytope PRIVATE glfw)
 
-   find_package(glbinding REQUIRED)
+   find_package(glbinding PATHS /usr/share/glbinding/ REQUIRED)
    target_link_libraries(polytope PRIVATE glbinding::glbinding)
 
-   find_package(glm REQUIRED)
-   target_link_libraries(polytope PRIVATE glm)
+   # find_package(glm REQUIRED)
+   # target_link_libraries(polytope PRIVATE glm)
    
    target_include_directories(
            polytope_cuda

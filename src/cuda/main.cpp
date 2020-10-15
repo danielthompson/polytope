@@ -10,7 +10,7 @@
 #include "../common/utilities/OptionsParser.h"
 #include "../common/structures/Point2.h"
 #include "../common/parsers/PBRTFileParser.h"
-#include "kernels/generate_rays.cuh"
+
 #include "gpu_memory_manager.h"
 #include "kernels/path_tracer.cuh"
 #include "png_output.h"
@@ -20,10 +20,6 @@
 poly::Logger Log;
 struct poly::stats main_stats;
 thread_local struct poly::stats thread_stats;
-
-std::atomic<int> num_bb_intersections;
-std::atomic<int> num_bb_intersections_origin_inside;
-std::atomic<int> num_triangle_intersections;
 
 float roundOff(float n) {
    float d = n * 100.0f;
@@ -114,6 +110,21 @@ Other:
                std::to_string(runner->Bounds.y) +
                std::string("], ") +
                std::to_string(runner->NumSamples) + " spp.");
+
+         const auto bound_start = std::chrono::system_clock::now();
+         thread_stats.num_bvh_bound_leaf_same_centroid = 0;
+         unsigned int num_nodes = runner->Scene->bvh_root.bound(runner->Scene->Shapes);
+         const auto bound_end = std::chrono::system_clock::now();
+         const std::chrono::duration<double> bound_duration = bound_end - bound_start;
+         Log.WithTime("Created BVH with " + std::to_string(num_nodes) + " nodes in " + std::to_string(bound_duration.count()) + "s.");
+         
+         
+
+         const auto compact_start = std::chrono::system_clock::now();
+         runner->Scene->bvh_root.compact();
+         const auto compact_end = std::chrono::system_clock::now();
+         const std::chrono::duration<double> compact_duration = compact_end - compact_start;
+         Log.WithTime("Compacted BVH in " + std::to_string(compact_duration.count()) + "s.");
          
          Log.WithTime("Copying data to GPU...");
 

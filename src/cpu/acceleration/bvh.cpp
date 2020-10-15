@@ -15,20 +15,15 @@ namespace poly {
 
    struct triangle_info {
       poly::BoundingBox bb;
-      //poly::Point face_centroid;
       poly::Point bb_centroid;
       std::pair<unsigned int, unsigned int> index;
    };
 
    struct bucket_info {
-      //poly::BoundingBox low_centroid_bb;
       poly::BoundingBox low_bb;
-      //poly::BoundingBox high_centroid_bb;
       poly::BoundingBox high_bb;
       std::vector<std::pair<unsigned int, unsigned int>> indices;
       unsigned int num_indices;
-//      float low_surface_area_ratio;
-//      float high_surface_area_ratio;
    };
    
    unsigned int bvh::bound(const std::vector<poly::Mesh*>& meshes) {
@@ -480,6 +475,7 @@ namespace poly {
       
       bool neg_dir[3] = { inverse_direction.x < 0, inverse_direction.y < 0, inverse_direction.z < 0 };
       
+      // TODO change this to a plain array and allocate on a 64-byte boundary
       std::stack<const compact_bvh_node *> stack;
       stack.push(compact_root->nodes);
 

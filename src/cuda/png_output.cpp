@@ -6,6 +6,7 @@
 #include "png_output.h"
 #include "../../lib/lodepng.h"
 #include "check_error.h"
+#include <unistd.h>
 
 namespace poly {
    void OutputPNG::Output(const poly::GPUMemoryManager* memory_manager) {
@@ -39,5 +40,11 @@ namespace poly {
          fprintf(stderr, "LodePNG encoding error (code %i): %s ", lodepng_error, lodepng_error_text(lodepng_error));
          exit(1);
       }
+      
+      char* cwd = get_current_dir_name();
+      
+      printf("Output successful to %s\n", cwd);
+      
+      free(cwd);
    }
 }

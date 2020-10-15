@@ -19,7 +19,6 @@ namespace poly {
          thread_stats.num_bb_intersections_hit_inside++;
          return true;
       }
-         
       
       float maxBoundFarT = worldSpaceRay.MinT;
 //      float maxBoundFarT = poly::FloatMax;

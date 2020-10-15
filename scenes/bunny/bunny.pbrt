@@ -4,7 +4,7 @@ LookAt 0 0 1 # eye
        0 1 0 # up
 Sampler "halton" "integer pixelsamples" [ 256 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
-Film "image" "integer xresolution" [ 512 ] "integer yresolution" [ 512 ] "string filename" [ "bunny.png" ]
+Film "image" "integer xresolution" [ 128 ] "integer yresolution" [ 128 ] "string filename" [ "bunny.png" ]
 Camera "perspective" "float fov" [ 10 ]
 WorldBegin
     LightSource "infinite" "rgb L" [1 1 1]

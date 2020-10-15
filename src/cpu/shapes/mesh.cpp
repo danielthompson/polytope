@@ -464,6 +464,14 @@ namespace poly {
       intersection.Tangent2 = intersection.Tangent1.Cross(intersection.bent_normal);
       intersection.Tangent1 = intersection.Tangent2.Cross(intersection.bent_normal);
 
+//      assert(!std::isnan(intersection.Tangent1.x));
+//      assert(!std::isnan(intersection.Tangent1.y));
+//      assert(!std::isnan(intersection.Tangent1.z));
+//
+//      assert(!std::isnan(intersection.Tangent2.x));
+//      assert(!std::isnan(intersection.Tangent2.y));
+//      assert(!std::isnan(intersection.Tangent2.z));
+      
       intersection.Tangent1.Normalize();
       intersection.Tangent2.Normalize();
    }

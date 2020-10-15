@@ -60,5 +60,4 @@ namespace poly {
    void Logger::Log(const std::string& text) const {
       std::cout << text << std::endl;
    }
-
 }

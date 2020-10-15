@@ -35,7 +35,7 @@ namespace poly {
          unsigned int face_index_offset; // only for leaf
       }; // 4 bytes
       
-      unsigned short num_faces; // 0 for leaf, >0 for interior (2 bytes) 
+      unsigned short num_faces; // 0 for interior, >0 for leaf (2 bytes) 
       unsigned short flags; // both (2 bytes)
       
       inline bool is_leaf() const {
@@ -49,7 +49,6 @@ namespace poly {
       inline void set_axis(poly::Axis axis) {
          flags = (short)axis;
       }
-
    };
    
    class compact_bvh {
@@ -97,7 +96,6 @@ namespace poly {
       void compact_helper_iterative(bvh_node* root);
       unsigned int compact_helper(bvh_node* node, unsigned int index);
    };
-   
 }
 
 #endif //POLY_BVH_H

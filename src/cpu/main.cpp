@@ -54,12 +54,10 @@ void userAbortHandler(int signalNumber) {
    }
 }
 
-std::atomic<int> num_bb_intersections;
-std::atomic<int> num_bb_intersections_origin_inside;
-std::atomic<int> num_triangle_intersections;
-
 struct poly::stats main_stats;
 thread_local struct poly::stats thread_stats;
+
+//std::vector<std::thread> threads;
 
 int main(int argc, char* argv[]) {
 
