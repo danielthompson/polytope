@@ -17,9 +17,17 @@ namespace poly {
       
       cuda_check_error( cudaSetDevice(1) );
       
-      memcpy(camera_to_world_matrix, scene->Camera->CameraToWorld.Matrix.Matrix, 16 * sizeof(float));
-      camera_fov = scene->Camera->Settings.FieldOfView;
-
+      if (scene->Camera == nullptr) {
+         Log.WithTime("Warning: scene has no camera, using identity matrix with FOV = 50.");
+         poly::Transform identity;
+         memcpy(camera_to_world_matrix, identity.Matrix.Matrix, 16 * sizeof(float));
+         camera_fov = 50;
+      }
+      else {
+         memcpy(camera_to_world_matrix, scene->Camera->CameraToWorld.Matrix.Matrix, 16 * sizeof(float));
+         camera_fov = scene->Camera->Settings.FieldOfView;
+      }
+      
       // samples
       
       cuda_check_error( cudaMalloc((void **)&(host_samples.r), sizeof(float) * num_pixels) );

@@ -145,19 +145,23 @@ add_executable(${PROJECT_NAME} src/cpu/main.cpp
       src/gl/GLRenderer.cpp
       src/gl/GLRenderer.h )
 
+add_library(polytope_cuda_lib
+        src/cuda/check_error.h
+        src/cuda/gpu_memory_manager.cpp
+        src/cuda/gpu_memory_manager.h
+        src/cuda/kernels/common_device_functions.cuh
+        src/cuda/kernels/path_tracer.cu
+        src/cuda/kernels/path_tracer.cuh
+        src/cuda/png_output.cpp
+        src/cuda/png_output.h
+        src/cuda/mesh/cuda_pinned_allocator.h
+        src/cuda/mesh/cuda_mesh_soa.cpp
+        src/cuda/mesh/cuda_mesh_soa.h
+        )
+
 add_executable(polytope_cuda 
         src/cuda/main.cpp
-        src/cuda/kernels/path_tracer.cu 
-        src/cuda/kernels/path_tracer.cuh 
-        src/cuda/gpu_memory_manager.cpp 
-        src/cuda/gpu_memory_manager.h 
-        src/cuda/png_output.cpp 
-        src/cuda/png_output.h 
-        src/cuda/kernels/common_device_functions.cuh 
-        src/cuda/check_error.h
-        src/cuda/mesh/cuda_pinned_allocator.h 
-        src/cuda/mesh/cuda_mesh_soa.cpp 
-        src/cuda/mesh/cuda_mesh_soa.h)
+        )
 
 set_target_properties(
         polytope_cuda
@@ -205,10 +209,23 @@ if (UNIX)
            PRIVATE
            ${CUDART_LIBRARY}
    )
+
+   target_include_directories(
+           polytope_cuda_lib
+           PRIVATE
+           ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+   )
+
+   target_link_libraries(
+           polytope_cuda_lib
+           PRIVATE
+           ${CUDART_LIBRARY}
+   )
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC polytope_lib)
 target_link_libraries(polytope_cuda PUBLIC polytope_lib)
+target_link_libraries(polytope_cuda PUBLIC polytope_cuda_lib)
 
 ################################
 # Testing
@@ -248,7 +265,14 @@ add_executable(runUnitTests
         tests/TestVector.cpp
         tests/shapes/TestTesselators.cpp
         tests/test_bvh.cpp
+        tests/cuda/test_bvh_traversal.cpp
         )
+
+target_include_directories(
+        runUnitTests
+        PRIVATE
+        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+)
 
 # generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
 # if (COVERAGE)
@@ -260,7 +284,7 @@ add_executable(runUnitTests
 target_link_libraries(runUnitTests PRIVATE gtest gtest_main)
 
 # Extra linking for the project.
-target_link_libraries(runUnitTests PRIVATE polytope_lib)
+target_link_libraries(runUnitTests PRIVATE polytope_lib polytope_cuda_lib)
 
 # This is so you can do 'make tests' to see all your tests run, instead of
 # manually running the executable runUnitTests to see those specific tests.

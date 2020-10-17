@@ -17,6 +17,8 @@ namespace poly {
          
       void Trace() const;
 
+      bool unit_test_hit_ray_against_bounding_box(const poly::Ray &ray, const float* const device_aabb);
+      
       poly::GPUMemoryManager* memory_manager;
    };
 }

@@ -107,8 +107,13 @@ namespace poly {
 
    __device__ bool aabb_hits(const float* aabb, const float3 origin, const float3 inverse_direction) {
 
+      //printf("bbox: (%f %f %f), (%f %f %f)\n", aabb[0], aabb[1], aabb[2], aabb[3], aabb[4], aabb[5], aabb[6]);
+
+      //printf("o: (%f %f %f), d: (%f %f %f)\n", 
+//             origin.x, origin.y, origin.y, inverse_direction.x, inverse_direction.y, inverse_direction.z);
+
       // TODO take ray's current t as a param and use for maxBoundFarT
-      float maxBoundFarT = poly::FloatMax;
+      float maxBoundFarT = poly::Infinity;
       float minBoundNearT = 0;
       
       // TODO
@@ -118,19 +123,26 @@ namespace poly {
       float tNear = (aabb[0] - origin.x) * inverse_direction.x;
       float tFar = (aabb[3] - origin.x) * inverse_direction.x;
 
+      //printf("x tnear: %f, tfar: %f\n", tNear, tFar);
+      
       float swap = tNear;
       tNear = tNear > tFar ? tFar : tNear;
       tFar = swap > tFar ? swap : tFar;
 
+      //printf("x tnear: %f, tfar: %f\n", tNear, tFar);
+      
       // TODO
       //tFar *= gammaMultiplier;
 
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
+      
+      //printf("x min: %f, max: %f\n", minBoundNearT, maxBoundFarT);
+      
       if (minBoundNearT > maxBoundFarT) {
          return false;
       }
-
+      
       // Y
       tNear = (aabb[1] - origin.y) * inverse_direction.y;
       tFar = (aabb[4] - origin.y) * inverse_direction.y;
@@ -145,6 +157,8 @@ namespace poly {
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
 
+      // printf("y min: %f, max: %f\n", minBoundNearT, maxBoundFarT);
+      
       if (minBoundNearT > maxBoundFarT) {
          return false;
       }
@@ -153,23 +167,138 @@ namespace poly {
       tNear = (aabb[2] - origin.z) * inverse_direction.z;
       tFar = (aabb[5] - origin.z) * inverse_direction.z;
 
+      //printf("z tnear: %f, tfar: %f\n", tNear, tFar);
+      
       swap = tNear;
       tNear = tNear > tFar ? tFar : tNear;
       tFar = swap > tFar ? swap : tFar;
 
+      //printf("z tnear: %f, tfar: %f\n", tNear, tFar);
+      
       // TODO
       // tFar *= gammaMultiplier;
 
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
 
+      //printf("z min: %f, max: %f\n", minBoundNearT, maxBoundFarT);
+      
       return minBoundNearT <= maxBoundFarT;
+   }
+
+   __global__ void unit_test_ray_against_aabb_kernel(const float* aabb, float3 o, float3 id, int* result) {
+      unsigned int thread_index = blockIdx.x * blockDim.x + threadIdx.x;
+      if (thread_index == 0)
+         *result = aabb_hits(aabb, o, id) ? 1 : 0;
+   }
+
+   bool PathTracerKernel::unit_test_hit_ray_against_bounding_box(const poly::Ray &ray, const float* const device_aabb) {
+      
+      int* device_result;
+      cuda_check_error( cudaMalloc((void**)&device_result, sizeof(int)) );
+      
+      float3 o = make_float3(ray.Origin.x, ray.Origin.y, ray.Origin.z);
+      float3 id = {1.0f / ray.Direction.x, 1.0f / ray.Direction.y, 1.0f / ray.Direction.z};
+
+      // invoke kernel that calls aabb_hits()
+      unit_test_ray_against_aabb_kernel<<<1, 1>>>(device_aabb, o, id, device_result);
+      
+      // copy result from device
+
+      int host_result = -1;
+      cuda_check_error( cudaMemcpy(&host_result, device_result, sizeof(int), cudaMemcpyDeviceToHost) );
+      
+      // delete ray from device5
+      cuda_check_error( cudaFree(device_result) );
+      
+      return (host_result == 1);
+      
+   }
+   
+   __device__ void consolidate_sample_intersections(
+         struct device_pointers device_pointers,
+         struct device_intersection* sample_intersections,
+         const unsigned int num_samples,
+         const float3* sample_origins,
+         const float3* sample_directions
+         ) {
+
+      for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
+         device_intersection& intersection = sample_intersections[sample_index];
+         if (intersection.hits) {
+            float3 ro = sample_origins[sample_index];
+            float3 rd = sample_directions[sample_index];
+
+            // calculate normal at hit point
+            DeviceMesh mesh_hit = device_pointers.device_meshes[intersection.mesh_index];
+
+            const unsigned int v1_index = intersection.face_index + mesh_hit.num_faces;
+            const unsigned int v2_index = intersection.face_index + mesh_hit.num_faces * 2;
+
+            const float3 v0 = {device_pointers.device_meshes[intersection.mesh_index].x[intersection.face_index],
+                               device_pointers.device_meshes[intersection.mesh_index].y[intersection.face_index],
+                               device_pointers.device_meshes[intersection.mesh_index].z[intersection.face_index]};
+            const float3 v1 = {device_pointers.device_meshes[intersection.mesh_index].x[v1_index],
+                               device_pointers.device_meshes[intersection.mesh_index].y[v1_index],
+                               device_pointers.device_meshes[intersection.mesh_index].z[v1_index]};
+            const float3 v2 = {device_pointers.device_meshes[intersection.mesh_index].x[v2_index],
+                               device_pointers.device_meshes[intersection.mesh_index].y[v2_index],
+                               device_pointers.device_meshes[intersection.mesh_index].z[v2_index]};
+
+            const float3 e0 = v1 - v0;
+            const float3 e1 = v2 - v1;
+            const float3 e2 = v0 - v2;
+            float3 n = cross(e0, e1);
+
+            // flip normal if needed
+            const float ray_dot_normal = dot(rd, n);
+            const float flip_factor = ray_dot_normal > 0 ? -1 : 1;
+            n *= flip_factor;
+
+            normalize(n);
+            intersection.normal = n;
+
+            // TODO this is (very) non-optimal
+            intersection.hit_point = make_float3(
+                  fma(rd.x, intersection.t, ro.x),
+                  fma(rd.y, intersection.t, ro.y),
+                  fma(rd.z, intersection.t, ro.z)
+            );
+
+//            if (debug) {
+//               printf("hit point:\n");
+//               printf("o: %f %f %f\n", intersection.hit_point.x, intersection.hit_point.y, intersection.hit_point.z);
+//            }
+
+            // offset origin - hack - temp
+            intersection.hit_point.x = fma(n.x, 0.002f, intersection.hit_point.x);
+            intersection.hit_point.y = fma(n.y, 0.002f, intersection.hit_point.y);
+            intersection.hit_point.z = fma(n.z, 0.002f, intersection.hit_point.z);
+
+            const float edge0dot = abs(dot(e0, e1));
+            const float edge1dot = abs(dot(e1, e2));
+            const float edge2dot = abs(dot(e2, e0));
+
+            if (edge0dot > edge1dot && edge0dot > edge2dot) {
+               intersection.tangent1 = e0;
+            } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
+               intersection.tangent1 = e1;
+            } else {
+               intersection.tangent1 = e2;
+            }
+
+            intersection.tangent2 = cross(intersection.tangent1, n);
+
+            normalize(intersection.tangent1);
+            normalize(intersection.tangent2);
+         }
+      }
    }
    
    __device__ void linear_intersect(
          struct device_intersection* sample_intersections,
-         const float3* sample_origins,
-         const float3* sample_directions,
+         const float3* const sample_origins,
+         const float3* const sample_directions,
          const unsigned int num_samples,
          struct device_pointers device_pointers, 
          // TODO use something more efficient than bool array
@@ -190,8 +319,10 @@ namespace poly {
       __shared__ float v2y[threads_per_block];
       __shared__ float v2z[threads_per_block];
 
+      debug = blockIdx.x == 6 && threadIdx.x == 17;
+      
       if (debug) {
-         printf("  intersection\n");
+         printf("  intersection test:\n");
       }
 
       // for each mesh on the device
@@ -228,8 +359,6 @@ namespace poly {
          
          // for each face in the mesh
          for (unsigned int face_index = 0; face_index < mesh.num_faces; face_index++) {
-            bool debug2 = debug && face_index == 1509;
-            
             // every 32 faces, have the threads in the warp coordinate to load the next 32 faces' vertices from global to shared memory
             const unsigned int shared_index = face_index & 0x0000001Fu;
             const unsigned int thread_face_index = face_index + threadIdx.x;
@@ -338,94 +467,36 @@ namespace poly {
                intersection.t = ft;
                intersection.face_index = face_index;
                intersection.mesh_index = mesh_index;
+               if (debug) {
+                  printf("      hit face %i\n", face_index);
+                  printf("      t %f\n", ft);
+               }
             }
          }
       }
-      
-      for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
-         device_intersection& intersection = sample_intersections[sample_index];
-         if (intersection.hits) {
-            float3 ro = sample_origins[sample_index];
-            float3 rd = sample_directions[sample_index];
 
-            // calculate normal at hit point
-            DeviceMesh mesh_hit = device_pointers.device_meshes[intersection.mesh_index];
-
-            const unsigned int v1_index = intersection.face_index + mesh_hit.num_faces;
-            const unsigned int v2_index = intersection.face_index + mesh_hit.num_faces * 2;
-
-            const float3 v0 = {device_pointers.device_meshes[intersection.mesh_index].x[intersection.face_index],
-                               device_pointers.device_meshes[intersection.mesh_index].y[intersection.face_index],
-                               device_pointers.device_meshes[intersection.mesh_index].z[intersection.face_index]};
-            const float3 v1 = {device_pointers.device_meshes[intersection.mesh_index].x[v1_index],
-                               device_pointers.device_meshes[intersection.mesh_index].y[v1_index],
-                               device_pointers.device_meshes[intersection.mesh_index].z[v1_index]};
-            const float3 v2 = {device_pointers.device_meshes[intersection.mesh_index].x[v2_index],
-                               device_pointers.device_meshes[intersection.mesh_index].y[v2_index],
-                               device_pointers.device_meshes[intersection.mesh_index].z[v2_index]};
-
-            const float3 e0 = v1 - v0;
-            const float3 e1 = v2 - v1;
-            const float3 e2 = v0 - v2;
-            float3 n = cross(e0, e1);
-
-            // flip normal if needed
-            const float ray_dot_normal = dot(rd, n);
-            const float flip_factor = ray_dot_normal > 0 ? -1 : 1;
-            n *= flip_factor;
-
-            normalize(n);
-            intersection.normal = n;
-
-            // TODO this is (very) non-optimal
-            intersection.hit_point = make_float3(
-                  fma(rd.x, intersection.t, ro.x),
-                  fma(rd.y, intersection.t, ro.y),
-                  fma(rd.z, intersection.t, ro.z)
-            );
-
-//            if (debug) {
-//               printf("hit point:\n");
-//               printf("o: %f %f %f\n", intersection.hit_point.x, intersection.hit_point.y, intersection.hit_point.z);
-//            }
-            
-            // offset origin - hack - temp
-            intersection.hit_point.x = fma(n.x, 0.002f, intersection.hit_point.x);
-            intersection.hit_point.y = fma(n.y, 0.002f, intersection.hit_point.y);
-            intersection.hit_point.z = fma(n.z, 0.002f, intersection.hit_point.z);
-
-            const float edge0dot = abs(dot(e0, e1));
-            const float edge1dot = abs(dot(e1, e2));
-            const float edge2dot = abs(dot(e2, e0));
-
-            if (edge0dot > edge1dot && edge0dot > edge2dot) {
-               intersection.tangent1 = e0;
-            } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
-               intersection.tangent1 = e1;
-            } else {
-               intersection.tangent1 = e2;
-            }
-
-            intersection.tangent2 = cross(intersection.tangent1, n);
-
-            normalize(intersection.tangent1);
-            normalize(intersection.tangent2);
-         }
-      }
+      consolidate_sample_intersections(
+            device_pointers,
+            sample_intersections,
+            num_samples,
+            sample_origins,
+            sample_directions
+      );
    }
    
    __device__ void bvh_intersect(
          struct device_intersection* sample_intersections,
-         const float3* sample_origins,
-         const float3* sample_directions,
-         const float3* sample_inverse_directions,
+         const float3* const sample_origins,
+         const float3* const sample_directions,
+         const float3* const sample_inverse_directions,
          const unsigned int num_samples,
          bool* active_mask,
+         const unsigned int bounce_num,
          struct device_pointers device_pointers) {
       
       
       // TODO - figure out a bound on how big this could/should be
-      int future_node_stack[4096];
+      int future_node_stack[1024];
       
       /**
        * first free index in future_node_stack
@@ -433,7 +504,7 @@ namespace poly {
       int next_future_node_index = 0;
       future_node_stack[next_future_node_index] = 0;
 
-      int max_stack_pointer = 0;
+      bool debug = blockIdx.x == 6 && threadIdx.x == 17 && bounce_num == 1;
       
       poly::device_bvh_node node;
       int current_node_index = 0;
@@ -442,8 +513,9 @@ namespace poly {
          node = device_pointers.device_bvh_node[current_node_index];
          const bool is_leaf = node.is_leaf();
          
-         if (next_future_node_index > max_stack_pointer)
-            max_stack_pointer = next_future_node_index;
+//         if (debug) {
+//            printf("Loaded node %i\n", current_node_index);
+//         }
          
          if (aabb_hits(node.aabb, sample_origins[0], sample_inverse_directions[0])) {
             if (is_leaf) {
@@ -452,6 +524,18 @@ namespace poly {
                   device_index_pair indices = device_pointers.device_index_pair[node.offset + i];
                   const unsigned int mesh_index = indices.mesh_index;
                   const unsigned int face_index = indices.face_index;
+                  
+                  if (debug) {
+                     printf("Tested face_index %i\n", indices.face_index);
+                  }
+
+//                  <<<6, 17>>> bounce 1 hit mismatch: bvh: 0, linear: 1
+//                  <<<6, 17>>> face_index: bvh: 0, linear: 43582
+//                  <<<6, 17>>> t: bvh: inf, linear: 0.039489
+
+                  if (debug && face_index == 43582) {
+                     printf("Loaded face_index %i\n", face_index);
+                  } 
                   
                   const DeviceMesh mesh = device_pointers.device_meshes[mesh_index];
                   
@@ -467,8 +551,13 @@ namespace poly {
                   pn *= __frsqrt_rn(dot(pn, pn));
                   for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
                      // don't intersect a sample if it's not active
-                     if (!active_mask[sample_index])
+                     
+                     if (!active_mask[sample_index]) {
+                        if (debug) {
+                           printf("Bailing on sample %i for face_index %i because lane is not active\n", sample_index, face_index);
+                        }
                         continue;
+                     }
 
                      float ft = INFINITY;
                      float3 ro = sample_origins[sample_index];
@@ -478,6 +567,9 @@ namespace poly {
                      {
                         const float divisor = dot(pn, rd);
                         if (divisor == 0.0f) {
+                           if (debug) {
+                              printf("Bailing on face_index %i because ray is parallel to face\n", sample_index, face_index);
+                           }
                            // parallel
                            continue;
                         }
@@ -486,6 +578,9 @@ namespace poly {
                      }
 
                      if (ft <= 0 || ft > intersection.t) {
+                        if (debug) {
+                           printf("Bailing on face_index %i due to previous t %i vs this t %i \n", face_index, intersection.t, ft);
+                        }
                         continue;
                      }
 
@@ -495,23 +590,37 @@ namespace poly {
                         float3 p = hp - v0;
                         float3 cross_ep = cross(e0, p);
                         float normal = dot(cross_ep, pn);
-                        if (normal <= 0)
+                        if (normal <= 0) {
+                           if (debug) {
+                              printf("Bailing on face_index %i due to first normal test %f\n", face_index, normal);
+                           }
                            continue;
+                        }
 
                         p = hp - v1;
                         cross_ep = cross(e1, p);
                         normal = dot(cross_ep, pn);
-                        if (normal <= 0)
+                        if (normal <= 0) {
+                           if (debug) {
+                              printf("Bailing on face_index %i due to second normal test %f\n", face_index, normal);
+                           }
                            continue;
+                        }
 
                         const float3 e2 = v0 - v2;
                         p = hp - v2;
                         cross_ep = cross(e2, p);
                         normal = dot(cross_ep, pn);
-                        if (normal <= 0)
+                        if (normal <= 0) {
+                           if (debug) {
+                              printf("Bailing on face_index %i due to third normal test %f\n", face_index, normal);
+                           }
                            continue;
+                        }
                      }
 
+                     
+                     
                      // temp
                      intersection.hits = true;
                      intersection.t = ft;
@@ -521,26 +630,17 @@ namespace poly {
                }
                
                // next node should be from the stack, if any
-               
                if (next_future_node_index == 0) {
-                  //printf("hit leaf with empty stack and t: %f\n", sample_intersections[0].t);
                   break;
                }
-//               else {
-//                  printf("hit leaf, stack depth %i, t %f\n", next_future_node_index, sample_intersections[0].t);
-//               } 
-              
                current_node_index = future_node_stack[--next_future_node_index];
-               node = device_pointers.device_bvh_node[current_node_index];
             }
             else {
                // next node should be one of the two children, and
                // push the other node on the stack
                // TODO push closer node first
-//               printf("hit interior, stack depth %i, t %f\n", next_future_node_index, sample_intersections[0].t);
                future_node_stack[next_future_node_index++] = current_node_index + node.offset;
                current_node_index = current_node_index + 1;
-               
             }
          }
          else {
@@ -549,85 +649,16 @@ namespace poly {
                break;
             }
             current_node_index = future_node_stack[--next_future_node_index];
-            node = device_pointers.device_bvh_node[current_node_index];
          }
-
-         
-         //assert(next_future_node_index <= 1023);
       } while (current_node_index >= 0);
-
-//      printf(" %i ", max_stack_pointer);
       
-      for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
-         device_intersection& intersection = sample_intersections[sample_index];
-         if (intersection.hits) {
-            float3 ro = sample_origins[sample_index];
-            float3 rd = sample_directions[sample_index];
-
-            // calculate normal at hit point
-            DeviceMesh mesh_hit = device_pointers.device_meshes[intersection.mesh_index];
-
-            const unsigned int v1_index = intersection.face_index + mesh_hit.num_faces;
-            const unsigned int v2_index = intersection.face_index + mesh_hit.num_faces * 2;
-
-            const float3 v0 = {device_pointers.device_meshes[intersection.mesh_index].x[intersection.face_index],
-                               device_pointers.device_meshes[intersection.mesh_index].y[intersection.face_index],
-                               device_pointers.device_meshes[intersection.mesh_index].z[intersection.face_index]};
-            const float3 v1 = {device_pointers.device_meshes[intersection.mesh_index].x[v1_index],
-                               device_pointers.device_meshes[intersection.mesh_index].y[v1_index],
-                               device_pointers.device_meshes[intersection.mesh_index].z[v1_index]};
-            const float3 v2 = {device_pointers.device_meshes[intersection.mesh_index].x[v2_index],
-                               device_pointers.device_meshes[intersection.mesh_index].y[v2_index],
-                               device_pointers.device_meshes[intersection.mesh_index].z[v2_index]};
-
-            const float3 e0 = v1 - v0;
-            const float3 e1 = v2 - v1;
-            const float3 e2 = v0 - v2;
-            float3 n = cross(e0, e1);
-
-            // flip normal if needed
-            const float ray_dot_normal = dot(rd, n);
-            const float flip_factor = ray_dot_normal > 0 ? -1 : 1;
-            n *= flip_factor;
-
-            normalize(n);
-            intersection.normal = n;
-
-            // TODO this is (very) non-optimal
-            intersection.hit_point = make_float3(
-                  fma(rd.x, intersection.t, ro.x),
-                  fma(rd.y, intersection.t, ro.y),
-                  fma(rd.z, intersection.t, ro.z)
+      consolidate_sample_intersections(
+            device_pointers,
+            sample_intersections,
+            num_samples,
+            sample_origins,
+            sample_directions
             );
-
-//            if (debug) {
-//               printf("hit point:\n");
-//               printf("o: %f %f %f\n", intersection.hit_point.x, intersection.hit_point.y, intersection.hit_point.z);
-//            }
-
-            // offset origin - hack - temp
-            intersection.hit_point.x = fma(n.x, 0.002f, intersection.hit_point.x);
-            intersection.hit_point.y = fma(n.y, 0.002f, intersection.hit_point.y);
-            intersection.hit_point.z = fma(n.z, 0.002f, intersection.hit_point.z);
-
-            const float edge0dot = abs(dot(e0, e1));
-            const float edge1dot = abs(dot(e1, e2));
-            const float edge2dot = abs(dot(e2, e0));
-
-            if (edge0dot > edge1dot && edge0dot > edge2dot) {
-               intersection.tangent1 = e0;
-            } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
-               intersection.tangent1 = e1;
-            } else {
-               intersection.tangent1 = e2;
-            }
-
-            intersection.tangent2 = cross(intersection.tangent1, n);
-
-            normalize(intersection.tangent1);
-            normalize(intersection.tangent2);
-         }
-      }
    }
    
    __global__ void path_trace_kernel(const unsigned int width, const unsigned int height, const float tan_fov_half, struct device_pointers device_pointers) {
@@ -643,8 +674,6 @@ namespace poly {
 
       const float3 camera_origin = {0, 0, 0};
       const float3 world_origin_orig = matrix_apply_point(camera_to_world_matrix, camera_origin);
-      
-      float3 sample_sum = make_float3(0, 0, 0);
       
       // samples
       const int root_samples = ceil(sqrtf(samples));
@@ -663,7 +692,6 @@ namespace poly {
       float3 sample_origins[samples];
       float3 sample_directions[samples];
       float3 sample_directions_inverse[samples];
-      device_intersection sample_intersections[samples];
       
       for (unsigned int x = 0; x < root_samples; x++) {
          const float offset_x = offset_step_initial + ((float) x * offset_step);
@@ -697,13 +725,17 @@ namespace poly {
       }
 
       float3 src[samples];
-      bool active[samples];
+      bool active_linear[samples];
+      bool active_bvh[samples];
       for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
          // TODO initialize
          src[sample_index] = { 1.0f, 1.0f, 1.0f};
-         active[sample_index] = true;
+         active_linear[sample_index] = true;
+         active_bvh[sample_index] = true;
       }
 
+      device_intersection sample_intersections_bvh[samples];
+      device_intersection sample_intersections_linear[samples];
       unsigned int num_bounces = 0;
       while (true) {
          if (debug) {
@@ -713,7 +745,7 @@ namespace poly {
          if (num_bounces > 5) {
             // kill any samples that are still active
             for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
-               if (active[sample_index]) {
+               if (active_linear[sample_index]) {
                   src[sample_index] = {0, 0, 0};
                   if (debug) {
                      printf("  sample %i: killed\n", sample_index);
@@ -727,7 +759,7 @@ namespace poly {
          bool any_sample_active = false;
          for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
             
-            if (active[sample_index])
+            if (active_linear[sample_index] || active_bvh[sample_index])
                any_sample_active = true;
          }
          
@@ -742,35 +774,61 @@ namespace poly {
          
          // reset all intersections
          for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
-//            if (sample_intersections[sample_index].hits) {
-//               printf("<<<%i, %i>>> sample hit\n", blockIdx.x, threadIdx.x);
-//            }
-            sample_intersections[sample_index].face_index = 0;
-            sample_intersections[sample_index].mesh_index = 0;
-            sample_intersections[sample_index].hit_point = { 0.f, 0.f, 0.f };
-            sample_intersections[sample_index].t = INFINITY;
-            sample_intersections[sample_index].hits = false;
+            sample_intersections_bvh[sample_index].face_index = 0;
+            sample_intersections_bvh[sample_index].mesh_index = 0;
+            sample_intersections_bvh[sample_index].hit_point = {0.f, 0.f, 0.f };
+            sample_intersections_bvh[sample_index].t = INFINITY;
+            sample_intersections_bvh[sample_index].hits = false;
+
+            sample_intersections_linear[sample_index].face_index = 0;
+            sample_intersections_linear[sample_index].mesh_index = 0;
+            sample_intersections_linear[sample_index].hit_point = {0.f, 0.f, 0.f };
+            sample_intersections_linear[sample_index].t = INFINITY;
+            sample_intersections_linear[sample_index].hits = false;
          }
          
-//                  linear_intersect(
-//            sample_intersections,
-//            sample_origins,
-//            sample_directions,
-//            samples,
-//            device_pointers, 
-//            active,
-//            debug);
+         if (1) {
+            linear_intersect(
+                  sample_intersections_linear,
+                  sample_origins,
+                  sample_directions,
+                  samples,
+                  device_pointers,
+                  active_linear,
+                  debug);
+         }
+         else {
+            bvh_intersect(
+                  sample_intersections_bvh,
+                  sample_origins,
+                  sample_directions,
+                  sample_directions_inverse,
+                  samples,
+                  active_bvh,
+                  num_bounces,
+                  device_pointers);
+         }
 
-         bvh_intersect(
-               sample_intersections,
-               sample_origins,
-               sample_directions,
-               sample_directions_inverse,
-               samples,
-               active,
-               device_pointers
-
-               );
+//         if (sample_intersections_bvh->hits != sample_intersections_linear->hits) {
+//            printf("<<<%i, %i>>> bounce %i hit mismatch: bvh: %i, linear: %i\n<<<%i, %i>>> face_index: bvh: %i, linear: %i\n<<<%i, %i>>> t: bvh: %f, linear: %f\n", blockIdx.x, threadIdx.x, num_bounces, sample_intersections_bvh->hits, sample_intersections_linear->hits, blockIdx.x, threadIdx.x, sample_intersections_bvh->face_index, sample_intersections_linear->face_index, blockIdx.x, threadIdx.x, sample_intersections_bvh->t, sample_intersections_linear->t);
+////            __syncthreads();
+////            //printf("mesh_index: bvh: %i, linear: %i\n", sample_intersections_bvh->mesh_index, sample_intersections_linear->mesh_index);
+////            printf("<<<%i, %i>>> face_index: bvh: %i, linear: %i\n", blockIdx.x, threadIdx.x, sample_intersections_bvh->face_index, sample_intersections_linear->face_index);
+////            __syncthreads();
+////            printf("<<<%i, %i>>> t: bvh: %f, linear: %f\n", blockIdx.x, threadIdx.x, sample_intersections_bvh->t, sample_intersections_linear->t);
+////            __syncthreads();
+//         }
+//         else if (sample_intersections_bvh->hits) {
+//            if (sample_intersections_bvh->mesh_index != sample_intersections_linear->mesh_index) {
+//               printf("mesh_index mismatch: bvh: %i, linear: %i\n", sample_intersections_bvh->mesh_index, sample_intersections_linear->mesh_index);
+//            }
+//            if (sample_intersections_bvh->face_index != sample_intersections_linear->face_index) {
+//               printf("face_index mismatch: bvh: %i, linear: %i\n", sample_intersections_bvh->face_index, sample_intersections_linear->face_index);
+//            }
+//            if (sample_intersections_bvh->t != sample_intersections_linear->t) {
+//               printf("t mismatch: bvh: %i, linear: %i\n", sample_intersections_bvh->t, sample_intersections_linear->t);
+//            }
+//         }
 
          //printf("finished bvh\n");
          
@@ -779,8 +837,8 @@ namespace poly {
             if (debug) {
                printf("  sample %i: \n", sample_index);
             }
-            if (active[sample_index]) {
-               device_intersection intersection = sample_intersections[sample_index];
+            if (active_linear[sample_index]) {
+               device_intersection intersection = sample_intersections_bvh[sample_index];
                float3 ro = sample_origins[sample_index];
                float3 rd = sample_directions[sample_index];
                
@@ -790,7 +848,7 @@ namespace poly {
 //                     printf("    o: %f %f %f\n", ro.x, ro.y, ro.z);
 //                     printf("    d: %f %f %f\n", rd.x, rd.y, rd.z);
                   }
-                  active[sample_index] = false;
+                  active_linear[sample_index] = false;
                   continue;
                }
 
@@ -803,16 +861,16 @@ namespace poly {
                // todo hit light
 
                // TODO put this into a lambert_brdf function
-               // const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
+//                const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
                float3 local_incoming = normalize(make_float3(dot(rd, intersection.tangent1), dot(rd, intersection.normal), dot(rd, intersection.tangent2)));
 
                // mirror
-//               const float3 local_outgoing = make_float3(local_incoming.x, -local_incoming.y, local_incoming.z); 
+               const float3 local_outgoing = make_float3(local_incoming.x, -local_incoming.y, local_incoming.z); 
 
                // lambert
                float u0 = curand_uniform(&state);
                float u1 = curand_uniform(&state);
-               float3 local_outgoing = cosine_sample_hemisphere(u0, u1);
+//               float3 local_outgoing = cosine_sample_hemisphere(u0, u1);
 
                // const poly::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
                float3 world_outgoing = normalize(make_float3(
@@ -851,32 +909,31 @@ namespace poly {
          num_bounces++;
       }
 
-//            if (debug)
-//               printf("%f %f %f\n", src.x, src.y, src.z);
-
-
+      float3 sample_sum = make_float3(0, 0, 0);
       for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
-         
-         float3 sample = src[sample_index];
-         //printf("sample %i src: %f %f %f\n", sample_index, sample.x, sample.y, sample.z);
          sample_sum += src[sample_index];
       }
-      
-//      if (debug)
-//         printf("%f %f %f\n", sample_sum.x, sample_sum.y, sample_sum.z);
-      
       sample_sum *= (255.f / samples);
-//
-//      if (debug)
-//         printf("%f %f %f\n", sample_sum.x, sample_sum.y, sample_sum.z);
-      
       device_pointers.device_samples->r[pixel_index] = sample_sum.x;
       device_pointers.device_samples->g[pixel_index] = sample_sum.y;
       device_pointers.device_samples->b[pixel_index] = sample_sum.z;
+   }
+   
+   __global__ void box_filter_kernel(float3* src, struct Samples* device_samples, const unsigned int num_samples) {
+      const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
+      float3 sample_sum = make_float3(0, 0, 0);
 
-//      if (threadIdx.x == 0) {
-//         printf("Block %i done\n", blockIdx.x);
-//      }
+      for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
+
+         float3 sample = src[sample_index];
+         sample_sum += src[sample_index];
+      }
+
+      sample_sum *= (255.f / num_samples);
+
+      device_samples->r[pixel_index] = sample_sum.x;
+      device_samples->g[pixel_index] = sample_sum.y;
+      device_samples->b[pixel_index] = sample_sum.z;
    }
    
    void PathTracerKernel::Trace() const {
