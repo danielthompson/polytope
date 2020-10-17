@@ -1,0 +1,14 @@
+Integrator "path" "integer maxdepth" [ 7 ] 
+LookAt 0 0 10 # eye
+       0 0 -1 # look at point
+       0 1 0 # up	   
+Sampler "random" "integer pixelsamples" [ 64 ]
+PixelFilter "TriangleMesh" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ] 
+Film "image" "integer xresolution" [ 640 ] "integer yresolution" [ 640 ] "string filename" [ "bvh-traversal.png" ]
+Camera "perspective" "float fov" [ 50 ] 
+WorldBegin
+    LightSource "infinite" "rgb L" [1 1 1]
+    Material "mirror" "rgb Kr" [ 1 .8 .8 ]
+    Shape "plymesh" "string filename" [ "cuda-bvh-traversal1.ply" ]
+    
+WorldEnd

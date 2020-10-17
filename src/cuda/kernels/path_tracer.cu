@@ -504,21 +504,35 @@ namespace poly {
       int next_future_node_index = 0;
       future_node_stack[next_future_node_index] = 0;
 
-      bool debug = blockIdx.x == 6 && threadIdx.x == 17 && bounce_num == 1;
+      bool debug = blockIdx.x == 6933 && threadIdx.x == 17 && bounce_num == 1;
       
       poly::device_bvh_node node;
       int current_node_index = 0;
          
       do {
          node = device_pointers.device_bvh_node[current_node_index];
+         if (debug) {
+            printf("<<<%i, %i>>> Looking at node %i\n", blockIdx.x, threadIdx.x, current_node_index);
+         }
          const bool is_leaf = node.is_leaf();
          
 //         if (debug) {
 //            printf("Loaded node %i\n", current_node_index);
 //         }
-         
+
+         if (debug) {
+            printf("<<<%i, %i>>> intersecting node %i with ray o (%f, %f, %f) d (%f %f %f)\n", blockIdx.x, threadIdx.x, current_node_index,
+                   sample_origins[0].x, sample_origins[0].y, sample_origins[0].z,
+                   1.f / sample_inverse_directions[0].x, 1.f / sample_inverse_directions[0].y, 1.f / sample_inverse_directions[0].z);
+         }
          if (aabb_hits(node.aabb, sample_origins[0], sample_inverse_directions[0])) {
+            if (debug) {
+               printf("<<<%i, %i>>> ray hit node %i aabb\n", blockIdx.x, threadIdx.x, current_node_index);
+            }
             if (is_leaf) {
+               if (debug) {
+                  printf("<<<%i, %i>>> node %i is leaf, intersecting faces\n", blockIdx.x, threadIdx.x, current_node_index);
+               }
                for (unsigned int i = 0; i < node.num_faces; i++) {
                   
                   device_index_pair indices = device_pointers.device_index_pair[node.offset + i];
@@ -619,8 +633,10 @@ namespace poly {
                         }
                      }
 
-                     
-                     
+
+                     if (debug) {
+                        printf("Hit face face_index %i with t %f\n", face_index, ft);
+                     }
                      // temp
                      intersection.hits = true;
                      intersection.t = ft;
@@ -631,22 +647,41 @@ namespace poly {
                
                // next node should be from the stack, if any
                if (next_future_node_index == 0) {
+                  if (debug) {
+                     printf("<<<%i, %i>>> no more nodes on stack, ending traversal\n", blockIdx.x, threadIdx.x, current_node_index);
+                  }
                   break;
+               }
+               if (debug) {
+                  printf("<<<%i, %i>>> picking up next node from stack\n", blockIdx.x, threadIdx.x, current_node_index);
                }
                current_node_index = future_node_stack[--next_future_node_index];
             }
             else {
+               if (debug) {
+                  printf("<<<%i, %i>>> node %i is interior, pushing high child on to stack, looking at low child\n", blockIdx.x, threadIdx.x, current_node_index);
+               }
                // next node should be one of the two children, and
                // push the other node on the stack
                // TODO push closer node first
                future_node_stack[next_future_node_index++] = current_node_index + node.offset;
+               
                current_node_index = current_node_index + 1;
             }
          }
          else {
-            // next node should be from the stack
+            if (debug) {
+               printf("<<<%i, %i>>> ray hit node %i aabb\n", blockIdx.x, threadIdx.x, current_node_index);
+            }
+               // next node should be from the stack
             if (next_future_node_index == 0) {
+               if (debug) {
+                  printf("<<<%i, %i>>> no more nodes on stack, ending traversal\n", blockIdx.x, threadIdx.x, current_node_index);
+               }
                break;
+            }
+            if (debug) {
+               printf("<<<%i, %i>>> picking up next node from stack\n", blockIdx.x, threadIdx.x, current_node_index);
             }
             current_node_index = future_node_stack[--next_future_node_index];
          }
@@ -681,9 +716,9 @@ namespace poly {
       const float offset_step_initial = offset_step / 2.f;
 
       bool debug = false;
-      if (pixel_x == 275 && pixel_y == 275) {
+      if (pixel_x == 433 && pixel_y == 346) {
          debug = true;
-         printf("debug\n");
+         printf("<<<%i, %i>>> debug on pixel (%i, %i)\n", blockIdx.x, threadIdx.x, pixel_x, pixel_y);
       }
 
       curandState state;
@@ -725,12 +760,10 @@ namespace poly {
       }
 
       float3 src[samples];
-      bool active_linear[samples];
       bool active_bvh[samples];
       for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
          // TODO initialize
          src[sample_index] = { 1.0f, 1.0f, 1.0f};
-         active_linear[sample_index] = true;
          active_bvh[sample_index] = true;
       }
 
@@ -739,13 +772,13 @@ namespace poly {
       unsigned int num_bounces = 0;
       while (true) {
          if (debug) {
-            printf("thread %i: bounce %i\n", threadIdx.x, num_bounces);
+            printf("<<<%i, %i>>> bounce %i\n", blockIdx.x, threadIdx.x, num_bounces);
          }
          
          if (num_bounces > 5) {
             // kill any samples that are still active
             for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
-               if (active_linear[sample_index]) {
+               if (active_bvh[sample_index]) {
                   src[sample_index] = {0, 0, 0};
                   if (debug) {
                      printf("  sample %i: killed\n", sample_index);
@@ -759,7 +792,7 @@ namespace poly {
          bool any_sample_active = false;
          for (unsigned int sample_index = 0; sample_index < samples; sample_index++) {
             
-            if (active_linear[sample_index] || active_bvh[sample_index])
+            if (active_bvh[sample_index] || active_bvh[sample_index])
                any_sample_active = true;
          }
          
@@ -787,14 +820,14 @@ namespace poly {
             sample_intersections_linear[sample_index].hits = false;
          }
          
-         if (1) {
+         if (0) {
             linear_intersect(
                   sample_intersections_linear,
                   sample_origins,
                   sample_directions,
                   samples,
                   device_pointers,
-                  active_linear,
+                  active_bvh,
                   debug);
          }
          else {
@@ -837,7 +870,7 @@ namespace poly {
             if (debug) {
                printf("  sample %i: \n", sample_index);
             }
-            if (active_linear[sample_index]) {
+            if (active_bvh[sample_index]) {
                device_intersection intersection = sample_intersections_bvh[sample_index];
                float3 ro = sample_origins[sample_index];
                float3 rd = sample_directions[sample_index];
@@ -848,7 +881,7 @@ namespace poly {
 //                     printf("    o: %f %f %f\n", ro.x, ro.y, ro.z);
 //                     printf("    d: %f %f %f\n", rd.x, rd.y, rd.z);
                   }
-                  active_linear[sample_index] = false;
+                  active_bvh[sample_index] = false;
                   continue;
                }
 
@@ -888,6 +921,8 @@ namespace poly {
                // TOOD offset
                sample_origins[sample_index] = intersection.hit_point;
                sample_directions[sample_index] = world_outgoing;
+               sample_directions_inverse[sample_index] = make_float3(1.f / world_outgoing.x, 1.f / world_outgoing.y, 1.f / world_outgoing.z);
+               
                // TODO replace with BRDF refl
                src[sample_index] = src[sample_index] * make_float3(0.8f, 0.5f, 0.5f);
 
