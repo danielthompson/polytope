@@ -5,6 +5,7 @@
 
 #include <curand_kernel.h>
 #include <cassert>
+#include <cmath>
 #include "path_tracer.cuh"
 #include "common_device_functions.cuh"
 #include "../check_error.h"
@@ -17,8 +18,6 @@ namespace poly {
    __constant__ float camera_to_world_matrix[16];
    
    struct device_pointers {
-      struct DeviceCamera* device_camera;
-      
       struct DeviceMesh* device_meshes;
       unsigned int num_meshes;
 
@@ -105,12 +104,7 @@ namespace poly {
       return minBoundNearT <= maxBoundFarT;
    }
 
-   __device__ bool aabb_hits(const float* aabb, const float3 origin, const float3 inverse_direction) {
-
-      //printf("bbox: (%f %f %f), (%f %f %f)\n", aabb[0], aabb[1], aabb[2], aabb[3], aabb[4], aabb[5], aabb[6]);
-
-      //printf("o: (%f %f %f), d: (%f %f %f)\n", 
-//             origin.x, origin.y, origin.y, inverse_direction.x, inverse_direction.y, inverse_direction.z);
+   __device__ bool aabb_hits(const float* aabb, const float3 origin, const float3 inverse_direction, float* const mint) {
 
       // TODO take ray's current t as a param and use for maxBoundFarT
       float maxBoundFarT = poly::Infinity;
@@ -123,21 +117,15 @@ namespace poly {
       float tNear = (aabb[0] - origin.x) * inverse_direction.x;
       float tFar = (aabb[3] - origin.x) * inverse_direction.x;
 
-      //printf("x tnear: %f, tfar: %f\n", tNear, tFar);
-      
       float swap = tNear;
       tNear = tNear > tFar ? tFar : tNear;
       tFar = swap > tFar ? swap : tFar;
 
-      //printf("x tnear: %f, tfar: %f\n", tNear, tFar);
-      
       // TODO
       //tFar *= gammaMultiplier;
 
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
-      
-      //printf("x min: %f, max: %f\n", minBoundNearT, maxBoundFarT);
       
       if (minBoundNearT > maxBoundFarT) {
          return false;
@@ -156,8 +144,6 @@ namespace poly {
 
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
-
-      // printf("y min: %f, max: %f\n", minBoundNearT, maxBoundFarT);
       
       if (minBoundNearT > maxBoundFarT) {
          return false;
@@ -167,29 +153,26 @@ namespace poly {
       tNear = (aabb[2] - origin.z) * inverse_direction.z;
       tFar = (aabb[5] - origin.z) * inverse_direction.z;
 
-      //printf("z tnear: %f, tfar: %f\n", tNear, tFar);
-      
       swap = tNear;
       tNear = tNear > tFar ? tFar : tNear;
       tFar = swap > tFar ? swap : tFar;
 
-      //printf("z tnear: %f, tfar: %f\n", tNear, tFar);
-      
       // TODO
       // tFar *= gammaMultiplier;
 
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
 
-      //printf("z min: %f, max: %f\n", minBoundNearT, maxBoundFarT);
+      *mint = minBoundNearT;
       
       return minBoundNearT <= maxBoundFarT;
    }
 
    __global__ void unit_test_ray_against_aabb_kernel(const float* aabb, float3 o, float3 id, int* result) {
       unsigned int thread_index = blockIdx.x * blockDim.x + threadIdx.x;
+      float t = 0;
       if (thread_index == 0)
-         *result = aabb_hits(aabb, o, id) ? 1 : 0;
+         *result = aabb_hits(aabb, o, id, &t) ? 1 : 0;
    }
 
    bool PathTracerKernel::unit_test_hit_ray_against_bounding_box(const poly::Ray &ray, const float* const device_aabb) {
@@ -264,11 +247,6 @@ namespace poly {
                   fma(rd.y, intersection.t, ro.y),
                   fma(rd.z, intersection.t, ro.z)
             );
-
-//            if (debug) {
-//               printf("hit point:\n");
-//               printf("o: %f %f %f\n", intersection.hit_point.x, intersection.hit_point.y, intersection.hit_point.z);
-//            }
 
             // offset origin - hack - temp
             intersection.hit_point.x = fma(n.x, 0.002f, intersection.hit_point.x);
@@ -504,7 +482,7 @@ namespace poly {
       int next_future_node_index = 0;
       future_node_stack[next_future_node_index] = 0;
 
-      bool debug = blockIdx.x == 6933 && threadIdx.x == 17 && bounce_num == 1;
+      bool debug = false;//blockIdx.x == 6933 && threadIdx.x == 17 && bounce_num == 1;
       
       poly::device_bvh_node node;
       int current_node_index = 0;
@@ -515,48 +493,46 @@ namespace poly {
             printf("<<<%i, %i>>> Looking at node %i\n", blockIdx.x, threadIdx.x, current_node_index);
          }
          const bool is_leaf = node.is_leaf();
-         
-//         if (debug) {
-//            printf("Loaded node %i\n", current_node_index);
-//         }
+
 
          if (debug) {
             printf("<<<%i, %i>>> intersecting node %i with ray o (%f, %f, %f) d (%f %f %f)\n", blockIdx.x, threadIdx.x, current_node_index,
                    sample_origins[0].x, sample_origins[0].y, sample_origins[0].z,
                    1.f / sample_inverse_directions[0].x, 1.f / sample_inverse_directions[0].y, 1.f / sample_inverse_directions[0].z);
          }
-         if (aabb_hits(node.aabb, sample_origins[0], sample_inverse_directions[0])) {
+         
+         float aabb_t = INFINITY;
+         
+         if (aabb_hits(node.aabb, sample_origins[0], sample_inverse_directions[0], &aabb_t) && aabb_t < sample_intersections->t) {
+            
             if (debug) {
                printf("<<<%i, %i>>> ray hit node %i aabb\n", blockIdx.x, threadIdx.x, current_node_index);
             }
             if (is_leaf) {
                if (debug) {
-                  printf("<<<%i, %i>>> node %i is leaf, intersecting faces\n", blockIdx.x, threadIdx.x, current_node_index);
+                  printf("<<<%i, %i>>> node %i is leaf, intersecting faces\n", blockIdx.x, threadIdx.x,
+                         current_node_index);
                }
                for (unsigned int i = 0; i < node.num_faces; i++) {
-                  
+
                   device_index_pair indices = device_pointers.device_index_pair[node.offset + i];
                   const unsigned int mesh_index = indices.mesh_index;
                   const unsigned int face_index = indices.face_index;
-                  
+
                   if (debug) {
                      printf("Tested face_index %i\n", indices.face_index);
                   }
 
-//                  <<<6, 17>>> bounce 1 hit mismatch: bvh: 0, linear: 1
-//                  <<<6, 17>>> face_index: bvh: 0, linear: 43582
-//                  <<<6, 17>>> t: bvh: inf, linear: 0.039489
-
-                  if (debug && face_index == 43582) {
-                     printf("Loaded face_index %i\n", face_index);
-                  } 
-                  
                   const DeviceMesh mesh = device_pointers.device_meshes[mesh_index];
-                  
+
                   // TODO intersect face
                   const float3 v0 = make_float3(mesh.x[face_index], mesh.y[face_index], mesh.z[face_index]);
-                  const float3 v1 = make_float3(mesh.x[face_index + (mesh.num_faces)], mesh.y[face_index + (mesh.num_faces)], mesh.z[face_index + (mesh.num_faces)]);
-                  const float3 v2 = make_float3(mesh.x[face_index + (mesh.num_faces * 2)], mesh.y[face_index + (mesh.num_faces * 2)], mesh.z[face_index + (mesh.num_faces * 2)]);
+                  const float3 v1 = make_float3(mesh.x[face_index + (mesh.num_faces)],
+                                                mesh.y[face_index + (mesh.num_faces)],
+                                                mesh.z[face_index + (mesh.num_faces)]);
+                  const float3 v2 = make_float3(mesh.x[face_index + (mesh.num_faces * 2)],
+                                                mesh.y[face_index + (mesh.num_faces * 2)],
+                                                mesh.z[face_index + (mesh.num_faces * 2)]);
 
                   const float3 e0 = v1 - v0;
                   const float3 e1 = v2 - v1;
@@ -565,10 +541,11 @@ namespace poly {
                   pn *= __frsqrt_rn(dot(pn, pn));
                   for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
                      // don't intersect a sample if it's not active
-                     
+
                      if (!active_mask[sample_index]) {
                         if (debug) {
-                           printf("Bailing on sample %i for face_index %i because lane is not active\n", sample_index, face_index);
+                           printf("Bailing on sample %i for face_index %i because lane is not active\n",
+                                  sample_index, face_index);
                         }
                         continue;
                      }
@@ -577,12 +554,13 @@ namespace poly {
                      float3 ro = sample_origins[sample_index];
                      float3 rd = sample_directions[sample_index];
 
-                     device_intersection& intersection = sample_intersections[sample_index];
+                     device_intersection &intersection = sample_intersections[sample_index];
                      {
                         const float divisor = dot(pn, rd);
                         if (divisor == 0.0f) {
                            if (debug) {
-                              printf("Bailing on face_index %i because ray is parallel to face\n", sample_index, face_index);
+                              printf("Bailing on face_index %i because ray is parallel to face\n", sample_index,
+                                     face_index);
                            }
                            // parallel
                            continue;
@@ -593,7 +571,8 @@ namespace poly {
 
                      if (ft <= 0 || ft > intersection.t) {
                         if (debug) {
-                           printf("Bailing on face_index %i due to previous t %i vs this t %i \n", face_index, intersection.t, ft);
+                           printf("Bailing on face_index %i due to previous t %i vs this t %i \n", face_index,
+                                  intersection.t, ft);
                         }
                         continue;
                      }
@@ -644,30 +623,33 @@ namespace poly {
                      intersection.mesh_index = mesh_index;
                   }
                }
-               
+
                // next node should be from the stack, if any
                if (next_future_node_index == 0) {
                   if (debug) {
-                     printf("<<<%i, %i>>> no more nodes on stack, ending traversal\n", blockIdx.x, threadIdx.x, current_node_index);
+                     printf("<<<%i, %i>>> no more nodes on stack, ending traversal\n", blockIdx.x, threadIdx.x,
+                            current_node_index);
                   }
                   break;
                }
                if (debug) {
-                  printf("<<<%i, %i>>> picking up next node from stack\n", blockIdx.x, threadIdx.x, current_node_index);
+                  printf("<<<%i, %i>>> picking up next node from stack\n", blockIdx.x, threadIdx.x,
+                         current_node_index);
                }
                current_node_index = future_node_stack[--next_future_node_index];
-            }
-            else {
+            } else {
                if (debug) {
-                  printf("<<<%i, %i>>> node %i is interior, pushing high child on to stack, looking at low child\n", blockIdx.x, threadIdx.x, current_node_index);
+                  printf("<<<%i, %i>>> node %i is interior, pushing high child on to stack, looking at low child\n",
+                         blockIdx.x, threadIdx.x, current_node_index);
                }
                // next node should be one of the two children, and
                // push the other node on the stack
                // TODO push closer node first
                future_node_stack[next_future_node_index++] = current_node_index + node.offset;
-               
+
                current_node_index = current_node_index + 1;
             }
+
          }
          else {
             if (debug) {
@@ -716,10 +698,10 @@ namespace poly {
       const float offset_step_initial = offset_step / 2.f;
 
       bool debug = false;
-      if (pixel_x == 433 && pixel_y == 346) {
-         debug = true;
-         printf("<<<%i, %i>>> debug on pixel (%i, %i)\n", blockIdx.x, threadIdx.x, pixel_x, pixel_y);
-      }
+//      if (pixel_x == 433 && pixel_y == 346) {
+//         debug = true;
+//         printf("<<<%i, %i>>> debug on pixel (%i, %i)\n", blockIdx.x, threadIdx.x, pixel_x, pixel_y);
+//      }
 
       curandState state;
       curand_init(pixel_index, pixel_index, 0, &state);
@@ -974,7 +956,6 @@ namespace poly {
    void PathTracerKernel::Trace() const {
 
       struct device_pointers device_pointers {
-         memory_manager->device_camera,
          memory_manager->meshes,
          memory_manager->num_meshes,
          memory_manager->device_samples,
