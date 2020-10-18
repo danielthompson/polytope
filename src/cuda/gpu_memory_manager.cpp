@@ -57,9 +57,8 @@ namespace poly {
       
       // TODO try creating one stream per mesh and copying them async
       
-      for (unsigned int i = 0; i < scene->Shapes.size(); i++) {
+      for (auto original_mesh : scene->Shapes) {
 
-         const auto original_mesh = scene->Shapes.at(i);
          assert(original_mesh != nullptr);
          
          const poly::Mesh* host_mesh = reinterpret_cast<const poly::Mesh *>(original_mesh);
@@ -117,6 +116,8 @@ namespace poly {
       cuda_check_error( cudaMalloc((void**)&device_bvh, num_bvh_bytes) );
       cuda_check_error( cudaMemcpy(device_bvh, scene->bvh_root.compact_root->nodes, num_bvh_bytes, cudaMemcpyHostToDevice) );
       
+      cudaChannelFormatDesc channel_desc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindUnsigned);
+      
       
       
       
@@ -155,7 +156,7 @@ namespace poly {
 
       bytes_copied += num_index_bytes;
       
-      
+      free(gpu_check_nodes);
       return bytes_copied;
    }
    

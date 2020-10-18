@@ -513,7 +513,7 @@ namespace poly {
                   printf("<<<%i, %i>>> node %i is leaf, intersecting faces\n", blockIdx.x, threadIdx.x,
                          current_node_index);
                }
-               for (unsigned int i = 0; i < node.num_faces; i++) {
+               for (int i = 0; i < node.num_faces; i++) {
 
                   device_index_pair indices = device_pointers.device_index_pair[node.offset + i];
                   const unsigned int mesh_index = indices.mesh_index;
@@ -644,10 +644,20 @@ namespace poly {
                }
                // next node should be one of the two children, and
                // push the other node on the stack
-               // TODO push closer node first
-               future_node_stack[next_future_node_index++] = current_node_index + node.offset;
-
-               current_node_index = current_node_index + 1;
+               const int high_child_index = current_node_index + 1;
+               const int low_child_index = current_node_index + node.offset;
+               
+               // visit closer node first, push farther node onto stack
+               if ((node.flags == 0 && sample_directions[0].x > 0)
+                  || (node.flags == 1 && sample_directions[0].y > 0)
+                  || (node.flags == 2 && sample_directions[0].z > 0)) {
+                  current_node_index = high_child_index;
+                  future_node_stack[next_future_node_index++] = low_child_index;
+               }
+               else {
+                  current_node_index = low_child_index;
+                  future_node_stack[next_future_node_index++] = high_child_index;
+               }
             }
 
          }

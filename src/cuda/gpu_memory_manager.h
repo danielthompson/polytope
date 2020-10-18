@@ -25,6 +25,8 @@ namespace poly {
 
       // 0 for interior, >0 for leaf
       unsigned short num_faces;
+      
+      // right now, just splitting axis
       unsigned short flags;
 
       __host__ __device__ inline bool is_leaf() const {
