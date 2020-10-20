@@ -2,14 +2,12 @@
 // Created by daniel on 5/15/20.
 //
 
-
 #include <curand_kernel.h>
 #include <cassert>
 #include <cmath>
 #include "path_tracer.cuh"
 #include "common_device_functions.cuh"
 #include "../check_error.h"
-
 
 namespace poly {
 
@@ -40,8 +38,6 @@ namespace poly {
       float3 tangent2;
       bool hits;
    };
-   
-
    
    __device__ bool aabb_hits(const DeviceMesh &mesh, const float3 ro, const float3 rd ) {
       float maxBoundFarT = poly::FloatMax;
@@ -484,45 +480,30 @@ namespace poly {
          
       do {
          node = device_pointers.device_bvh_node[current_node_index];
-         if (debug) {
-            printf("<<<%i, %i>>> Looking at node %i\n", blockIdx.x, threadIdx.x, current_node_index);
-         }
+         cuda_debug_printf(debug, "Looking at node %i\n", current_node_index);
          const bool is_leaf = node.is_leaf();
-
-
-         if (debug) {
-            printf("<<<%i, %i>>> intersecting node %i with ray o (%f, %f, %f) d (%f %f %f), id (%f %f %f)\n", 
-                   blockIdx.x, threadIdx.x, current_node_index,
-                   origin.x, origin.y, origin.z,
-                   direction.x, direction.y, direction.z,
-                   direction_inverse.x, direction_inverse.y, direction_inverse.z);
-         }
+         cuda_debug_printf(debug, "  Intersecting node %i with ray o (%f, %f, %f) d (%f %f %f), id (%f %f %f)\n", 
+                current_node_index,
+                origin.x, origin.y, origin.z,
+                direction.x, direction.y, direction.z,
+                direction_inverse.x, direction_inverse.y, direction_inverse.z);
          
          float aabb_t = INFINITY;
          
          if (aabb_hits(node.aabb, origin, direction_inverse, &aabb_t) && aabb_t < intersection->t) {
-            
-            if (debug) {
-               printf("<<<%i, %i>>> ray hit node %i aabb\n", blockIdx.x, threadIdx.x, current_node_index);
-            }
+            cuda_debug_printf(debug, "  Ray hit node %i aabb\n", current_node_index);
             if (is_leaf) {
-               if (debug) {
-                  printf("<<<%i, %i>>> node %i is leaf, intersecting faces\n", blockIdx.x, threadIdx.x,
-                         current_node_index);
-               }
+               cuda_debug_printf(debug, "  Node %i is leaf, intersecting faces\n", current_node_index);
                for (int i = 0; i < node.num_faces; i++) {
 
                   device_index_pair indices = device_pointers.device_index_pair[node.offset + i];
                   const unsigned int mesh_index = indices.mesh_index;
                   const unsigned int face_index = indices.face_index;
 
-                  if (debug) {
-                     printf("Tested face_index %i\n", indices.face_index);
-                  }
+                  cuda_debug_printf(debug, "Testing face_index %i\n", indices.face_index);
 
                   const DeviceMesh mesh = device_pointers.device_meshes[mesh_index];
 
-                  // TODO intersect face
                   const float3 v0 = make_float3(mesh.x[face_index], mesh.y[face_index], mesh.z[face_index]);
                   const float3 v1 = make_float3(mesh.x[face_index + (mesh.num_faces)],
                                                 mesh.y[face_index + (mesh.num_faces)],
@@ -541,11 +522,7 @@ namespace poly {
                   {
                      const float divisor = dot(pn, direction);
                      if (divisor == 0.0f) {
-                        if (debug) {
-                           printf("<<<%i, %i>>> ray is parallel to face %i, bailing\n", blockIdx.x, threadIdx.x,
-                                  face_index);
-                        }
-                        // parallel
+                        cuda_debug_printf(debug, "Ray is parallel to face %i, bailing\n", face_index);
                         continue;
                      }
 
@@ -553,10 +530,8 @@ namespace poly {
                   }
 
                   if (ft <= 0 || ft > intersection->t) {
-                     if (debug) {
-                        printf("Bailing on face_index %i due to previous t %i vs this t %i \n", face_index,
+                     cuda_debug_printf(debug, "Bailing on face %i due to previous t %i vs this t %i \n", face_index,
                                intersection->t, ft);
-                     }
                      continue;
                   }
 
@@ -567,9 +542,7 @@ namespace poly {
                      float3 cross_ep = cross(e0, p);
                      float normal = dot(cross_ep, pn);
                      if (normal <= 0) {
-                        if (debug) {
-                           printf("Bailing on face_index %i due to first normal test %f\n", face_index, normal);
-                        }
+                        cuda_debug_printf(debug, "Bailing on face %i due to first normal test %f\n", face_index, normal);
                         continue;
                      }
 
@@ -577,9 +550,8 @@ namespace poly {
                      cross_ep = cross(e1, p);
                      normal = dot(cross_ep, pn);
                      if (normal <= 0) {
-                        if (debug) {
-                           printf("Bailing on face_index %i due to second normal test %f\n", face_index, normal);
-                        }
+                        
+                        cuda_debug_printf(debug, "Bailing on face %i due to second normal test %f\n", face_index, normal);
                         continue;
                      }
 
@@ -588,17 +560,12 @@ namespace poly {
                      cross_ep = cross(e2, p);
                      normal = dot(cross_ep, pn);
                      if (normal <= 0) {
-                        if (debug) {
-                           printf("Bailing on face_index %i due to third normal test %f\n", face_index, normal);
-                        }
+                        cuda_debug_printf(debug, "Bailing on face %i due to third normal test %f\n", face_index, normal);
                         continue;
                      }
                   }
 
-
-                  if (debug) {
-                     printf("Hit face face_index %i with t %f\n", face_index, ft);
-                  }
+                  cuda_debug_printf(debug, "Hit face face_index %i with t %f\n", face_index, ft);
                   // temp
                   intersection->hits = true;
                   intersection->t = ft;
@@ -609,22 +576,15 @@ namespace poly {
 
                // next node should be from the stack, if any
                if (next_future_node_index == 0) {
-                  if (debug) {
-                     printf("<<<%i, %i>>> no more nodes on stack, ending traversal\n", blockIdx.x, threadIdx.x,
-                            current_node_index);
-                  }
+                  cuda_debug_printf(debug, "  No more nodes on stack, ending traversal\n", current_node_index);
                   break;
                }
-               if (debug) {
-                  printf("<<<%i, %i>>> picking up next node from stack\n", blockIdx.x, threadIdx.x,
-                         current_node_index);
-               }
+               
+               cuda_debug_printf(debug, "  Picking up next node from stack\n", current_node_index);
                current_node_index = future_node_stack[--next_future_node_index];
             } else {
-               if (debug) {
-                  printf("<<<%i, %i>>> node %i is interior, pushing high child on to stack, looking at low child\n",
-                         blockIdx.x, threadIdx.x, current_node_index);
-               }
+
+               cuda_debug_printf(debug, "  Node %i is interior, continuing traversal\n", current_node_index);
                // next node should be one of the two children, and
                // push the other node on the stack
                const int high_child_index = current_node_index + 1;
@@ -645,19 +605,15 @@ namespace poly {
 
          }
          else {
-            if (debug) {
-               printf("<<<%i, %i>>> ray hit node %i aabb\n", blockIdx.x, threadIdx.x, current_node_index);
-            }
-               // next node should be from the stack
+
+            cuda_debug_printf(debug, "  Ray missed node %i aabb\n", current_node_index);
+            // next node should be from the stack
             if (next_future_node_index == 0) {
-               if (debug) {
-                  printf("<<<%i, %i>>> no more nodes on stack, ending traversal with hit %i and t %f\n", blockIdx.x, threadIdx.x, current_node_index, intersection->hits, intersection->t);
-               }
+               cuda_debug_printf(debug, "  No more nodes on stack, ending traversal with hit %i and t %f\n", current_node_index, intersection->hits, intersection->t);
                break;
             }
-            if (debug) {
-               printf("<<<%i, %i>>> picking up next node from stack\n", blockIdx.x, threadIdx.x, current_node_index);
-            }
+            
+            cuda_debug_printf(debug, "  Picking up next node from stack\n", current_node_index);
             current_node_index = future_node_stack[--next_future_node_index];
          }
       } while (current_node_index >= 0);
@@ -694,9 +650,8 @@ namespace poly {
       
       unsigned int num_bounces = 0;
       while (true) {
-         if (debug) {
-            printf("<<<%i, %i>>> bounce %i\n", blockIdx.x, threadIdx.x, num_bounces);
-         }
+         
+         cuda_debug_printf(debug, "Bounce %i\n", num_bounces);
          
          if (num_bounces > 5) {
             break;
@@ -721,9 +676,9 @@ namespace poly {
          if (active) {
             if (intersection.hits) {
                if (debug) {
-                  printf("    hit mesh_index %i face_index %i\n", intersection.mesh_index, intersection.face_index);
-                  printf("    o: %f %f %f\n", origin.x, origin.y, origin.z);
-                  printf("    d: %f %f %f\n", direction.x, direction.y, direction.z);
+                  cuda_debug_printf(debug, "  Hit mesh_index %i face_index %i\n", intersection.mesh_index, intersection.face_index);
+                  cuda_debug_printf(debug, "  o: %f %f %f\n", origin.x, origin.y, origin.z);
+                  cuda_debug_printf(debug, "  d: %f %f %f\n", direction.x, direction.y, direction.z);
                }
 
                // todo hit light
@@ -768,28 +723,18 @@ namespace poly {
                // TODO replace with BRDF refl
                src = src * make_float3(0.8f, 0.5f, 0.5f);
 
-               if (debug) {
-                  printf("    bounce ray:\n");
-                  printf("    o: %f %f %f\n", origin.x, origin.y, origin.z);
-                  printf("    d: %f %f %f\n", direction.x, direction.y, direction.z);
-               }
+               cuda_debug_printf(debug, "  bounce ray o: (%f %f %f) d: (%f %f %f)\n", origin.x, origin.y, origin.z, direction.x, direction.y, direction.z);
 
                // todo reflect / bounce according to BRDF
 
             } 
             else {
-               if (debug) {
-                  printf("    no hit, becoming inactive\n");
-//                     printf("    o: %f %f %f\n", ro.x, ro.y, ro.z);
-//                     printf("    d: %f %f %f\n", rd.x, rd.y, rd.z);
-               }
+               cuda_debug_printf(debug, " no hit, becoming inactive\n");
                active = false;
             }
          }
          else {
-            if (debug) {
-               printf("    inactive\n");
-            }
+            cuda_debug_printf(debug, " inactive\n");
             break;
          }
 
@@ -847,32 +792,27 @@ namespace poly {
          const float length = norm3df(v.x, v.y, v.z);
          const float one_over_length = 1.f / length;
 //      const float one_over_length = 1.f / sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-         printf("<<<%i, %i>>> unnormalized camera direction (%f, %f, %f) with length %f\n",
-                blockIdx.x, threadIdx.x,
+         
+         cuda_debug_printf(debug, "Unnormalized camera direction (%f, %f, %f) with length %f\n",
                 camera_direction.x, camera_direction.y, camera_direction.z, length);
-         
-         
       }
       
       normalize(camera_direction);
 
       if (debug) {
-         printf("<<<%i, %i>>> normalized camera direction (%f, %f, %f)\n",
-                blockIdx.x, threadIdx.x,
+         cuda_debug_printf(debug, "Normalized camera direction (%f, %f, %f)\n",
                 camera_direction.x, camera_direction.y, camera_direction.z);
       }
       float3 world_direction = matrix_apply_vector(camera_to_world_matrix, camera_direction);
 
       if (debug) {
-         printf("<<<%i, %i>>> unnormalized world direction (%f, %f, %f)\n",
-                blockIdx.x, threadIdx.x,
+         cuda_debug_printf(debug, "Unnormalized world direction (%f, %f, %f)\n",
                 world_direction.x, world_direction.y, world_direction.z);
       }
       normalize(world_direction);
 
       if (debug) {
-         printf("<<<%i, %i>>> normalized world direction (%f, %f, %f)\n",
-                blockIdx.x, threadIdx.x,
+         cuda_debug_printf(debug, "Normalized world direction (%f, %f, %f)\n",
                 world_direction.x, world_direction.y, world_direction.z);
       }
       
@@ -889,9 +829,8 @@ namespace poly {
          const float3 origin = sample_origins[pixel_index];
          const float3 direction = sample_directions[pixel_index];
          const float3 direction_inverse = sample_directions_inverse[pixel_index];
-         
-         printf("<<<%i, %i>>> generated camera ray o (%f, %f, %f) d (%f %f %f), id (%f %f %f)\n",
-                blockIdx.x, threadIdx.x,
+
+         cuda_debug_printf(debug, "Generated camera ray o (%f, %f, %f) d (%f %f %f), id (%f %f %f)\n",
                 origin.x, origin.y, origin.z,
                 direction.x, direction.y, direction.z,
                 direction_inverse.x, direction_inverse.y, direction_inverse.z);

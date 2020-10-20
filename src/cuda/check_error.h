@@ -20,4 +20,6 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
+#define cuda_debug_printf(debug, s, ...) if (debug) printf("<<<%i, %i>>> " s, blockIdx.x, threadIdx.x, ##__VA_ARGS__)
+
 #endif //POLY_CHECK_ERROR_H
