@@ -15,7 +15,7 @@ namespace poly {
       explicit PathTracerKernel(poly::GPUMemoryManager* memory_manager) 
          : memory_manager(memory_manager) { }
          
-      void Trace() const;
+      void Trace(unsigned int num_samples) const;
 
       bool unit_test_hit_ray_against_bounding_box(const poly::Ray &ray, const float* const device_aabb);
       

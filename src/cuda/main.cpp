@@ -117,8 +117,6 @@ Other:
          const auto bound_end = std::chrono::system_clock::now();
          const std::chrono::duration<double> bound_duration = bound_end - bound_start;
          Log.WithTime("Created BVH with " + std::to_string(num_nodes) + " nodes in " + std::to_string(bound_duration.count()) + "s.");
-         
-         
 
          const auto compact_start = std::chrono::system_clock::now();
          runner->Scene->bvh_root.compact();
@@ -140,11 +138,11 @@ Other:
          float effective_bandwidth = ((float) bytes_copied) / (float)copy_duration.count();
          std::string bandwidth_string = convertSize((size_t)effective_bandwidth);
          Log.WithTime("Copied " + std::to_string(bytes_copied) + " bytes in " + std::to_string(copy_duration.count()) + "s (" + bandwidth_string + ").");
-         Log.WithTime("Rendering...");
+         Log.WithTime("Rendering with " + std::to_string(runner->NumSamples) + "spp...");
          
          poly::PathTracerKernel path_tracer_kernel(&memory_manager);
          const auto render_start_time = std::chrono::system_clock::now();
-         path_tracer_kernel.Trace();
+         path_tracer_kernel.Trace(runner->NumSamples);
          const auto render_end_time = std::chrono::system_clock::now();
          const std::chrono::duration<double> render_duration = render_end_time - render_start_time;
          Log.WithTime("Render complete in " + std::to_string(render_duration.count()) + "s.");
