@@ -7,12 +7,13 @@
 #include "path_tracer.cuh"
 #include "common_device_functions.cuh"
 #include "../check_error.h"
+#include <cassert>
 
 namespace poly {
 
    constexpr unsigned int threads_per_block = 32;
    
-   constexpr unsigned int num_constant_nodes = 16;
+   constexpr unsigned int num_constant_nodes = 1536;
    __constant__ poly::device_bvh_node const_bvh_nodes[num_constant_nodes];
 
 
@@ -306,12 +307,12 @@ namespace poly {
       int current_node_index = 0;
          
       do {
-//         if (current_node_index < num_constant_nodes) {
-//            node = const_bvh_nodes[current_node_index];
-//         }
-//         else {
+         if (current_node_index < num_constant_nodes) {
+            node = const_bvh_nodes[current_node_index];
+         }
+         else {
             node = const_device_pointers.device_bvh_node[current_node_index];
-//         }
+         }
          //node = const_device_pointers.device_bvh_node[current_node_index];
          cuda_debug_printf(debug, "Looking at node %i\n", current_node_index);
          const bool is_leaf = node.is_leaf();
@@ -717,7 +718,7 @@ namespace poly {
       
       cuda_check_error( cudaMemcpyToSymbol(camera_to_world_matrix, memory_manager->camera_to_world_matrix, sizeof(float) * 16));
       cuda_check_error( cudaMemcpyToSymbol(const_device_pointers, &device_pointers, sizeof(struct device_pointers)) );
-      cuda_check_error( cudaMemcpyToSymbol(const_bvh_nodes, &memory_manager->device_bvh, sizeof(poly::device_bvh_node) * num_constant_nodes));
+      cuda_check_error( cudaMemcpyToSymbol(const_bvh_nodes, memory_manager->scene_field->bvh_root.compact_root->nodes, sizeof(poly::device_bvh_node) * num_constant_nodes));
       
       const unsigned int blocksPerGrid = (memory_manager->num_pixels + threads_per_block - 1) / threads_per_block;
 

@@ -13,6 +13,8 @@ namespace poly {
    
    size_t GPUMemoryManager::MallocScene(poly::Scene *scene) {
 
+      this->scene_field = scene;
+      
       size_t bytes_copied = 0;
       
       cuda_check_error( cudaSetDevice(1) );

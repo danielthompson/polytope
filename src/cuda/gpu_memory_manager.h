@@ -17,16 +17,20 @@ namespace poly {
    };
    
    struct device_bvh_node {
+      // 24 bytes
       float aabb[6];
 
       // interior - high child offset
       // leaf - face index offset
+      // 4 bytes
       unsigned int offset;
 
       // 0 for interior, >0 for leaf
+      // 2 bytes
       unsigned short num_faces;
       
       // right now, just splitting axis
+      // 2 bytes
       unsigned short flags;
 
       __host__ __device__ inline bool is_leaf() const {
@@ -59,6 +63,7 @@ namespace poly {
       }
       ~GPUMemoryManager();
       
+      poly::Scene* scene_field;
       size_t MallocScene(poly::Scene* scene);
       struct DeviceCamera* device_camera;
       struct DeviceMesh* meshes;
