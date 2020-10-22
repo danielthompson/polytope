@@ -12,6 +12,10 @@ namespace poly {
 
    constexpr unsigned int threads_per_block = 32;
    
+   constexpr unsigned int num_constant_nodes = 16;
+   __constant__ poly::device_bvh_node const_bvh_nodes[num_constant_nodes];
+
+
    __constant__ float camera_to_world_matrix[16];
    
    struct device_pointers {
@@ -28,7 +32,7 @@ namespace poly {
    };
 
    __constant__ struct device_pointers const_device_pointers;
-
+   __constant__ poly::device_bvh_node root_node; 
 
    struct device_intersection {
       float t;
@@ -290,11 +294,25 @@ namespace poly {
 //      bool debug = pixel_index == 131328;
       bool debug = false;
       
+//      const unsigned int num_shared_nodes = 16;
+//      // load the first 16 nodes into shared memory, just to see how that goes
+//      __shared__ poly::device_bvh_node shared_nodes[num_shared_nodes];
+//      if (threadIdx.x < num_shared_nodes) {
+//         shared_nodes[threadIdx.x] = const_device_pointers.device_bvh_node[threadIdx.x];
+//      }
+//      __syncthreads();
+//      
       poly::device_bvh_node node;
       int current_node_index = 0;
          
       do {
-         node = const_device_pointers.device_bvh_node[current_node_index];
+//         if (current_node_index < num_constant_nodes) {
+//            node = const_bvh_nodes[current_node_index];
+//         }
+//         else {
+            node = const_device_pointers.device_bvh_node[current_node_index];
+//         }
+         //node = const_device_pointers.device_bvh_node[current_node_index];
          cuda_debug_printf(debug, "Looking at node %i\n", current_node_index);
          const bool is_leaf = node.is_leaf();
          cuda_debug_printf(debug, "  Intersecting node %i with ray o (%f, %f, %f) d (%f %f %f), id (%f %f %f)\n", 
@@ -699,6 +717,7 @@ namespace poly {
       
       cuda_check_error( cudaMemcpyToSymbol(camera_to_world_matrix, memory_manager->camera_to_world_matrix, sizeof(float) * 16));
       cuda_check_error( cudaMemcpyToSymbol(const_device_pointers, &device_pointers, sizeof(struct device_pointers)) );
+      cuda_check_error( cudaMemcpyToSymbol(const_bvh_nodes, &memory_manager->device_bvh, sizeof(poly::device_bvh_node) * num_constant_nodes));
       
       const unsigned int blocksPerGrid = (memory_manager->num_pixels + threads_per_block - 1) / threads_per_block;
 
@@ -734,21 +753,24 @@ namespace poly {
       cuda_check_error( cudaMalloc((void**)&sample_directions_inverse, sample_bytes) );
 
       for (int i = 0; i < num_samples; i++) {
+         {
+            const unsigned int generate_rays_tpb = 64;
+            const unsigned int generate_rays_bpg = (memory_manager->num_pixels + generate_rays_tpb - 1) / generate_rays_tpb;
+            
+            // generate rays
+            //printf("launching generate_camera_rays_centered_kernel<<<%i, %i>>>\n", blocksPerGrid, threads_per_block);
+            generate_camera_rays_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
+                  sample_origins, sample_directions, sample_directions_inverse, device_states,
+                  width, (float) height, tan_fov_half);
+            cudaDeviceSynchronize();
+            error = cudaGetLastError();
 
-         // generate rays
-         //printf("launching generate_camera_rays_centered_kernel<<<%i, %i>>>\n", blocksPerGrid, threads_per_block);
-         generate_camera_rays_random_kernel<<<blocksPerGrid, threads_per_block>>>(
-               sample_origins, sample_directions, sample_directions_inverse, device_states,
-               width, (float) height, tan_fov_half);
-         cudaDeviceSynchronize();
-         error = cudaGetLastError();
-
-         if (error != cudaSuccess) {
-            fprintf(stderr, "Failed to launch generate_camera_rays_centered_kernel (error code %s)!\n",
-                    cudaGetErrorString(error));
-            exit(EXIT_FAILURE);
+            if (error != cudaSuccess) {
+               fprintf(stderr, "Failed to launch generate_camera_rays_centered_kernel (error code %s)!\n",
+                       cudaGetErrorString(error));
+               exit(EXIT_FAILURE);
+            }
          }
-
 
          // run path tracer => sample_results
 
