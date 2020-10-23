@@ -46,6 +46,16 @@ namespace poly {
       bool hits;
    };
    
+   __device__ float3 mirror_sample(float3 local_incoming) {
+      return make_float3(local_incoming.x, -local_incoming.y, local_incoming.z);
+   }
+   
+   __device__ float3 lambert_sample(float3 local_incoming, curandState_t* const rng) {
+      float u0 = curand_uniform(rng);
+      float u1 = curand_uniform(rng);
+      return cosine_sample_hemisphere(u0, u1);
+   }
+   
    __device__ bool aabb_hits(const DeviceMesh &mesh, const float3 ro, const float3 rd ) {
       float maxBoundFarT = poly::FloatMax;
       float minBoundNearT = 0;
@@ -179,7 +189,7 @@ namespace poly {
       if (thread_index == 0)
          *result = aabb_hits(aabb, o, id, &t) ? 1 : 0;
    }
-
+   
    bool PathTracerKernel::unit_test_hit_ray_against_bounding_box(const poly::Ray &ray, const float* const device_aabb) {
       
       int* device_result;
@@ -291,8 +301,8 @@ namespace poly {
       int next_future_node_index = 0;
       future_node_stack[next_future_node_index] = 0;
 
-      const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
-//      bool debug = pixel_index == 131328;
+//      const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
+//      bool debug = pixel_index == 1369488;
       bool debug = false;
       
 //      const unsigned int num_shared_nodes = 16;
@@ -366,9 +376,20 @@ namespace poly {
                      ft = (dot(pn, v0 - origin)) / divisor;
                   }
 
-                  if (ft <= 0 || ft > intersection->t) {
-                     cuda_debug_printf(debug, "Bailing on face %i due to previous t %f vs this t %f \n", face_index,
-                               intersection->t, ft);
+                  if (isnan(ft)) {
+                     cuda_debug_printf(debug, "Bailing on face %i due to t %f\n", face_index, ft);
+                     continue;
+                  }
+                  
+                  if (ft <= 0) {
+                     cuda_debug_printf(debug, "Bailing on face %i due to t %f (ray origin isn't above the surface \n", face_index,
+                               ft);
+                     continue;
+                  }
+
+                  if (ft > intersection->t) {
+                     cuda_debug_printf(debug, "Bailing on face %i due to previous t %f vs this t %f (we already found a closer t)\n", face_index,
+                                       intersection->t, ft);
                      continue;
                   }
 
@@ -470,9 +491,9 @@ namespace poly {
                ) {
       // loop over pixels
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
-
-      bool debug = false;
-//      bool debug = pixel_index == 131328;
+      
+      //bool debug = false;
+      bool debug = pixel_index == 1369488;
 
       float3 src = { 1.0f, 1.0f, 1.0f};
       
@@ -524,15 +545,9 @@ namespace poly {
                                  dot(d, intersection.normal),
                                  dot(d, intersection.tangent2)));
 
-               // mirror
-//               const float3 local_outgoing = make_float3(local_incoming.x, -local_incoming.y, local_incoming.z);
-
-               // lambert
-               float u0 = curand_uniform(&rng_states[pixel_index]);
-               float u1 = curand_uniform(&rng_states[pixel_index]);
-               float3 local_outgoing = cosine_sample_hemisphere(u0, u1);
-               float3 foo = cosine_sample_hemisphere(0.5f, 0.5f);
-
+               const float3 local_outgoing = mirror_sample(local_incoming);
+               //const float3 local_outgoing = lambert_sample(local_incoming, &(rng_states[pixel_index]));
+               
                float3 world_outgoing = normalize(make_float3(
                      intersection.tangent1.x * local_outgoing.x + intersection.normal.x * local_outgoing.y +
                      intersection.tangent2.x * local_outgoing.z,
@@ -580,7 +595,7 @@ namespace poly {
 
       for (unsigned int sample_index = 0; sample_index < num_samples; sample_index++) {
 
-         float3 sample = src[sample_index];
+         //float3 sample = src[sample_index];
          sample_sum += src[sample_index];
       }
 
@@ -760,8 +775,12 @@ namespace poly {
             
             // generate rays
             //printf("launching generate_camera_rays_centered_kernel<<<%i, %i>>>\n", blocksPerGrid, threads_per_block);
-            generate_camera_rays_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
-                  sample_origins, sample_directions, sample_directions_inverse, device_states,
+//            generate_camera_rays_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
+//                  sample_origins, sample_directions, sample_directions_inverse, device_states,
+//                  width, (float) height, tan_fov_half);
+
+            generate_camera_rays_centered_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
+                  sample_origins, sample_directions, sample_directions_inverse, 
                   width, (float) height, tan_fov_half);
             cudaDeviceSynchronize();
             error = cudaGetLastError();
