@@ -11,7 +11,7 @@ namespace poly {
 
    class MirrorBRDF : public AbstractBRDF {
    public:
-      MirrorBRDF(const ReflectanceSpectrum &refl) : refl(refl) { }
+      MirrorBRDF(const ReflectanceSpectrum &refl) : AbstractBRDF(BRDF_TYPE::Mirror), refl(refl) { }
       float f(const float thetaIncoming, const float thetaOutgoing) const override {
          if (poly::WithinEpsilon(thetaIncoming, thetaOutgoing))
             return 1.0f;

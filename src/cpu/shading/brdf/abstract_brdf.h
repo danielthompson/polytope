@@ -11,8 +11,17 @@
 
 namespace poly {
 
+   enum BRDF_TYPE {
+      Lambert = 1,
+      Mirror = 2,
+      Glossy = 4
+   };
+   
    class AbstractBRDF {
    public:
+      
+      BRDF_TYPE brdf_type;
+      
       virtual float f(float thetaIncoming, float thetaOutgoing) const = 0;
 
       /**
@@ -45,10 +54,10 @@ namespace poly {
        */
       virtual float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const = 0;
 
+      AbstractBRDF(BRDF_TYPE brdf_type) : brdf_type(brdf_type) { }
+      
       virtual ~AbstractBRDF() = default;
-
    };
-
 }
 
 #endif //POLY_ABSTRACTBRDF_H

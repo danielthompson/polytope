@@ -7,6 +7,9 @@
 #include <cstring>
 #include "gpu_memory_manager.h"
 #include "check_error.h"
+#include "../cpu/shading/brdf/lambert_brdf.h"
+#include "../cpu/shading/brdf/mirror_brdf.h"
+
 namespace poly {
 
 //   __constant__ float camera_to_world_matrix[16];
@@ -64,6 +67,7 @@ namespace poly {
          assert(original_mesh != nullptr);
          
          const poly::Mesh* host_mesh = reinterpret_cast<const poly::Mesh *>(original_mesh);
+         
          assert(host_mesh != nullptr);
          assert(host_mesh->x.size() == host_mesh->y.size());
          assert(host_mesh->y.size() == host_mesh->z.size());
@@ -76,6 +80,23 @@ namespace poly {
          host_mesh_temp.num_bytes = num_bytes;
          host_mesh_temp.num_vertices = num_vertices;
          host_mesh_temp.num_faces = num_faces;
+         host_mesh_temp.brdf_type = host_mesh->Material->BRDF->brdf_type;
+         switch (host_mesh_temp.brdf_type) {
+            case (BRDF_TYPE::Lambert): {
+               poly::LambertBRDF* brdf = dynamic_cast<poly::LambertBRDF*>(&(*(host_mesh->Material->BRDF)));
+               host_mesh_temp.brdf_params[0] = brdf->refl.r;
+               host_mesh_temp.brdf_params[1] = brdf->refl.g;
+               host_mesh_temp.brdf_params[2] = brdf->refl.b;
+               break;
+            }
+            case (BRDF_TYPE::Mirror): {
+               poly::MirrorBRDF* brdf = dynamic_cast<poly::MirrorBRDF*>(&(*(host_mesh->Material->BRDF)));
+               host_mesh_temp.brdf_params[0] = brdf->refl.r;
+               host_mesh_temp.brdf_params[1] = brdf->refl.g;
+               host_mesh_temp.brdf_params[2] = brdf->refl.b;
+               break;
+            }
+         }
          host_mesh_temp.aabb[0] = host_mesh->BoundingBox->p0.x;
          host_mesh_temp.aabb[1] = host_mesh->BoundingBox->p0.y;
          host_mesh_temp.aabb[2] = host_mesh->BoundingBox->p0.z;
@@ -117,10 +138,6 @@ namespace poly {
       size_t num_bvh_bytes = scene->bvh_root.num_nodes * sizeof(device_bvh_node);
       cuda_check_error( cudaMalloc((void**)&device_bvh, num_bvh_bytes) );
       cuda_check_error( cudaMemcpy(device_bvh, scene->bvh_root.compact_root->nodes, num_bvh_bytes, cudaMemcpyHostToDevice) );
-      
-      cudaChannelFormatDesc channel_desc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindUnsigned);
-      
-      
       
       
       device_bvh_node* gpu_check_nodes = static_cast<device_bvh_node *>(malloc(num_bvh_bytes));

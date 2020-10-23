@@ -302,7 +302,7 @@ namespace poly {
       future_node_stack[next_future_node_index] = 0;
 
 //      const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
-//      bool debug = pixel_index == 1369488;
+//      bool debug = pixel_index == 1477005;
       bool debug = false;
       
 //      const unsigned int num_shared_nodes = 16;
@@ -492,8 +492,8 @@ namespace poly {
       // loop over pixels
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
       
-      //bool debug = false;
-      bool debug = pixel_index == 1369488;
+      bool debug = false;
+//      bool debug = pixel_index == 1477005;
 
       float3 src = { 1.0f, 1.0f, 1.0f};
       
@@ -535,6 +535,8 @@ namespace poly {
             if (intersection.hits) {
                cuda_debug_printf(debug, "  Hit mesh %i face %i with ray o: (%f %f %f) d: (%f %f %f)\n", 
                                  intersection.mesh_index, intersection.face_index, o.x, o.y, o.z, d.x, d.y, d.z);
+
+
                
                // todo hit light
 
@@ -545,8 +547,27 @@ namespace poly {
                                  dot(d, intersection.normal),
                                  dot(d, intersection.tangent2)));
 
-               const float3 local_outgoing = mirror_sample(local_incoming);
-               //const float3 local_outgoing = lambert_sample(local_incoming, &(rng_states[pixel_index]));
+               const DeviceMesh mesh_hit = const_device_pointers.device_meshes[intersection.mesh_index];
+
+               float3 local_outgoing;
+
+               switch (mesh_hit.brdf_type) {
+                  case BRDF_TYPE::Lambert: {
+                     local_outgoing = lambert_sample(local_incoming, &(rng_states[pixel_index]));
+                     src = src * make_float3(mesh_hit.brdf_params[0],mesh_hit.brdf_params[1],mesh_hit.brdf_params[2]);
+                     break;
+                  }
+                  case BRDF_TYPE::Mirror: {
+                     local_outgoing = mirror_sample(local_incoming);
+                     src = src * make_float3(mesh_hit.brdf_params[0],mesh_hit.brdf_params[1],mesh_hit.brdf_params[2]);
+                     break;
+                  }
+                  default:
+                     printf("mesh %i missing brdf :/\n", intersection.mesh_index);
+                     local_outgoing = {0.0f / 0.0f, 0.0f / 0.0f, 0.0f / 0.0f};
+                     src = {0.0f / 0.0f, 0.0f / 0.0f, 0.0f / 0.0f};
+                     break;
+               }
                
                float3 world_outgoing = normalize(make_float3(
                      intersection.tangent1.x * local_outgoing.x + intersection.normal.x * local_outgoing.y +
@@ -564,7 +585,7 @@ namespace poly {
                                                                      1.f / world_outgoing.z);
 
                // TODO replace with BRDF refl
-               src = src * make_float3(0.8f, 0.5f, 0.5f);
+               //src = src * make_float3(0.8f, 0.5f, 0.5f);
 
                cuda_debug_printf(debug, "  bounce ray o: (%f %f %f) d: (%f %f %f)\n", o.x, o.y, o.z, d.x, d.y, d.z);
 
@@ -775,13 +796,13 @@ namespace poly {
             
             // generate rays
             //printf("launching generate_camera_rays_centered_kernel<<<%i, %i>>>\n", blocksPerGrid, threads_per_block);
-//            generate_camera_rays_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
-//                  sample_origins, sample_directions, sample_directions_inverse, device_states,
-//                  width, (float) height, tan_fov_half);
-
-            generate_camera_rays_centered_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
-                  sample_origins, sample_directions, sample_directions_inverse, 
+            generate_camera_rays_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
+                  sample_origins, sample_directions, sample_directions_inverse, device_states,
                   width, (float) height, tan_fov_half);
+
+//            generate_camera_rays_centered_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
+//                  sample_origins, sample_directions, sample_directions_inverse, 
+//                  width, (float) height, tan_fov_half);
             cudaDeviceSynchronize();
             error = cudaGetLastError();
 

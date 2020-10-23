@@ -43,8 +43,9 @@ namespace poly {
       float* y;
       float* z;
       
-      // color.. need to fix this to properly use brdf
-      float* src;
+      poly::BRDF_TYPE brdf_type;
+      float brdf_params[10];
+      
       size_t num_bytes, num_vertices, num_faces;
       float aabb[6];
    };

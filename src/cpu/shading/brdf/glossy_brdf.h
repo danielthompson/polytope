@@ -12,7 +12,7 @@ namespace poly {
    class GlossyBRDF : public AbstractBRDF {
    public:
       GlossyBRDF(const ReflectanceSpectrum &specular, const ReflectanceSpectrum &diffuse, const float roughness)
-            : specular(specular), diffuse(diffuse), roughness(roughness) {  };
+            : AbstractBRDF(BRDF_TYPE::Glossy), specular(specular), diffuse(diffuse), roughness(roughness) {  };
 
       float f(const float thetaIncoming, const float thetaOutgoing) const override {
          return 0;

@@ -12,8 +12,8 @@ namespace poly {
 
    class LambertBRDF : public AbstractBRDF {
    public:
-      explicit LambertBRDF() : refl(1.f, 1.f, 1.f) { };
-      LambertBRDF(ReflectanceSpectrum refl) : refl(refl) { };
+      explicit LambertBRDF() : AbstractBRDF(BRDF_TYPE::Lambert), refl(1.f, 1.f, 1.f) { };
+      LambertBRDF(ReflectanceSpectrum refl) : AbstractBRDF(BRDF_TYPE::Lambert), refl(refl) { };
       
       float f(float thetaIncoming, float thetaOutgoing) const override {
 //      return poly::OneOverPi;
