@@ -259,9 +259,9 @@ namespace poly {
          );
 
          // offset origin - hack - temp
-         intersection->hit_point.x = fmaf(n.x, 0.002f, intersection->hit_point.x);
-         intersection->hit_point.y = fmaf(n.y, 0.002f, intersection->hit_point.y);
-         intersection->hit_point.z = fmaf(n.z, 0.002f, intersection->hit_point.z);
+         //intersection->hit_point.x = fmaf(n.x, 0.001f, intersection->hit_point.x);
+         //intersection->hit_point.y = fmaf(n.y, 0.001f, intersection->hit_point.y);
+         //intersection->hit_point.z = fmaf(n.z, 0.001f, intersection->hit_point.z);
 
          const float edge0dot = fabs(dot(e0, e1));
          const float edge1dot = fabs(dot(e1, e2));
@@ -345,6 +345,8 @@ namespace poly {
                   const unsigned int face_index = indices.face_index;
                   cuda_debug_printf(debug, "Testing face_index %i\n", indices.face_index);
                   const DeviceMesh mesh = const_device_pointers.device_meshes[mesh_index];
+                  
+                  
                   
                   const unsigned int v1_index = face_index + (mesh.num_faces);
                   const unsigned int v2_index = face_index + (mesh.num_faces * 2);
@@ -492,8 +494,8 @@ namespace poly {
       // loop over pixels
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
       
-      bool debug = false;
-//      bool debug = pixel_index == 1477005;
+//      bool debug = false;
+      bool debug = pixel_index == 1870631;
 
       float3 src = { 1.0f, 1.0f, 1.0f};
       
@@ -510,7 +512,7 @@ namespace poly {
          
          cuda_debug_printf(debug, "Bounce %i\n", num_bounces);
          
-         if (num_bounces > 5) {
+         if (num_bounces > 20) {
             break;
          }
          
@@ -533,8 +535,8 @@ namespace poly {
                   );
             
             if (intersection.hits) {
-               cuda_debug_printf(debug, "  Hit mesh %i face %i with ray o: (%f %f %f) d: (%f %f %f)\n", 
-                                 intersection.mesh_index, intersection.face_index, o.x, o.y, o.z, d.x, d.y, d.z);
+               cuda_debug_printf(debug, "  Hit mesh %i face %i with t %f ray o: (%f %f %f) d: (%f %f %f)\n", 
+                                 intersection.mesh_index, intersection.face_index, intersection.t, o.x, o.y, o.z, d.x, d.y, d.z);
 
 
                
