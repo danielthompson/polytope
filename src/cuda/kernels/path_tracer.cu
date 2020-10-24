@@ -44,7 +44,19 @@ namespace poly {
       float3 tangent1;
       float3 tangent2;
       bool hits;
+      float u, v, w, new_t;
    };
+   
+   __device__ float dim(const float3 v, const int d) {
+      switch (d) {
+         case 0:
+            return v.x;
+         case 1:
+            return v.y;
+         default:
+            return v.z;
+      }
+   }
    
    __device__ float3 mirror_sample(float3 local_incoming) {
       return make_float3(local_incoming.x, -local_incoming.y, local_incoming.z);
@@ -252,12 +264,14 @@ namespace poly {
          intersection->normal = n;
 
          // TODO this is (very) non-optimal
-         intersection->hit_point = make_float3(
-               fma(direction.x, intersection->t, origin.x),
-               fma(direction.y, intersection->t, origin.y),
-               fma(direction.z, intersection->t, origin.z)
-         );
+//         intersection->hit_point = make_float3(
+//               fma(direction.x, intersection->new_t, origin.x),
+//               fma(direction.y, intersection->new_t, origin.y),
+//               fma(direction.z, intersection->new_t, origin.z)
+//         );
 
+//         intersection->hit_point = make_float3(intersection->u, intersection->v, intersection->w);
+               
          // offset origin - hack - temp
          //intersection->hit_point.x = fmaf(n.x, 0.001f, intersection->hit_point.x);
          //intersection->hit_point.y = fmaf(n.y, 0.001f, intersection->hit_point.y);
@@ -346,8 +360,6 @@ namespace poly {
                   cuda_debug_printf(debug, "Testing face_index %i\n", indices.face_index);
                   const DeviceMesh mesh = const_device_pointers.device_meshes[mesh_index];
                   
-                  
-                  
                   const unsigned int v1_index = face_index + (mesh.num_faces);
                   const unsigned int v2_index = face_index + (mesh.num_faces * 2);
 
@@ -361,76 +373,183 @@ namespace poly {
                                                 __ldg(&mesh.y[v2_index]),
                                                 __ldg(&mesh.z[v2_index]));
 
-                  const float3 e0 = v1 - v0;
-                  const float3 e1 = v2 - v1;
-                  float3 pn = cross(e0, e1);
+                  // wald watertight intersection
+                  // http://jcgt.org/published/0002/01/05/paper.pdf
 
-                  pn *= __frsqrt_rn(dot(pn, pn));
-                  float ft = INFINITY;
+                  // calculate dimension where the ray direction is maximal 
+                  //int kz = max_dim(abs(dir));
+
+                  float dx_abs = fabs(direction.x);
+                  float dy_abs = fabs(direction.y);
+                  float dz_abs = fabs(direction.z);
                   
-                  {
-                     const float divisor = dot(pn, direction);
-                     if (divisor == 0.0f) {
-                        cuda_debug_printf(debug, "Ray is parallel to face %i, bailing\n", face_index);
-                        continue;
-                     }
-
-                     ft = (dot(pn, v0 - origin)) / divisor;
+                  int kz = 0;
+                  if (dy_abs > dx_abs && dy_abs > dz_abs)
+                     kz = 1;
+                  else if (dz_abs > dx_abs && dz_abs > dy_abs)
+                     kz = 2;
+                  
+                  int kx = kz + 1; 
+                  if (kx == 3) 
+                     kx = 0;
+                  int ky = kx + 1; 
+                  if (ky == 3) 
+                        ky = 0;
+                  
+                  // swap kx and ky dimension to preserve winding direction of triangles
+                  if (dim(direction, kz) < 0.0f) {
+                     // swap(kx, ky)
+                     int temp = kx;
+                     kx = ky;
+                     ky = temp;
                   }
 
-                  if (isnan(ft)) {
-                     cuda_debug_printf(debug, "Bailing on face %i due to t %f\n", face_index, ft);
-                     continue;
+                  // calculate shear constants
+                  float Sx = dim(direction, kx) / dim(direction, kz);
+                  float Sy = dim(direction, ky) / dim(direction, kz);
+                  float Sz = 1.0f / dim(direction, kz);
+                  
+                  // calculate vertices relative to ray origin
+                  const float3 A = v0 - origin;
+                  const float3 B = v1 - origin;
+                  const float3 C = v2 - origin;
+                  
+                  // perform shear and scale of vertices
+                  const float Ax = dim(A, kx) - Sx * dim(A, kz);
+                  const float Ay = dim(A, ky) - Sy * dim(A, kz);
+                  const float Bx = dim(B, kx) - Sx * dim(B, kz);
+                  const float By = dim(B, ky) - Sy * dim(B, kz);
+                  const float Cx = dim(C, kx) - Sx * dim(C, kz);
+                  const float Cy = dim(C, ky) - Sy * dim(C, kz);
+                  
+                  // calculate scaled barycentric coordinates
+                  float U = Cx * By - Cy * Bx;
+                  float V = Ax * Cy - Ay * Cx;
+                  float W = Bx * Ay - By * Ax;
+                  
+                  // fallback to test against edges using double precision
+                  if (U == 0.0f || V == 0.0f || W == 0.0f) {
+                     double CxBy = (double)Cx*(double)By;
+                     double CyBx = (double)Cy*(double)Bx;
+                     U = (float)(CxBy - CyBx);
+                     
+                     double AxCy = (double)Ax*(double)Cy;
+                     double AyCx = (double)Ay*(double)Cx;
+                     V = (float)(AxCy - AyCx);
+                     
+                     double BxAy = (double)Bx*(double)Ay;
+                     double ByAx = (double)By*(double)Ax;
+                     W = (float)(BxAy - ByAx);
                   }
                   
-                  if (ft <= 0) {
-                     cuda_debug_printf(debug, "Bailing on face %i due to t %f (ray origin isn't above the surface \n", face_index,
-                               ft);
+                  // Perform edge tests. Moving this test before and at the end of the previous
+                  // conditional gives higher performance.
+                  // backface culling:
+                  if (U < 0.0f || V < 0.0f || W < 0.0f)
                      continue;
-                  }
-
-                  if (ft > intersection->t) {
-                     cuda_debug_printf(debug, "Bailing on face %i due to previous t %f vs this t %f (we already found a closer t)\n", face_index,
-                                       intersection->t, ft);
+                  // no backface culling:
+                  //if ((U<0.0f || V<0.0f || W<0.0f) &&(U>0.0f || V>0.0f || W>0.0f)) return;
+                  
+                  // calculate determinant
+                  float det = U + V + W;
+                  if (det == 0.0f)
                      continue;
-                  }
-
-                  const float3 hp = origin + direction * ft;
-
-                  {
-                     float3 p = hp - v0;
-                     float3 cross_ep = cross(e0, p);
-                     float normal = dot(cross_ep, pn);
-                     if (normal <= 0) {
-                        cuda_debug_printf(debug, "Bailing on face %i due to first normal test %f\n", face_index, normal);
-                        continue;
-                     }
-
-                     p = hp - v1;
-                     cross_ep = cross(e1, p);
-                     normal = dot(cross_ep, pn);
-                     if (normal <= 0) {
-                        
-                        cuda_debug_printf(debug, "Bailing on face %i due to second normal test %f\n", face_index, normal);
-                        continue;
-                     }
-
-                     const float3 e2 = v0 - v2;
-                     p = hp - v2;
-                     cross_ep = cross(e2, p);
-                     normal = dot(cross_ep, pn);
-                     if (normal <= 0) {
-                        cuda_debug_printf(debug, "Bailing on face %i due to third normal test %f\n", face_index, normal);
-                        continue;
-                     }
-                  }
-
-                  cuda_debug_printf(debug, "Hit face face_index %i with t %f\n", face_index, ft);
-                  // temp
+                  
+                  // calculate scaled z-coordinates of vertices and use them to calculate the hit distance
+                  const float Az = Sz * dim(A, kz);
+                  const float Bz = Sz * dim(B, kz);
+                  const float Cz = Sz * dim(C, kz);
+                  const float T = U * Az + V * Bz + W * Cz;
+                  
+                  // backface culling
+                  if (T < 0.0f || T > intersection->t * det)
+                     continue;
+                  
+                  // no backface culling
+                  // int det_sign = sign_mask(det);if (xorf(T,det_sign) < 0.0f) ||xorf(T,det_sign) > hit.t*xorf(det, det_sign))return;
+                  
+                  // normalize
+                  const float rcpDet = 1.0f / det;
+                  float u = U * rcpDet;
+                  float v = V * rcpDet;
+                  float w = W * rcpDet;
+                  intersection->t = T * rcpDet;
                   intersection->hits = true;
-                  intersection->t = ft;
                   intersection->face_index = face_index;
                   intersection->mesh_index = mesh_index;
+                  intersection->hit_point = v0 * u + v1 * v + v2 * w; 
+                  
+//                  
+//                  const float3 e0 = v1 - v0;
+//                  const float3 e1 = v2 - v1;
+//                  float3 pn = cross(e0, e1);
+//
+//                  pn *= __frsqrt_rn(dot(pn, pn));
+//                  float ft = INFINITY;
+//                  
+//                  {
+//                     const float divisor = dot(pn, direction);
+//                     if (divisor == 0.0f) {
+//                        cuda_debug_printf(debug, "Ray is parallel to face %i, bailing\n", face_index);
+//                        continue;
+//                     }
+//
+//                     ft = (dot(pn, v0 - origin)) / divisor;
+//                  }
+//
+//                  if (isnan(ft)) {
+//                     cuda_debug_printf(debug, "Bailing on face %i due to t %f\n", face_index, ft);
+//                     continue;
+//                  }
+//                  
+//                  if (ft <= 0) {
+//                     cuda_debug_printf(debug, "Bailing on face %i due to t %f (ray origin isn't above the surface \n", face_index,
+//                               ft);
+//                     continue;
+//                  }
+//
+//                  if (ft > intersection->t) {
+//                     cuda_debug_printf(debug, "Bailing on face %i due to previous t %f vs this t %f (we already found a closer t)\n", face_index,
+//                                       intersection->t, ft);
+//                     continue;
+//                  }
+//
+//                  const float3 hp = origin + direction * ft;
+//
+//                  {
+//                     float3 p = hp - v0;
+//                     float3 cross_ep = cross(e0, p);
+//                     float normal = dot(cross_ep, pn);
+//                     if (normal <= 0) {
+//                        cuda_debug_printf(debug, "Bailing on face %i due to first normal test %f\n", face_index, normal);
+//                        continue;
+//                     }
+//
+//                     p = hp - v1;
+//                     cross_ep = cross(e1, p);
+//                     normal = dot(cross_ep, pn);
+//                     if (normal <= 0) {
+//                        
+//                        cuda_debug_printf(debug, "Bailing on face %i due to second normal test %f\n", face_index, normal);
+//                        continue;
+//                     }
+//
+//                     const float3 e2 = v0 - v2;
+//                     p = hp - v2;
+//                     cross_ep = cross(e2, p);
+//                     normal = dot(cross_ep, pn);
+//                     if (normal <= 0) {
+//                        cuda_debug_printf(debug, "Bailing on face %i due to third normal test %f\n", face_index, normal);
+//                        continue;
+//                     }
+//                  }
+//
+//                  cuda_debug_printf(debug, "Hit face face_index %i with t %f\n", face_index, ft);
+//                  // temp
+//                  intersection->hits = true;
+//                  intersection->t = ft;
+//                  intersection->face_index = face_index;
+//                  intersection->mesh_index = mesh_index;
                }
                
 
@@ -494,8 +613,8 @@ namespace poly {
       // loop over pixels
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
       
-//      bool debug = false;
-      bool debug = pixel_index == 1870631;
+      bool debug = false;
+//      bool debug = pixel_index == 1870631;
 
       float3 src = { 1.0f, 1.0f, 1.0f};
       
