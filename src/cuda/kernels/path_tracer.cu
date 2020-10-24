@@ -318,18 +318,41 @@ namespace poly {
 //      const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
 //      bool debug = pixel_index == 1477005;
       bool debug = false;
-      
-//      const unsigned int num_shared_nodes = 16;
-//      // load the first 16 nodes into shared memory, just to see how that goes
-//      __shared__ poly::device_bvh_node shared_nodes[num_shared_nodes];
-//      if (threadIdx.x < num_shared_nodes) {
-//         shared_nodes[threadIdx.x] = const_device_pointers.device_bvh_node[threadIdx.x];
-//      }
-//      __syncthreads();
-//      
+
       poly::device_bvh_node node;
       int current_node_index = 0;
-         
+
+      // ray precalculation
+      float dx_abs = fabs(direction.x);
+      float dy_abs = fabs(direction.y);
+      float dz_abs = fabs(direction.z);
+
+      int kz = 0;
+      if (dy_abs > dx_abs && dy_abs > dz_abs)
+         kz = 1;
+      else if (dz_abs > dx_abs && dz_abs > dy_abs)
+         kz = 2;
+
+      int kx = kz + 1;
+      if (kx == 3)
+         kx = 0;
+      int ky = kx + 1;
+      if (ky == 3)
+         ky = 0;
+
+      // swap kx and ky dimension to preserve winding direction of triangles
+      if (dim(direction, kz) < 0.0f) {
+         // swap(kx, ky)
+         int temp = kx;
+         kx = ky;
+         ky = temp;
+      }
+
+      // calculate shear constants
+      float Sx = dim(direction, kx) / dim(direction, kz);
+      float Sy = dim(direction, ky) / dim(direction, kz);
+      float Sz = 1.0f / dim(direction, kz);
+      
       do {
          if (current_node_index < num_constant_nodes) {
             node = const_bvh_nodes[current_node_index];
@@ -379,35 +402,7 @@ namespace poly {
                   // calculate dimension where the ray direction is maximal 
                   //int kz = max_dim(abs(dir));
 
-                  float dx_abs = fabs(direction.x);
-                  float dy_abs = fabs(direction.y);
-                  float dz_abs = fabs(direction.z);
                   
-                  int kz = 0;
-                  if (dy_abs > dx_abs && dy_abs > dz_abs)
-                     kz = 1;
-                  else if (dz_abs > dx_abs && dz_abs > dy_abs)
-                     kz = 2;
-                  
-                  int kx = kz + 1; 
-                  if (kx == 3) 
-                     kx = 0;
-                  int ky = kx + 1; 
-                  if (ky == 3) 
-                        ky = 0;
-                  
-                  // swap kx and ky dimension to preserve winding direction of triangles
-                  if (dim(direction, kz) < 0.0f) {
-                     // swap(kx, ky)
-                     int temp = kx;
-                     kx = ky;
-                     ky = temp;
-                  }
-
-                  // calculate shear constants
-                  float Sx = dim(direction, kx) / dim(direction, kz);
-                  float Sy = dim(direction, ky) / dim(direction, kz);
-                  float Sz = 1.0f / dim(direction, kz);
                   
                   // calculate vertices relative to ray origin
                   const float3 A = v0 - origin;
@@ -656,8 +651,6 @@ namespace poly {
             if (intersection.hits) {
                cuda_debug_printf(debug, "  Hit mesh %i face %i with t %f ray o: (%f %f %f) d: (%f %f %f)\n", 
                                  intersection.mesh_index, intersection.face_index, intersection.t, o.x, o.y, o.z, d.x, d.y, d.z);
-
-
                
                // todo hit light
 
