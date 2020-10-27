@@ -133,7 +133,10 @@ add_library(polytope_lib
         src/cpu/shapes/mesh_intersect.o
         src/common/parsers/mesh/AbstractMeshAllocator.h 
         src/cpu/acceleration/bvh.cpp 
-        src/cpu/acceleration/bvh.h src/cpu/structures/stats.h)
+        src/cpu/acceleration/bvh.h 
+        src/cpu/structures/stats.h
+        src/common/utilities/thread_pool.h
+        src/common/utilities/thread_pool.cpp)
 
 #set_target_properties(
 #        polytope_lib
@@ -266,6 +269,7 @@ add_executable(runUnitTests
         tests/shapes/TestTesselators.cpp
         tests/test_bvh.cpp
         tests/cuda/test_bvh_traversal.cpp
+        tests/thread_pool_tests.cpp
         )
 
 target_include_directories(
