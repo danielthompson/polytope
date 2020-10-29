@@ -1264,7 +1264,7 @@ namespace poly {
                      const std::string absoluteObjFilepath = /*GetCurrentWorkingDirectory() + UnixPathSeparator +*/ _basePathFromCWD + mesh_filename;
                      parser.ParseFile(mesh, absoluteObjFilepath);
                      //mesh->Bound();
-                     mesh->CalculateVertexNormals();
+                     //mesh->CalculateVertexNormals();
 
                      if (activeLight != nullptr) {
                         // TODO

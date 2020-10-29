@@ -11,6 +11,8 @@
 
 namespace poly {
 
+#define DEBUG_PIXEL_INDEX 1233816
+   
    constexpr unsigned int threads_per_block = 32;
    
    constexpr unsigned int num_constant_nodes = 1536;
@@ -37,8 +39,8 @@ namespace poly {
 
    struct device_intersection {
       float t;
-      int mesh_index;
-      int face_index;
+      unsigned int mesh_index;
+      unsigned int face_index;
       float3 normal;
       float3 hit_point;
       float3 tangent1;
@@ -68,69 +70,6 @@ namespace poly {
       return cosine_sample_hemisphere(u0, u1);
    }
    
-   __device__ bool aabb_hits(const DeviceMesh &mesh, const float3 ro, const float3 rd ) {
-      float maxBoundFarT = poly::FloatMax;
-      float minBoundNearT = 0;
-
-      // TODO
-      //const float gammaMultiplier = 1 + 2 * poly::Gamma(3);
-
-      // X
-      float divisor = 1.f / rd.x;
-      
-      float tNear = (mesh.aabb[0] - ro.x) * divisor;
-      float tFar = (mesh.aabb[3] - ro.x) * divisor;
-
-      float swap = tNear;
-      tNear = tNear > tFar ? tFar : tNear;
-      tFar = swap > tFar ? swap : tFar;
-
-      // TODO
-      //tFar *= gammaMultiplier;
-
-      minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
-      maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
-      if (minBoundNearT > maxBoundFarT) {
-         return false;
-      }
-
-      // Y
-      divisor = 1.f / rd.y;
-      tNear = (mesh.aabb[1] - ro.y) * divisor;
-      tFar = (mesh.aabb[4] - ro.y) * divisor;
-
-      swap = tNear;
-      tNear = tNear > tFar ? tFar : tNear;
-      tFar = swap > tFar ? swap : tFar;
-
-      // TODO
-      // tFar *= gammaMultiplier;
-
-      minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
-      maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
-
-      if (minBoundNearT > maxBoundFarT) {
-         return false;
-      }
-
-      // z
-      divisor = 1.f / rd.z;
-      tNear = (mesh.aabb[2] - ro.z) * divisor;
-      tFar = (mesh.aabb[5] - ro.z) * divisor;
-
-      swap = tNear;
-      tNear = tNear > tFar ? tFar : tNear;
-      tFar = swap > tFar ? swap : tFar;
-
-      // TODO
-      // tFar *= gammaMultiplier;
-
-      minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
-      maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
-
-      return minBoundNearT <= maxBoundFarT;
-   }
-
    __device__ bool aabb_hits(const float* aabb, const float3 origin, const float3 inverse_direction, float* const mint) {
 
       // TODO take ray's current t as a param and use for maxBoundFarT
@@ -138,7 +77,7 @@ namespace poly {
       float minBoundNearT = 0;
       
       // TODO
-      //const float gammaMultiplier = 1 + 2 * poly::Gamma(3);
+      const float gammaMultiplier = 1 + 2 * poly::Gamma3;
 
       // X
       float tNear = (aabb[0] - origin.x) * inverse_direction.x;
@@ -149,7 +88,7 @@ namespace poly {
       tFar = swap > tFar ? swap : tFar;
 
       // TODO
-      //tFar *= gammaMultiplier;
+      tFar *= gammaMultiplier;
 
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
@@ -167,7 +106,7 @@ namespace poly {
       tFar = swap > tFar ? swap : tFar;
 
       // TODO
-      // tFar *= gammaMultiplier;
+      tFar *= gammaMultiplier;
 
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
@@ -185,7 +124,7 @@ namespace poly {
       tFar = swap > tFar ? swap : tFar;
 
       // TODO
-      // tFar *= gammaMultiplier;
+      tFar *= gammaMultiplier;
 
       minBoundNearT = (tNear > minBoundNearT) ? tNear : minBoundNearT;
       maxBoundFarT = (tFar < maxBoundFarT) ? tFar : maxBoundFarT;
@@ -232,9 +171,15 @@ namespace poly {
          const float3 direction
          ) {
 
+      const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
+
+      bool debug = false;
+//      bool debug = pixel_index == DEBUG_PIXEL_INDEX;
+      
       if (intersection->hits) {
 
          // calculate normal at hit point
+         // TOOD precalculate face normals
          const DeviceMesh mesh_hit = const_device_pointers.device_meshes[intersection->mesh_index];
 
          const unsigned int v1_index = intersection->face_index + mesh_hit.num_faces;
@@ -250,33 +195,43 @@ namespace poly {
                             mesh_hit.y[v2_index],
                             mesh_hit.z[v2_index]};
 
+         cuda_debug_printf(debug, "  Face %i v0 %i: (%f %f %f), v1 %i: (%f %f %f), v2 %i: (%f %f %f)\n", 
+                           intersection->face_index, intersection->face_index, v0.x, v0.y, v0.z, v1_index, v1.x, v1.y, v1.z, v2_index, v2.x, v2.y, v2.z);
+         
          const float3 e0 = v1 - v0;
          const float3 e1 = v2 - v1;
          const float3 e2 = v0 - v2;
-         float3 n = cross(e0, e1);
+         
+         float3 n;
 
+         if (mesh_hit.has_vertex_normals) {
+            cuda_debug_printf(debug, "  Vertex normals\n");
+            cuda_debug_printf(debug, "    u %f v %f w %f\n", intersection->u, intersection->v, intersection->w);
+            const float3 v0n = {mesh_hit.nx[intersection->face_index],
+                                mesh_hit.ny[intersection->face_index],
+                                mesh_hit.nz[intersection->face_index]};
+            cuda_debug_printf(debug, "    v0n: (%f, %f, %f)\n", v0n.x, v0n.y, v0n.z);
+            const float3 v1n = {mesh_hit.nx[v1_index],
+                                mesh_hit.ny[v1_index],
+                                mesh_hit.nz[v1_index]};
+            cuda_debug_printf(debug, "    v1n: (%f, %f, %f)\n", v1n.x, v1n.y, v1n.z);
+            const float3 v2n = {mesh_hit.nx[v2_index],
+                                mesh_hit.ny[v2_index],
+                                mesh_hit.nz[v2_index]};
+            cuda_debug_printf(debug, "    v2n: (%f, %f, %f)\n", v2n.x, v2n.y, v2n.z);
+            n = v0n * intersection->u + v1n * intersection->v + v2n * intersection->w;
+            cuda_debug_printf(debug, "    Interpolated normal: (%f, %f, %f)\n", n.x, n.y, n.z);
+         }
+         else {
+            n = cross(e0, e1);
+            cuda_debug_printf(debug, "  No vertex normals, using face normal (%f, %f, %f)\n", n.x, n.y, n.z);
+         }
          // flip normal if needed
          const float ray_dot_normal = dot(direction, n);
          const float flip_factor = ray_dot_normal > 0 ? -1 : 1;
          n *= flip_factor;
-
          normalize(n);
          intersection->normal = n;
-
-         // TODO this is (very) non-optimal
-//         intersection->hit_point = make_float3(
-//               fma(direction.x, intersection->new_t, origin.x),
-//               fma(direction.y, intersection->new_t, origin.y),
-//               fma(direction.z, intersection->new_t, origin.z)
-//         );
-
-//         intersection->hit_point = make_float3(intersection->u, intersection->v, intersection->w);
-               
-         // offset origin - hack - temp
-         //intersection->hit_point.x = fmaf(n.x, 0.001f, intersection->hit_point.x);
-         //intersection->hit_point.y = fmaf(n.y, 0.001f, intersection->hit_point.y);
-         //intersection->hit_point.z = fmaf(n.z, 0.001f, intersection->hit_point.z);
-
          const float edge0dot = fabs(dot(e0, e1));
          const float edge1dot = fabs(dot(e1, e2));
          const float edge2dot = fabs(dot(e2, e0));
@@ -315,8 +270,8 @@ namespace poly {
       int next_future_node_index = 0;
       future_node_stack[next_future_node_index] = 0;
 
-//      const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
-//      bool debug = pixel_index == 1477005;
+      const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
+//      bool debug = pixel_index == DEBUG_PIXEL_INDEX;
       bool debug = false;
 
       poly::device_bvh_node node;
@@ -380,7 +335,7 @@ namespace poly {
                   device_index_pair indices = const_device_pointers.device_index_pair[node.offset + i];
                   const unsigned int mesh_index = indices.mesh_index;
                   const unsigned int face_index = indices.face_index;
-                  cuda_debug_printf(debug, "Testing face_index %i\n", indices.face_index);
+                  cuda_debug_printf(debug, "    Testing face_index %i\n", indices.face_index);
                   const DeviceMesh mesh = const_device_pointers.device_meshes[mesh_index];
                   
                   const unsigned int v1_index = face_index + (mesh.num_faces);
@@ -472,82 +427,12 @@ namespace poly {
                   intersection->hits = true;
                   intersection->face_index = face_index;
                   intersection->mesh_index = mesh_index;
-                  intersection->hit_point = v0 * u + v1 * v + v2 * w; 
-                  
-//                  
-//                  const float3 e0 = v1 - v0;
-//                  const float3 e1 = v2 - v1;
-//                  float3 pn = cross(e0, e1);
-//
-//                  pn *= __frsqrt_rn(dot(pn, pn));
-//                  float ft = INFINITY;
-//                  
-//                  {
-//                     const float divisor = dot(pn, direction);
-//                     if (divisor == 0.0f) {
-//                        cuda_debug_printf(debug, "Ray is parallel to face %i, bailing\n", face_index);
-//                        continue;
-//                     }
-//
-//                     ft = (dot(pn, v0 - origin)) / divisor;
-//                  }
-//
-//                  if (isnan(ft)) {
-//                     cuda_debug_printf(debug, "Bailing on face %i due to t %f\n", face_index, ft);
-//                     continue;
-//                  }
-//                  
-//                  if (ft <= 0) {
-//                     cuda_debug_printf(debug, "Bailing on face %i due to t %f (ray origin isn't above the surface \n", face_index,
-//                               ft);
-//                     continue;
-//                  }
-//
-//                  if (ft > intersection->t) {
-//                     cuda_debug_printf(debug, "Bailing on face %i due to previous t %f vs this t %f (we already found a closer t)\n", face_index,
-//                                       intersection->t, ft);
-//                     continue;
-//                  }
-//
-//                  const float3 hp = origin + direction * ft;
-//
-//                  {
-//                     float3 p = hp - v0;
-//                     float3 cross_ep = cross(e0, p);
-//                     float normal = dot(cross_ep, pn);
-//                     if (normal <= 0) {
-//                        cuda_debug_printf(debug, "Bailing on face %i due to first normal test %f\n", face_index, normal);
-//                        continue;
-//                     }
-//
-//                     p = hp - v1;
-//                     cross_ep = cross(e1, p);
-//                     normal = dot(cross_ep, pn);
-//                     if (normal <= 0) {
-//                        
-//                        cuda_debug_printf(debug, "Bailing on face %i due to second normal test %f\n", face_index, normal);
-//                        continue;
-//                     }
-//
-//                     const float3 e2 = v0 - v2;
-//                     p = hp - v2;
-//                     cross_ep = cross(e2, p);
-//                     normal = dot(cross_ep, pn);
-//                     if (normal <= 0) {
-//                        cuda_debug_printf(debug, "Bailing on face %i due to third normal test %f\n", face_index, normal);
-//                        continue;
-//                     }
-//                  }
-//
-//                  cuda_debug_printf(debug, "Hit face face_index %i with t %f\n", face_index, ft);
-//                  // temp
-//                  intersection->hits = true;
-//                  intersection->t = ft;
-//                  intersection->face_index = face_index;
-//                  intersection->mesh_index = mesh_index;
+                  intersection->hit_point = v0 * u + v1 * v + v2 * w;
+                  intersection->u = u;
+                  intersection->v = v;
+                  intersection->w = w;
+                  cuda_debug_printf(debug, "      Hit with t %f\n", intersection->t);
                }
-               
-
                // next node should be from the stack, if any
                if (next_future_node_index == 0) {
                   cuda_debug_printf(debug, "  No more nodes on stack, ending traversal\n");
@@ -609,7 +494,7 @@ namespace poly {
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
       
       bool debug = false;
-//      bool debug = pixel_index == 1870631;
+//      bool debug = pixel_index == DEBUG_PIXEL_INDEX;
 
       float3 src = { 1.0f, 1.0f, 1.0f};
       
@@ -649,7 +534,7 @@ namespace poly {
                   );
             
             if (intersection.hits) {
-               cuda_debug_printf(debug, "  Hit mesh %i face %i with t %f ray o: (%f %f %f) d: (%f %f %f)\n", 
+               cuda_debug_printf(debug, "Hit mesh %i face %i with t %f ray o: (%f %f %f) d: (%f %f %f)\n", 
                                  intersection.mesh_index, intersection.face_index, intersection.t, o.x, o.y, o.z, d.x, d.y, d.z);
                
                // todo hit light
@@ -668,6 +553,9 @@ namespace poly {
                switch (mesh_hit.brdf_type) {
                   case BRDF_TYPE::Lambert: {
                      local_outgoing = lambert_sample(local_incoming, &(rng_states[pixel_index]));
+                     cuda_debug_printf(debug, "  Lambert reflected (local) dir: (%f %f %f)\n",
+                                       local_outgoing.x, local_outgoing.y, local_outgoing.z);
+
                      src = src * make_float3(mesh_hit.brdf_params[0],mesh_hit.brdf_params[1],mesh_hit.brdf_params[2]);
                      break;
                   }
@@ -682,6 +570,10 @@ namespace poly {
                      src = {0.0f / 0.0f, 0.0f / 0.0f, 0.0f / 0.0f};
                      break;
                }
+
+               cuda_debug_printf(debug, "  Intersection t1 (%f %f %f) t2 (%f %f %f)\n",
+                                 intersection.tangent1.x, intersection.tangent1.y, intersection.tangent1.z,
+                                 intersection.tangent2.x, intersection.tangent2.y, intersection.tangent2.z);
                
                float3 world_outgoing = normalize(make_float3(
                      intersection.tangent1.x * local_outgoing.x + intersection.normal.x * local_outgoing.y +
@@ -917,14 +809,14 @@ namespace poly {
 //            generate_camera_rays_centered_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
 //                  sample_origins, sample_directions, sample_directions_inverse, 
 //                  width, (float) height, tan_fov_half);
-            cudaDeviceSynchronize();
-            error = cudaGetLastError();
-
-            if (error != cudaSuccess) {
-               fprintf(stderr, "Failed to launch generate_camera_rays_centered_kernel (error code %s)!\n",
-                       cudaGetErrorString(error));
-               exit(EXIT_FAILURE);
-            }
+//            cudaDeviceSynchronize();
+//            error = cudaGetLastError();
+//
+//            if (error != cudaSuccess) {
+//               fprintf(stderr, "Failed to launch generate_camera_rays_centered_kernel (error code %s)!\n",
+//                       cudaGetErrorString(error));
+//               exit(EXIT_FAILURE);
+//            }
          }
 
          // run path tracer => sample_results
@@ -937,13 +829,13 @@ namespace poly {
                device_states
          );
 
-         cudaDeviceSynchronize();
-         error = cudaGetLastError();
-
-         if (error != cudaSuccess) {
-            fprintf(stderr, "Failed to launch path_trace_kernel (error code %s)!\n", cudaGetErrorString(error));
-            exit(EXIT_FAILURE);
-         }
+//         cudaDeviceSynchronize();
+//         error = cudaGetLastError();
+//
+//         if (error != cudaSuccess) {
+//            fprintf(stderr, "Failed to launch path_trace_kernel (error code %s)!\n", cudaGetErrorString(error));
+//            exit(EXIT_FAILURE);
+//         }
       }
 
       // consolidate samples

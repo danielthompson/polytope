@@ -80,7 +80,8 @@ namespace poly {
       unsigned int num_vertices_packed = 0;
       unsigned int num_vertices = 0;
       unsigned int num_faces = 0;
-      
+
+      bool has_vertex_normals = false;
    };
 }
 

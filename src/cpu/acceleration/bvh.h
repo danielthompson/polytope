@@ -18,7 +18,7 @@ namespace poly {
       bvh_node* low; // interior
       poly::Axis axis; // interior
       poly::BoundingBox bb; // both
-      std::vector<std::pair<unsigned int, unsigned int>> indices; // leaf
+      std::shared_ptr<std::vector<std::pair<unsigned int, unsigned int>>> indices; // leaf
    };
    
    class compact_bvh_node {
@@ -91,7 +91,7 @@ namespace poly {
       compact_bvh* compact_root;
       std::vector<poly::Mesh*> meshes;
       unsigned int num_nodes;
-      std::vector<std::pair<unsigned int, unsigned int>> master_indices;
+      std::shared_ptr<std::vector<std::pair<unsigned int, unsigned int>>> master_indices;
    private:
       void compact_helper_iterative(bvh_node* root);
       unsigned int compact_helper(bvh_node* node, unsigned int index);

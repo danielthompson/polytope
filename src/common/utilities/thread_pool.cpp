@@ -4,11 +4,15 @@
 
 #include "thread_pool.h"
 
-namespace poly {
+std::mutex fprintf_mutex;
 
+namespace poly {
+   
+   
+   
 //#define THREAD_POOL_DEBUG
 #ifdef THREAD_POOL_DEBUG
-#define thread_pool_printf(...) fprintf(stderr, __VA_ARGS__)
+#define thread_pool_printf(...) do { std::lock_guard<std::mutex> guard(fprintf_mutex); fprintf(stderr, __VA_ARGS__); } while (0)
 #else
 #define thread_pool_printf(...)
 #endif
@@ -136,12 +140,16 @@ namespace poly {
       thread_pool_printf("synchronize(): done\n");
    }
    
-   void thread_pool::enqueue(std::function<void()> task) {
+   void thread_pool::enqueue(const std::function<void()>& task, int indices) {
       thread_pool_printf("enqueue(): started\n");
-      std::lock_guard<std::mutex> lock(q_mutex);
-      ready_q.push(task);
-      thread_pool_printf("enqueue(): Signalling ready cvar...\n");
-      ready_cvar.notify_one();
+      {
+         std::lock_guard<std::mutex> lock(q_mutex);
+         ready_q.push(task);
+         indices_count_q.push(indices);
+         thread_pool_printf("enqueue(): enqueued %i indices, signalling ready cvar...\n", indices);
+         ready_cvar.notify_one();
+      }
+      
    }
 
    void thread_pool::run(const int thread_num) {
@@ -181,10 +189,11 @@ namespace poly {
             }
          }
 
-         thread_pool_printf("run(%i): Popped task, unlocking\n", thread_num);
-         
          std::function<void()> task = ready_q.front();
+         int indices = indices_count_q.front();
          ready_q.pop();
+         indices_count_q.pop();
+         thread_pool_printf("run(%i): Popped task with %i indices, unlocking\n", thread_num, indices);
          thread_states[thread_num] = running;
          q_lock.unlock();
 

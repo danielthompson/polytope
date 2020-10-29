@@ -33,7 +33,7 @@ namespace poly {
        * Enqueue the given task to the task pool.
        * @param task The task to enqueue to the pool.
        */
-      void enqueue(std::function<void()> task);
+      void enqueue(const std::function<void()>& task, int indices);
       
       /**
        * Blocks the _calling_ thread until the task queue is empty and all worker threads are idle. Note that this 
@@ -47,6 +47,7 @@ namespace poly {
       bool done = false;
       int num_threads;
       std::queue<std::function<void()>> ready_q;
+      std::queue<int> indices_count_q;
       std::vector<std::thread> threads;
       
       enum state {

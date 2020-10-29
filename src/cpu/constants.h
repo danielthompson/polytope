@@ -119,9 +119,17 @@ namespace poly {
    }
 
    // source - http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#x1-ErrorPropagation
-   inline float Gamma(const int n) {
-      return (n * MachineEpsilon) / (1 - n * MachineEpsilon);
+   constexpr float Gamma(const int n) {
+      return (n * MachineEpsilon) / (1.f - n * MachineEpsilon);
    }
+
+   constexpr float Gamma1 = (1 * MachineEpsilon) / (1 - 1 * MachineEpsilon);
+   constexpr float Gamma2 = (2 * MachineEpsilon) / (1 - 2 * MachineEpsilon);
+   constexpr float Gamma3 = (3 * MachineEpsilon) / (1 - 3 * MachineEpsilon);
+   constexpr float Gamma4 = (4 * MachineEpsilon) / (1 - 4 * MachineEpsilon);
+   constexpr float Gamma5 = (5 * MachineEpsilon) / (1 - 5 * MachineEpsilon);
+   constexpr float Gamma6 = (6 * MachineEpsilon) / (1 - 6 * MachineEpsilon);
+   constexpr float Gamma7 = (7 * MachineEpsilon) / (1 - 7 * MachineEpsilon);
 }
 
 #endif //POLY_CONSTANTS_H

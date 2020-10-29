@@ -41,15 +41,17 @@ namespace poly {
       return unsigned_value;
    }
 
-   std::pair<std::unique_ptr<std::ifstream>, unsigned int> PLYParser::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
-      std::unique_ptr<std::ifstream> stream = AbstractFileParser::open_ascii_stream(filepath);
+   struct PLYParser::parser_state PLYParser::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
+      
+      struct parser_state state;
+      state.stream = AbstractFileParser::open_ascii_stream(filepath);
 
       std::string line;
 
       unsigned int line_number = 0;
       
       // ply header
-      if (getline(*stream, line)) {
+      if (getline(*state.stream, line)) {
          line_number++;
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
@@ -62,7 +64,7 @@ namespace poly {
       }
 
       // format
-      if (getline(*stream, line)) {
+      if (getline(*state.stream, line)) {
          line_number++;
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
@@ -100,10 +102,14 @@ namespace poly {
       // rest of header
 
       bool has_x, has_y, has_z;
+      bool has_nx, has_ny, has_nz;
+      has_nx = 0;
+      has_ny = 0;
+      has_nz = 0;
       
       bool in_vertex = false;
       bool in_face = false;
-      while (getline(*stream, line)) {
+      while (getline(*state.stream, line)) {
          line_number++;
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
@@ -118,6 +124,19 @@ namespace poly {
             if (!has_z) {
                ERROR("%s:%i Header missing element z property", filepath.c_str(), line_number);
             }
+            // must have all 3 vertex normals or none
+            if (!((has_nx && has_ny && has_nz) || (!has_nx && !has_ny && !has_nz))) {
+               int normals = has_nx + has_ny + has_nz;
+               ERROR("%s:%i Header has %i normal directions per vertex; must have all (3) or none (0)", filepath.c_str(), line_number, normals);
+            }
+            
+            if (has_nx && has_ny && has_nz) {
+               state.has_vertex_normals = true;
+            }
+            else {
+               state.has_vertex_normals = false;
+            }
+            
             break;
          }
          else if (word == "element") {
@@ -143,6 +162,7 @@ namespace poly {
                   continue;
                }
                iss >> word;
+               
                if (word == "x") {
                   has_x = true;
                   continue;
@@ -153,6 +173,18 @@ namespace poly {
                }
                else if (word == "z") {
                   has_z = true;
+                  continue;
+               }
+               else if (word == "nx") {
+                  has_nx = true;
+                  continue;
+               }
+               else if (word == "ny") {
+                  has_ny = true;
+                  continue;
+               }
+               else if (word == "nz") {
+                  has_nz = true;
                   continue;
                }
                else {
@@ -177,13 +209,13 @@ namespace poly {
       }
 
       if (*format == ply_format::binary_le || *format == ply_format::binary_be) {
-         std::streampos offset = stream->tellg();
-         stream->close();
-         stream = AbstractFileParser::open_binary_stream(filepath);
-         stream->seekg(offset);
+         std::streampos offset = state.stream->tellg();
+         state.stream->close();
+         state.stream = AbstractFileParser::open_binary_stream(filepath);
+         state.stream->seekg(offset);
       }
       
-      return { std::move(stream), line_number };
+      return state;
    }
 
    void PLYParser::ParseFile(Mesh *mesh, const std::string &filepath) const {
@@ -191,9 +223,9 @@ namespace poly {
       int num_faces = -1;
 
       ply_format format = ply_format::ascii;
-      auto pair = parse_header(filepath, &num_vertices, &num_faces, &format);
-      std::unique_ptr<std::ifstream> stream = std::move(pair.first);
-      unsigned int line_number = pair.second;
+      struct parser_state state = parse_header(filepath, &num_vertices, &num_faces, &format);
+      
+      mesh->has_vertex_normals = state.has_vertex_normals;
       
       // data - vertices
 
@@ -203,8 +235,8 @@ namespace poly {
          std::string word;
          Point v;
          for (int i = 0; i < num_vertices; i++) {
-            if (!getline(*stream, line)) {
-               ERROR("%s:%i Error reading vertex %i", filepath.c_str(), line_number, i);
+            if (!getline(*state.stream, line)) {
+               ERROR("%s:%i Error reading vertex %i", filepath.c_str(), state.line_number, i);
             }
 
             // TODO fix such that property order is not hardcoded
@@ -218,11 +250,7 @@ namespace poly {
             iss >> word;
             v.z = stof(word);
             
-            // if no normals, done
-            if (iss.eof()) {
-               mesh->add_vertex(v);
-            }
-            else {
+            if (state.has_vertex_normals) {
                Normal n;
                iss >> word;
                n.x = stof(word);
@@ -232,16 +260,31 @@ namespace poly {
                n.z = stof(word);
                mesh->add_vertex(v, n);
             }
+            else {
+               mesh->add_vertex(v);
+            }
          }
       }
       
       else {
          for (int i = 0; i < num_vertices; i++) {
-            const float x = read_float(stream, format);
-            const float y = read_float(stream, format);
-            const float z = read_float(stream, format);
+            const float x = read_float(state.stream, format);
+            const float y = read_float(state.stream, format);
+            const float z = read_float(state.stream, format);
             Point p(x, y, z);
-            mesh->add_vertex(p.x, p.y, p.z);
+            
+            if (state.has_vertex_normals) {
+               const float nx = read_float(state.stream, format);
+               const float ny = read_float(state.stream, format);
+               const float nz = read_float(state.stream, format);
+               Normal n(nx, ny, nz);
+               mesh->add_vertex(p, n);
+            }
+            else {
+               mesh->add_vertex(p);   
+            }
+            
+            
          }
       }
 
@@ -251,9 +294,13 @@ namespace poly {
 
       if (format == ascii) {
          for (int i = 0; i < num_faces; i++) {
+            bool debug = (i == 706336);
+            if (debug) {
+               printf("foo");
+            }
             unsigned int v0, v1, v2;
-            if (!getline(*stream, line)) {
-               ERROR("%s:%i Failed to read face line", filepath.c_str(), line_number);
+            if (!getline(*state.stream, line)) {
+               ERROR("%s:%i Failed to read face line", filepath.c_str(), state.line_number);
             }
             std::string word;
             std::istringstream iss(line, std::istringstream::in);
@@ -263,7 +310,7 @@ namespace poly {
             iss >> word;
             int num_vertex_indices = stoi(word);
             if (num_vertex_indices != 3) {
-               ERROR("%s:%i Face has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), line_number, num_vertex_indices);
+               ERROR("%s:%i Face has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), state.line_number, num_vertex_indices);
             }
 
             iss >> word;
@@ -279,14 +326,14 @@ namespace poly {
       else {
          for (int i = 0; i < num_faces; i++) {
             unsigned int v0, v1, v2;
-            const unsigned char num_vertex_indices = read_uchar(stream);
+            const unsigned char num_vertex_indices = read_uchar(state.stream);
             if (num_vertex_indices != 3) {
-               ERROR("%s:%i Face has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), line_number, num_vertex_indices);
+               ERROR("%s:%i Face has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), state.line_number, num_vertex_indices);
                return;
             }
-            v0 = read_int(stream, format);
-            v1 = read_int(stream, format);
-            v2 = read_int(stream, format);
+            v0 = read_int(state.stream, format);
+            v1 = read_int(state.stream, format);
+            v2 = read_int(state.stream, format);
             mesh->add_packed_face(v0, v1, v2);
          }
       }

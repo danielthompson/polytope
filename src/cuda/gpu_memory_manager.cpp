@@ -77,6 +77,9 @@ namespace poly {
          const size_t num_bytes = sizeof(float) * num_vertices;
          
          struct DeviceMesh host_mesh_temp { };
+         host_mesh_temp.nx = nullptr;
+         host_mesh_temp.ny = nullptr;
+         host_mesh_temp.nz = nullptr;
          host_mesh_temp.num_bytes = num_bytes;
          host_mesh_temp.num_vertices = num_vertices;
          host_mesh_temp.num_faces = num_faces;
@@ -121,6 +124,27 @@ namespace poly {
          cuda_check_error( cudaMemcpy(host_mesh_temp.z, &(host_mesh->z[0]), num_bytes, cudaMemcpyHostToDevice) );
 
          bytes_copied += num_bytes;
+
+         if (host_mesh->has_vertex_normals) {
+            host_mesh_temp.has_vertex_normals = true;
+            cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.nx), num_bytes) );
+            to_free_list.push_back(host_mesh_temp.nx);
+            cuda_check_error( cudaMemcpy(host_mesh_temp.nx, &(host_mesh->nx[0]), num_bytes, cudaMemcpyHostToDevice) );
+
+            bytes_copied += num_bytes;
+
+            cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.ny), num_bytes) );
+            to_free_list.push_back(host_mesh_temp.ny);
+            cuda_check_error( cudaMemcpy(host_mesh_temp.ny, &(host_mesh->ny[0]), num_bytes, cudaMemcpyHostToDevice) );
+
+            bytes_copied += num_bytes;
+
+            cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.nz), num_bytes) );
+            to_free_list.push_back(host_mesh_temp.nz);
+            cuda_check_error( cudaMemcpy(host_mesh_temp.nz, &(host_mesh->nz[0]), num_bytes, cudaMemcpyHostToDevice) );
+
+            bytes_copied += num_bytes;
+         }
          
          // TODO material / BRDF
 //         cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.src), sizeof(float) * 3) );

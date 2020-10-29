@@ -578,10 +578,12 @@ namespace poly {
       y.reserve(num_faces * 3);
       z.reserve(num_faces * 3);
 
-      nx.reserve(num_faces * 3);
-      ny.reserve(num_faces * 3);
-      nz.reserve(num_faces * 3);
-
+      if (has_vertex_normals) {
+         nx.reserve(num_faces * 3);
+         ny.reserve(num_faces * 3);
+         nz.reserve(num_faces * 3);
+      }
+      
       // for each face
       for (unsigned int i = 0; i < num_faces; i++) {
          const unsigned int index = fv0[i];
@@ -589,6 +591,12 @@ namespace poly {
          x.push_back(x_packed[index]);
          y.push_back(y_packed[index]);
          z.push_back(z_packed[index]);
+
+         if (has_vertex_normals) {
+            nx.push_back(nx_packed[index]);
+            ny.push_back(ny_packed[index]);
+            nz.push_back(nz_packed[index]);
+         }
       }
 
       for (unsigned int i = 0; i < num_faces; i++) {
@@ -598,9 +606,11 @@ namespace poly {
          y.push_back(y_packed[index]);
          z.push_back(z_packed[index]);
 
-//         nx_expanded.push_back(nx[index]);
-//         ny_expanded.push_back(ny[index]);
-//         nz_expanded.push_back(nz[index]);
+         if (has_vertex_normals) {
+            nx.push_back(nx_packed[index]);
+            ny.push_back(ny_packed[index]);
+            nz.push_back(nz_packed[index]);
+         }
       }
 
       for (unsigned int i = 0; i < num_faces; i++) {
@@ -610,9 +620,11 @@ namespace poly {
          y.push_back(y_packed[index]);
          z.push_back(z_packed[index]);
 
-//         nx_expanded.push_back(nx[index]);
-//         ny_expanded.push_back(ny[index]);
-//         nz_expanded.push_back(nz[index]);
+         if (has_vertex_normals) {
+            nx.push_back(nx_packed[index]);
+            ny.push_back(ny_packed[index]);
+            nz.push_back(nz_packed[index]);
+         }
       }
 
       num_vertices = 3 * num_faces;

@@ -20,7 +20,17 @@ namespace poly {
          binary_be
       };
       
-      std::pair<std::unique_ptr<std::ifstream>, unsigned int> parse_header(const std::string &filepath, int *num_faces, int *num_vertices, ply_format* format) const;
+      struct parser_state {
+         std::unique_ptr<std::ifstream> stream;
+         unsigned int line_number;
+         bool has_vertex_normals;
+      };
+      
+      struct parser_state parse_header(
+            const std::string &filepath, 
+            int *num_faces, 
+            int *num_vertices, 
+            ply_format* format) const;
 
       // TODO move these up to AMP
       static float read_float(const std::unique_ptr<std::ifstream> &stream, ply_format format) ;

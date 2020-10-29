@@ -43,11 +43,16 @@ namespace poly {
       float* y;
       float* z;
       
+      float* nx;
+      float* ny;
+      float* nz;
+      
       poly::BRDF_TYPE brdf_type;
       float brdf_params[10];
       
       size_t num_bytes, num_vertices, num_faces;
       float aabb[6];
+      bool has_vertex_normals = false;
    };
 
    struct Samples {
