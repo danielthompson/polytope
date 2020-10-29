@@ -50,9 +50,12 @@ std::string convertSize(size_t size) {
    return result;
 }
 
+
+
 int main(int argc, char* argv[]) {
    try {
       Log = poly::Logger();
+      Log.info("Polytope (CUDA) started.");
 
       poly::Options options = poly::Options();
 
@@ -86,46 +89,39 @@ Other:
 
       const auto totalRunTimeStart = std::chrono::system_clock::now();
 
-      Log.WithTime("Using 1 CPU thread.");
+      Log.info("Using 1 CPU thread.");
 
       {
          if (!options.inputSpecified) {
-            Log.WithTime("No input file specified. Quitting.");
-            exit(1);
+            ERROR("No input file specified.");
          }
          
          // load file
          poly::PBRTFileParser parser = poly::PBRTFileParser();
          const auto runner = parser.ParseFile(options.input_filename);
          
+         
+         
          // override parsed with options here
          if (options.samplesSpecified) {
             runner->NumSamples = options.samples;
          }
          
-         Log.WithTime(
-               std::string("Image is [") +
-               std::to_string(runner->Bounds.x) +
-               std::string("] x [") +
-               std::to_string(runner->Bounds.y) +
-               std::string("], ") +
-               std::to_string(runner->NumSamples) + " spp.");
-
+         Log.info("Image is [%i] x [%i], %i spp.", runner->Bounds.x, runner->Bounds.y, runner->NumSamples);
+         
          const auto bound_start = std::chrono::system_clock::now();
          thread_stats.num_bvh_bound_leaf_same_centroid = 0;
          unsigned int num_nodes = runner->Scene->bvh_root.bound(runner->Scene->Shapes);
          const auto bound_end = std::chrono::system_clock::now();
          const std::chrono::duration<double> bound_duration = bound_end - bound_start;
-         Log.WithTime("Created BVH with " + std::to_string(num_nodes) + " nodes in " + std::to_string(bound_duration.count()) + "s.");
+         Log.debug("Created BVH with " + add_commas(num_nodes) + " nodes in " + std::to_string(bound_duration.count()) + "s.");
 
          const auto compact_start = std::chrono::system_clock::now();
          runner->Scene->bvh_root.compact();
          const auto compact_end = std::chrono::system_clock::now();
          const std::chrono::duration<double> compact_duration = compact_end - compact_start;
-         Log.WithTime("Compacted BVH in " + std::to_string(compact_duration.count()) + "s.");
-         
-         Log.WithTime("Copying data to GPU...");
-
+         Log.debug("Compacted BVH in %f s.", compact_duration.count());
+         Log.debug("Copying data to GPU...");
          const auto copy_start_time = std::chrono::system_clock::now();
          const unsigned int width = runner->Scene->Camera->Settings.Bounds.x;
          const unsigned int height = runner->Scene->Camera->Settings.Bounds.y;
@@ -137,31 +133,31 @@ Other:
          
          float effective_bandwidth = ((float) bytes_copied) / (float)copy_duration.count();
          std::string bandwidth_string = convertSize((size_t)effective_bandwidth);
-         Log.WithTime("Copied " + std::to_string(bytes_copied) + " bytes in " + std::to_string(copy_duration.count()) + "s (" + bandwidth_string + ").");
-         Log.WithTime("Rendering with " + std::to_string(runner->NumSamples) + "spp...");
+         std::string comma_string = add_commas(bytes_copied);
+         Log.debug("Copied " + add_commas(bytes_copied) + " bytes in " + std::to_string(copy_duration.count()) + " (" + bandwidth_string + ").");
+         Log.info("Rendering with " + std::to_string(runner->NumSamples) + "spp...");
          
          poly::PathTracerKernel path_tracer_kernel(&memory_manager);
          const auto render_start_time = std::chrono::system_clock::now();
          path_tracer_kernel.Trace(runner->NumSamples);
          const auto render_end_time = std::chrono::system_clock::now();
          const std::chrono::duration<double> render_duration = render_end_time - render_start_time;
-         Log.WithTime("Render complete in " + std::to_string(render_duration.count()) + "s.");
+         auto foo = render_duration.count();
+         Log.info("Sampling complete in %f s.", foo);
 
-         Log.WithTime("Outputting to film...");
+         Log.info("Outputting samples to film...");
          const auto output_start_time = std::chrono::system_clock::now();
-         poly::OutputPNG output;
-         output.Output(&memory_manager);
+         poly::OutputPNG::Output(&memory_manager, options.output_filename);
          const auto output_end_time = std::chrono::system_clock::now();
-
          const std::chrono::duration<double> output_duration = output_end_time - output_start_time;
-         Log.WithTime("Output complete in " + std::to_string(output_duration.count()) + "s.");
+         Log.info("Output complete in %f s.", output_duration.count());
       }
 
       const auto totalRunTimeEnd = std::chrono::system_clock::now();
       const std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
 
-      Log.WithTime("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
-      Log.WithTime("Exiting Polytope.");
+      Log.info("Total computation time: %f", totalElapsedSeconds.count());
+      Log.info("Exiting Polytope.");
    }
    catch (const std::exception&) {
       return EXIT_FAILURE;

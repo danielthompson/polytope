@@ -126,7 +126,7 @@ namespace poly {
             case GLFW_KEY_Z: {
                if (currentNode && currentNode->low) {
                   currentNode = currentNode->low;
-                  Log.WithTime("Moving down to low node (left).");
+                  Log.debug("Moving down to low node (left).");
                   selectNode(currentNode);
                }
                break;
@@ -134,7 +134,7 @@ namespace poly {
             case GLFW_KEY_X: {
                if (currentNode && currentNode->high) {
                   currentNode = currentNode->high;
-                  Log.WithTime("Moving down to high node (right).");
+                  Log.debug("Moving down to high node (right).");
                   selectNode(currentNode);
                }
                break;
@@ -142,7 +142,7 @@ namespace poly {
             case GLFW_KEY_R: {
                if (rootNode) {
                   currentNode = rootNode;
-                  Log.WithTime("Resetting to root node.");
+                  Log.debug("Resetting to root node.");
                }
                break;
             }
@@ -292,7 +292,7 @@ namespace poly {
             rightPressed = false;
             str << "Right mouse release @ " << currentXpos << ", " << currentYpos;
          }
-         Log.WithTime(str.str());
+         Log.debug(str.str());
       }
 
    }

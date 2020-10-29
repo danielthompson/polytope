@@ -28,11 +28,11 @@ namespace poly {
          mode_string = "binary";
       }
       
-      Log.WithTime("Trying to open [" + absolute_path + "].");
+      Log.debug("Trying to open [" + absolute_path + "].");
       std::unique_ptr<std::ifstream> stream = std::make_unique<std::ifstream>(absolute_path, mode);
 
       if (stream->good()) {
-         Log.WithTime("Opened " + mode_string + " stream on [" + absolute_path + "].");
+         Log.debug("Opened " + mode_string + " stream on [" + absolute_path + "].");
       } else {
          ERROR("Couldn't open stream on [%s] due to [%s]", absolute_path.c_str(), strerror(errno));
       }

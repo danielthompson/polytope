@@ -27,29 +27,22 @@
 poly::Logger Log;
 
 void segfaultHandler(int signalNumber) {
-   Log.WithTime("Detected a segfault. Stacktrace to be implemented...");
-#ifdef __CYGWIN__
-   //printStack();
-#endif
-   exit(signalNumber);
+   ERROR("Segfault (signal %i). Stacktrace to be implemented...", signalNumber);
 }
 
 void signalHandler(int signalNumber) {
-   std::ostringstream oss;
-   oss << "Received interrupt signal " << signalNumber << ", aborting.";
-   Log.WithTime(oss.str());
-   exit(signalNumber);
+   ERROR("Interrupt (signal %i). Stacktrace to be implemented...", signalNumber);
 }
 
 bool hasAbortedOnce = false;
 
 void userAbortHandler(int signalNumber) {
    if (hasAbortedOnce) {
-      Log.WithTime("Aborting at user request.");
+      Log.info("Aborting at user request.");
       exit(signalNumber);
    }
    else {
-      Log.WithTime("Detected Ctrl-C keypress. Ignoring since it's the first time. Press Ctrl-C again to really quit.");
+      Log.info("Detected Ctrl-C keypress. Ignoring since it's the first time. Press Ctrl-C again to really quit.");
       hasAbortedOnce = true;
    }
 }
@@ -109,7 +102,7 @@ Other:
       const poly::Bounds bounds(width, height);
 
       const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
-      Log.WithTime("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
+      Log.info("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
 
       unsigned int usingThreads = concurrentThreadsSupported;
 
@@ -117,7 +110,7 @@ Other:
          usingThreads = options.threads;
       }
 
-      Log.WithTime("Using " + std::to_string(usingThreads) + " threads.");
+      Log.info("Using " + std::to_string(usingThreads) + " threads.");
 
       {
          std::unique_ptr<poly::AbstractRunner> runner;
@@ -128,14 +121,14 @@ Other:
             runner = parser.ParseFile(options.input_filename);
             const auto parse_end = std::chrono::system_clock::now();
             const std::chrono::duration<double> parse_duration = parse_end - parse_start;
-            Log.WithTime("Parsed scene description in " + std::to_string(parse_duration.count()) + "s.");
+            Log.debug("Parsed scene description in " + std::to_string(parse_duration.count()) + "s.");
             
             // override parsed with options here
             if (options.samplesSpecified) {
                runner->NumSamples = options.samples;
             }
          } else {
-            Log.WithTime("No input file specified, using default scene.");
+            Log.debug("No input file specified, using default scene.");
             poly::SceneBuilder sceneBuilder = poly::SceneBuilder(bounds);
             poly::Scene *scene = sceneBuilder.Default();
 
@@ -160,18 +153,18 @@ Other:
          unsigned int num_nodes = runner->Scene->bvh_root.bound(runner->Scene->Shapes);
          const auto bound_end = std::chrono::system_clock::now();
          const std::chrono::duration<double> bound_duration = bound_end - bound_start;
-         Log.WithTime("Created BVH in " + std::to_string(bound_duration.count()) + "s.");
-         Log.WithTime("Number of leaves with multiple triangles with the same centroid: " + std::to_string(thread_stats.num_bvh_bound_leaf_same_centroid));
+         Log.debug("Created BVH in " + std::to_string(bound_duration.count()) + "s.");
+         Log.debug("Number of leaves with multiple triangles with the same centroid: " + std::to_string(thread_stats.num_bvh_bound_leaf_same_centroid));
          
          const auto compact_start = std::chrono::system_clock::now();
          runner->Scene->bvh_root.compact();
          const auto compact_end = std::chrono::system_clock::now();
          const std::chrono::duration<double> compact_duration = compact_end - compact_start;
-         Log.WithTime("Compacted BVH in " + std::to_string(compact_duration.count()) + "s.");
+         Log.debug("Compacted BVH in " + std::to_string(compact_duration.count()) + "s.");
          
          runner->Scene->bvh_root.metrics();
          
-         Log.WithTime(
+         Log.debug(
                std::string("Image is [") +
                std::to_string(runner->Bounds.x) +
                std::string("] x [") +
@@ -180,12 +173,12 @@ Other:
                std::to_string(runner->NumSamples) + " spp.");
 
          if (options.gl) {
-            Log.WithTime("Rasterizing with OpenGL...");
+            Log.debug("Rasterizing with OpenGL...");
             poly::GLRenderer renderer;
             renderer.Render(runner->Scene);
          }
          else {
-            Log.WithTime("Rendering...");
+            Log.debug("Rendering...");
 
             const auto renderingStart = std::chrono::system_clock::now();
 
@@ -197,7 +190,7 @@ Other:
             
             for (int i = 0; i < usingThreads; i++) {
 
-               Log.WithTime(std::string("Starting thread " + std::to_string(i) + std::string("...")));
+               Log.debug(std::string("Starting thread " + std::to_string(i) + std::string("...")));
                threads.emplace_back(runner->Spawn(i/*, stats*/));
                const std::thread::id threadID = threads[i].get_id();
                threadMap[threadID] = i;
@@ -209,43 +202,43 @@ Other:
                CPU_SET(i, &cpuset);
                int rc = pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
                if (rc != 0)
-                  Log.WithTime("Couldn't set thread affinity :/");
+                  Log.debug("Couldn't set thread affinity :/");
             }
 
             for (int i = 0; i < usingThreads; i++) {
                threads[i].join();
-               Log.WithTime(std::string("Joined thread " + std::to_string(i) + std::string(".")));
+               Log.debug(std::string("Joined thread " + std::to_string(i) + std::string(".")));
             }
 
             const auto renderingEnd = std::chrono::system_clock::now();
 
             const std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
-            Log.WithTime("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
+            Log.debug("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
 
-            Log.WithTime("Outputting to film...");
+            Log.debug("Outputting to film...");
             const auto outputStart = std::chrono::system_clock::now();
             runner->Output();
             const auto outputEnd = std::chrono::system_clock::now();
 
             const std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
-            Log.WithTime("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
+            Log.debug("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
          }
       }
 
       const auto totalRunTimeEnd = std::chrono::system_clock::now();
       const std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
 
-      Log.WithTime("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
-      Log.WithTime("Camera rays traced: " + std::to_string(main_stats.num_camera_rays));
-      Log.WithTime("Bounding box intersections: " + std::to_string(main_stats.num_bb_intersections));
-      Log.WithTime("Bounding box hits (inside): " + std::to_string(main_stats.num_bb_intersections_hit_inside));
-      Log.WithTime("Bounding box hits (outside): " + std::to_string(main_stats.num_bb_intersections_hit_outside));
-      Log.WithTime("Bounding box misses: " + std::to_string(main_stats.num_bb_intersections_miss));
-      Log.WithTime("Bounding box hit %: " + std::to_string(100.f * (float)(main_stats.num_bb_intersections_hit_inside + main_stats.num_bb_intersections_hit_outside) / (float)main_stats.num_bb_intersections));
-      Log.WithTime("Triangle intersections: " + std::to_string(main_stats.num_triangle_intersections));
-      Log.WithTime("Triangle hits: " + std::to_string(main_stats.num_triangle_intersections_hit));
-      Log.WithTime("Triangle hit %: " + std::to_string(100.f * (float)main_stats.num_triangle_intersections_hit / (float)main_stats.num_triangle_intersections));
-      Log.WithTime("Exiting Polytope.");
+      Log.info("Total computation time: " + std::to_string(totalElapsedSeconds.count()) + ".");
+      Log.debug("Camera rays traced: " + std::to_string(main_stats.num_camera_rays));
+      Log.debug("Bounding box intersections: " + std::to_string(main_stats.num_bb_intersections));
+      Log.debug("Bounding box hits (inside): " + std::to_string(main_stats.num_bb_intersections_hit_inside));
+      Log.debug("Bounding box hits (outside): " + std::to_string(main_stats.num_bb_intersections_hit_outside));
+      Log.debug("Bounding box misses: " + std::to_string(main_stats.num_bb_intersections_miss));
+      Log.debug("Bounding box hit %: " + std::to_string(100.f * (float)(main_stats.num_bb_intersections_hit_inside + main_stats.num_bb_intersections_hit_outside) / (float)main_stats.num_bb_intersections));
+      Log.debug("Triangle intersections: " + std::to_string(main_stats.num_triangle_intersections));
+      Log.debug("Triangle hits: " + std::to_string(main_stats.num_triangle_intersections_hit));
+      Log.debug("Triangle hit %: " + std::to_string(100.f * (float)main_stats.num_triangle_intersections_hit / (float)main_stats.num_triangle_intersections));
+      Log.info("Exiting Polytope.");
    }
    catch (const std::exception&) {
       return EXIT_FAILURE;

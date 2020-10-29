@@ -23,7 +23,7 @@ namespace poly {
       cuda_check_error( cudaSetDevice(1) );
       
       if (scene->Camera == nullptr) {
-         Log.WithTime("Warning: scene has no camera, using identity matrix with FOV = 50.");
+         Log.warning("Warning: scene has no camera, using identity matrix with FOV = 50.");
          poly::Transform identity;
          memcpy(camera_to_world_matrix, identity.Matrix.Matrix, 16 * sizeof(float));
          camera_fov = 50;

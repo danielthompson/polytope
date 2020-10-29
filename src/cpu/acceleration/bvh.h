@@ -55,12 +55,11 @@ namespace poly {
    class compact_bvh {
    public:
       compact_bvh(unsigned int num_nodes) : num_nodes(num_nodes){
-         printf("sizeof compact_bvh_node: %lu\n", sizeof(compact_bvh_node));
+         Log.debug("sizeof compact_bvh_node: %i", sizeof(compact_bvh_node));
 //         nodes = static_cast<compact_bvh_node *>(malloc(sizeof(compact_bvh_node) * num_nodes));
          nodes = static_cast<compact_bvh_node *>(aligned_alloc(64, sizeof(compact_bvh_node) * num_nodes));
          if (nodes == nullptr) {
-            fprintf(stderr, "compact_bvh: couldn't get aligned address :/");
-            exit(1);
+            ERROR( "compact_bvh: couldn't get aligned address :/");
          }
          
          leaf_ordered_indices.reserve(num_nodes);

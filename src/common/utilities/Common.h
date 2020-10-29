@@ -8,16 +8,21 @@
 #include <atomic>
 #include "Logger.h"
 
-#define ERROR(fmt, ...) \
-            do { fprintf(stderr, "Error: "); fprintf(stderr, fmt, __VA_ARGS__); fprintf(stderr, "\n"); exit(1); } while (0)
-
-#define WARNING(fmt, ...) \
-            do { fprintf(stderr, "Warning: "); fprintf(stderr, fmt, __VA_ARGS__); fprintf(stderr, "\n"); } while (0)
-
-
 extern poly::Logger Log;
 
+#define ERROR(fmt, ...) do { Log.error(fmt, ##__VA_ARGS__); exit(1); } while (0)
+
 std::string GetCurrentWorkingDirectory();
+
+inline std::string add_commas(size_t number) {
+   auto s = std::to_string(number);
+   int n = s.length() - 3;
+   while (n > 0) {
+      s.insert(n, ",");
+      n -= 3;
+   }
+   return s;
+}
 
 extern std::string WindowsPathSeparator;
 extern std::string UnixPathSeparator;

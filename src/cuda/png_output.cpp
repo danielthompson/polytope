@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 namespace poly {
-   void OutputPNG::Output(const poly::GPUMemoryManager* memory_manager) {
+   void OutputPNG::Output(const poly::GPUMemoryManager* memory_manager, const std::string& filename) {
       // copy samples from device to host
 
       const unsigned int num_pixels = memory_manager->num_pixels;
@@ -35,15 +35,14 @@ namespace poly {
          data[4 * i + 3] = 255;
       }
 
-      unsigned lodepng_error = lodepng::encode("output.png", data, memory_manager->width, memory_manager->height);
+      unsigned lodepng_error = lodepng::encode(filename.c_str(), data, memory_manager->width, memory_manager->height);
       if (lodepng_error) {
-         fprintf(stderr, "LodePNG encoding error (code %i): %s ", lodepng_error, lodepng_error_text(lodepng_error));
-         exit(1);
+         ERROR("LodePNG encoding error (code %i): %s ", lodepng_error, lodepng_error_text(lodepng_error));
       }
       
       char* cwd = get_current_dir_name();
       
-      printf("Output successful to %s\n", cwd);
+      Log.info("Output successful to %s/%s", cwd, filename);
       
       free(cwd);
    }

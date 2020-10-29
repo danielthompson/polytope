@@ -24,7 +24,7 @@ namespace poly {
       if (vectorSize <= index) {
          std::ostringstream oss;
          oss << "Attempting to write a sample for (" << x << ", " << y << ") to index " <<  index << " but size is " << vectorSize << "... :/";
-         Log.WithTime(oss.str());
+         Log.debug(oss.str());
       }
 
       Sample clamped = sample;

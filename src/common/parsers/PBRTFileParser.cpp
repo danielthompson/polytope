@@ -199,38 +199,38 @@ namespace poly {
       }
 
       void LogOther(const std::unique_ptr<PBRTDirective> &directive, const std::string &error) {
-         Log.WithTime(directive->Name + ": " + error);
+         Log.warning(directive->Name + ": " + error);
       }
 
       void LogMissingArgument(const std::unique_ptr<PBRTDirective>& directive, const std::string& argument) {
-         Log.WithTime("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] is missing argument [" + argument + "]");
+         Log.warning("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] is missing argument [" + argument + "]");
       }
 
       void LogMissingDirective(const std::string& name, std::string& defaultOption) {
-         Log.WithTime("Directive [" + name + "] is missing, defaulting to " + defaultOption + ".");
+         Log.warning("Directive [" + name + "] is missing, defaulting to " + defaultOption + ".");
       }
 
       void LogUnknownDirective(const std::unique_ptr<PBRTDirective> &directive) {
-         Log.WithTime("Directive [" + directive->Name + "] found, but is unknown. Ignoring.");
+         Log.warning("Directive [" + directive->Name + "] found, but is unknown. Ignoring.");
       }
 
       void LogUnknownIdentifier(const std::unique_ptr<PBRTDirective> &directive) {
-         Log.WithTime("Directive [" + directive->Name + "] has unknown identifier [" + directive->Identifier + "].");
+         Log.warning("Directive [" + directive->Name + "] has unknown identifier [" + directive->Identifier + "].");
       }
 
       void LogUnknownArgument(const PBRTArgument &argument) {
          
-         Log.WithTime("Unknown argument type/name combination: [" +
+         Log.warning("Unknown argument type/name combination: [" +
                             PBRTArgument::get_argument_type_string(argument.Type) + "] / [" + argument.Name + "].");
       }
 
       void LogWrongArgumentType(const std::unique_ptr<PBRTDirective> &directive, const PBRTArgument &argument) {
-         Log.WithTime("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] found has argument [" + argument.Name + "] with wrong type [" +
+         Log.warning("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] found has argument [" + argument.Name + "] with wrong type [" +
                             PBRTArgument::get_argument_type_string(argument.Type) + "].");
       }
 
       void LogUnimplementedDirective(const std::unique_ptr<PBRTDirective> &directive) {
-         Log.WithTime("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] found, but is not yet implemented. Ignoring.");
+         Log.warning("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] found, but is not yet implemented. Ignoring.");
       }
 
       unsigned int stoui(const std::string& text) {
@@ -359,7 +359,7 @@ namespace poly {
          sourceLineNumber++;
       } // end line
       
-      Log.WithTime("Scan complete.");
+      Log.debug("Scan complete.");
       return tokens;
    }
 
@@ -387,7 +387,7 @@ namespace poly {
       std::unique_ptr<poly::PBRTDirective> directive = std::make_unique<PBRTDirective>();
 
       if (line.empty()) {
-         Log.WithTime("Lexed empty line. Hmm...");
+         Log.warning("Lexed empty line. Hmm...");
          return directive;
       }
 
@@ -399,7 +399,7 @@ namespace poly {
       }
       
       if (line.size() == 1) {
-         Log.WithTime("Lexed directive [" + directive->Name + "]");
+         Log.debug("Lexed directive [" + directive->Name + "]");
          return directive;
       }
 
@@ -408,7 +408,7 @@ namespace poly {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(poly::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 9, &(directive->Arguments[0]));
-         Log.WithTime("Lexed directive [" + directive->Name + "]");
+         Log.debug("Lexed directive [" + directive->Name + "]");
          return directive;
       }
       
@@ -416,7 +416,7 @@ namespace poly {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(poly::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 4, &(directive->Arguments[0]));
-         Log.WithTime("Lexed directive [" + directive->Name + "]");
+         Log.debug("Lexed directive [" + directive->Name + "]");
          return directive;
       }
 
@@ -424,7 +424,7 @@ namespace poly {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(poly::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 3, &(directive->Arguments[0]));
-         Log.WithTime("Lexed directive [" + directive->Name + "]");
+         Log.debug("Lexed directive [" + directive->Name + "]");
          return directive;
       }
       
@@ -432,7 +432,7 @@ namespace poly {
          directive->Arguments = std::vector<PBRTArgument>();
          directive->Arguments.emplace_back(poly::PBRTArgument::PBRTArgumentType::pbrt_float);
          LexFloatArrayArgument(line, 3, &(directive->Arguments[0]));
-         Log.WithTime("Lexed directive [" + directive->Name + "]");
+         Log.debug("Lexed directive [" + directive->Name + "]");
          return directive;
       }
       
@@ -440,11 +440,11 @@ namespace poly {
          directive->Identifier = line[1].substr(1, line[1].length() - 2);
       } 
       else {
-         throw std::invalid_argument(line[0] + ": second token (identifier) isn't quoted, but should be");
+         ERROR("Lex(): second token (identifier) %s isn't quoted, but should be", line[0].c_str());
       }
 
       if (line.size() == 2) {
-         Log.WithTime("Lexed directive [" + directive->Name + "]");
+         Log.debug("Lexed directive [" + directive->Name + "]");
          return directive;
       }
       
@@ -569,7 +569,7 @@ namespace poly {
 //         directive->Arguments.push_back(argument);
 //      }
 
-      Log.WithTime("Lexed directive [" + directive->Name + "]");
+      Log.debug("Lexed directive [" + directive->Name + "]");
 
       return directive;
    }
@@ -635,7 +635,7 @@ namespace poly {
          Sampler = std::make_unique<CenterSampler>();
       }
 
-      Log.WithTime("Made (center) sampler.");
+      Log.debug("Made (center) sampler.");
 
       // film
 
@@ -701,7 +701,7 @@ namespace poly {
          _film = std::make_unique<PNGFilm>(_bounds, filename, std::move(_filter));
       }
 
-      Log.WithTime("Made film.");
+      Log.debug("Made film.");
 
       // filter
 
@@ -743,7 +743,7 @@ namespace poly {
          _film->Filter = std::move(_filter);
       }
 
-      Log.WithTime("Made filter.");
+      Log.debug("Made filter.");
 
       // camera
 
@@ -779,7 +779,7 @@ namespace poly {
                Transform t = Transform::LookAt(eye, lookAt, up, false);
                currentTransform *= t;
 
-               Log.WithTime("Found LookAt.");
+               Log.debug("Found LookAt.");
                break;
             }
          }

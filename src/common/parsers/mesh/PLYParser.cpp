@@ -42,7 +42,7 @@ namespace poly {
    }
 
    struct PLYParser::parser_state PLYParser::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
-      
+
       struct parser_state state;
       state.stream = AbstractFileParser::open_ascii_stream(filepath);
 
@@ -158,7 +158,7 @@ namespace poly {
             if (in_vertex) {
                iss >> word;
                if (word != "float32" && word != "float") {
-                  WARNING("%s:%i Ignoring unknown property type [%s]", filepath.c_str(), line_number, word.c_str());
+                  Log.warning("%s:%i Ignoring unknown property type [%s]", filepath.c_str(), line_number, word.c_str());
                   continue;
                }
                iss >> word;
@@ -188,7 +188,7 @@ namespace poly {
                   continue;
                }
                else {
-                  WARNING("%s:%i Ignoring unknown property name [%s]", filepath.c_str(), line_number, word.c_str());
+                  Log.warning("%s:%i Ignoring unknown property name [%s]", filepath.c_str(), line_number, word.c_str());
                }
             }
             else if (in_face) {
@@ -283,21 +283,15 @@ namespace poly {
             else {
                mesh->add_vertex(p);   
             }
-            
-            
          }
       }
 
-      Log.WithTime("Parsed " + std::to_string(mesh->num_vertices) + " vertices.");
+      Log.debug("Parsed " + add_commas(mesh->num_vertices_packed) + " vertices.");
       
       // data - faces
 
       if (format == ascii) {
          for (int i = 0; i < num_faces; i++) {
-            bool debug = (i == 706336);
-            if (debug) {
-               printf("foo");
-            }
             unsigned int v0, v1, v2;
             if (!getline(*state.stream, line)) {
                ERROR("%s:%i Failed to read face line", filepath.c_str(), state.line_number);
@@ -339,6 +333,6 @@ namespace poly {
       }
 
       mesh->unpack_faces();
-      Log.WithTime("Parsed " + std::to_string(mesh->num_faces) + " faces.");
+      Log.debug("Parsed " + add_commas(mesh->num_faces) + " faces.");
    }
 }

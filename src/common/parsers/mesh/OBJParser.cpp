@@ -52,10 +52,7 @@ namespace poly {
                   continue;
                }
                default: {
-                  std::string error = "OBJ Parser: Ignoring line with unimplemented first char [";
-                  error += firstChar;
-                  error += "].";
-                  Log.WithTime(error);
+                  Log.warning("OBJ Parser: Ignoring line with unimplemented first char [%s]", firstChar);
                }
             }
          }

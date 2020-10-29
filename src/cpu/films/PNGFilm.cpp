@@ -45,7 +45,7 @@ namespace poly {
       }
 
       std::string cwd = GetCurrentWorkingDirectory();
-      Log.WithTime("Outputting to file " + cwd + "/" + Filename + "...");
+      Log.info("Outputting to file " + cwd + "/" + Filename + "...");
 
       unsigned error = lodepng::encode(Filename, Data, Bounds.x, Bounds.y);
 
@@ -53,7 +53,7 @@ namespace poly {
       if (error) {
          std::ostringstream oss;
          oss << "LodePNG encoding error (code " << error << "): " << lodepng_error_text(error);
-         Log.WithTime(oss.str());
+         ERROR(oss.str());
       }
    }
 }

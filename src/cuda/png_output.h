@@ -10,7 +10,7 @@
 namespace poly {
    class OutputPNG {
    public:
-      static void Output(const poly::GPUMemoryManager* memory_manager);
+      static void Output(const poly::GPUMemoryManager* memory_manager, const std::string& filename);
    };
 }
 

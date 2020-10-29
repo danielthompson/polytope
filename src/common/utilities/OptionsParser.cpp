@@ -42,8 +42,6 @@ namespace poly {
          return options;
       }
 
-      Log.WithTime("Polytope started.");
-
       std::string option = "-threads";
 
       if (OptionExists(option)) {
@@ -52,12 +50,11 @@ namespace poly {
          try {
             unsigned int parsedValue = stou(value);
             options.threads = parsedValue;
-            Log.WithTime("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
+            Log.debug("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
             options.threadsSpecified = true;
          }
          catch (...) {
-            options.valid = false;
-            Log.WithTime("Failed to parse [" + option + "] = [" + value + "].");
+            ERROR("Failed to parse [" + option + "] = [" + value + "].");
          }
       }
 
@@ -69,12 +66,11 @@ namespace poly {
          try {
             unsigned int parsedValue = stou(value);
             options.samples = parsedValue;
-            Log.WithTime("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
+            Log.debug("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
             options.samplesSpecified = true;
          }
          catch (...) {
-            options.valid = false;
-            Log.WithTime("Failed to parse [" + option + "] = [" + value + "].");
+            ERROR("Failed to parse [" + option + "] = [" + value + "].");
          }
       }
 
@@ -85,12 +81,11 @@ namespace poly {
 
          try {
             options.input_filename = value;
-            Log.WithTime("Parsed [" + option + "] = [" + value + "].");
+            Log.debug("Parsed [" + option + "] = [" + value + "].");
             options.inputSpecified = true;
          }
          catch (...) {
-            options.valid = false;
-            Log.WithTime("Failed to parse [" + option + "] = [" + value + "].");
+            ERROR("Failed to parse [" + option + "] = [" + value + "].");
          }
       }
 
@@ -107,12 +102,11 @@ namespace poly {
 
          try {
             options.output_filename = value;
-            Log.WithTime("Parsed [" + option + "] = [" + value + "].");
+            Log.debug("Parsed [" + option + "] = [" + value + "].");
             options.outputSpecified = true;
          }
          catch (...) {
-            options.valid = false;
-            Log.WithTime("Failed to parse [" + option + "] = [" + value + "].");
+            ERROR("Failed to parse [" + option + "] = [" + value + "].");
          }
       }
 
