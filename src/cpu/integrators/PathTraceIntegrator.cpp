@@ -83,7 +83,7 @@ namespace poly {
 
 
             current_ray = Ray(intersection.Location, world_outgoing);
-            current_ray.OffsetOrigin(intersection.bent_normal, poly::OffsetEpsilon);
+            //current_ray.OffsetOrigin(intersection.bent_normal, poly::OffsetEpsilon);
             if (debug) {
                printf("n: %f %f %f\n", intersection.geo_normal.x, intersection.geo_normal.y, intersection.geo_normal.z);
                printf("o: %f %f %f\n", current_ray.Origin.x, current_ray.Origin.y, current_ray.Origin.z);

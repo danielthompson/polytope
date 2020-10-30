@@ -29,6 +29,7 @@ namespace poly {
       unsigned int num_bb_hits;
       unsigned int num_bb_misses;
       unsigned int num_triangle_isects;
+      float u, v, w;
    };
 }
 

@@ -264,216 +264,201 @@ namespace poly {
       }
    }
 
+   float dim(const Vector v, const int d) {
+      switch (d) {
+         case 0:
+            return v.x;
+         case 1:
+            return v.y;
+         default:
+            return v.z;
+      }
+   }
+   
    void Mesh::intersect(
          poly::Ray &world_ray,
          poly::Intersection &intersection,
          const unsigned int *face_indices,
          const unsigned int num_face_indices) const {
 
-      //num_triangle_intersections += num_face_indices;
       thread_stats.num_triangle_intersections++;
-
-      //float t = poly::FloatMax;
-      unsigned int hit_face_index = 0;
-      bool hits = false;
 
       for (unsigned int face_index_index = 0; face_index_index < num_face_indices; face_index_index++) {
 
          unsigned int face_index = face_indices[face_index_index];
 
-         const poly::Vector plane_normal = {fnx[face_index], fny[face_index], fnz[face_index]};
-         const float divisor = plane_normal.Dot(world_ray.Direction);
-
-         if (divisor == 0.0f) {
-            // parallel
-            continue;
-         }
-
          const Point v0 = {x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]]};
-
-//         poly::Vector plane_normal = e0.Cross(e1);
-//         plane_normal.Normalize();
-
-         const float ft = plane_normal.Dot(v0 - world_ray.Origin) / divisor;
-
-         if (ft <= 0 || ft > world_ray.MinT) {
-            continue;
-         }
-
          const Point v1 = {x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]]};
          const Point v2 = {x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]]};
 
-         const poly::Vector e0 = v1 - v0;
-         const poly::Vector e1 = v2 - v1;
-         const poly::Vector e2 = v0 - v2;
+         // wald watertight intersection
+         // http://jcgt.org/published/0002/01/05/paper.pdf
 
-         // TODO fix this imprecise garbage
-         const poly::Point hit_point = world_ray.GetPointAtT(ft);
+         float dx_abs = fabsf(world_ray.Direction.x);
+         float dy_abs = fabsf(world_ray.Direction.y);
+         float dz_abs = fabsf(world_ray.Direction.z);
 
-         const poly::Vector p0 = hit_point - v0;
-         const poly::Vector cross0 = e0.Cross(p0);
-         const float normal0 = cross0.Dot(plane_normal);
-         const bool pos0 = normal0 > 0;
+         int kz = 0;
+         if (dy_abs > dx_abs && dy_abs > dz_abs)
+            kz = 1;
+         else if (dz_abs > dx_abs && dz_abs > dy_abs)
+            kz = 2;
 
-         if (!pos0)
+         int kx = kz + 1;
+         if (kx == 3)
+            kx = 0;
+         int ky = kx + 1;
+         if (ky == 3)
+            ky = 0;
+         
+         // calculate vertices relative to ray origin
+         const Vector A = v0 - world_ray.Origin;
+         const Vector B = v1 - world_ray.Origin;
+         const Vector C = v2 - world_ray.Origin;
+
+         // swap kx and ky dimension to preserve winding direction of triangles
+         if (dim(world_ray.Direction, kz) < 0.0f) {
+            // swap(kx, ky)
+            int temp = kx;
+            kx = ky;
+            ky = temp;
+         }
+
+         // calculate shear constants
+         float Sx = dim(world_ray.Direction, kx) / dim(world_ray.Direction, kz);
+         float Sy = dim(world_ray.Direction, ky) / dim(world_ray.Direction, kz);
+         float Sz = 1.0f / dim(world_ray.Direction, kz);
+
+         // perform shear and scale of vertices
+         const float Ax = dim(A, kx) - Sx * dim(A, kz);
+         const float Ay = dim(A, ky) - Sy * dim(A, kz);
+         const float Bx = dim(B, kx) - Sx * dim(B, kz);
+         const float By = dim(B, ky) - Sy * dim(B, kz);
+         const float Cx = dim(C, kx) - Sx * dim(C, kz);
+         const float Cy = dim(C, ky) - Sy * dim(C, kz);
+
+         // calculate scaled barycentric coordinates
+         float U = Cx * By - Cy * Bx;
+         float V = Ax * Cy - Ay * Cx;
+         float W = Bx * Ay - By * Ax;
+
+         // fallback to test against edges using double precision
+         if (U == 0.0f || V == 0.0f || W == 0.0f) {
+            double CxBy = (double)Cx*(double)By;
+            double CyBx = (double)Cy*(double)Bx;
+            U = (float)(CxBy - CyBx);
+
+            double AxCy = (double)Ax*(double)Cy;
+            double AyCx = (double)Ay*(double)Cx;
+            V = (float)(AxCy - AyCx);
+
+            double BxAy = (double)Bx*(double)Ay;
+            double ByAx = (double)By*(double)Ax;
+            W = (float)(BxAy - ByAx);
+         }
+
+         // Perform edge tests. Moving this test before and at the end of the previous
+         // conditional gives higher performance.
+         // backface culling:
+         if (U < 0.0f || V < 0.0f || W < 0.0f)
+            continue;
+         // no backface culling:
+         //if ((U<0.0f || V<0.0f || W<0.0f) &&(U>0.0f || V>0.0f || W>0.0f)) return;
+
+         // calculate determinant
+         float det = U + V + W;
+         if (det == 0.0f)
             continue;
 
-         const poly::Vector p1 = hit_point - v1;
-         const poly::Vector cross1 = e1.Cross(p1);
-         const float normal1 = cross1.Dot(plane_normal);
-         const bool pos1 = normal1 > 0;
+         // calculate scaled z-coordinates of vertices and use them to calculate the hit distance
+         const float Az = Sz * dim(A, kz);
+         const float Bz = Sz * dim(B, kz);
+         const float Cz = Sz * dim(C, kz);
+         const float T = U * Az + V * Bz + W * Cz;
 
-         if (!pos1)
+         // backface culling
+         if (T < 0.0f || T > world_ray.MinT * det)
             continue;
 
-         const poly::Vector p2 = hit_point - v2;
-         const poly::Vector cross2 = e2.Cross(p2);
-         const float normal2 = cross2.Dot(plane_normal);
-         const bool pos2 = normal2 > 0;
+         // no backface culling
+         // int det_sign = sign_mask(det);if (xorf(T,det_sign) < 0.0f) ||xorf(T,det_sign) > hit.t*xorf(det, det_sign))return;
 
-         if (!pos2)
-            continue;
-
-         // hits
-         world_ray.MinT = ft;
-         hit_face_index = face_index;
-         hits = true;
+         // normalize
+         const float rcpDet = 1.0f / det;
+         float u = U * rcpDet;
+         float v = V * rcpDet;
+         float w = W * rcpDet;
+         world_ray.MinT = T * rcpDet;
+         intersection.Hits = true;
+         intersection.faceIndex = face_index;
+         intersection.Shape = this;
+         intersection.Location = Point(v0.x * u + v1.x * v + v2.x * w,
+                                       v0.y * u + v1.y * v + v2.y * w,
+                                       v0.z * u + v1.z * v + v2.z * w);
+         intersection.u = u;
+         intersection.v = v;
+         intersection.w = w;
       }
 
-      if (!hits/* || world_ray.MinT <= t*/) {
+      if (!intersection.Hits) {
          return;
       }
 
       thread_stats.num_triangle_intersections_hit++;
-//      bool debug = false;
-//      if (worldSpaceRay.x == 245 && worldSpaceRay.y == 64) {
-//         debug = true;
-//         printf("t: %f\n", t);
-//      }
-
-      // now we have the closest face, if any
 
       intersection.Hits = true;
-      //world_ray.MinT = t;
-      intersection.faceIndex = hit_face_index;
-      intersection.Location = world_ray.GetPointAtT(world_ray.MinT);
 
-      const unsigned int v0_index = fv0[hit_face_index];
-      const unsigned int v1_index = fv1[hit_face_index];
-      const unsigned int v2_index = fv2[hit_face_index];
+      // TODO refactor this to do it only once after all faces/bvh nodes are intersected
+      const unsigned int v1_index = intersection.faceIndex + num_faces;
+      const unsigned int v2_index = intersection.faceIndex + num_faces * 2;
+      
+      const Point v0 = {x[intersection.faceIndex], y[intersection.faceIndex], z[intersection.faceIndex]};
+      const Point v1 = {x[v1_index], y[v1_index], z[v1_index]};
+      const Point v2 = {x[v2_index], y[v2_index], z[v2_index]};
 
-      const Point v0 = Point(x_packed[v0_index], y_packed[v0_index], z_packed[v0_index]);
-      const Point v1 = Point(x_packed[v1_index], y_packed[v1_index], z_packed[v1_index]);
-      const Point v2 = Point(x_packed[v2_index], y_packed[v2_index], z_packed[v2_index]);
-//      
-      const Normal n0 = Normal(nx_packed[v0_index], ny_packed[v0_index], nz_packed[v0_index]);
-      const Normal n1 = Normal(nx_packed[v1_index], ny_packed[v1_index], nz_packed[v1_index]);
-      const Normal n2 = Normal(nx_packed[v2_index], ny_packed[v2_index], nz_packed[v2_index]);
-
-      // 1. determine which axis has greatest magnitude in face normal
-      // 2. use other two axes to calculate lerp
-
-      poly::Normal face_normal = {fnx[hit_face_index], fny[hit_face_index], fnz[hit_face_index]};
-
-      if (world_ray.Direction.Dot(face_normal) > 0) {
-         face_normal.Flip();
+      // edge functions
+      const Vector e0 = v1 - v0;
+      const Vector e1 = v2 - v1;
+      const Vector e2 = v0 - v2;
+      
+      Normal n;
+      
+      if (this->has_vertex_normals) {
+         const Vector v0n = {nx[intersection.faceIndex], ny[intersection.faceIndex],nz[intersection.faceIndex]};
+         const Vector v1n = {nx[v1_index], ny[v1_index],nz[v1_index]};
+         const Vector v2n = {nx[v2_index], ny[v2_index],nz[v2_index]};
+         n = {v0n.x * intersection.u + v1n.x * intersection.v + v2n.x * intersection.w,
+              v0n.y * intersection.u + v1n.y * intersection.v + v2n.y * intersection.w,
+              v0n.z * intersection.u + v1n.z * intersection.v + v2n.z * intersection.w
+         };
+      }
+      else {
+         const Vector v = e0.Cross(e1);
+         n = {v.x, v.y, v.z};
       }
 
-      intersection.geo_normal = face_normal;
-
-      // x has biggest magnitude
-      float a1 = v0.y - v2.y;
-      float a2 = v0.z - v2.z;
-      float b1 = v1.y - v2.y;
-      float b2 = v1.z - v2.z;
-      float c1 = intersection.Location.y - v2.y;
-      float c2 = intersection.Location.z - v2.z;
-
-      // y has biggest magnitude
-      if (std::abs(face_normal.y) >= std::abs(face_normal.x) && std::abs(face_normal.y) >= std::abs(face_normal.z)) {
-         a1 = v0.x - v2.x;
-         a2 = v0.z - v2.z;
-         b1 = v1.x - v2.x;
-         b2 = v1.z - v2.z;
-         c1 = intersection.Location.x - v2.x;
-         c2 = intersection.Location.z - v2.z;
-      }
-         // z has biggest magnitude
-      else if (std::abs(face_normal.z) >= std::abs(face_normal.x) &&
-               std::abs(face_normal.z) >= std::abs(face_normal.y)) {
-         a1 = v0.x - v2.x;
-         a2 = v0.y - v2.y;
-         b1 = v1.x - v2.x;
-         b2 = v1.y - v2.y;
-         c1 = intersection.Location.x - v2.x;
-         c2 = intersection.Location.y - v2.y;
-      }
-
-      std::pair<float, float> a_and_b = solve_linear_2x2(a1, a2, b1, b2, c1, c2);
-
-      const float c = 1.f - a_and_b.first - a_and_b.second;
-
-      poly::Vector weights = {
-            clamp(a_and_b.first, 0.f, 1.f),
-            clamp(a_and_b.second, 0.f, 1.f),
-            clamp(c, 0.f, 1.f)
-      };
-
-
-
-//      assert(!std::isnan(weights.x));
-//      assert(!std::isnan(weights.y));
-//      assert(!std::isnan(weights.z));
-//
-//      assert_lte(weights.x, 1.f);
-//      assert_lte(weights.y, 1.f);
-//      assert_lte(weights.z, 1.f);
-//      assert_gte(weights.x, 0.f);
-//      assert_gte(weights.y, 0.f);
-//      assert_gte(weights.z, 0.f);
-
-      Normal interpolated_normal = {n0.x * weights.x + n1.x * weights.y + n2.x * weights.z,
-                                    n0.y * weights.x + n1.y * weights.y + n2.y * weights.z,
-                                    n0.z * weights.x + n1.z * weights.y + n2.z * weights.z};
-      interpolated_normal.Normalize();
-
-      const poly::Vector edge0 = v1 - v0;
-      const poly::Vector edge1 = v2 - v1;
-      const poly::Vector edge2 = v0 - v2;
-
-      // flip normal if needed
-      if (world_ray.Direction.Dot(interpolated_normal) > 0) {
-         interpolated_normal.Flip();
-      }
-
-      intersection.bent_normal = interpolated_normal;
-      intersection.Shape = this;
-
-      const float edge0dot = std::abs(edge0.Dot(edge1));
-      const float edge1dot = std::abs(edge1.Dot(edge2));
-      const float edge2dot = std::abs(edge2.Dot(edge0));
+      const float ray_dot_normal = world_ray.Direction.Dot(n);
+      const float flip_factor = ray_dot_normal > 0 ? -1 : 1;
+      n = n * flip_factor;
+      n.Normalize();
+      intersection.bent_normal = n;
+      intersection.geo_normal = n;
+      const float edge0dot = fabsf(e0.Dot(e1));
+      const float edge1dot = fabsf(e1.Dot(e2));
+      const float edge2dot = fabsf(e2.Dot(e0));
 
       if (edge0dot > edge1dot && edge0dot > edge2dot) {
-         intersection.Tangent1 = edge0;
+         intersection.Tangent1 = e0;
       } else if (edge1dot > edge0dot && edge1dot > edge2dot) {
-         intersection.Tangent1 = edge1;
+         intersection.Tangent1 = e1;
       } else {
-         intersection.Tangent1 = edge2;
+         intersection.Tangent1 = e2;
       }
 
-      intersection.Tangent2 = intersection.Tangent1.Cross(intersection.bent_normal);
-      intersection.Tangent1 = intersection.Tangent2.Cross(intersection.bent_normal);
-
-//      assert(!std::isnan(intersection.Tangent1.x));
-//      assert(!std::isnan(intersection.Tangent1.y));
-//      assert(!std::isnan(intersection.Tangent1.z));
-//
-//      assert(!std::isnan(intersection.Tangent2.x));
-//      assert(!std::isnan(intersection.Tangent2.y));
-//      assert(!std::isnan(intersection.Tangent2.z));
-      
+      intersection.Tangent2 = intersection.Tangent1.Cross(n);
       intersection.Tangent1.Normalize();
       intersection.Tangent2.Normalize();
+      
    }
 
    void Mesh::intersect(poly::Ray &world_ray, poly::Intersection &intersection,
