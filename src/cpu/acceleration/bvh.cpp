@@ -14,7 +14,14 @@ extern thread_local poly::stats thread_stats;
 namespace poly {
 
    struct triangle_info {
+      /**
+       * world-space bounding box
+       */
       poly::BoundingBox bb;
+      
+      /**
+       * world-space centroid of the bounding box
+       */
       poly::Point bb_centroid;
       std::pair<unsigned int, unsigned int> index;
    };
@@ -54,21 +61,26 @@ namespace poly {
             Point face_min, face_max;
 
             // get face
-            const Point v0 = {
+            Point v0 = {
                   mesh->mesh_geometry->x_packed[mesh->mesh_geometry->fv0[face_index]],
                   mesh->mesh_geometry->y_packed[mesh->mesh_geometry->fv0[face_index]],
                   mesh->mesh_geometry->z_packed[mesh->mesh_geometry->fv0[face_index]] };
 
-            const Point v1 = {
+            Point v1 = {
                   mesh->mesh_geometry->x_packed[mesh->mesh_geometry->fv1[face_index]],
                   mesh->mesh_geometry->y_packed[mesh->mesh_geometry->fv1[face_index]],
                   mesh->mesh_geometry->z_packed[mesh->mesh_geometry->fv1[face_index]] };
 
-            const Point v2 = {
+            Point v2 = {
                   mesh->mesh_geometry->x_packed[mesh->mesh_geometry->fv2[face_index]],
                   mesh->mesh_geometry->y_packed[mesh->mesh_geometry->fv2[face_index]],
                   mesh->mesh_geometry->z_packed[mesh->mesh_geometry->fv2[face_index]] };
 
+            // transform into world space
+            mesh->object_to_world->ApplyInPlace(v0);
+            mesh->object_to_world->ApplyInPlace(v1);
+            mesh->object_to_world->ApplyInPlace(v2);
+            
             // calculate face's bounding box
             face_min.x = v0.x < v1.x ? v0.x : v1.x;
             face_min.x = face_min.x < v2.x ? face_min.x : v2.x;
@@ -95,15 +107,10 @@ namespace poly {
 
             triangle_info.push_back({
                poly::BoundingBox { face_min, face_max },
-               // calculate centroid
-//               poly::Point {(v0.x + v1.x + v2.x) * OneThird, 
-//                            (v0.y + v1.y + v2.y) * OneThird, 
-//                            (v0.z + v1.z + v2.z) * OneThird },
-                poly::Point {(face_min.x + face_max.x) * .5f,
+               poly::Point {(face_min.x + face_max.x) * .5f,
                              (face_min.y + face_max.y) * .5f,
                              (face_min.z + face_max.z) * .5f
                              },
-                            
                { mesh_index, face_index}
             });
 

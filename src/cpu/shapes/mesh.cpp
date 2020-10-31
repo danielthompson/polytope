@@ -182,15 +182,21 @@ namespace poly {
 
          unsigned int face_index = face_indices[face_index_index];
 
-         const Point v0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
+         Point v0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
                            mesh_geometry->y_packed[mesh_geometry->fv0[face_index]],
                            mesh_geometry->z_packed[mesh_geometry->fv0[face_index]]};
-         const Point v1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
+         Point v1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
                            mesh_geometry->y_packed[mesh_geometry->fv1[face_index]],
                            mesh_geometry->z_packed[mesh_geometry->fv1[face_index]]};
-         const Point v2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
+         Point v2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
                            mesh_geometry->y_packed[mesh_geometry->fv2[face_index]],
                            mesh_geometry->z_packed[mesh_geometry->fv2[face_index]]};
+         
+         // transform to world space
+         
+         object_to_world->ApplyInPlace(v0);
+         object_to_world->ApplyInPlace(v1);
+         object_to_world->ApplyInPlace(v2);
 
          // wald watertight intersection
          // http://jcgt.org/published/0002/01/05/paper.pdf
@@ -550,16 +556,20 @@ namespace poly {
    bool Mesh::hits(const Ray &world_ray, const unsigned int *face_indices, unsigned int num_face_indices) const {
       for (unsigned int face_index = 0; face_index < num_face_indices; face_index++) {
 
-         const Point v0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
+         Point v0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
                            mesh_geometry->y_packed[mesh_geometry->fv0[face_index]],
                            mesh_geometry->z_packed[mesh_geometry->fv0[face_index]]};
-         const Point v1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
+         Point v1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
                            mesh_geometry->y_packed[mesh_geometry->fv1[face_index]],
                            mesh_geometry->z_packed[mesh_geometry->fv1[face_index]]};
-         const Point v2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
+         Point v2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
                            mesh_geometry->y_packed[mesh_geometry->fv2[face_index]],
                            mesh_geometry->z_packed[mesh_geometry->fv2[face_index]]};
 
+         object_to_world->ApplyInPlace(v0);
+         object_to_world->ApplyInPlace(v1);
+         object_to_world->ApplyInPlace(v2);
+         
          const poly::Vector e0 = v1 - v0;
          const poly::Vector e1 = v2 - v1;
          poly::Vector plane_normal = e0.Cross(e1);
@@ -618,16 +628,20 @@ namespace poly {
 
    float Mesh::surface_area(const unsigned int face_index) const {
 
-      const Point p0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
+      Point p0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
                         mesh_geometry->y_packed[mesh_geometry->fv0[face_index]],
                         mesh_geometry->z_packed[mesh_geometry->fv0[face_index]]};
-      const Point p1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
+      Point p1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
                         mesh_geometry->y_packed[mesh_geometry->fv1[face_index]],
                         mesh_geometry->z_packed[mesh_geometry->fv1[face_index]]};
-      const Point p2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
+      Point p2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
                         mesh_geometry->y_packed[mesh_geometry->fv2[face_index]],
                         mesh_geometry->z_packed[mesh_geometry->fv2[face_index]]};
 
+      object_to_world->ApplyInPlace(p0);
+      object_to_world->ApplyInPlace(p1);
+      object_to_world->ApplyInPlace(p2);
+      
       const Vector e0 = p0 - p1;
       const Vector e1 = p1 - p2;
       const Vector e2 = p2 - p0;
