@@ -12,9 +12,10 @@
 namespace poly {
 
    enum BRDF_TYPE {
+      None = 0,
       Lambert = 1,
       Mirror = 2,
-      Glossy = 4
+      Glossy = 4,
    };
    
    class AbstractBRDF {

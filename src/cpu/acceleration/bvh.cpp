@@ -32,7 +32,7 @@ namespace poly {
       // reserve enough space for all mesh faces
       unsigned int total_faces = 0;
       for (const poly::Mesh* mesh : meshes) {
-         total_faces += mesh->num_faces;
+         total_faces += mesh->mesh_geometry->num_faces;
       }
 
       master_indices.reserve(total_faces);
@@ -48,26 +48,26 @@ namespace poly {
          
          // calculate bounding boxes and centroids for each face
          std::vector<struct triangle_info> triangle_info;
-         triangle_info.reserve(mesh->num_faces);
+         triangle_info.reserve(mesh->mesh_geometry->num_faces);
          
-         for (unsigned int face_index = 0; face_index < mesh->num_faces; face_index++) {
+         for (unsigned int face_index = 0; face_index < mesh->mesh_geometry->num_faces; face_index++) {
             Point face_min, face_max;
 
             // get face
             const Point v0 = {
-                  mesh->x_packed[mesh->fv0[face_index]],
-                  mesh->y_packed[mesh->fv0[face_index]],
-                  mesh->z_packed[mesh->fv0[face_index]] };
+                  mesh->mesh_geometry->x_packed[mesh->mesh_geometry->fv0[face_index]],
+                  mesh->mesh_geometry->y_packed[mesh->mesh_geometry->fv0[face_index]],
+                  mesh->mesh_geometry->z_packed[mesh->mesh_geometry->fv0[face_index]] };
 
             const Point v1 = {
-                  mesh->x_packed[mesh->fv1[face_index]],
-                  mesh->y_packed[mesh->fv1[face_index]],
-                  mesh->z_packed[mesh->fv1[face_index]] };
+                  mesh->mesh_geometry->x_packed[mesh->mesh_geometry->fv1[face_index]],
+                  mesh->mesh_geometry->y_packed[mesh->mesh_geometry->fv1[face_index]],
+                  mesh->mesh_geometry->z_packed[mesh->mesh_geometry->fv1[face_index]] };
 
             const Point v2 = {
-                  mesh->x_packed[mesh->fv2[face_index]],
-                  mesh->y_packed[mesh->fv2[face_index]],
-                  mesh->z_packed[mesh->fv2[face_index]] };
+                  mesh->mesh_geometry->x_packed[mesh->mesh_geometry->fv2[face_index]],
+                  mesh->mesh_geometry->y_packed[mesh->mesh_geometry->fv2[face_index]],
+                  mesh->mesh_geometry->z_packed[mesh->mesh_geometry->fv2[face_index]] };
 
             // calculate face's bounding box
             face_min.x = v0.x < v1.x ? v0.x : v1.x;

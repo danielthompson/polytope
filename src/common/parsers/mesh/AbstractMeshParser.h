@@ -11,7 +11,7 @@
 namespace poly {
    class AbstractMeshParser : public AbstractFileParser {
    public:
-      virtual void ParseFile(Mesh *mesh, const std::string &filepath) const = 0;
+      virtual void ParseFile(std::shared_ptr<poly::mesh_geometry> mesh, const std::string &filepath) const = 0;
       bool has_vertex_normals = false;
    };
 }

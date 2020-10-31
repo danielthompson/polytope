@@ -356,8 +356,6 @@ namespace poly {
 
                   // calculate dimension where the ray direction is maximal 
                   //int kz = max_dim(abs(dir));
-
-                  
                   
                   // calculate vertices relative to ray origin
                   const float3 A = v0 - origin;
@@ -511,7 +509,9 @@ namespace poly {
          
          cuda_debug_printf(debug, "Bounce %i\n", num_bounces);
          
+         // TODO also break if all samples are inactive
          if (num_bounces > 20) {
+            
             break;
          }
          

@@ -24,10 +24,8 @@ namespace poly {
             : Camera(std::move(camera)), Shapes(0), Lights(0) {} ;
       virtual ~Scene() = default;
 
-      Intersection GetNearestShape(Ray &ray, int x, int y);
+      Intersection intersect(Ray &ray, int x, int y);
       
-      Intersection GetNearestShapeIteratively(std::vector<Mesh*> &shapes, Ray &ray) const;
-
       std::unique_ptr<AbstractCamera> Camera{};
       std::vector<Mesh*> Shapes;
       std::vector<Mesh*> Lights;

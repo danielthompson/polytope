@@ -61,8 +61,9 @@ namespace poly {
    void Logger::log(log_level level, const char *format, va_list args) {
       const auto time = std::time(nullptr);
       const std::lock_guard<std::mutex> lock(log_mutex);
+      
       if (level == log_level::LOG_ERROR) {
-         std::cerr << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] ";
+         std::cout << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] ";
       }
       else {
          std::cout << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] ";

@@ -218,7 +218,7 @@ namespace poly {
       return state;
    }
 
-   void PLYParser::ParseFile(Mesh *mesh, const std::string &filepath) const {
+   void PLYParser::ParseFile(std::shared_ptr<poly::mesh_geometry> mesh, const std::string &filepath) const {
       int num_vertices = -1;
       int num_faces = -1;
 

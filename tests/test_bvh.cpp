@@ -163,13 +163,14 @@ namespace Tests {
       }
       
       TEST(bvh, bound1) {
-         poly::Mesh mesh(nullptr, nullptr, nullptr);
+         std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>(); 
          
-         mesh.add_vertex(0, 0, 0);
-         mesh.add_vertex(1, 0, 0);
-         mesh.add_vertex(0, 1, 0);
-         mesh.add_packed_face(0, 1, 2);
-         
+         geometry->add_vertex(0, 0, 0);
+         geometry->add_vertex(1, 0, 0);
+         geometry->add_vertex(0, 1, 0);
+         geometry->add_packed_face(0, 1, 2);
+
+         poly::Mesh mesh(nullptr, nullptr, nullptr, geometry);
          std::vector<poly::Mesh *> meshes = {
                &mesh
          };
@@ -181,17 +182,20 @@ namespace Tests {
       }
 
       TEST(bvh, bound2) {
-         poly::Mesh mesh(nullptr, nullptr, nullptr);
+         std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
+         
 
          unsigned int num_faces = 4;
          float offset = 2.f;
          for (unsigned int mesh_index = 0; mesh_index < num_faces; mesh_index++) {
-            mesh.add_vertex(0 + (mesh_index * offset), 0, 0);
-            mesh.add_vertex(1 + (mesh_index * offset), 0, 0);
-            mesh.add_vertex(0 + (mesh_index * offset), 1, 0);
-            mesh.add_packed_face(3 * mesh_index, 3 * mesh_index + 1, 3 * mesh_index + 2);
+            geometry->add_vertex(0 + (mesh_index * offset), 0, 0);
+            geometry->add_vertex(1 + (mesh_index * offset), 0, 0);
+            geometry->add_vertex(0 + (mesh_index * offset), 1, 0);
+            geometry->add_packed_face(3 * mesh_index, 3 * mesh_index + 1, 3 * mesh_index + 2);
          }
-
+         
+         poly::Mesh mesh(nullptr, nullptr, nullptr, geometry);
+         
          std::vector<poly::Mesh *> meshes = {
                &mesh
          };

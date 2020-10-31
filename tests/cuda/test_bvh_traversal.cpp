@@ -19,8 +19,9 @@ namespace Tests {
       const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 
       const std::string file = "../scenes/test/cuda/cuda-bvh-traversal1.ply";
-      poly::Mesh mesh(identity, identity, nullptr);
-      parser.ParseFile(&mesh, file);
+      auto geometry = std::make_shared<poly::mesh_geometry>();
+      parser.ParseFile(geometry, file);
+      poly::Mesh mesh(identity, identity, nullptr, geometry);
       
       poly::Scene scene(nullptr);
       scene.Shapes.emplace_back(&mesh);
@@ -51,8 +52,9 @@ namespace Tests {
       const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 
       const std::string file = "../scenes/test/cuda/cuda-bvh-traversal1.ply";
-      poly::Mesh mesh(identity, identity, nullptr);
-      parser.ParseFile(&mesh, file);
+      auto geometry = std::make_shared<poly::mesh_geometry>();
+      parser.ParseFile(geometry, file);
+      poly::Mesh mesh(identity, identity, nullptr, geometry);
 
       poly::Scene scene(nullptr);
       scene.Shapes.emplace_back(&mesh);
@@ -100,8 +102,9 @@ namespace Tests {
       const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 
       const std::string file = "../scenes/test/cuda/cuda-bvh-traversal1.ply";
-      poly::Mesh mesh(identity, identity, nullptr);
-      parser.ParseFile(&mesh, file);
+      auto geometry = std::make_shared<poly::mesh_geometry>();
+      parser.ParseFile(geometry, file);
+      poly::Mesh mesh(identity, identity, nullptr, geometry);
 
       poly::Scene scene(nullptr);
       scene.Shapes.emplace_back(&mesh);
@@ -152,8 +155,9 @@ namespace Tests {
       const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 
       const std::string file = "../scenes/test/cuda/cuda-bvh-traversal1.ply";
-      poly::Mesh mesh(identity, identity, nullptr);
-      parser.ParseFile(&mesh, file);
+      auto geometry = std::make_shared<poly::mesh_geometry>();
+      parser.ParseFile(geometry, file);
+      poly::Mesh mesh(identity, identity, nullptr, geometry);
 
       poly::Scene scene(nullptr);
       scene.Shapes.emplace_back(&mesh);

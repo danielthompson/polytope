@@ -13,17 +13,17 @@ namespace Tests {
 
    namespace Parse {
       
-      void test_parse_obj_helper(poly::Mesh* mesh) {
+      void test_parse_obj_helper(const std::shared_ptr<poly::mesh_geometry>& geometry) {
          const poly::OBJParser parser;
          const std::string file = "../scenes/teapot/teapot.obj";
-         parser.ParseFile(mesh, file);
+         parser.ParseFile(geometry, file);
 
          // ensure nothing is null
-         ASSERT_NE(nullptr, mesh);
-         ASSERT_EQ(3644, mesh->num_vertices_packed);
+         ASSERT_NE(nullptr, geometry);
+         ASSERT_EQ(3644, geometry->num_vertices_packed);
 
          // check a random-ish vertex for correctness
-         const poly::Point secondToLastVertex = mesh->get_vertex(3642);
+         const poly::Point secondToLastVertex = geometry->get_vertex(3642);
 
          // EXPECT_FLOAT_EQ allows 4 ulps difference
          EXPECT_FLOAT_EQ(3.428125, secondToLastVertex.x);
@@ -31,10 +31,10 @@ namespace Tests {
          EXPECT_FLOAT_EQ(0.000000, secondToLastVertex.z);
 
          // faces
-         ASSERT_EQ(6320, mesh->num_faces);
+         ASSERT_EQ(6320, geometry->num_faces);
 
          // check a random-ish face for correctness
-         const poly::Point3ui secondToLastFace = mesh->get_vertex_indices_for_face(6318);
+         const poly::Point3ui secondToLastFace = geometry->get_vertex_indices_for_face(6318);
 
          EXPECT_EQ(3021, secondToLastFace.x);
          EXPECT_EQ(3020, secondToLastFace.y);
@@ -43,8 +43,8 @@ namespace Tests {
       
       TEST(OBJParser, Mesh) {
          const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
-         poly::Mesh mesh(identity, identity, nullptr);
-         test_parse_obj_helper(&mesh);
+         auto geometry = std::make_shared<poly::mesh_geometry>();
+         test_parse_obj_helper(geometry);
       }
    }
 }

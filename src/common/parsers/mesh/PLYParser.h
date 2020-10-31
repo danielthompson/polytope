@@ -11,7 +11,7 @@
 namespace poly {
    class PLYParser : public AbstractMeshParser {
    public:
-      void ParseFile(Mesh *mesh, const std::string &filepath) const override;
+      void ParseFile(std::shared_ptr<poly::mesh_geometry> mesh, const std::string &filepath) const override;
 
    private:
       enum ply_format {

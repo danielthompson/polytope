@@ -8,7 +8,7 @@
 #include "../../../cpu/shapes/mesh.h"
 
 namespace poly {
-   void OBJParser::ParseFile(Mesh *mesh, const std::string &filepath) const {
+   void OBJParser::ParseFile(std::shared_ptr<poly::mesh_geometry> mesh, const std::string &filepath) const {
 
       std::unique_ptr<std::istream> stream = AbstractFileParser::open_ascii_stream(filepath);
       std::string line;

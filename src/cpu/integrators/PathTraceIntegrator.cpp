@@ -30,7 +30,7 @@ namespace poly {
 //         current_ray.x = x;
 //         current_ray.y = y;
 //         current_ray.bounce = num_bounces;
-         Intersection intersection = Scene->GetNearestShape(current_ray, x, y);
+         Intersection intersection = Scene->intersect(current_ray, x, y);
          
 //         SpectralPowerDistribution bb_spd;
 //         
@@ -77,7 +77,7 @@ namespace poly {
             ReflectanceSpectrum refl;
             
             const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
-            const poly::Vector local_outgoing = intersection.Shape->Material->BRDF->sample(local_incoming, refl,
+            const poly::Vector local_outgoing = intersection.Shape->material->BRDF->sample(local_incoming, refl,
                                                                                                current_pdf);
             const poly::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
 
@@ -116,7 +116,7 @@ namespace poly {
 //               
 //               // 6. if light -> intersection is occluded, continue
 //               Ray light_ray(current_ray.Origin, -light_to_intersection_world);
-//               Intersection light_intersection = Scene->GetNearestShape(light_ray, x, y);
+//               Intersection light_intersection = Scene->intersect(light_ray, x, y);
 //               if (light_intersection.Hits && light_intersection.Shape != light)
 //                  continue;
 //               

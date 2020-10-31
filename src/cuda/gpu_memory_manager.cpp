@@ -69,10 +69,10 @@ namespace poly {
          const poly::Mesh* host_mesh = reinterpret_cast<const poly::Mesh *>(original_mesh);
          
          assert(host_mesh != nullptr);
-         assert(host_mesh->x.size() == host_mesh->y.size());
-         assert(host_mesh->y.size() == host_mesh->z.size());
+         assert(host_mesh->mesh_geometry->x.size() == host_mesh->mesh_geometry->y.size());
+         assert(host_mesh->mesh_geometry->y.size() == host_mesh->mesh_geometry->z.size());
 
-         const size_t num_vertices = host_mesh->x.size();
+         const size_t num_vertices = host_mesh->mesh_geometry->x.size();
          const size_t num_faces = num_vertices / 3;
          const size_t num_bytes = sizeof(float) * num_vertices;
          
@@ -83,65 +83,71 @@ namespace poly {
          host_mesh_temp.num_bytes = num_bytes;
          host_mesh_temp.num_vertices = num_vertices;
          host_mesh_temp.num_faces = num_faces;
-         host_mesh_temp.brdf_type = host_mesh->Material->BRDF->brdf_type;
-         switch (host_mesh_temp.brdf_type) {
-            case (BRDF_TYPE::Lambert): {
-               poly::LambertBRDF* brdf = dynamic_cast<poly::LambertBRDF*>(&(*(host_mesh->Material->BRDF)));
-               host_mesh_temp.brdf_params[0] = brdf->refl.r;
-               host_mesh_temp.brdf_params[1] = brdf->refl.g;
-               host_mesh_temp.brdf_params[2] = brdf->refl.b;
-               break;
-            }
-            case (BRDF_TYPE::Mirror): {
-               poly::MirrorBRDF* brdf = dynamic_cast<poly::MirrorBRDF*>(&(*(host_mesh->Material->BRDF)));
-               host_mesh_temp.brdf_params[0] = brdf->refl.r;
-               host_mesh_temp.brdf_params[1] = brdf->refl.g;
-               host_mesh_temp.brdf_params[2] = brdf->refl.b;
-               break;
+         if (host_mesh->material) {
+            host_mesh_temp.brdf_type = host_mesh->material->BRDF->brdf_type;
+            switch (host_mesh_temp.brdf_type) {
+               case (BRDF_TYPE::Lambert): {
+                  poly::LambertBRDF* brdf = dynamic_cast<poly::LambertBRDF*>(&(*(host_mesh->material->BRDF)));
+                  host_mesh_temp.brdf_params[0] = brdf->refl.r;
+                  host_mesh_temp.brdf_params[1] = brdf->refl.g;
+                  host_mesh_temp.brdf_params[2] = brdf->refl.b;
+                  break;
+               }
+               case (BRDF_TYPE::Mirror): {
+                  poly::MirrorBRDF* brdf = dynamic_cast<poly::MirrorBRDF*>(&(*(host_mesh->material->BRDF)));
+                  host_mesh_temp.brdf_params[0] = brdf->refl.r;
+                  host_mesh_temp.brdf_params[1] = brdf->refl.g;
+                  host_mesh_temp.brdf_params[2] = brdf->refl.b;
+                  break;
+               }
             }
          }
-         host_mesh_temp.aabb[0] = host_mesh->BoundingBox->p0.x;
-         host_mesh_temp.aabb[1] = host_mesh->BoundingBox->p0.y;
-         host_mesh_temp.aabb[2] = host_mesh->BoundingBox->p0.z;
-         host_mesh_temp.aabb[3] = host_mesh->BoundingBox->p1.x;
-         host_mesh_temp.aabb[4] = host_mesh->BoundingBox->p1.y;
-         host_mesh_temp.aabb[5] = host_mesh->BoundingBox->p1.z;
+         else {
+            host_mesh_temp.brdf_type = BRDF_TYPE::None;
+         }
+         
+         host_mesh_temp.aabb[0] = host_mesh->mesh_geometry->bb.p0.x;
+         host_mesh_temp.aabb[1] = host_mesh->mesh_geometry->bb.p0.y;
+         host_mesh_temp.aabb[2] = host_mesh->mesh_geometry->bb.p0.z;
+         host_mesh_temp.aabb[3] = host_mesh->mesh_geometry->bb.p1.x;
+         host_mesh_temp.aabb[4] = host_mesh->mesh_geometry->bb.p1.y;
+         host_mesh_temp.aabb[5] = host_mesh->mesh_geometry->bb.p1.z;
          
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.x), num_bytes) );
          to_free_list.push_back(host_mesh_temp.x);
-         cuda_check_error( cudaMemcpy(host_mesh_temp.x, &(host_mesh->x[0]), num_bytes, cudaMemcpyHostToDevice) );
+         cuda_check_error( cudaMemcpy(host_mesh_temp.x, &(host_mesh->mesh_geometry->x[0]), num_bytes, cudaMemcpyHostToDevice) );
 
          bytes_copied += num_bytes;
          
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.y), num_bytes) );
          to_free_list.push_back(host_mesh_temp.y);
-         cuda_check_error( cudaMemcpy(host_mesh_temp.y, &(host_mesh->y[0]), num_bytes, cudaMemcpyHostToDevice) );
+         cuda_check_error( cudaMemcpy(host_mesh_temp.y, &(host_mesh->mesh_geometry->y[0]), num_bytes, cudaMemcpyHostToDevice) );
 
          bytes_copied += num_bytes;
          
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.z), num_bytes) );
          to_free_list.push_back(host_mesh_temp.z);
-         cuda_check_error( cudaMemcpy(host_mesh_temp.z, &(host_mesh->z[0]), num_bytes, cudaMemcpyHostToDevice) );
+         cuda_check_error( cudaMemcpy(host_mesh_temp.z, &(host_mesh->mesh_geometry->z[0]), num_bytes, cudaMemcpyHostToDevice) );
 
          bytes_copied += num_bytes;
 
-         if (host_mesh->has_vertex_normals) {
+         if (host_mesh->mesh_geometry->has_vertex_normals) {
             host_mesh_temp.has_vertex_normals = true;
             cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.nx), num_bytes) );
             to_free_list.push_back(host_mesh_temp.nx);
-            cuda_check_error( cudaMemcpy(host_mesh_temp.nx, &(host_mesh->nx[0]), num_bytes, cudaMemcpyHostToDevice) );
+            cuda_check_error( cudaMemcpy(host_mesh_temp.nx, &(host_mesh->mesh_geometry->nx[0]), num_bytes, cudaMemcpyHostToDevice) );
 
             bytes_copied += num_bytes;
 
             cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.ny), num_bytes) );
             to_free_list.push_back(host_mesh_temp.ny);
-            cuda_check_error( cudaMemcpy(host_mesh_temp.ny, &(host_mesh->ny[0]), num_bytes, cudaMemcpyHostToDevice) );
+            cuda_check_error( cudaMemcpy(host_mesh_temp.ny, &(host_mesh->mesh_geometry->ny[0]), num_bytes, cudaMemcpyHostToDevice) );
 
             bytes_copied += num_bytes;
 
             cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.nz), num_bytes) );
             to_free_list.push_back(host_mesh_temp.nz);
-            cuda_check_error( cudaMemcpy(host_mesh_temp.nz, &(host_mesh->nz[0]), num_bytes, cudaMemcpyHostToDevice) );
+            cuda_check_error( cudaMemcpy(host_mesh_temp.nz, &(host_mesh->mesh_geometry->nz[0]), num_bytes, cudaMemcpyHostToDevice) );
 
             bytes_copied += num_bytes;
          }

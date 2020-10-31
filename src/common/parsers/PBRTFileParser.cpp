@@ -49,7 +49,11 @@ namespace poly {
          const std::string Material = "Material";
          const std::string matte = "matte";
          const std::string mirror = "mirror";
+         const std::string name = "name";
          const std::string NamedMaterial = "NamedMaterial";
+         const std::string ObjectBegin = "ObjectBegin";
+         const std::string ObjectEnd = "ObjectEnd";
+         const std::string ObjectInstance = "ObjectInstance";
          const std::string objmesh = "objmesh";
          const std::string PixelFilter = "PixelFilter";
          const std::string pixelsamples = "pixelsamples";
@@ -85,6 +89,9 @@ namespace poly {
          MakeNamedMaterial,
          Material,
          NamedMaterial,
+         ObjectBegin,
+         ObjectEnd,
+         ObjectInstance,
          PixelFilter,
          Rotate,
          Sampler,
@@ -117,6 +124,9 @@ namespace poly {
             {str::MakeNamedMaterial, MakeNamedMaterial},
             {str::Material, Material},
             {str::NamedMaterial, NamedMaterial},
+            {str::ObjectBegin, ObjectBegin},
+            {str::ObjectEnd, ObjectEnd},
+            {str::ObjectInstance, ObjectInstance},
             {str::Rotate, Rotate},
             {str::Scale, Scale},
             {str::Shape, Shape},
@@ -186,20 +196,24 @@ namespace poly {
       // TODO get rid of this junk in favor of using WorldDirectiveMap
       
 
-      bool IsQuoted(const std::string &token) {
+      bool is_quoted(const std::string &token) {
          return (token[0] == '"' && token[token.size() - 1] == '"');
       }
 
-      bool StartQuoted(const std::string &token) {
+      bool start_quoted(const std::string &token) {
          return (token[0] == '"' && token[token.size() - 1] != '"');
       }
 
-      bool EndQuoted(std::string token) {
+      bool is_end_quoted(std::string token) {
          return (token[0] != '"' && token[token.size() - 1] == '"');
       }
 
       void LogOther(const std::unique_ptr<PBRTDirective> &directive, const std::string &error) {
          Log.warning(directive->Name + ": " + error);
+      }
+
+      void log_illegal_directive(const std::unique_ptr<PBRTDirective> &directive, const std::string &error) {
+         Log.error(directive->Name + ": " + error);
       }
 
       void LogMissingArgument(const std::unique_ptr<PBRTDirective>& directive, const std::string& argument) {
@@ -392,11 +406,6 @@ namespace poly {
       }
 
       directive->Name = line[0];
-
-      bool debug = false;
-      if (directive->Name == str::AttributeBegin) {
-         debug = true;
-      }
       
       if (line.size() == 1) {
          Log.debug("Lexed directive [" + directive->Name + "]");
@@ -436,7 +445,7 @@ namespace poly {
          return directive;
       }
       
-      if (IsQuoted(line[1])) {
+      if (is_quoted(line[1])) {
          directive->Identifier = line[1].substr(1, line[1].length() - 2);
       } 
       else {
@@ -454,7 +463,7 @@ namespace poly {
       int current_arg_index = -1;
       PBRTArgument* current_arg = nullptr;
       while (i < line.size()) {
-         if (StartQuoted(line[i]) && EndQuoted(line[i + 1])) {
+         if (start_quoted(line[i]) && is_end_quoted(line[i + 1])) {
             // we're in an argument
             if (directive->Arguments.empty())
                directive->Arguments = std::vector<PBRTArgument>();
@@ -479,7 +488,7 @@ namespace poly {
             continue;
          }
          if (inValue) {
-            if (IsQuoted(line[i])) {
+            if (is_quoted(line[i])) {
                // probably just string?
                assert(current_arg->int_values == nullptr);
                assert(current_arg->float_values == nullptr);
@@ -887,6 +896,8 @@ namespace poly {
       
       _scene = new Scene(std::move(camera));
 
+      bool in_object_begin = false;
+      
       for (const std::unique_ptr<PBRTDirective>& directive : world_directives) {
          DirectiveName name;
          try {
@@ -1128,6 +1139,32 @@ namespace poly {
                }
                break;
             }
+            case DirectiveName::ObjectBegin: {
+               if (in_object_begin) {
+                  log_illegal_directive(directive, "ObjectBegin directive cannot be nested");
+               }
+               else {
+                  in_object_begin = true;
+                  // TODO - record start of new object with given name
+               }
+            }
+            case DirectiveName::ObjectEnd: {
+               if (in_object_begin) {
+                  // TODO - close out the current object
+                  in_object_begin = false;
+               }
+               else {
+                  log_illegal_directive(directive, "ObjectEnd directive without previous matching ObjectBegin directive");
+               }
+            }
+            case DirectiveName::ObjectInstance: {
+               if (in_object_begin) {
+                  log_illegal_directive(directive, "ObjectInstance directive cannot appear between ObjectBegin and ObjectEnd directives");
+               }
+               else {
+                  
+               }
+            }
             case DirectiveName::Rotate: {
                // TODO need to ensure just 1 argument with 4 values
                PBRTArgument* arg = &(directive->Arguments[0]);
@@ -1206,13 +1243,15 @@ namespace poly {
                         break;
                      }
 
-                     Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial);
+                     std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
+                     
+                     poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
 
                      const OBJParser parser;
                      const std::string absoluteObjFilepath = _basePathFromCWD + mesh_filename;
-                     parser.ParseFile(mesh, absoluteObjFilepath);
+                     parser.ParseFile(geometry, absoluteObjFilepath);
                      //mesh->Bound();
-                     mesh->CalculateVertexNormals();
+                     //mesh->CalculateVertexNormals();
                      //mesh->ObjectToWorld = *activeTransform;
 
                      if (activeLight != nullptr) {
@@ -1221,7 +1260,7 @@ namespace poly {
                         _scene->Lights.push_back(mesh);
                      }
                      else {
-                        mesh->Material = activeMaterial;
+                        mesh->material = activeMaterial;
                      }
                      _scene->Shapes.push_back(mesh);
                      break;
@@ -1258,11 +1297,11 @@ namespace poly {
                         break;
                      }
 
-                     Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial);
-
+                     std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
+                     poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
                      const PLYParser parser;
                      const std::string absoluteObjFilepath = /*GetCurrentWorkingDirectory() + UnixPathSeparator +*/ _basePathFromCWD + mesh_filename;
-                     parser.ParseFile(mesh, absoluteObjFilepath);
+                     parser.ParseFile(geometry, absoluteObjFilepath);
                      //mesh->Bound();
                      //mesh->CalculateVertexNormals();
 
@@ -1272,7 +1311,7 @@ namespace poly {
                         _scene->Lights.push_back(mesh);
                      }
                      else {
-                        mesh->Material = activeMaterial;   
+                        mesh->material = activeMaterial;   
                      }
                      _scene->Shapes.push_back(mesh);
                      break;
@@ -1286,18 +1325,19 @@ namespace poly {
                            std::shared_ptr<poly::Transform> temp_radius_transform = std::make_shared<poly::Transform>((*activeTransform) * radius_transform);
                            std::shared_ptr<poly::Transform> temp_radius_inverse = std::make_shared<poly::Transform>(temp_radius_transform->Invert());
                            
-                           poly::Mesh* mesh = new Mesh(temp_radius_transform, temp_radius_inverse, activeMaterial);
+                           std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
+                           poly::Mesh* mesh = new poly::Mesh(temp_radius_transform, temp_radius_inverse, activeMaterial, geometry);
                            const int subdivisions = std::max((int)radius, 20);
-                           poly::SphereTesselator::Create(subdivisions, subdivisions, mesh);
-                           mesh->ObjectToWorld = activeTransform;
-                           mesh->WorldToObject = activeInverse;
+                           poly::SphereTesselator::Create(subdivisions, subdivisions, geometry);
+                           mesh->object_to_world = activeTransform;
+                           mesh->world_to_object = activeInverse;
 
                            if (activeLight != nullptr) {
                               mesh->spd = activeLight;
                               _scene->Lights.push_back(mesh);
                            }
                            else {
-                              mesh->Material = activeMaterial;
+                              mesh->material = activeMaterial;
                            }
                            _scene->Shapes.push_back(mesh);
                         }
@@ -1317,7 +1357,7 @@ namespace poly {
                activeTransform = std::make_shared<Transform>(*(activeTransform.get()));
                break;
             }
-            case (DirectiveName::TransformEnd): {
+            case DirectiveName::TransformEnd: {
                // pop transform stack
                if (!transformStack.empty()) {
                   std::shared_ptr<Transform> stackValue = transformStack.top();

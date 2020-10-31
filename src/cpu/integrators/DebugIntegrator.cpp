@@ -8,7 +8,7 @@ namespace poly {
 
    Sample DebugIntegrator::GetSample(Ray &ray, const int depth, const int x, const int y) {
 
-      const Intersection closestStateToRay = Scene->GetNearestShape(ray, x, y);
+      const Intersection closestStateToRay = Scene->intersect(ray, x, y);
 
       if (closestStateToRay.Hits) {
          // TODO

@@ -2,7 +2,7 @@ Integrator "path" "integer maxdepth" [ 10 ]
 LookAt 0.125 1 5 # eye
        0 0 0 # look at point
        0 1 0 # up
-Sampler "halton" "integer pixelsamples" [ 1 ]
+Sampler "halton" "integer pixelsamples" [ 256 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
 Film "image" "integer xresolution" [ 1920 ] "integer yresolution" [ 1080 ] "string filename" [ "dragon.png" ]
 Camera "perspective" "float fov" [ 3 ]
@@ -30,9 +30,9 @@ WorldBegin
         Rotate 180 0 1 0
         # Material "matte" "rgb Kd" [ .2  .5  .7 ]
         # Material "mirror" "rgb Kr" [ .2  .7  .5 ]
-        Material "mirror" "rgb Kr" [ .7  .2  .2 ]
+        Material "mirror" "rgb Kr" [ .95  .788  .15 ]
         # Material "plastic" "rgb Kr" [ .2  .5  .7 ] "rgb Kd" [ .2  .5  .7 ]
-        Shape "plymesh" "string filename" [ "dragon_vrip-normals-cleaned.ply" ]
-        # Shape "plymesh" "string filename" [ "dragon_vrip.ply" ]
+        # Shape "plymesh" "string filename" [ "dragon_vrip-normals-cleaned.ply" ]
+        Shape "plymesh" "string filename" [ "dragon_vrip.ply" ]
     AttributeEnd
 WorldEnd

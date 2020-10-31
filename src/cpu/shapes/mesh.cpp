@@ -59,99 +59,87 @@ namespace poly {
       return {x, y};
    }
 
-   void Mesh::add_vertex(Point &v) {
-      if (ObjectToWorld != nullptr)
-         ObjectToWorld->ApplyInPlace(v);
+   void mesh_geometry::add_vertex(Point &v) {
       x_packed.push_back(v.x);
       y_packed.push_back(v.y);
       z_packed.push_back(v.z);
       num_vertices_packed++;
    }
 
-   void Mesh::add_vertex(Point &v, Normal &n) {
-
-      if (ObjectToWorld != nullptr)
-         ObjectToWorld->ApplyInPlace(v);
+   void mesh_geometry::add_vertex(Point &v, Normal &n) {
       x_packed.push_back(v.x);
       y_packed.push_back(v.y);
       z_packed.push_back(v.z);
-
-      if (ObjectToWorld != nullptr)
-         ObjectToWorld->ApplyInPlace(n);
       nx_packed.push_back(n.x);
       ny_packed.push_back(n.y);
       nz_packed.push_back(n.z);
-
       num_vertices_packed++;
    }
 
-   void Mesh::add_vertex(float vx, float vy, float vz) {
-      if (ObjectToWorld != nullptr)
-         ObjectToWorld->ApplyPoint(vx, vy, vz);
+   void mesh_geometry::add_vertex(float vx, float vy, float vz) {
       x_packed.push_back(vx);
       y_packed.push_back(vy);
       z_packed.push_back(vz);
       num_vertices_packed++;
    }
 
-   void Mesh::add_packed_face(const unsigned int v0_index, const unsigned int v1_index, const unsigned int v2_index) {
+   void mesh_geometry::add_packed_face(const unsigned int v0_index, const unsigned int v1_index, const unsigned int v2_index) {
       fv0.push_back(v0_index);
       fv1.push_back(v1_index);
       fv2.push_back(v2_index);
-
-
+          
       {
          const float p0x = x_packed[v0_index];
-         BoundingBox->p0.x = p0x < BoundingBox->p0.x ? p0x : BoundingBox->p0.x;
-         BoundingBox->p1.x = p0x > BoundingBox->p1.x ? p0x : BoundingBox->p1.x;
+         bb.p0.x = p0x < bb.p0.x ? p0x : bb.p0.x;
+         bb.p1.x = p0x > bb.p1.x ? p0x : bb.p1.x;
       }
 
       {
          const float p0y = y_packed[v0_index];
-         BoundingBox->p0.y = p0y < BoundingBox->p0.y ? p0y : BoundingBox->p0.y;
-         BoundingBox->p1.y = p0y > BoundingBox->p1.y ? p0y : BoundingBox->p1.y;
+         bb.p0.y = p0y < bb.p0.y ? p0y : bb.p0.y;
+         bb.p1.y = p0y > bb.p1.y ? p0y : bb.p1.y;
       }
 
       {
          const float p0z = z_packed[v0_index];
-         BoundingBox->p0.z = p0z < BoundingBox->p0.z ? p0z : BoundingBox->p0.z;
-         BoundingBox->p1.z = p0z > BoundingBox->p1.z ? p0z : BoundingBox->p1.z;
+         bb.p0.z = p0z < bb.p0.z ? p0z : bb.p0.z;
+         bb.p1.z = p0z > bb.p1.z ? p0z : bb.p1.z;
       }
 
       {
          const float p1x = x_packed[v1_index];
-         BoundingBox->p0.x = p1x < BoundingBox->p0.x ? p1x : BoundingBox->p0.x;
-         BoundingBox->p1.x = p1x > BoundingBox->p1.x ? p1x : BoundingBox->p1.x;
+         bb.p0.x = p1x < bb.p0.x ? p1x : bb.p0.x;
+         bb.p1.x = p1x > bb.p1.x ? p1x : bb.p1.x;
       }
 
       {
          const float p1y = y_packed[v1_index];
-         BoundingBox->p0.y = p1y < BoundingBox->p0.y ? p1y : BoundingBox->p0.y;
-         BoundingBox->p1.y = p1y > BoundingBox->p1.y ? p1y : BoundingBox->p1.y;
+         bb.p0.y = p1y < bb.p0.y ? p1y : bb.p0.y;
+         bb.p1.y = p1y > bb.p1.y ? p1y : bb.p1.y;
       }
 
       {
          const float p1z = z_packed[v1_index];
-         BoundingBox->p0.z = p1z < BoundingBox->p0.z ? p1z : BoundingBox->p0.z;
-         BoundingBox->p1.z = p1z > BoundingBox->p1.z ? p1z : BoundingBox->p1.z;
+         bb.p0.z = p1z < bb.p0.z ? p1z : bb.p0.z;
+         bb.p1.z = p1z > bb.p1.z ? p1z : bb.p1.z;
       }
 
       {
          const float p2x = x_packed[v2_index];
-         BoundingBox->p0.x = p2x < BoundingBox->p0.x ? p2x : BoundingBox->p0.x;
-         BoundingBox->p1.x = p2x > BoundingBox->p1.x ? p2x : BoundingBox->p1.x;
+         bb.p0.x = p2x < bb.p0.x ? p2x : bb.p0.x;
+         bb.p1.x = p2x > bb.p1.x ? p2x : bb.p1.x;
       }
 
       {
          const float p2y = y_packed[v2_index];
-         BoundingBox->p0.y = p2y < BoundingBox->p0.y ? p2y : BoundingBox->p0.y;
-         BoundingBox->p1.y = p2y > BoundingBox->p1.y ? p2y : BoundingBox->p1.y;
+         bb.p0.y = p2y < bb.p0.y ? p2y : bb.p0.y;
+         bb.p1.y = p2y > bb.p1.y ? p2y : bb.p1.y;
       }
 
       {
          const float p2z = z_packed[v2_index];
-         BoundingBox->p0.z = p2z < BoundingBox->p0.z ? p2z : BoundingBox->p0.z;
-         BoundingBox->p1.z = p2z > BoundingBox->p1.z ? p2z : BoundingBox->p1.z;
+         bb.p0.z = p2z < bb.p0.z ? p2z : bb.p0.z;
+         bb.p1.z = p2z > bb.p1.z ? p2z : bb.p1.z;
       }
 
       // calculate face normal
@@ -169,99 +157,6 @@ namespace poly {
       fnz.push_back(plane_normal.z);
 
       num_faces++;
-   }
-
-   void Mesh::CalculateVertexNormals() {
-
-      nx_packed = std::vector<float>(x_packed.size(), 0);
-      ny_packed = std::vector<float>(y_packed.size(), 0);
-      nz_packed = std::vector<float>(z_packed.size(), 0);
-
-      for (unsigned int i = 0; i < num_faces; i++) {
-         const float v0x = x_packed[fv0[i]];
-         const float v0y = y_packed[fv0[i]];
-         const float v0z = z_packed[fv0[i]];
-
-         const float v1x = x_packed[fv1[i]];
-         const float v1y = y_packed[fv1[i]];
-         const float v1z = z_packed[fv1[i]];
-
-         const float v2x = x_packed[fv2[i]];
-         const float v2y = y_packed[fv2[i]];
-         const float v2z = z_packed[fv2[i]];
-
-         // step 1 - intersect with plane
-
-         // const poly::Vector edge0 = vertex1 - vertex0;
-         const float e0x = v1x - v0x;
-         const float e0y = v1y - v0y;
-         const float e0z = v1z - v0z;
-
-         // const poly::Vector edge1 = vertex2 - vertex1;
-         const float e1x = v2x - v1x;
-         const float e1y = v2y - v1y;
-         const float e1z = v2z - v1z;
-
-         // poly::Vector planeNormal = edge0.Cross(edge1);
-         float pnx = e0y * e1z - e0z * e1y;
-         float pny = e0z * e1x - e0x * e1z;
-         float pnz = e0x * e1y - e0y * e1x;
-
-         // planeNormal.Normalize();         
-         const float one_over_normal_length = 1.0f / std::sqrt(pnx * pnx + pny * pny + pnz * pnz);
-
-         pnx *= one_over_normal_length;
-         nx_packed[fv0[i]] += pnx;
-         nx_packed[fv1[i]] += pnx;
-         nx_packed[fv2[i]] += pnx;
-
-         pny *= one_over_normal_length;
-         ny_packed[fv0[i]] += pny;
-         ny_packed[fv1[i]] += pny;
-         ny_packed[fv2[i]] += pny;
-
-         pnz *= one_over_normal_length;
-         nz_packed[fv0[i]] += pnz;
-         nz_packed[fv1[i]] += pnz;
-         nz_packed[fv2[i]] += pnz;
-      }
-
-      nx = std::vector<float>(x.size(), 0);
-      ny = std::vector<float>(y.size(), 0);
-      nz = std::vector<float>(z.size(), 0);
-
-      for (unsigned int i = 0; i < num_vertices_packed; i++) {
-         const float nx_packed_sq = nx_packed[i] * nx_packed[i];
-         const float ny_packed_sq = ny_packed[i] * ny_packed[i];
-         const float nz_packed_sq = nz_packed[i] * nz_packed[i];
-
-         const float one_over_normal_length = 1.0f / std::sqrt(nx_packed_sq + ny_packed_sq + nz_packed_sq);
-
-         nx_packed[i] *= one_over_normal_length;
-         ny_packed[i] *= one_over_normal_length;
-         nz_packed[i] *= one_over_normal_length;
-      }
-
-      for (unsigned int i = 0; i < num_faces; i++) {
-         unsigned int index = fv0[i];
-         nx.push_back(nx_packed[index]);
-         ny.push_back(ny_packed[index]);
-         nz.push_back(nz_packed[index]);
-      }
-
-      for (unsigned int i = 0; i < num_faces; i++) {
-         unsigned int index = fv1[i];
-         nx.push_back(nx_packed[index]);
-         ny.push_back(ny_packed[index]);
-         nz.push_back(nz_packed[index]);
-      }
-
-      for (unsigned int i = 0; i < num_faces; i++) {
-         unsigned int index = fv2[i];
-         nx.push_back(nx_packed[index]);
-         ny.push_back(ny_packed[index]);
-         nz.push_back(nz_packed[index]);
-      }
    }
 
    float dim(const Vector v, const int d) {
@@ -287,9 +182,15 @@ namespace poly {
 
          unsigned int face_index = face_indices[face_index_index];
 
-         const Point v0 = {x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]]};
-         const Point v1 = {x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]]};
-         const Point v2 = {x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]]};
+         const Point v0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
+                           mesh_geometry->y_packed[mesh_geometry->fv0[face_index]],
+                           mesh_geometry->z_packed[mesh_geometry->fv0[face_index]]};
+         const Point v1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
+                           mesh_geometry->y_packed[mesh_geometry->fv1[face_index]],
+                           mesh_geometry->z_packed[mesh_geometry->fv1[face_index]]};
+         const Point v2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
+                           mesh_geometry->y_packed[mesh_geometry->fv2[face_index]],
+                           mesh_geometry->z_packed[mesh_geometry->fv2[face_index]]};
 
          // wald watertight intersection
          // http://jcgt.org/published/0002/01/05/paper.pdf
@@ -409,12 +310,12 @@ namespace poly {
       intersection.Hits = true;
 
       // TODO refactor this to do it only once after all faces/bvh nodes are intersected
-      const unsigned int v1_index = intersection.faceIndex + num_faces;
-      const unsigned int v2_index = intersection.faceIndex + num_faces * 2;
+      const unsigned int v1_index = intersection.faceIndex + mesh_geometry->num_faces;
+      const unsigned int v2_index = intersection.faceIndex + mesh_geometry->num_faces * 2;
       
-      const Point v0 = {x[intersection.faceIndex], y[intersection.faceIndex], z[intersection.faceIndex]};
-      const Point v1 = {x[v1_index], y[v1_index], z[v1_index]};
-      const Point v2 = {x[v2_index], y[v2_index], z[v2_index]};
+      const Point v0 = {mesh_geometry->x[intersection.faceIndex], mesh_geometry->y[intersection.faceIndex], mesh_geometry->z[intersection.faceIndex]};
+      const Point v1 = {mesh_geometry->x[v1_index], mesh_geometry->y[v1_index], mesh_geometry->z[v1_index]};
+      const Point v2 = {mesh_geometry->x[v2_index], mesh_geometry->y[v2_index], mesh_geometry->z[v2_index]};
 
       // edge functions
       const Vector e0 = v1 - v0;
@@ -423,10 +324,16 @@ namespace poly {
       
       Normal n;
       
-      if (this->has_vertex_normals) {
-         const Vector v0n = {nx[intersection.faceIndex], ny[intersection.faceIndex],nz[intersection.faceIndex]};
-         const Vector v1n = {nx[v1_index], ny[v1_index],nz[v1_index]};
-         const Vector v2n = {nx[v2_index], ny[v2_index],nz[v2_index]};
+      if (mesh_geometry->has_vertex_normals) {
+         const Vector v0n = {mesh_geometry->nx[intersection.faceIndex], 
+                             mesh_geometry->ny[intersection.faceIndex],
+                             mesh_geometry->nz[intersection.faceIndex]};
+         const Vector v1n = {mesh_geometry->nx[v1_index], 
+                             mesh_geometry->ny[v1_index],
+                             mesh_geometry->nz[v1_index]};
+         const Vector v2n = {mesh_geometry->nx[v2_index], 
+                             mesh_geometry->ny[v2_index],
+                             mesh_geometry->nz[v2_index]};
          n = {v0n.x * intersection.u + v1n.x * intersection.v + v2n.x * intersection.w,
               v0n.y * intersection.u + v1n.y * intersection.v + v2n.y * intersection.w,
               v0n.z * intersection.u + v1n.z * intersection.v + v2n.z * intersection.w
@@ -472,9 +379,9 @@ namespace poly {
       bool hits = false;
 
       ispc::soa_linear_intersect(
-            &x[0],
-            &y[0],
-            &z[0],
+            &mesh_geometry->x[0],
+            &mesh_geometry->y[0],
+            &mesh_geometry->z[0],
             worldSpaceRay.Origin.x,
             worldSpaceRay.Origin.y,
             worldSpaceRay.Origin.z,
@@ -484,7 +391,7 @@ namespace poly {
             t,
             face_index,
             hits,
-            num_faces/*,
+            mesh_geometry->num_faces/*,
             worldSpaceRay.x,
             worldSpaceRay.y,
             worldSpaceRay.bounce*/);
@@ -508,13 +415,19 @@ namespace poly {
       intersection.faceIndex = face_index;
       intersection.Location = worldSpaceRay.GetPointAtT(t);
 
-      const unsigned int v0_index = fv0[face_index];
-      const unsigned int v1_index = fv1[face_index];
-      const unsigned int v2_index = fv2[face_index];
+      const unsigned int v0_index = mesh_geometry->fv0[face_index];
+      const unsigned int v1_index = mesh_geometry->fv1[face_index];
+      const unsigned int v2_index = mesh_geometry->fv2[face_index];
 
-      const Point v0 = Point(x_packed[v0_index], y_packed[v0_index], z_packed[v0_index]);
-      const Point v1 = Point(x_packed[v1_index], y_packed[v1_index], z_packed[v1_index]);
-      const Point v2 = Point(x_packed[v2_index], y_packed[v2_index], z_packed[v2_index]);
+      const Point v0 = Point(mesh_geometry->x_packed[v0_index], 
+                             mesh_geometry->y_packed[v0_index],
+                             mesh_geometry->z_packed[v0_index]);
+      const Point v1 = Point(mesh_geometry->x_packed[v1_index],
+                             mesh_geometry->y_packed[v1_index],
+                             mesh_geometry->z_packed[v1_index]);
+      const Point v2 = Point(mesh_geometry->x_packed[v2_index],
+                             mesh_geometry->y_packed[v2_index],
+                             mesh_geometry->z_packed[v2_index]);
 
       const poly::Vector edge0 = v1 - v0;
       const poly::Vector edge1 = v2 - v1;
@@ -554,11 +467,11 @@ namespace poly {
       // TODO 1. generate a random point on a face instead of just using a vertex
       // TODO 2. weight face choice by face surface area
 
-      const unsigned int index = RandomUniformBetween(0u, num_faces - 1);
-      return Point(x[index], y[index], z[index]);
+      const unsigned int index = RandomUniformBetween(0u, mesh_geometry->num_faces - 1);
+      return Point(mesh_geometry->x[index], mesh_geometry->y[index], mesh_geometry->z[index]);
    }
 
-   void Mesh::unpack_faces() {
+   void mesh_geometry::unpack_faces() {
       x.reserve(num_faces * 3);
       y.reserve(num_faces * 3);
       z.reserve(num_faces * 3);
@@ -616,17 +529,17 @@ namespace poly {
 
    }
 
-   Point Mesh::get_vertex(const unsigned int i) const {
+   Point mesh_geometry::get_vertex(const unsigned int i) const {
       return {x_packed[i], y_packed[i], z_packed[i]};
    }
 
-   void Mesh::get_vertices_for_face(unsigned int i, poly::Point vertices[3]) const {
+   void mesh_geometry::get_vertices_for_face(unsigned int i, poly::Point vertices[3]) const {
       vertices[0] = { x_packed[fv0[i]], y_packed[fv0[i]], z_packed[fv0[i]] };
       vertices[1] = { x_packed[fv1[i]], y_packed[fv1[i]], z_packed[fv1[i]] };
       vertices[2] = { x_packed[fv2[i]], y_packed[fv2[i]], z_packed[fv2[i]] };
    }
    
-   Point3ui Mesh::get_vertex_indices_for_face(const unsigned int i) const {
+   Point3ui mesh_geometry::get_vertex_indices_for_face(const unsigned int i) const {
       return {fv0[i], fv1[i], fv2[i]};
    }
 
@@ -637,9 +550,15 @@ namespace poly {
    bool Mesh::hits(const Ray &world_ray, const unsigned int *face_indices, unsigned int num_face_indices) const {
       for (unsigned int face_index = 0; face_index < num_face_indices; face_index++) {
 
-         const Point v0 = {x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]]};
-         const Point v1 = {x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]]};
-         const Point v2 = {x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]]};
+         const Point v0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
+                           mesh_geometry->y_packed[mesh_geometry->fv0[face_index]],
+                           mesh_geometry->z_packed[mesh_geometry->fv0[face_index]]};
+         const Point v1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
+                           mesh_geometry->y_packed[mesh_geometry->fv1[face_index]],
+                           mesh_geometry->z_packed[mesh_geometry->fv1[face_index]]};
+         const Point v2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
+                           mesh_geometry->y_packed[mesh_geometry->fv2[face_index]],
+                           mesh_geometry->z_packed[mesh_geometry->fv2[face_index]]};
 
          const poly::Vector e0 = v1 - v0;
          const poly::Vector e1 = v2 - v1;
@@ -699,9 +618,15 @@ namespace poly {
 
    float Mesh::surface_area(const unsigned int face_index) const {
 
-      const poly::Point p0 = {x_packed[fv0[face_index]], y_packed[fv0[face_index]], z_packed[fv0[face_index]]};
-      const poly::Point p1 = {x_packed[fv1[face_index]], y_packed[fv1[face_index]], z_packed[fv1[face_index]]};
-      const poly::Point p2 = {x_packed[fv2[face_index]], y_packed[fv2[face_index]], z_packed[fv2[face_index]]};
+      const Point p0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
+                        mesh_geometry->y_packed[mesh_geometry->fv0[face_index]],
+                        mesh_geometry->z_packed[mesh_geometry->fv0[face_index]]};
+      const Point p1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
+                        mesh_geometry->y_packed[mesh_geometry->fv1[face_index]],
+                        mesh_geometry->z_packed[mesh_geometry->fv1[face_index]]};
+      const Point p2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
+                        mesh_geometry->y_packed[mesh_geometry->fv2[face_index]],
+                        mesh_geometry->z_packed[mesh_geometry->fv2[face_index]]};
 
       const Vector e0 = p0 - p1;
       const Vector e1 = p1 - p2;
