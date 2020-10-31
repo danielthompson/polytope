@@ -11,7 +11,6 @@
 
 namespace poly {
 
-
    /**
     * Represents the geometry for a mesh.
     */
@@ -28,6 +27,7 @@ namespace poly {
       Point3ui get_vertex_indices_for_face(unsigned int i) const;
       void get_vertices_for_face(unsigned int i, poly::Point vertices[3]) const;
       
+      // TODO remove this, each instance needs its own world-space bb
       BoundingBox bb;
       
       // vertexes
@@ -74,7 +74,7 @@ namespace poly {
            const std::shared_ptr<poly::Material> &material,
            const std::shared_ptr<poly::mesh_geometry> &parent) 
            : object_to_world(objectToWorld), world_to_object(worldToObject), material(material), mesh_geometry(parent) { 
-         // intentionally empty
+         // TODO calculate world bounding box
       } 
            
       ~Mesh();

@@ -194,7 +194,6 @@ namespace poly {
       };
 
       // TODO get rid of this junk in favor of using WorldDirectiveMap
-      
 
       bool is_quoted(const std::string &token) {
          return (token[0] == '"' && token[token.size() - 1] == '"');
@@ -214,6 +213,10 @@ namespace poly {
 
       void log_illegal_directive(const std::unique_ptr<PBRTDirective> &directive, const std::string &error) {
          Log.error(directive->Name + ": " + error);
+      }
+
+      void log_illegal_identifier(const std::unique_ptr<PBRTDirective> &directive, const std::string &error) {
+         Log.error(directive->Name + ": \"" + directive->Identifier + "\": " + error);
       }
 
       void LogMissingArgument(const std::unique_ptr<PBRTDirective>& directive, const std::string& argument) {
@@ -894,6 +897,12 @@ namespace poly {
       std::shared_ptr<SpectralPowerDistribution> activeLight;
       std::shared_ptr<Transform> activeTransform = std::make_shared<Transform>();
       
+      /**
+       * Maps mesh names to previously-defined mesh geometries.
+       */
+      std::unordered_map<std::string, std::shared_ptr<poly::mesh_geometry>> name_mesh_map;
+      std::shared_ptr<poly::mesh_geometry> current_geometry = nullptr;
+      
       _scene = new Scene(std::move(camera));
 
       bool in_object_begin = false;
@@ -1012,6 +1021,7 @@ namespace poly {
                   }
                }
 
+               // TODO use hash table instead
                namedMaterials.push_back(std::make_shared<poly::Material>(std::move(brdf), reflectanceSpectrum, materialName));
                break;
             }
@@ -1127,6 +1137,7 @@ namespace poly {
             case DirectiveName::NamedMaterial: {
                std::string materialName = directive->Identifier;
                bool found = false;
+               // TODO hash table
                for (const auto &material : namedMaterials) {
                   if (material->Name == materialName) {
                      activeMaterial = material;
@@ -1141,29 +1152,79 @@ namespace poly {
             }
             case DirectiveName::ObjectBegin: {
                if (in_object_begin) {
-                  log_illegal_directive(directive, "ObjectBegin directive cannot be nested");
+                  log_illegal_directive(directive, "ObjectBegin directive cannot be nested.");
                }
                else {
                   in_object_begin = true;
                   // TODO - record start of new object with given name
+                  if (directive->Identifier.empty()) {
+                     log_illegal_identifier(directive, "ObjectBegin directive cannot specify an empty name.");
+                  }
+                  
+                  // has an object by that name already been defined?
+                  {
+                     std::shared_ptr<poly::mesh_geometry> previous_instance = nullptr;
+                     // TODO find and use an exception-less hash table
+                     try {
+                        previous_instance = name_mesh_map.at(directive->Identifier);
+                     }
+                     catch (...) {}
+                     if (previous_instance != nullptr) {
+                        log_illegal_identifier(directive, "ObjectBegin directive cannot specify [" + directive->Identifier +
+                                                          "]; that name has already been previously defined.");
+                     }
+                  }
+                  
+                  // create geometry and insert into the map
+                  current_geometry = std::make_shared<mesh_geometry>();
+                  name_mesh_map[directive->Identifier] = current_geometry;
                }
+               break;
             }
             case DirectiveName::ObjectEnd: {
                if (in_object_begin) {
-                  // TODO - close out the current object
                   in_object_begin = false;
+                  current_geometry = nullptr;
                }
                else {
                   log_illegal_directive(directive, "ObjectEnd directive without previous matching ObjectBegin directive");
                }
+               break;
             }
             case DirectiveName::ObjectInstance: {
                if (in_object_begin) {
                   log_illegal_directive(directive, "ObjectInstance directive cannot appear between ObjectBegin and ObjectEnd directives");
+               } 
+               else if (current_geometry != nullptr) {
+                  ERROR("BUG: current geometry isn't null, but should be");
+               }
+               std::string object_name = directive->Identifier;
+               if (object_name.empty()) {
+                  log_illegal_identifier(directive, "ObjectInstance directive cannot specify an empty name.");
+               }
+               // get mesh geometry from hash table
+               std::shared_ptr<poly::mesh_geometry> geometry = nullptr;
+               // TODO find and use an exception-less hash table
+               try {
+                  geometry = name_mesh_map.at(object_name);
+               }
+               catch (...) {
+                  log_illegal_identifier(directive, "ObjectInstance directive specifies name [" + object_name + "]; but that name hasn't been defined yet.");
+               }
+               
+               // create mesh with current geometry and add to scene
+               std::shared_ptr<poly::Transform> activeInverse = std::make_shared<poly::Transform>(activeTransform->Invert());
+               poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
+               if (activeLight != nullptr) {
+                  // TODO
+                  mesh->spd = activeLight;
+                  _scene->Lights.push_back(mesh);
                }
                else {
-                  
+                  mesh->material = activeMaterial;
                }
+               _scene->Shapes.push_back(mesh);
+               break;
             }
             case DirectiveName::Rotate: {
                // TODO need to ensure just 1 argument with 4 values
@@ -1210,12 +1271,13 @@ namespace poly {
                }
 
                std::shared_ptr<poly::Transform> activeInverse = std::make_shared<poly::Transform>(activeTransform->Invert());
+               
                switch (identifier) {
                   case ShapeIdentifier::objmesh: {
                      // make sure it has a filename argument
                      bool filenameMissing = true;
                      std::string mesh_filename;
-                     for (const PBRTArgument& argument : directive->Arguments) {
+                     for (const PBRTArgument &argument : directive->Arguments) {
                         OBJMeshArgument arg;
                         try {
                            arg = OBJMeshArgumentMap.at(argument.Name);
@@ -1243,27 +1305,36 @@ namespace poly {
                         break;
                      }
 
-                     std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
-                     
-                     poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
-
                      const OBJParser parser;
-                     const std::string absoluteObjFilepath = _basePathFromCWD + mesh_filename;
-                     parser.ParseFile(geometry, absoluteObjFilepath);
-                     //mesh->Bound();
-                     //mesh->CalculateVertexNormals();
-                     //mesh->ObjectToWorld = *activeTransform;
-
-                     if (activeLight != nullptr) {
-                        // TODO
-                        mesh->spd = activeLight;
-                        _scene->Lights.push_back(mesh);
+                     std::shared_ptr<poly::mesh_geometry> geometry;
+                     if (in_object_begin) {
+                        geometry = current_geometry;
                      }
                      else {
-                        mesh->material = activeMaterial;
+                        geometry = std::make_shared<poly::mesh_geometry>();
                      }
-                     _scene->Shapes.push_back(mesh);
+                     
+                     const std::string absolute_path = _basePathFromCWD + mesh_filename;
+                     parser.ParseFile(geometry, absolute_path);
+
+                     if (in_object_begin) {
+                        // maybe not necessary
+                        current_geometry = geometry;
+                     }
+                     else {
+                        poly::Mesh *mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
+
+                        if (activeLight != nullptr) {
+                           // TODO
+                           mesh->spd = activeLight;
+                           _scene->Lights.push_back(mesh);
+                        } else {
+                           mesh->material = activeMaterial;
+                        }
+                        _scene->Shapes.push_back(mesh);
+                     }
                      break;
+                  
                   }
                   case ShapeIdentifier::plymesh: {
                      // make sure it has a filename argument
@@ -1297,23 +1368,37 @@ namespace poly {
                         break;
                      }
 
-                     std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
-                     poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
                      const PLYParser parser;
-                     const std::string absoluteObjFilepath = /*GetCurrentWorkingDirectory() + UnixPathSeparator +*/ _basePathFromCWD + mesh_filename;
-                     parser.ParseFile(geometry, absoluteObjFilepath);
-                     //mesh->Bound();
-                     //mesh->CalculateVertexNormals();
-
-                     if (activeLight != nullptr) {
-                        // TODO
-                        mesh->spd = activeLight;
-                        _scene->Lights.push_back(mesh);
+                     std::shared_ptr<poly::mesh_geometry> geometry;
+                     if (in_object_begin) {
+                        geometry = current_geometry;
                      }
                      else {
-                        mesh->material = activeMaterial;   
+                        geometry = std::make_shared<poly::mesh_geometry>();
                      }
-                     _scene->Shapes.push_back(mesh);
+                     
+                     const std::string absolute_path = _basePathFromCWD + mesh_filename;
+                     parser.ParseFile(geometry, absolute_path);
+
+                     if (in_object_begin) {
+                        // maybe not necessary
+                        current_geometry = geometry;
+                     }
+                     else {
+                        poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
+                        //mesh->Bound();
+                        //mesh->CalculateVertexNormals();
+
+                        if (activeLight != nullptr) {
+                           // TODO
+                           mesh->spd = activeLight;
+                           _scene->Lights.push_back(mesh);
+                        }
+                        else {
+                           mesh->material = activeMaterial;
+                        }
+                        _scene->Shapes.push_back(mesh);
+                     }
                      break;
                   }
                   case ShapeIdentifier::sphere: {
@@ -1326,22 +1411,29 @@ namespace poly {
                            std::shared_ptr<poly::Transform> temp_radius_inverse = std::make_shared<poly::Transform>(temp_radius_transform->Invert());
                            
                            std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
-                           poly::Mesh* mesh = new poly::Mesh(temp_radius_transform, temp_radius_inverse, activeMaterial, geometry);
                            const int subdivisions = std::max((int)radius, 20);
                            poly::SphereTesselator::Create(subdivisions, subdivisions, geometry);
-                           mesh->object_to_world = activeTransform;
-                           mesh->world_to_object = activeInverse;
 
-                           if (activeLight != nullptr) {
-                              mesh->spd = activeLight;
-                              _scene->Lights.push_back(mesh);
+                           if (in_object_begin) {
+                              current_geometry = geometry;
                            }
                            else {
-                              mesh->material = activeMaterial;
-                           }
-                           _scene->Shapes.push_back(mesh);
+                              poly::Mesh* mesh = new poly::Mesh(temp_radius_transform, temp_radius_inverse, activeMaterial, geometry);
+                              mesh->object_to_world = activeTransform;
+                              mesh->world_to_object = activeInverse;
+
+                              if (activeLight != nullptr) {
+                                 mesh->spd = activeLight;
+                                 _scene->Lights.push_back(mesh);
+                              }
+                              else {
+                                 mesh->material = activeMaterial;
+                              }
+                              _scene->Shapes.push_back(mesh);
+                           } 
                         }
                      }
+                     break;
                   }
                   default: {
                      LogUnimplementedDirective(directive);

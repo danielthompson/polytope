@@ -38,21 +38,40 @@ namespace poly {
       }
    };
       
-   struct DeviceMesh {
+   struct device_mesh_geometry {
       float* x;
       float* y;
       float* z;
-      
+
       float* nx;
       float* ny;
       float* nz;
+
+      bool has_vertex_normals = false;
+      size_t num_vertices, num_faces;
+   };
+   
+   struct DeviceMesh {
       
       poly::BRDF_TYPE brdf_type;
       float brdf_params[10];
       
-      size_t num_bytes, num_vertices, num_faces;
+      size_t num_bytes;
       float aabb[6];
+      
+      float obj_to_world[16];
+
+      // TODO remove this stuff:
+      float* x;
+      float* y;
+      float* z;
+
+      float* nx;
+      float* ny;
+      float* nz;
+
       bool has_vertex_normals = false;
+      size_t num_vertices, num_faces;
    };
 
    struct Samples {

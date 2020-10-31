@@ -67,8 +67,10 @@ namespace poly {
          assert(original_mesh != nullptr);
          
          const poly::Mesh* host_mesh = reinterpret_cast<const poly::Mesh *>(original_mesh);
+         const std::shared_ptr<poly::mesh_geometry> geometry = host_mesh->mesh_geometry;
          
          assert(host_mesh != nullptr);
+         assert(geometry != nullptr);
          assert(host_mesh->mesh_geometry->x.size() == host_mesh->mesh_geometry->y.size());
          assert(host_mesh->mesh_geometry->y.size() == host_mesh->mesh_geometry->z.size());
 
@@ -76,13 +78,17 @@ namespace poly {
          const size_t num_faces = num_vertices / 3;
          const size_t num_bytes = sizeof(float) * num_vertices;
          
+         // geometry
+         
+         struct device_mesh_geometry device_mesh_geometry_temp { };
+         device_mesh_geometry_temp.nx = nullptr;
+         device_mesh_geometry_temp.ny = nullptr;
+         device_mesh_geometry_temp.nz = nullptr;
+         device_mesh_geometry_temp.num_vertices = num_vertices;
+         device_mesh_geometry_temp.num_faces = num_faces;
+         
          struct DeviceMesh host_mesh_temp { };
-         host_mesh_temp.nx = nullptr;
-         host_mesh_temp.ny = nullptr;
-         host_mesh_temp.nz = nullptr;
          host_mesh_temp.num_bytes = num_bytes;
-         host_mesh_temp.num_vertices = num_vertices;
-         host_mesh_temp.num_faces = num_faces;
          if (host_mesh->material) {
             host_mesh_temp.brdf_type = host_mesh->material->BRDF->brdf_type;
             switch (host_mesh_temp.brdf_type) {

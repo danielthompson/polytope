@@ -270,7 +270,7 @@ add_executable(runUnitTests
         tests/test_bvh.cpp
         tests/cuda/test_bvh_traversal.cpp
         tests/thread_pool_tests.cpp
-        )
+        tests/parsers/pbrt/test_instancing.cpp)
 
 target_include_directories(
         runUnitTests
