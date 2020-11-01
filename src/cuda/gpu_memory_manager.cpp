@@ -112,12 +112,12 @@ namespace poly {
             host_mesh_temp.brdf_type = BRDF_TYPE::None;
          }
          
-         host_mesh_temp.aabb[0] = host_mesh->mesh_geometry->bb.p0.x;
-         host_mesh_temp.aabb[1] = host_mesh->mesh_geometry->bb.p0.y;
-         host_mesh_temp.aabb[2] = host_mesh->mesh_geometry->bb.p0.z;
-         host_mesh_temp.aabb[3] = host_mesh->mesh_geometry->bb.p1.x;
-         host_mesh_temp.aabb[4] = host_mesh->mesh_geometry->bb.p1.y;
-         host_mesh_temp.aabb[5] = host_mesh->mesh_geometry->bb.p1.z;
+         host_mesh_temp.aabb[0] = host_mesh->world_bb.p0.x;
+         host_mesh_temp.aabb[1] = host_mesh->world_bb.p0.y;
+         host_mesh_temp.aabb[2] = host_mesh->world_bb.p0.z;
+         host_mesh_temp.aabb[3] = host_mesh->world_bb.p1.x;
+         host_mesh_temp.aabb[4] = host_mesh->world_bb.p1.y;
+         host_mesh_temp.aabb[5] = host_mesh->world_bb.p1.z;
          
          cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.x), num_bytes) );
          to_free_list.push_back(host_mesh_temp.x);

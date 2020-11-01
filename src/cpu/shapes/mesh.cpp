@@ -87,60 +87,6 @@ namespace poly {
       fv0.push_back(v0_index);
       fv1.push_back(v1_index);
       fv2.push_back(v2_index);
-          
-      {
-         const float p0x = x_packed[v0_index];
-         bb.p0.x = p0x < bb.p0.x ? p0x : bb.p0.x;
-         bb.p1.x = p0x > bb.p1.x ? p0x : bb.p1.x;
-      }
-
-      {
-         const float p0y = y_packed[v0_index];
-         bb.p0.y = p0y < bb.p0.y ? p0y : bb.p0.y;
-         bb.p1.y = p0y > bb.p1.y ? p0y : bb.p1.y;
-      }
-
-      {
-         const float p0z = z_packed[v0_index];
-         bb.p0.z = p0z < bb.p0.z ? p0z : bb.p0.z;
-         bb.p1.z = p0z > bb.p1.z ? p0z : bb.p1.z;
-      }
-
-      {
-         const float p1x = x_packed[v1_index];
-         bb.p0.x = p1x < bb.p0.x ? p1x : bb.p0.x;
-         bb.p1.x = p1x > bb.p1.x ? p1x : bb.p1.x;
-      }
-
-      {
-         const float p1y = y_packed[v1_index];
-         bb.p0.y = p1y < bb.p0.y ? p1y : bb.p0.y;
-         bb.p1.y = p1y > bb.p1.y ? p1y : bb.p1.y;
-      }
-
-      {
-         const float p1z = z_packed[v1_index];
-         bb.p0.z = p1z < bb.p0.z ? p1z : bb.p0.z;
-         bb.p1.z = p1z > bb.p1.z ? p1z : bb.p1.z;
-      }
-
-      {
-         const float p2x = x_packed[v2_index];
-         bb.p0.x = p2x < bb.p0.x ? p2x : bb.p0.x;
-         bb.p1.x = p2x > bb.p1.x ? p2x : bb.p1.x;
-      }
-
-      {
-         const float p2y = y_packed[v2_index];
-         bb.p0.y = p2y < bb.p0.y ? p2y : bb.p0.y;
-         bb.p1.y = p2y > bb.p1.y ? p2y : bb.p1.y;
-      }
-
-      {
-         const float p2z = z_packed[v2_index];
-         bb.p0.z = p2z < bb.p0.z ? p2z : bb.p0.z;
-         bb.p1.z = p2z > bb.p1.z ? p2z : bb.p1.z;
-      }
 
       // calculate face normal
       const Point v0 = {x_packed[fv0[num_faces]], y_packed[fv0[num_faces]], z_packed[fv0[num_faces]]};
@@ -668,5 +614,18 @@ namespace poly {
       const float sa = std::sqrt((a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c)));
 
       return sa;
+   }
+   
+   void Mesh::recalculate_bounding_box() {
+      
+      // reset to min/impossible
+      world_bb.p0 = { poly::Infinity, poly::Infinity, poly::Infinity};
+      world_bb.p1 = { -poly::Infinity, -poly::Infinity, -poly::Infinity};
+      
+      // TODO PERF investigate performance of iterating over packed vs unpacked vertices
+      for (int i = 0; i < mesh_geometry->num_vertices; i++) {
+         const Point p = object_to_world->Apply(Point(mesh_geometry->x[i], mesh_geometry->y[i], mesh_geometry->z[i]));
+         world_bb.UnionInPlace(p);
+      }
    }
 }

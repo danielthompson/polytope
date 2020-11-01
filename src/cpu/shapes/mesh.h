@@ -27,9 +27,6 @@ namespace poly {
       Point3ui get_vertex_indices_for_face(unsigned int i) const;
       void get_vertices_for_face(unsigned int i, poly::Point vertices[3]) const;
       
-      // TODO remove this, each instance needs its own world-space bb
-      BoundingBox bb;
-      
       // vertexes
       std::vector<float> x;
       std::vector<float> y;
@@ -74,7 +71,7 @@ namespace poly {
            const std::shared_ptr<poly::Material> &material,
            const std::shared_ptr<poly::mesh_geometry> &parent) 
            : object_to_world(objectToWorld), world_to_object(worldToObject), material(material), mesh_geometry(parent) { 
-         // TODO calculate world bounding box
+         recalculate_bounding_box();
       } 
            
       ~Mesh();
@@ -93,16 +90,17 @@ namespace poly {
          return (spd != nullptr);
       }
 
+      void recalculate_bounding_box();
+      
       std::shared_ptr<poly::Transform> object_to_world;
       std::shared_ptr<poly::Transform> world_to_object;
       std::shared_ptr<poly::Material> material;
       std::shared_ptr<poly::BoundingBox> bounding_box;
       std::shared_ptr<poly::SpectralPowerDistribution> spd;
       std::shared_ptr<poly::mesh_geometry> mesh_geometry;
+      
+      poly::BoundingBox world_bb;
    };
-   
-   
 }
-
 
 #endif //POLY_MESH_LINEAR_SOA_H
