@@ -170,7 +170,9 @@ namespace Tests {
          geometry->add_vertex(0, 1, 0);
          geometry->add_packed_face(0, 1, 2);
 
-         poly::Mesh mesh(nullptr, nullptr, nullptr, geometry);
+         auto identity = std::make_shared<poly::Transform>();
+         
+         poly::Mesh mesh(identity, identity, nullptr, geometry);
          std::vector<poly::Mesh *> meshes = {
                &mesh
          };
@@ -193,8 +195,9 @@ namespace Tests {
             geometry->add_vertex(0 + (mesh_index * offset), 1, 0);
             geometry->add_packed_face(3 * mesh_index, 3 * mesh_index + 1, 3 * mesh_index + 2);
          }
-         
-         poly::Mesh mesh(nullptr, nullptr, nullptr, geometry);
+
+         auto identity = std::make_shared<poly::Transform>();
+         poly::Mesh mesh(identity, identity, nullptr, geometry);
          
          std::vector<poly::Mesh *> meshes = {
                &mesh
