@@ -4,7 +4,7 @@
 
 #include "gtest/gtest.h"
 
-#include "../../../src/common/parsers/PBRTFileParser.h"
+#include "../../../src/common/parsers/pbrt_parser.h"
 #include "../../../src/cpu/samplers/samplers.h"
 #include "../../../src/common/utilities/Logger.h"
 #include "../../../src/cpu/films/PNGFilm.h"
@@ -19,15 +19,15 @@ poly::Logger Log;
 
 namespace Tests {
 
-   using poly::PBRTFileParser;
+   using poly::pbrt_parser;
    
    namespace Scan {
       
       std::vector<std::string> test_scan(const std::string &line, const int expected_tokens) {
-         PBRTFileParser parser = PBRTFileParser();
+         pbrt_parser parser = pbrt_parser();
 
          const std::unique_ptr<std::istream> stream = std::make_unique<std::istringstream>(line);
-         const auto tokenized_lines = PBRTFileParser::Scan(stream);
+         const auto tokenized_lines = pbrt_parser::scan(stream);
 
          EXPECT_EQ(tokenized_lines->size(), 1);
 

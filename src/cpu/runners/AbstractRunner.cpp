@@ -13,10 +13,6 @@ namespace poly {
       Point2f points[NumSamples];
 
       Sampler->GetSamples(points, NumSamples, x, y);
-
-      bool debug = false;
-      if (x == 204 && y == 70)
-         debug = true;
       
       for (unsigned int i = 0; i < NumSamples; i++) {
 

@@ -15,7 +15,7 @@
 #include "filters/BoxFilter.h"
 #include "runners/TileRunner.h"
 #include "films/PNGFilm.h"
-#include "../common/parsers/PBRTFileParser.h"
+#include "../common/parsers/pbrt_parser.h"
 #include "../gl/GLRenderer.h"
 #include "shapes/mesh.h"
 #include "structures/stats.h"
@@ -117,8 +117,8 @@ Other:
          if (options.inputSpecified) {
             // load file
             const auto parse_start = std::chrono::system_clock::now();
-            poly::PBRTFileParser parser = poly::PBRTFileParser();
-            runner = parser.ParseFile(options.input_filename);
+            poly::pbrt_parser parser = poly::pbrt_parser();
+            runner = parser.parse_file(options.input_filename);
             const auto parse_end = std::chrono::system_clock::now();
             const std::chrono::duration<double> parse_duration = parse_end - parse_start;
             Log.debug("Parsed scene description in " + std::to_string(parse_duration.count()) + "s.");

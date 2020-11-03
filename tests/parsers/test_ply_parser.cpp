@@ -5,9 +5,9 @@
 #include "gtest/gtest.h"
 
 #include "../../src/common/utilities/Logger.h"
-#include "../../src/common/parsers/mesh/PLYParser.h"
+#include "../../src/common/parsers/mesh_parsers.h"
 #include "../../src/cpu/structures/Vectors.h"
-#include "../../src/common/parsers/mesh/OBJParser.h"
+#include "../../src/common/parsers/mesh_parsers.h"
 #include "../../src/cpu/shapes/mesh.h"
 
 namespace Tests {
@@ -15,12 +15,12 @@ namespace Tests {
    namespace Parse {
       TEST(PLYParser, Teapot) {
 
-         const poly::PLYParser parser;
+         const poly::ply_parser parser;
          const std::string file = "../scenes/teapot/teapot.ply";
          const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
          auto geometry = std::make_shared<poly::mesh_geometry>();
-         
-         parser.ParseFile(geometry, file);
+
+         parser.parse_file(geometry, file);
 
          // ensure nothing is null
          ASSERT_NE(nullptr, geometry);
@@ -52,16 +52,16 @@ namespace Tests {
          const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
          auto ply_geometry = std::make_shared<poly::mesh_geometry>();
          {
-            const poly::PLYParser ply_parser;
+            const poly::ply_parser ply_parser;
             const std::string file = "../scenes/teapot/teapot_converted.ply";
-            ply_parser.ParseFile(ply_geometry, file);
+            ply_parser.parse_file(ply_geometry, file);
          }
 
          auto obj_geometry = std::make_shared<poly::mesh_geometry>();
          {
-            const poly::OBJParser obj_parser;
+            const poly::obj_parser obj_parser;
             const std::string file = "../scenes/teapot/teapot.obj";
-            obj_parser.ParseFile(obj_geometry, file);
+            obj_parser.parse_file(obj_geometry, file);
          }
             
          ASSERT_FALSE(ply_geometry == nullptr);
@@ -114,7 +114,7 @@ namespace Tests {
       }
       
       TEST(PLYParser, Binary) {
-         const poly::PLYParser parser;
+         const poly::ply_parser parser;
          const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
          constexpr unsigned int expected_num_vertices = 8;
          constexpr unsigned int expected_num_faces = 4;
@@ -123,7 +123,7 @@ namespace Tests {
          const std::string binary_file = "../scenes/test/floor-binary-le.ply";
          auto binary_geometry = std::make_shared<poly::mesh_geometry>();
 
-         parser.ParseFile(binary_geometry, binary_file);
+         parser.parse_file(binary_geometry, binary_file);
          // ensure nothing is null
          ASSERT_NE(nullptr, binary_geometry);
          EXPECT_EQ(expected_num_vertices, binary_geometry->num_vertices_packed);
@@ -133,7 +133,7 @@ namespace Tests {
          const std::string ascii_file = "../scenes/test/floor-ascii.ply";
          auto ascii_geometry = std::make_shared<poly::mesh_geometry>();
 
-         parser.ParseFile(ascii_geometry, ascii_file);
+         parser.parse_file(ascii_geometry, ascii_file);
          // ensure nothing is null
          ASSERT_NE(nullptr, ascii_geometry);
          EXPECT_EQ(expected_num_vertices, ascii_geometry->num_vertices_packed);

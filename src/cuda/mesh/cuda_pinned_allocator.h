@@ -9,7 +9,6 @@
 #include <limits>
 #include <cuda_runtime.h>
 #include <cstdio>
-#include "../../common/parsers/mesh/AbstractMeshAllocator.h"
 
 namespace poly {
 

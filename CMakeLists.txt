@@ -72,8 +72,8 @@ add_library(polytope_lib
         src/cpu/integrators/PathTraceIntegrator.h
         src/cpu/lights/AbstractLight.h
         src/cpu/lights/PointLight.h
-        src/common/parsers/PBRTFileParser.cpp
-        src/common/parsers/PBRTFileParser.h
+        src/common/parsers/pbrt_parser.cpp
+        src/common/parsers/pbrt_parser.h
         src/cpu/runners/AbstractRunner.cpp
         src/cpu/runners/AbstractRunner.h
         src/cpu/runners/PixelRunner.cpp
@@ -114,24 +114,20 @@ add_library(polytope_lib
         src/common/utilities/Options.h
         src/common/utilities/OptionsParser.cpp
         src/common/utilities/OptionsParser.h
-        src/common/parsers/mesh/OBJParser.cpp
-        src/common/parsers/mesh/OBJParser.h
-        src/common/parsers/AbstractFileParser.cpp
-        src/common/parsers/AbstractFileParser.h
+        src/common/parsers/abstract_file_parser.cpp
+        src/common/parsers/abstract_file_parser.h
         src/cpu/structures/Vectors.cpp
         src/cpu/structures/Vectors.h
         src/cpu/structures/BoundingBox.cpp
         src/cpu/structures/BoundingBox.h
-        src/common/parsers/mesh/PLYParser.cpp
-        src/common/parsers/mesh/PLYParser.h
-        src/common/parsers/mesh/AbstractMeshParser.h
+        src/common/parsers/mesh_parsers.h
+        src/common/parsers/mesh_parsers.cpp
         src/cpu/shapes/tesselators.cpp
         src/cpu/shapes/tesselators.h
         src/cpu/shapes/mesh.cpp
         src/cpu/shapes/mesh.h
         src/cpu/shapes/mesh_intersect.h
         src/cpu/shapes/mesh_intersect.o
-        src/common/parsers/mesh/AbstractMeshAllocator.h 
         src/cpu/acceleration/bvh.cpp 
         src/cpu/acceleration/bvh.h 
         src/cpu/structures/stats.h

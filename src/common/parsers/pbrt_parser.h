@@ -8,14 +8,14 @@
 #include <iostream>
 #include <string>
 #include "../../cpu/runners/AbstractRunner.h"
-#include "AbstractFileParser.h"
+#include "abstract_file_parser.h"
 
 namespace poly {
 
-   class PBRTArgument {
+   class pbrt_argument {
    public:
 
-      enum PBRTArgumentType {
+      enum pbrt_argument_type {
          pbrt_bool,
          pbrt_float,
          pbrt_int,
@@ -30,7 +30,7 @@ namespace poly {
       } Type;
 
 
-      PBRTArgument(const PBRTArgumentType type) : Type(type) { 
+      pbrt_argument(const pbrt_argument_type type) : Type(type) { 
          switch (type) {
             case pbrt_bool: {
                bool_value = std::make_unique<bool>();
@@ -68,7 +68,7 @@ namespace poly {
       //std::vector<std::string> Values;
 
       // todo put this into a map
-      static PBRTArgumentType get_argument_type(const std::string &value) {
+      static pbrt_argument_type get_argument_type(const std::string &value) {
          if (value == "bool")
             return pbrt_bool;
          if (value == "float")
@@ -96,7 +96,7 @@ namespace poly {
             
       }
       
-      static std::string get_argument_type_string(const PBRTArgumentType type) {
+      static std::string get_argument_type_string(const pbrt_argument_type type) {
          std::string argument_type;
          switch (type) {
             case pbrt_bool: {
@@ -152,38 +152,38 @@ namespace poly {
       }
    };
 
-   class PBRTDirective {
+   class pbrt_directive {
    public:
-      std::string Name;
-      std::string Identifier;
-      std::vector<poly::PBRTArgument> Arguments;
+      std::string name;
+      std::string identifier;
+      std::vector<poly::pbrt_argument> arguments;
    };
 
-   class PBRTGraphicsState {
+   class pbrt_graphics_state {
    public:
       std::unique_ptr<Material> material;
    };
 
-   class PBRTFileParser : public AbstractFileParser {
+   class pbrt_parser : public abstract_file_parser {
    public:
 
       // constructors
-      explicit PBRTFileParser() = default;
+      explicit pbrt_parser() = default;
 
-      std::unique_ptr<AbstractRunner> ParseFile(const std::string &filepath) noexcept(false);
+      std::unique_ptr<AbstractRunner> parse_file(const std::string &filepath) noexcept(false);
       
-      std::unique_ptr<AbstractRunner> ParseString(const std::string &text) noexcept(false);
-      static std::unique_ptr<PBRTDirective> Lex(std::vector<std::string> line);
-      static std::unique_ptr<std::vector<std::vector<std::string>>> Scan(const std::unique_ptr<std::istream>& stream);
-      std::unique_ptr<AbstractSampler> Sampler;
-      Scene* _scene = nullptr;
-      std::unique_ptr<AbstractIntegrator> _integrator;
-      std::unique_ptr<AbstractFilm> _film;
-      std::unique_ptr<AbstractFilter> _filter;
-      poly::Bounds _bounds;
+      std::unique_ptr<AbstractRunner> parse_string(const std::string &text) noexcept(false);
+      static std::unique_ptr<pbrt_directive> lex(std::vector<std::string> line);
+      static std::unique_ptr<std::vector<std::vector<std::string>>> scan(const std::unique_ptr<std::istream>& stream);
+      std::unique_ptr<AbstractSampler> sampler;
+      Scene* scene = nullptr;
+      std::unique_ptr<AbstractIntegrator> integrator;
+      std::unique_ptr<AbstractFilm> film;
+      std::unique_ptr<AbstractFilter> filter;
+      poly::Bounds bounds;
    
    private:
-      std::unique_ptr<AbstractRunner> Parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false);
+      std::unique_ptr<AbstractRunner> parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false);
    };
 }
 #endif //POLY_FILEPARSER_H

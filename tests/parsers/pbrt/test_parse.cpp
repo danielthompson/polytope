@@ -4,7 +4,7 @@
 
 #include "gtest/gtest.h"
 
-#include "../../../src/common/parsers/PBRTFileParser.h"
+#include "../../../src/common/parsers/pbrt_parser.h"
 #include "../../../src/cpu/samplers/samplers.h"
 #include "../../../src/common/utilities/Logger.h"
 #include "../../../src/cpu/films/PNGFilm.h"
@@ -18,14 +18,14 @@
 
 namespace Tests {
 
-   using poly::PBRTFileParser;
+   using poly::pbrt_parser;
 
    namespace Parse {
       TEST(PBRTParse, EmptyWorld) {
 
-         auto fp = PBRTFileParser();
+         auto fp = pbrt_parser();
          std::string file = "../scenes/minimum-emptyworld.pbrt";
-         std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+         std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
          // ensure nothing is null
          ASSERT_NE(nullptr, runner);
@@ -106,9 +106,9 @@ namespace Tests {
 
       TEST(PBRTParse, EmptyWorldMissingCamera) {
 
-         PBRTFileParser fp = PBRTFileParser();
+         pbrt_parser fp = pbrt_parser();
          std::string file = "../scenes/minimum-emptyworld-missingcamera.pbrt";
-         std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+         std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
          // ensure nothing is null
          ASSERT_NE(nullptr, runner);

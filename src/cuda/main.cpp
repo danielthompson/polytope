@@ -9,7 +9,7 @@
 #include "../common/utilities/Common.h"
 #include "../common/utilities/OptionsParser.h"
 #include "../common/structures/Point2.h"
-#include "../common/parsers/PBRTFileParser.h"
+#include "../common/parsers/pbrt_parser.h"
 
 #include "gpu_memory_manager.h"
 #include "kernels/path_tracer.cuh"
@@ -97,8 +97,8 @@ Other:
          }
          
          // load file
-         poly::PBRTFileParser parser = poly::PBRTFileParser();
-         const auto runner = parser.ParseFile(options.input_filename);
+         poly::pbrt_parser parser = poly::pbrt_parser();
+         const auto runner = parser.parse_file(options.input_filename);
          
          
          

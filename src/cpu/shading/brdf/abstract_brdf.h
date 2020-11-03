@@ -55,7 +55,7 @@ namespace poly {
        */
       virtual float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const = 0;
 
-      AbstractBRDF(BRDF_TYPE brdf_type) : brdf_type(brdf_type) { }
+      explicit AbstractBRDF(BRDF_TYPE brdf_type) : brdf_type(brdf_type) { }
       
       virtual ~AbstractBRDF() = default;
    };

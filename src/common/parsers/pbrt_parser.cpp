@@ -6,9 +6,8 @@
 #include <stack>
 #include <cassert>
 #include <unordered_map>
-#include "PBRTFileParser.h"
-#include "mesh/OBJParser.h"
-#include "mesh/PLYParser.h"
+#include "pbrt_parser.h"
+#include "mesh_parsers.h"
 #include "../../cpu/integrators/PathTraceIntegrator.h"
 #include "../../cpu/integrators/DebugIntegrator.h"
 #include "../../cpu/cameras/PerspectiveCamera.h"
@@ -207,47 +206,47 @@ namespace poly {
          return (token[0] != '"' && token[token.size() - 1] == '"');
       }
 
-      void LogOther(const std::unique_ptr<PBRTDirective> &directive, const std::string &error) {
-         Log.warning(directive->Name + ": " + error);
+      void LogOther(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
+         Log.warning(directive->name + ": " + error);
       }
 
-      void log_illegal_directive(const std::unique_ptr<PBRTDirective> &directive, const std::string &error) {
-         Log.error(directive->Name + ": " + error);
+      void log_illegal_directive(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
+         Log.error(directive->name + ": " + error);
       }
 
-      void log_illegal_identifier(const std::unique_ptr<PBRTDirective> &directive, const std::string &error) {
-         Log.error(directive->Name + ": \"" + directive->Identifier + "\": " + error);
+      void log_illegal_identifier(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
+         Log.error(directive->name + ": \"" + directive->identifier + "\": " + error);
       }
 
-      void LogMissingArgument(const std::unique_ptr<PBRTDirective>& directive, const std::string& argument) {
-         Log.warning("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] is missing argument [" + argument + "]");
+      void LogMissingArgument(const std::unique_ptr<pbrt_directive>& directive, const std::string& argument) {
+         Log.warning("Directive [" + directive->name + "] w/ identifier [" + directive->identifier + "] is missing argument [" + argument + "]");
       }
 
       void LogMissingDirective(const std::string& name, std::string& defaultOption) {
          Log.warning("Directive [" + name + "] is missing, defaulting to " + defaultOption + ".");
       }
 
-      void LogUnknownDirective(const std::unique_ptr<PBRTDirective> &directive) {
-         Log.warning("Directive [" + directive->Name + "] found, but is unknown. Ignoring.");
+      void LogUnknownDirective(const std::unique_ptr<pbrt_directive> &directive) {
+         Log.warning("Directive [" + directive->name + "] found, but is unknown. Ignoring.");
       }
 
-      void LogUnknownIdentifier(const std::unique_ptr<PBRTDirective> &directive) {
-         Log.warning("Directive [" + directive->Name + "] has unknown identifier [" + directive->Identifier + "].");
+      void LogUnknownIdentifier(const std::unique_ptr<pbrt_directive> &directive) {
+         Log.warning("Directive [" + directive->name + "] has unknown identifier [" + directive->identifier + "].");
       }
 
-      void LogUnknownArgument(const PBRTArgument &argument) {
+      void LogUnknownArgument(const pbrt_argument &argument) {
          
          Log.warning("Unknown argument type/name combination: [" +
-                            PBRTArgument::get_argument_type_string(argument.Type) + "] / [" + argument.Name + "].");
+                     pbrt_argument::get_argument_type_string(argument.Type) + "] / [" + argument.Name + "].");
       }
 
-      void LogWrongArgumentType(const std::unique_ptr<PBRTDirective> &directive, const PBRTArgument &argument) {
-         Log.warning("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] found has argument [" + argument.Name + "] with wrong type [" +
-                            PBRTArgument::get_argument_type_string(argument.Type) + "].");
+      void LogWrongArgumentType(const std::unique_ptr<pbrt_directive> &directive, const pbrt_argument &argument) {
+         Log.warning("Directive [" + directive->name + "] w/ identifier [" + directive->identifier + "] found has argument [" + argument.Name + "] with wrong type [" +
+                     pbrt_argument::get_argument_type_string(argument.Type) + "].");
       }
 
-      void LogUnimplementedDirective(const std::unique_ptr<PBRTDirective> &directive) {
-         Log.warning("Directive [" + directive->Name + "] w/ identifier [" + directive->Identifier + "] found, but is not yet implemented. Ignoring.");
+      void LogUnimplementedDirective(const std::unique_ptr<pbrt_directive> &directive) {
+         Log.warning("Directive [" + directive->name + "] w/ identifier [" + directive->identifier + "] found, but is not yet implemented. Ignoring.");
       }
 
       unsigned int stoui(const std::string& text) {
@@ -261,9 +260,9 @@ namespace poly {
       constexpr unsigned int DefaultSamples = 8;
    }
 
-   std::unique_ptr<AbstractRunner> PBRTFileParser::ParseFile(const std::string &filepath) {
+   std::unique_ptr<AbstractRunner> pbrt_parser::parse_file(const std::string &filepath) {
 
-      std::unique_ptr<std::vector<std::vector<std::string>>> tokens = Scan(open_ascii_stream(filepath));
+      std::unique_ptr<std::vector<std::vector<std::string>>> tokens = scan(open_ascii_stream(filepath));
 
       // determine the name of the file from the given path
       const size_t lastPos = filepath.find_last_of(UnixPathSeparator);
@@ -277,15 +276,15 @@ namespace poly {
          _inputFilename = filepath.substr(lastPos + 1);
       }
 
-      return Parse(std::move(tokens));
+      return parse(std::move(tokens));
    }
 
-   std::unique_ptr<AbstractRunner> PBRTFileParser::ParseString(const std::string &text) {
-      auto tokens = Scan(std::make_unique<std::istringstream>(text));
-      return Parse(std::move(tokens));
+   std::unique_ptr<AbstractRunner> pbrt_parser::parse_string(const std::string &text) {
+      auto tokens = scan(std::make_unique<std::istringstream>(text));
+      return parse(std::move(tokens));
    }
 
-   std::unique_ptr<std::vector<std::vector<std::string>>> PBRTFileParser::Scan(const std::unique_ptr<std::istream> &stream) {
+   std::unique_ptr<std::vector<std::vector<std::string>>> pbrt_parser::scan(const std::unique_ptr<std::istream> &stream) {
 
       std::unique_ptr<std::vector<std::vector<std::string>>> tokens = std::make_unique<std::vector<std::vector<std::string>>>();
 
@@ -380,12 +379,12 @@ namespace poly {
       return tokens;
    }
 
-   void LexFloatArrayArgument(const std::vector<std::string>& line, const int expected_num_elements, poly::PBRTArgument *argument) {
+   void LexFloatArrayArgument(const std::vector<std::string>& line, const int expected_num_elements, poly::pbrt_argument *argument) {
       if (line.size() != expected_num_elements + 1) {
          throw std::invalid_argument(line[0] + " requires exactly " + std::to_string(expected_num_elements) + " arguments, but found " + std::to_string(line.size()));
       }
 
-      argument->Type = PBRTArgument::pbrt_float;
+      argument->Type = pbrt_argument::pbrt_float;
       argument->float_values = std::make_unique<std::vector<float>>();
       for (int i = 1; i <= expected_num_elements; i++) {
          std::string current_arg = line[i];
@@ -400,63 +399,63 @@ namespace poly {
       }
    }
    
-   std::unique_ptr<poly::PBRTDirective> PBRTFileParser::Lex(std::vector<std::string> line) {
-      std::unique_ptr<poly::PBRTDirective> directive = std::make_unique<PBRTDirective>();
+   std::unique_ptr<poly::pbrt_directive> pbrt_parser::lex(std::vector<std::string> line) {
+      std::unique_ptr<poly::pbrt_directive> directive = std::make_unique<pbrt_directive>();
 
       if (line.empty()) {
          Log.warning("Lexed empty line. Hmm...");
          return directive;
       }
 
-      directive->Name = line[0];
+      directive->name = line[0];
       
       if (line.size() == 1) {
-         Log.debug("Lexed directive [" + directive->Name + "]");
+         Log.debug("Lexed directive [" + directive->name + "]");
          return directive;
       }
 
       // first, lex directives that use non-uniform argument syntax
-      if (directive->Name == str::LookAt) {
-         directive->Arguments = std::vector<PBRTArgument>();
-         directive->Arguments.emplace_back(poly::PBRTArgument::PBRTArgumentType::pbrt_float);
-         LexFloatArrayArgument(line, 9, &(directive->Arguments[0]));
-         Log.debug("Lexed directive [" + directive->Name + "]");
+      if (directive->name == str::LookAt) {
+         directive->arguments = std::vector<pbrt_argument>();
+         directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
+         LexFloatArrayArgument(line, 9, &(directive->arguments[0]));
+         Log.debug("Lexed directive [" + directive->name + "]");
          return directive;
       }
       
-      if (directive->Name == str::Rotate) {
-         directive->Arguments = std::vector<PBRTArgument>();
-         directive->Arguments.emplace_back(poly::PBRTArgument::PBRTArgumentType::pbrt_float);
-         LexFloatArrayArgument(line, 4, &(directive->Arguments[0]));
-         Log.debug("Lexed directive [" + directive->Name + "]");
+      if (directive->name == str::Rotate) {
+         directive->arguments = std::vector<pbrt_argument>();
+         directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
+         LexFloatArrayArgument(line, 4, &(directive->arguments[0]));
+         Log.debug("Lexed directive [" + directive->name + "]");
          return directive;
       }
 
-      if (directive->Name == str::Scale) {
-         directive->Arguments = std::vector<PBRTArgument>();
-         directive->Arguments.emplace_back(poly::PBRTArgument::PBRTArgumentType::pbrt_float);
-         LexFloatArrayArgument(line, 3, &(directive->Arguments[0]));
-         Log.debug("Lexed directive [" + directive->Name + "]");
+      if (directive->name == str::Scale) {
+         directive->arguments = std::vector<pbrt_argument>();
+         directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
+         LexFloatArrayArgument(line, 3, &(directive->arguments[0]));
+         Log.debug("Lexed directive [" + directive->name + "]");
          return directive;
       }
       
-      if (directive->Name == str::Translate) {
-         directive->Arguments = std::vector<PBRTArgument>();
-         directive->Arguments.emplace_back(poly::PBRTArgument::PBRTArgumentType::pbrt_float);
-         LexFloatArrayArgument(line, 3, &(directive->Arguments[0]));
-         Log.debug("Lexed directive [" + directive->Name + "]");
+      if (directive->name == str::Translate) {
+         directive->arguments = std::vector<pbrt_argument>();
+         directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
+         LexFloatArrayArgument(line, 3, &(directive->arguments[0]));
+         Log.debug("Lexed directive [" + directive->name + "]");
          return directive;
       }
       
       if (is_quoted(line[1])) {
-         directive->Identifier = line[1].substr(1, line[1].length() - 2);
+         directive->identifier = line[1].substr(1, line[1].length() - 2);
       } 
       else {
          ERROR("Lex(): second token (identifier) %s isn't quoted, but should be", line[0].c_str());
       }
 
       if (line.size() == 2) {
-         Log.debug("Lexed directive [" + directive->Name + "]");
+         Log.debug("Lexed directive [" + directive->name + "]");
          return directive;
       }
       
@@ -464,16 +463,16 @@ namespace poly {
       bool in_arg = false;
       int i = 2;
       int current_arg_index = -1;
-      PBRTArgument* current_arg = nullptr;
+      pbrt_argument* current_arg = nullptr;
       while (i < line.size()) {
          if (start_quoted(line[i]) && is_end_quoted(line[i + 1])) {
             // we're in an argument
-            if (directive->Arguments.empty())
-               directive->Arguments = std::vector<PBRTArgument>();
-            const PBRTArgument::PBRTArgumentType type = PBRTArgument::get_argument_type(line[i].substr(1, line[i].length() - 1));
-            directive->Arguments.emplace_back(PBRTArgument(type));
+            if (directive->arguments.empty())
+               directive->arguments = std::vector<pbrt_argument>();
+            const pbrt_argument::pbrt_argument_type type = pbrt_argument::get_argument_type(line[i].substr(1, line[i].length() - 1));
+            directive->arguments.emplace_back(pbrt_argument(type));
             current_arg_index++;
-            current_arg = &(directive->Arguments[current_arg_index]);
+            current_arg = &(directive->arguments[current_arg_index]);
             current_arg->Name = line[i + 1].substr(0, line[i + 1].length() - 1);
             inValue = true;
             i += 2;
@@ -499,12 +498,12 @@ namespace poly {
                std::string value = line[i].substr(1, line[i].length() - 2);
                
                switch (current_arg->Type) {
-                  case PBRTArgument::PBRTArgumentType::pbrt_string: {
+                  case pbrt_argument::pbrt_argument_type::pbrt_string: {
                      assert(current_arg->bool_value == nullptr);
                      current_arg->string_value = std::make_unique<std::string>(value);
                      break;
                   }
-                  case PBRTArgument::PBRTArgumentType::pbrt_bool: {
+                  case pbrt_argument::pbrt_argument_type::pbrt_bool: {
                      assert(current_arg->string_value == nullptr);
                      if (value == "true") {
                         current_arg->bool_value = std::make_unique<bool>(true);
@@ -524,8 +523,8 @@ namespace poly {
             } 
             else {
                switch (current_arg->Type) {
-                  case PBRTArgument::pbrt_rgb:
-                  case PBRTArgument::pbrt_float: {
+                  case pbrt_argument::pbrt_rgb:
+                  case pbrt_argument::pbrt_float: {
                      assert(current_arg->string_value == nullptr);
                      assert(current_arg->int_values == nullptr);
                      
@@ -548,7 +547,7 @@ namespace poly {
                      current_arg->float_values->push_back(value);
                      break;
                   }
-                  case PBRTArgument::pbrt_int: {
+                  case pbrt_argument::pbrt_int: {
                      assert(current_arg->string_value == nullptr);
                      assert(current_arg->float_values == nullptr);
                      int value;
@@ -581,22 +580,22 @@ namespace poly {
 //         directive->Arguments.push_back(argument);
 //      }
 
-      Log.debug("Lexed directive [" + directive->Name + "]");
+      Log.debug("Lexed directive [" + directive->name + "]");
 
       return directive;
    }
    
-   std::unique_ptr<AbstractRunner> PBRTFileParser::Parse(const std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
-      std::vector<std::unique_ptr<PBRTDirective>> scene_directives;
-      std::vector<std::unique_ptr<PBRTDirective>> world_directives;
+   std::unique_ptr<AbstractRunner> pbrt_parser::parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
+      std::vector<std::unique_ptr<pbrt_directive>> scene_directives;
+      std::vector<std::unique_ptr<pbrt_directive>> world_directives;
 
       {
-         std::vector<std::unique_ptr<PBRTDirective>>* current_directives = &scene_directives;
+         std::vector<std::unique_ptr<pbrt_directive>>* current_directives = &scene_directives;
          for (const std::vector<std::string>& line : *tokens) {
-            std::unique_ptr<PBRTDirective> directive = Lex(line);
+            std::unique_ptr<pbrt_directive> directive = lex(line);
             // TODO ensure directive is valid for scene/world
             
-            if (directive->Name == str::WorldBegin) {
+            if (directive->name == str::WorldBegin) {
                current_directives = &world_directives;
             }
             
@@ -610,18 +609,18 @@ namespace poly {
 
       unsigned int numSamples = DefaultSamples;
 
-      for (const std::unique_ptr<PBRTDirective> &directive : scene_directives) {
-         if (directive->Name == str::Sampler) {
+      for (const std::unique_ptr<pbrt_directive> &directive : scene_directives) {
+         if (directive->name == str::Sampler) {
             missingSampler = false;
-            if (directive->Identifier == str::halton) {
-               Sampler = std::make_unique<HaltonSampler>();
+            if (directive->identifier == str::halton) {
+               sampler = std::make_unique<HaltonSampler>();
             } else {
                LogUnknownIdentifier(directive);
-               Sampler = std::make_unique<HaltonSampler>();
+               sampler = std::make_unique<HaltonSampler>();
             }
 
-            for (const PBRTArgument& arg : directive->Arguments) {
-               if (arg.Type == PBRTArgument::pbrt_int) {
+            for (const pbrt_argument& arg : directive->arguments) {
+               if (arg.Type == pbrt_argument::pbrt_int) {
                   if (arg.Name == str::pixelsamples) {
                      numSamples = arg.int_values->at(0);
                      break;
@@ -643,8 +642,8 @@ namespace poly {
          LogMissingDirective(str::Sampler, defaultOption);
       }
 
-      if (Sampler == nullptr) {
-         Sampler = std::make_unique<CenterSampler>();
+      if (sampler == nullptr) {
+         sampler = std::make_unique<CenterSampler>();
       }
 
       Log.debug("Made (center) sampler.");
@@ -653,9 +652,9 @@ namespace poly {
 
       bool missingFilm = true;
 
-      for (const std::unique_ptr<PBRTDirective> &directive : scene_directives) {
-         if (directive->Name == str::Film) {
-            if (directive->Identifier == str::image) {
+      for (const std::unique_ptr<pbrt_directive> &directive : scene_directives) {
+         if (directive->name == str::Film) {
+            if (directive->identifier == str::image) {
                unsigned int x = 0;
                unsigned int y = 0;
 
@@ -669,8 +668,8 @@ namespace poly {
                bool foundX = false;
                bool foundY = false;
 
-               for (const PBRTArgument& arg : directive->Arguments) {
-                  if (arg.Type == PBRTArgument::pbrt_int) {
+               for (const pbrt_argument& arg : directive->arguments) {
+                  if (arg.Type == pbrt_argument::pbrt_int) {
                      if (arg.Name == "xresolution") {
                         x = arg.int_values->at(0);
                         foundX = true;
@@ -680,7 +679,7 @@ namespace poly {
                      } else {
                         LogUnknownArgument(arg);
                      }
-                  } else if (arg.Type == PBRTArgument::pbrt_string) {
+                  } else if (arg.Type == pbrt_argument::pbrt_string) {
                      if (arg.Name == "filename") {
                         filename = *(arg.string_value);
                         // TODO complain if filename arg is provided but empty
@@ -690,12 +689,12 @@ namespace poly {
                   }
                }
 
-               _bounds.x = foundX ? x : DefaultBoundsX;
-               _bounds.y = foundY ? y : DefaultBoundsY;
+               bounds.x = foundX ? x : DefaultBoundsX;
+               bounds.y = foundY ? y : DefaultBoundsY;
 
                missingFilm = false;
 
-               _film = std::make_unique<PNGFilm>(_bounds, filename, std::move(_filter));
+               film = std::make_unique<PNGFilm>(bounds, filename, std::move(filter));
             }
             break;
          }
@@ -706,11 +705,11 @@ namespace poly {
          LogMissingDirective(str::Film, defaultOption);
       }
 
-      if (_film == nullptr) {
+      if (film == nullptr) {
          std::string filename = "polytope.png";
-         _bounds.x = DefaultBoundsX;
-         _bounds.y = DefaultBoundsY;
-         _film = std::make_unique<PNGFilm>(_bounds, filename, std::move(_filter));
+         bounds.x = DefaultBoundsX;
+         bounds.y = DefaultBoundsY;
+         film = std::make_unique<PNGFilm>(bounds, filename, std::move(filter));
       }
 
       Log.debug("Made film.");
@@ -719,15 +718,15 @@ namespace poly {
 
       bool missingFilter = true;
 
-      for (const std::unique_ptr<PBRTDirective>& directive : scene_directives) {
-         if (directive->Name == str::PixelFilter) {
+      for (const std::unique_ptr<pbrt_directive>& directive : scene_directives) {
+         if (directive->name == str::PixelFilter) {
             missingFilter = false;
-            if (directive->Identifier == "box") {
+            if (directive->identifier == "box") {
                unsigned int xWidth = 0;
                unsigned int yWidth = 0;
 
-               for (const PBRTArgument& arg : directive->Arguments) {
-                  if (arg.Type == PBRTArgument::pbrt_int) {
+               for (const pbrt_argument& arg : directive->arguments) {
+                  if (arg.Type == pbrt_argument::pbrt_int) {
                      if (arg.Name == "xwidth") {
                         xWidth = arg.int_values->at(0);
                      } else if (arg.Name == "ywidth") {
@@ -750,9 +749,9 @@ namespace poly {
          LogMissingDirective(str::PixelFilter, defaultOption);
       }
 
-      if (_filter == nullptr) {
-         _filter = std::make_unique<BoxFilter>(_bounds);
-         _film->Filter = std::move(_filter);
+      if (filter == nullptr) {
+         filter = std::make_unique<BoxFilter>(bounds);
+         film->Filter = std::move(filter);
       }
 
       Log.debug("Made filter.");
@@ -768,23 +767,23 @@ namespace poly {
 
          Transform currentTransform;
          
-         for (const std::unique_ptr<PBRTDirective>& directive : scene_directives) {
-            if (directive->Name == str::LookAt) {
-               const float eyeX = directive->Arguments[0].float_values->at(0);
-               const float eyeY = directive->Arguments[0].float_values->at(1);
-               const float eyeZ = directive->Arguments[0].float_values->at(2);
+         for (const std::unique_ptr<pbrt_directive>& directive : scene_directives) {
+            if (directive->name == str::LookAt) {
+               const float eyeX = directive->arguments[0].float_values->at(0);
+               const float eyeY = directive->arguments[0].float_values->at(1);
+               const float eyeZ = directive->arguments[0].float_values->at(2);
 
                eye = Point(eyeX, eyeY, eyeZ);
 
-               const float lookAtX = directive->Arguments[0].float_values->at(3);
-               const float lookAtY = directive->Arguments[0].float_values->at(4);
-               const float lookAtZ = directive->Arguments[0].float_values->at(5);
+               const float lookAtX = directive->arguments[0].float_values->at(3);
+               const float lookAtY = directive->arguments[0].float_values->at(4);
+               const float lookAtZ = directive->arguments[0].float_values->at(5);
 
                lookAt = Point(lookAtX, lookAtY, lookAtZ);
 
-               const float upX = directive->Arguments[0].float_values->at(6);
-               const float upY = directive->Arguments[0].float_values->at(7);
-               const float upZ = directive->Arguments[0].float_values->at(8);
+               const float upX = directive->arguments[0].float_values->at(6);
+               const float upY = directive->arguments[0].float_values->at(7);
+               const float upZ = directive->arguments[0].float_values->at(8);
 
                up = Vector(upX, upY, upZ);
 
@@ -796,19 +795,19 @@ namespace poly {
             }
          }
 
-         CameraSettings settings = CameraSettings(_bounds, DefaultCameraFOV);
+         CameraSettings settings = CameraSettings(bounds, DefaultCameraFOV);
 
          bool foundCamera = false;
 
-         for (const std::unique_ptr<PBRTDirective> &directive : scene_directives) {
-            if (directive->Name == str::Camera) {
-               if (directive->Identifier == "perspective") {
+         for (const std::unique_ptr<pbrt_directive> &directive : scene_directives) {
+            if (directive->name == str::Camera) {
+               if (directive->identifier == "perspective") {
                   float fov = DefaultCameraFOV;
 
                   foundCamera = true;
 
-                  for (const PBRTArgument& arg : directive->Arguments) {
-                     if (arg.Type == PBRTArgument::pbrt_float) {
+                  for (const pbrt_argument& arg : directive->arguments) {
+                     if (arg.Type == pbrt_argument::pbrt_float) {
                         if (arg.Name == "fov") {
                            fov = arg.float_values->at(0);
                         } 
@@ -842,17 +841,17 @@ namespace poly {
 
       bool missingIntegrator = true;
 
-      for (const std::unique_ptr<PBRTDirective>& directive : scene_directives) {
-         if (directive->Name == str::Integrator) {
-            if (directive->Identifier == "path") {
+      for (const std::unique_ptr<pbrt_directive>& directive : scene_directives) {
+         if (directive->name == str::Integrator) {
+            if (directive->identifier == "path") {
                unsigned int maxDepth = 5;
 
                missingIntegrator = false;
 
                bool missingDepth = true;
 
-               for (const PBRTArgument& arg : directive->Arguments) {
-                  if (arg.Type == PBRTArgument::pbrt_int) {
+               for (const pbrt_argument& arg : directive->arguments) {
+                  if (arg.Type == pbrt_argument::pbrt_int) {
                      if (arg.Name == "maxdepth") {
                         maxDepth = arg.int_values->at(0);
                         missingDepth = false;
@@ -867,7 +866,7 @@ namespace poly {
                   LogMissingArgument(directive, "maxdepth");
                }
                //_integrator = std::make_unique<poly::DebugIntegrator>(maxDepth);
-               _integrator = std::make_unique<poly::PathTraceIntegrator>(maxDepth);
+               integrator = std::make_unique<poly::PathTraceIntegrator>(maxDepth);
             }
             else {
                LogUnimplementedDirective(directive);
@@ -881,8 +880,8 @@ namespace poly {
          LogMissingDirective(str::Integrator, error);
       }
 
-      if (_integrator == nullptr) {
-         _integrator = std::make_unique<PathTraceIntegrator>(5);
+      if (integrator == nullptr) {
+         integrator = std::make_unique<PathTraceIntegrator>(5);
       }
 
       // world
@@ -902,15 +901,15 @@ namespace poly {
        */
       std::unordered_map<std::string, std::shared_ptr<poly::mesh_geometry>> name_mesh_map;
       std::shared_ptr<poly::mesh_geometry> current_geometry = nullptr;
-      
-      _scene = new Scene(std::move(camera));
+
+      scene = new Scene(std::move(camera));
 
       bool in_object_begin = false;
       
-      for (const std::unique_ptr<PBRTDirective>& directive : world_directives) {
+      for (const std::unique_ptr<pbrt_directive>& directive : world_directives) {
          DirectiveName name;
          try {
-            name = WorldDirectiveMap.at(directive->Name);
+            name = WorldDirectiveMap.at(directive->name);
          }
          catch (...) {
             LogUnknownDirective(directive);
@@ -920,11 +919,11 @@ namespace poly {
          switch (name) {
             case DirectiveName::AreaLightSource: {
                // lights with geometry
-               if (directive->Identifier != "diffuse") {
+               if (directive->identifier != "diffuse") {
                   LogUnknownIdentifier(directive);
                   break;
                }
-               for (const PBRTArgument& argument : directive->Arguments) {
+               for (const pbrt_argument& argument : directive->arguments) {
                   if (argument.Name == "L") {
                      if (activeLight == nullptr) {
                         activeLight = std::make_shared<SpectralPowerDistribution>();
@@ -981,8 +980,8 @@ namespace poly {
             }
             case DirectiveName::LightSource: {
                // lights without geometry
-               if (directive->Identifier == "infinite") {
-                  for (const PBRTArgument& argument : directive->Arguments) {
+               if (directive->identifier == "infinite") {
+                  for (const pbrt_argument& argument : directive->arguments) {
                      if (argument.Name == "L") {
                         const float r = argument.float_values->at(0);
                         const float g = argument.float_values->at(1);
@@ -990,7 +989,7 @@ namespace poly {
 
                         const poly::SpectralPowerDistribution spd(r * 255, g * 255, b * 255);
 
-                        _scene->Skybox = std::make_unique<ColorSkybox>(spd);
+                        scene->Skybox = std::make_unique<ColorSkybox>(spd);
                         break;
                      }
                   }
@@ -1001,18 +1000,18 @@ namespace poly {
                break;
             }
             case DirectiveName::MakeNamedMaterial: {
-               const std::string materialName = directive->Identifier;
+               const std::string materialName = directive->identifier;
                std::shared_ptr<AbstractBRDF> brdf;
                poly::ReflectanceSpectrum reflectanceSpectrum;
-               for (const PBRTArgument &argument : directive->Arguments) {
-                  if (argument.Type == PBRTArgument::pbrt_string) {
+               for (const pbrt_argument &argument : directive->arguments) {
+                  if (argument.Type == pbrt_argument::pbrt_string) {
                      if (argument.Name == "type" && *(argument.string_value) == str::matte) {
                         // TODO instead of using default, parse values
                         ReflectanceSpectrum refl(0.5f, 0.5f, 0.5f);
                         brdf = std::make_unique<poly::LambertBRDF>(refl);
                      }
                   }
-                  if (argument.Type == PBRTArgument::pbrt_rgb) {
+                  if (argument.Type == pbrt_argument::pbrt_rgb) {
                      if (argument.Name == str::Kd) {
                         reflectanceSpectrum.r = argument.float_values->at(0);
                         reflectanceSpectrum.g = argument.float_values->at(1);
@@ -1028,7 +1027,7 @@ namespace poly {
             case DirectiveName::Material: {
                MaterialIdentifier identifier;
                try {
-                  identifier = MaterialIdentifierMap.at(directive->Identifier);
+                  identifier = MaterialIdentifierMap.at(directive->identifier);
                }
                catch (...) {
                   LogUnknownIdentifier(directive);
@@ -1044,7 +1043,7 @@ namespace poly {
 
                      float roughness = 0.1f;
 
-                     for (const PBRTArgument &argument : directive->Arguments) {
+                     for (const pbrt_argument &argument : directive->arguments) {
                         MaterialArgumentName param;
                         try {
                            param = MaterialPlasticArgumentMap.at(argument.Name);
@@ -1055,7 +1054,7 @@ namespace poly {
                         }
                         switch (param) {
                            case Kd: {
-                              if (argument.Type == PBRTArgument::pbrt_rgb) {
+                              if (argument.Type == pbrt_argument::pbrt_rgb) {
                                  kd.r = argument.float_values->at(0);
                                  kd.g = argument.float_values->at(1);
                                  kd.b = argument.float_values->at(2);
@@ -1063,7 +1062,7 @@ namespace poly {
                               break;
                            }
                            case Ks: {
-                              if (argument.Type == PBRTArgument::pbrt_rgb) {
+                              if (argument.Type == pbrt_argument::pbrt_rgb) {
                                  ks.r = argument.float_values->at(0);
                                  ks.g = argument.float_values->at(1);
                                  ks.b = argument.float_values->at(2);
@@ -1071,7 +1070,7 @@ namespace poly {
                               break;
                            }
                            case Roughness: {
-                              if (argument.Type == PBRTArgument::pbrt_float) {
+                              if (argument.Type == pbrt_argument::pbrt_float) {
                                  roughness = argument.float_values->at(0);
                               }
                               break;
@@ -1089,7 +1088,7 @@ namespace poly {
                      break;
                   }
                   case MaterialIdentifier::Matte: {
-                     for (const PBRTArgument& argument : directive->Arguments) {
+                     for (const pbrt_argument& argument : directive->arguments) {
                         MaterialArgumentName param;
                         try {
                            param = MaterialMatteArgumentMap.at(argument.Name);
@@ -1103,7 +1102,7 @@ namespace poly {
                               
                            }
                         }
-                        if (argument.Name == str::Kd && argument.Type == PBRTArgument::pbrt_rgb) {
+                        if (argument.Name == str::Kd && argument.Type == pbrt_argument::pbrt_rgb) {
                            const float r = argument.float_values->at(0);
                            const float g = argument.float_values->at(1);
                            const float b = argument.float_values->at(2);
@@ -1117,8 +1116,8 @@ namespace poly {
                      break;
                   }
                   case MaterialIdentifier::Mirror: {
-                     for (const PBRTArgument& argument : directive->Arguments) {
-                        if (argument.Name == str::Kr && argument.Type == PBRTArgument::pbrt_rgb) {
+                     for (const pbrt_argument& argument : directive->arguments) {
+                        if (argument.Name == str::Kr && argument.Type == pbrt_argument::pbrt_rgb) {
                            const float r = argument.float_values->at(0);
                            const float g = argument.float_values->at(1);
                            const float b = argument.float_values->at(2);
@@ -1135,7 +1134,7 @@ namespace poly {
                break;
             }
             case DirectiveName::NamedMaterial: {
-               std::string materialName = directive->Identifier;
+               std::string materialName = directive->identifier;
                bool found = false;
                // TODO hash table
                for (const auto &material : namedMaterials) {
@@ -1157,7 +1156,7 @@ namespace poly {
                else {
                   in_object_begin = true;
                   // TODO - record start of new object with given name
-                  if (directive->Identifier.empty()) {
+                  if (directive->identifier.empty()) {
                      log_illegal_identifier(directive, "ObjectBegin directive cannot specify an empty name.");
                   }
                   
@@ -1166,18 +1165,18 @@ namespace poly {
                      std::shared_ptr<poly::mesh_geometry> previous_instance = nullptr;
                      // TODO find and use an exception-less hash table
                      try {
-                        previous_instance = name_mesh_map.at(directive->Identifier);
+                        previous_instance = name_mesh_map.at(directive->identifier);
                      }
                      catch (...) {}
                      if (previous_instance != nullptr) {
-                        log_illegal_identifier(directive, "ObjectBegin directive cannot specify [" + directive->Identifier +
+                        log_illegal_identifier(directive, "ObjectBegin directive cannot specify [" + directive->identifier +
                                                           "]; that name has already been previously defined.");
                      }
                   }
                   
                   // create geometry and insert into the map
                   current_geometry = std::make_shared<mesh_geometry>();
-                  name_mesh_map[directive->Identifier] = current_geometry;
+                  name_mesh_map[directive->identifier] = current_geometry;
                }
                break;
             }
@@ -1198,7 +1197,7 @@ namespace poly {
                else if (current_geometry != nullptr) {
                   ERROR("BUG: current geometry isn't null, but should be");
                }
-               std::string object_name = directive->Identifier;
+               std::string object_name = directive->identifier;
                if (object_name.empty()) {
                   log_illegal_identifier(directive, "ObjectInstance directive cannot specify an empty name.");
                }
@@ -1218,17 +1217,17 @@ namespace poly {
                if (activeLight != nullptr) {
                   // TODO
                   mesh->spd = activeLight;
-                  _scene->Lights.push_back(mesh);
+                  scene->Lights.push_back(mesh);
                }
                else {
                   mesh->material = activeMaterial;
                }
-               _scene->Shapes.push_back(mesh);
+               scene->Shapes.push_back(mesh);
                break;
             }
             case DirectiveName::Rotate: {
                // TODO need to ensure just 1 argument with 4 values
-               PBRTArgument* arg = &(directive->Arguments[0]);
+               pbrt_argument* arg = &(directive->arguments[0]);
                const float angle = arg->float_values->at(0) * PIOver180;
                float x = arg->float_values->at(1);
                float y = arg->float_values->at(2);
@@ -1248,7 +1247,7 @@ namespace poly {
                break;
             }
             case DirectiveName::Scale: {
-               PBRTArgument* arg = &(directive->Arguments[0]);
+               pbrt_argument* arg = &(directive->arguments[0]);
                float x = arg->float_values->at(0);
                float y = arg->float_values->at(1);
                float z = arg->float_values->at(2);
@@ -1263,7 +1262,7 @@ namespace poly {
             case DirectiveName::Shape: {
                ShapeIdentifier identifier;
                try {
-                  identifier = ShapeIdentifierMap.at(directive->Identifier);
+                  identifier = ShapeIdentifierMap.at(directive->identifier);
                }
                catch (...) {
                   LogUnknownIdentifier(directive);
@@ -1277,7 +1276,7 @@ namespace poly {
                      // make sure it has a filename argument
                      bool filenameMissing = true;
                      std::string mesh_filename;
-                     for (const PBRTArgument &argument : directive->Arguments) {
+                     for (const pbrt_argument &argument : directive->arguments) {
                         OBJMeshArgument arg;
                         try {
                            arg = OBJMeshArgumentMap.at(argument.Name);
@@ -1290,7 +1289,7 @@ namespace poly {
                            case Filename: {
                               filenameMissing = false;
                               mesh_filename = *argument.string_value;
-                              if (argument.Type != PBRTArgument::pbrt_string) {
+                              if (argument.Type != pbrt_argument::pbrt_string) {
                                  LogWrongArgumentType(directive, argument);
                               }
                               break;
@@ -1305,7 +1304,7 @@ namespace poly {
                         break;
                      }
 
-                     const OBJParser parser;
+                     const obj_parser parser;
                      std::shared_ptr<poly::mesh_geometry> geometry;
                      if (in_object_begin) {
                         geometry = current_geometry;
@@ -1313,9 +1312,9 @@ namespace poly {
                      else {
                         geometry = std::make_shared<poly::mesh_geometry>();
                      }
-                     _scene->num_mesh_geometries++;
+                     scene->num_mesh_geometries++;
                      const std::string absolute_path = _basePathFromCWD + mesh_filename;
-                     parser.ParseFile(geometry, absolute_path);
+                     parser.parse_file(geometry, absolute_path);
 
                      if (in_object_begin) {
                         // maybe not necessary
@@ -1327,11 +1326,11 @@ namespace poly {
                         if (activeLight != nullptr) {
                            // TODO
                            mesh->spd = activeLight;
-                           _scene->Lights.push_back(mesh);
+                           scene->Lights.push_back(mesh);
                         } else {
                            mesh->material = activeMaterial;
                         }
-                        _scene->Shapes.push_back(mesh);
+                        scene->Shapes.push_back(mesh);
                      }
                      break;
                   
@@ -1340,7 +1339,7 @@ namespace poly {
                      // make sure it has a filename argument
                      bool filenameMissing = true;
                      std::string mesh_filename;
-                     for (const PBRTArgument& argument : directive->Arguments) {
+                     for (const pbrt_argument& argument : directive->arguments) {
                         PLYMeshArgument arg;
                         try {
                            arg = PLYMeshArgumentMap.at(argument.Name);
@@ -1353,7 +1352,7 @@ namespace poly {
                            case PLYMeshArgument::Filename: {
                               filenameMissing = false;
                               mesh_filename = *argument.string_value;
-                              if (argument.Type != PBRTArgument::pbrt_string) {
+                              if (argument.Type != pbrt_argument::pbrt_string) {
                                  LogWrongArgumentType(directive, argument);
                               }
                               break;
@@ -1368,7 +1367,7 @@ namespace poly {
                         break;
                      }
 
-                     const PLYParser parser;
+                     const ply_parser parser;
                      std::shared_ptr<poly::mesh_geometry> geometry;
                      if (in_object_begin) {
                         geometry = current_geometry;
@@ -1376,10 +1375,10 @@ namespace poly {
                      else {
                         geometry = std::make_shared<poly::mesh_geometry>();
                      }
-                     _scene->num_mesh_geometries++;
+                     scene->num_mesh_geometries++;
                      
                      const std::string absolute_path = _basePathFromCWD + mesh_filename;
-                     parser.ParseFile(geometry, absolute_path);
+                     parser.parse_file(geometry, absolute_path);
 
                      if (in_object_begin) {
                         // maybe not necessary
@@ -1393,18 +1392,18 @@ namespace poly {
                         if (activeLight != nullptr) {
                            // TODO
                            mesh->spd = activeLight;
-                           _scene->Lights.push_back(mesh);
+                           scene->Lights.push_back(mesh);
                         }
                         else {
                            mesh->material = activeMaterial;
                         }
-                        _scene->Shapes.push_back(mesh);
+                        scene->Shapes.push_back(mesh);
                      }
                      break;
                   }
                   case ShapeIdentifier::sphere: {
-                     for (const PBRTArgument& argument : directive->Arguments) {
-                        if (argument.Type == PBRTArgument::PBRTArgumentType::pbrt_float) {
+                     for (const pbrt_argument& argument : directive->arguments) {
+                        if (argument.Type == pbrt_argument::pbrt_argument_type::pbrt_float) {
                            const float radius = argument.float_values->at(0);
                            
                            poly::Transform radius_transform = Transform::Scale(radius);
@@ -1412,7 +1411,7 @@ namespace poly {
                            std::shared_ptr<poly::Transform> temp_radius_inverse = std::make_shared<poly::Transform>(temp_radius_transform->Invert());
                            
                            std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
-                           _scene->num_mesh_geometries++;
+                           scene->num_mesh_geometries++;
                            const int subdivisions = std::max((int)radius, 20);
                            poly::SphereTesselator::Create(subdivisions, subdivisions, geometry);
 
@@ -1426,12 +1425,12 @@ namespace poly {
 
                               if (activeLight != nullptr) {
                                  mesh->spd = activeLight;
-                                 _scene->Lights.push_back(mesh);
+                                 scene->Lights.push_back(mesh);
                               }
                               else {
                                  mesh->material = activeMaterial;
                               }
-                              _scene->Shapes.push_back(mesh);
+                              scene->Shapes.push_back(mesh);
                            } 
                         }
                      }
@@ -1463,7 +1462,7 @@ namespace poly {
             }
             case DirectiveName::Translate: {
                // need to ensure just one argument with 3 values
-               PBRTArgument* arg = &(directive->Arguments[0]);
+               pbrt_argument* arg = &(directive->arguments[0]);
                float x = arg->float_values->at(0);
                float y = arg->float_values->at(1);
                float z = arg->float_values->at(2);
@@ -1482,15 +1481,15 @@ namespace poly {
          }
       }
 
-      _integrator->Scene = _scene;
+      integrator->Scene = scene;
 
       return std::make_unique<TileRunner>(
-         std::move(Sampler),
-         _scene,
-         std::move(_integrator),
-         std::move(_film),
-         _bounds,
-         numSamples
+            std::move(sampler),
+            scene,
+            std::move(integrator),
+            std::move(film),
+            bounds,
+            numSamples
       );
    }
    

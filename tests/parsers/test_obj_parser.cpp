@@ -5,7 +5,7 @@
 #include "gtest/gtest.h"
 
 #include "../../src/common/utilities/Logger.h"
-#include "../../src/common/parsers/mesh/OBJParser.h"
+#include "../../src/common/parsers/mesh_parsers.h"
 #include "../../src/cpu/shapes/mesh.h"
 
 
@@ -14,9 +14,9 @@ namespace Tests {
    namespace Parse {
       
       void test_parse_obj_helper(const std::shared_ptr<poly::mesh_geometry>& geometry) {
-         const poly::OBJParser parser;
+         const poly::obj_parser parser;
          const std::string file = "../scenes/teapot/teapot.obj";
-         parser.ParseFile(geometry, file);
+         parser.parse_file(geometry, file);
 
          // ensure nothing is null
          ASSERT_NE(nullptr, geometry);

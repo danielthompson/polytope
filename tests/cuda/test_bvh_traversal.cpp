@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "../../src/cpu/scenes/Scene.h"
-#include "../../src/common/parsers/mesh/PLYParser.h"
+#include "../../src/common/parsers/mesh_parsers.h"
 #include "../../src/cuda/gpu_memory_manager.h"
 #include "../../src/cuda/kernels/path_tracer.cuh"
 
@@ -15,12 +15,12 @@ namespace Tests {
     */
    TEST(cuda_bvh_traversal, test1) {
 
-      const poly::PLYParser parser;
+      const poly::ply_parser parser;
       const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 
       const std::string file = "../scenes/test/cuda/cuda-bvh-traversal1.ply";
       auto geometry = std::make_shared<poly::mesh_geometry>();
-      parser.ParseFile(geometry, file);
+      parser.parse_file(geometry, file);
       poly::Mesh mesh(identity, identity, nullptr, geometry);
       
       poly::Scene scene(nullptr);
@@ -48,12 +48,12 @@ namespace Tests {
     */
    TEST(cuda_bvh_traversal, test2) {
 
-      const poly::PLYParser parser;
+      const poly::ply_parser parser;
       const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 
       const std::string file = "../scenes/test/cuda/cuda-bvh-traversal1.ply";
       auto geometry = std::make_shared<poly::mesh_geometry>();
-      parser.ParseFile(geometry, file);
+      parser.parse_file(geometry, file);
       poly::Mesh mesh(identity, identity, nullptr, geometry);
 
       poly::Scene scene(nullptr);
@@ -98,12 +98,12 @@ namespace Tests {
     */
    TEST(cuda_bvh_traversal, test3) {
 
-      const poly::PLYParser parser;
+      const poly::ply_parser parser;
       const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 
       const std::string file = "../scenes/test/cuda/cuda-bvh-traversal1.ply";
       auto geometry = std::make_shared<poly::mesh_geometry>();
-      parser.ParseFile(geometry, file);
+      parser.parse_file(geometry, file);
       poly::Mesh mesh(identity, identity, nullptr, geometry);
 
       poly::Scene scene(nullptr);
@@ -151,12 +151,12 @@ namespace Tests {
     */
    TEST(cuda_bvh_traversal, test4) {
 
-      const poly::PLYParser parser;
+      const poly::ply_parser parser;
       const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
 
       const std::string file = "../scenes/test/cuda/cuda-bvh-traversal1.ply";
       auto geometry = std::make_shared<poly::mesh_geometry>();
-      parser.ParseFile(geometry, file);
+      parser.parse_file(geometry, file);
       poly::Mesh mesh(identity, identity, nullptr, geometry);
 
       poly::Scene scene(nullptr);

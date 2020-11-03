@@ -4,7 +4,7 @@
 
 #include "gtest/gtest.h"
 
-#include "../../../src/common/parsers/PBRTFileParser.h"
+#include "../../../src/common/parsers/pbrt_parser.h"
 #include "../../../src/cpu/films/PNGFilm.h"
 #include "../../../src/cpu/filters/BoxFilter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
@@ -13,9 +13,9 @@
 namespace Tests {
    TEST(Instancing, Teapot1) {
    
-      auto fp = poly::PBRTFileParser();
+      auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing1.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
    
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -35,9 +35,9 @@ namespace Tests {
 
    TEST(Instancing, Teapot2) {
 
-      auto fp = poly::PBRTFileParser();
+      auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing2.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -68,9 +68,9 @@ namespace Tests {
 
    TEST(Instancing, Teapot3) {
 
-      auto fp = poly::PBRTFileParser();
+      auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing3.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -101,9 +101,9 @@ namespace Tests {
 
    TEST(Instancing, Teapot4a) {
 
-      auto fp = poly::PBRTFileParser();
+      auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -139,9 +139,9 @@ namespace Tests {
     */
    TEST(Instancing, Teapot4b) {
 
-      auto fp = poly::PBRTFileParser();
+      auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -175,9 +175,9 @@ namespace Tests {
     */
    TEST(Instancing, Teapot4c) {
 
-      auto fp = poly::PBRTFileParser();
+      auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -190,9 +190,9 @@ namespace Tests {
     */
    TEST(Instancing, Teapot4d) {
 
-      auto fp = poly::PBRTFileParser();
+      auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -204,9 +204,9 @@ namespace Tests {
     */
    TEST(Instancing, Teapot5a) {
 
-      auto fp = poly::PBRTFileParser();
+      auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing5.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -218,9 +218,9 @@ namespace Tests {
     */
    TEST(Instancing, Teapot5b) {
 
-      auto fp = poly::PBRTFileParser();
+      auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing5.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.ParseFile(file);
+      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
