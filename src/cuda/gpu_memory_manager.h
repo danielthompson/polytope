@@ -18,7 +18,7 @@ namespace poly {
    
    struct device_bvh_node {
       // 24 bytes
-      float aabb[6];
+      float bb[6];
 
       // interior - high child offset
       // leaf - face index offset
@@ -27,6 +27,7 @@ namespace poly {
 
       // 0 for interior, >0 for leaf
       // 2 bytes
+      // TODO warn during BVH construction if the number of faces exceeds sizeof(unsigned short)
       unsigned short num_faces;
       
       // right now, just splitting axis
@@ -39,39 +40,33 @@ namespace poly {
    };
       
    struct device_mesh_geometry {
+      // vertices
       float* x;
       float* y;
       float* z;
 
+      // vertex normals
       float* nx;
       float* ny;
       float* nz;
 
+      size_t num_vertices, num_faces, num_bytes;
       bool has_vertex_normals = false;
-      size_t num_vertices, num_faces;
+
    };
    
    struct DeviceMesh {
+      float obj_to_world[16];
+      float world_to_object[16];
+      float brdf_params[10];
+      float world_bb[6];
+      
+      /**
+       * Index into GPUMemoryManager::mesh_geometries for this mesh's geometry
+       */
+      size_t device_mesh_geometry_offset;
       
       poly::BRDF_TYPE brdf_type;
-      float brdf_params[10];
-      
-      size_t num_bytes;
-      float aabb[6];
-      
-      float obj_to_world[16];
-
-      // TODO remove this stuff:
-      float* x;
-      float* y;
-      float* z;
-
-      float* nx;
-      float* ny;
-      float* nz;
-
-      bool has_vertex_normals = false;
-      size_t num_vertices, num_faces;
    };
 
    struct Samples {
@@ -92,6 +87,7 @@ namespace poly {
       size_t MallocScene(poly::Scene* scene);
       struct DeviceCamera* device_camera;
       struct DeviceMesh* meshes;
+      struct device_mesh_geometry* mesh_geometries;
       
       unsigned int num_meshes;
       

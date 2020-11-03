@@ -45,6 +45,21 @@ namespace poly {
             d_v.x * d_matrix[8] + d_v.y * d_matrix[9] + d_v.z * d_matrix[10]
       };
    }
+   
+   /**
+    * Applies the given matrix to the normal. The given matrix should be the *inverse* of the
+    * actual desired matrix.
+    * @param d_matrix 
+    * @param d_n 
+    * @return 
+    */
+   __device__ inline float3 matrix_apply_normal(const float* d_matrix, const float3 d_n) {
+      return {
+            d_n.x * d_matrix[0] + d_n.y * d_matrix[4] + d_n.z * d_matrix[8],
+            d_n.x * d_matrix[1] + d_n.y * d_matrix[5] + d_n.z * d_matrix[9],
+            d_n.x * d_matrix[2] + d_n.y * d_matrix[6] + d_n.z * d_matrix[10]
+      };
+   }
 
    __device__ inline float3 operator-(const float3 &a, const float3 &b) {
       return {a.x - b.x, a.y - b.y, a.z - b.z};

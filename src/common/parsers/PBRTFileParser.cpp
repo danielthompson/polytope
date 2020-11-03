@@ -1313,7 +1313,7 @@ namespace poly {
                      else {
                         geometry = std::make_shared<poly::mesh_geometry>();
                      }
-                     
+                     _scene->num_mesh_geometries++;
                      const std::string absolute_path = _basePathFromCWD + mesh_filename;
                      parser.ParseFile(geometry, absolute_path);
 
@@ -1376,6 +1376,7 @@ namespace poly {
                      else {
                         geometry = std::make_shared<poly::mesh_geometry>();
                      }
+                     _scene->num_mesh_geometries++;
                      
                      const std::string absolute_path = _basePathFromCWD + mesh_filename;
                      parser.ParseFile(geometry, absolute_path);
@@ -1411,6 +1412,7 @@ namespace poly {
                            std::shared_ptr<poly::Transform> temp_radius_inverse = std::make_shared<poly::Transform>(temp_radius_transform->Invert());
                            
                            std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
+                           _scene->num_mesh_geometries++;
                            const int subdivisions = std::max((int)radius, 20);
                            poly::SphereTesselator::Create(subdivisions, subdivisions, geometry);
 

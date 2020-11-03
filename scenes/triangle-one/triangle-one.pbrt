@@ -2,15 +2,15 @@ Integrator "path" "integer maxdepth" [ 7 ]
 LookAt 0 0 0 # eye
        0 0 -1 # look at point
        0 1 0 # up	   
-Sampler "halton" "integer pixelsamples" [ 64 ]
+Sampler "halton" "integer pixelsamples" [ 1 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
 Film "image" "integer xresolution" [ 512 ] "integer yresolution" [ 512 ] "string filename" [ "TriangleMesh-one.png" ]
 Camera "perspective" "float fov" [ 50 ]
 WorldBegin
     LightSource "infinite" "rgb L" [1 1 1]
-    Material "matte" "rgb Kd" [ 1 .8 .8 ]
+    Material "matte" "rgb Kd" [ 0 .3 .6 ]
     TransformBegin
-        Translate 0 0 -50
-        Shape "objmesh" "string filename" [ TriangleMesh-one.obj ]
+        Translate 0 0 -5
+        Shape "plymesh" "string filename" [ "one-triangle.ply" ]
     TransformEnd
 WorldEnd

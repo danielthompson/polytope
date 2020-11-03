@@ -11,7 +11,10 @@
 
 namespace poly {
 
-#define DEBUG_PIXEL_INDEX 1233816
+   
+//#define DEBUG_PIXEL_INDEX 164160 /* 320, 320 */
+#define DEBUG_PIXEL_INDEX 98496  /* 192, 192 */
+#define DEBUG_PRINT 0
    
    constexpr unsigned int threads_per_block = 32;
    
@@ -25,6 +28,8 @@ namespace poly {
       struct DeviceMesh* device_meshes;
       unsigned int num_meshes;
 
+      struct device_mesh_geometry* device_mesh_geometry;
+      
       struct Samples* device_samples;
       
       poly::device_bvh_node* device_bvh_node;
@@ -172,29 +177,35 @@ namespace poly {
          ) {
 
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
-
       bool debug = false;
-//      bool debug = pixel_index == DEBUG_PIXEL_INDEX;
+      if (DEBUG_PRINT) {
+         debug = (pixel_index == DEBUG_PIXEL_INDEX);
+      }
       
       if (intersection->hits) {
 
          // calculate normal at hit point
          // TOOD precalculate face normals
          const DeviceMesh mesh_hit = const_device_pointers.device_meshes[intersection->mesh_index];
+         const device_mesh_geometry geometry = const_device_pointers.device_mesh_geometry[mesh_hit.device_mesh_geometry_offset];
+         
+         const unsigned int v1_index = intersection->face_index + geometry.num_faces;
+         const unsigned int v2_index = intersection->face_index + geometry.num_faces * 2;
 
-         const unsigned int v1_index = intersection->face_index + mesh_hit.num_faces;
-         const unsigned int v2_index = intersection->face_index + mesh_hit.num_faces * 2;
-
-         const float3 v0 = {mesh_hit.x[intersection->face_index],
-                            mesh_hit.y[intersection->face_index],
-                            mesh_hit.z[intersection->face_index]};
-         const float3 v1 = {mesh_hit.x[v1_index],
-                            mesh_hit.y[v1_index],
-                            mesh_hit.z[v1_index]};
-         const float3 v2 = {mesh_hit.x[v2_index],
-                            mesh_hit.y[v2_index],
-                            mesh_hit.z[v2_index]};
-
+         float3 v0 = {geometry.x[intersection->face_index],
+                      geometry.y[intersection->face_index],
+                      geometry.z[intersection->face_index]};
+         float3 v1 = {geometry.x[v1_index],
+                      geometry.y[v1_index],
+                      geometry.z[v1_index]};
+         float3 v2 = {geometry.x[v2_index],
+                      geometry.y[v2_index],
+                      geometry.z[v2_index]};
+         
+         v0 = matrix_apply_point(mesh_hit.obj_to_world, v0);
+         v1 = matrix_apply_point(mesh_hit.obj_to_world, v1);
+         v2 = matrix_apply_point(mesh_hit.obj_to_world, v2);
+         
          cuda_debug_printf(debug, "  Face %i v0 %i: (%f %f %f), v1 %i: (%f %f %f), v2 %i: (%f %f %f)\n", 
                            intersection->face_index, intersection->face_index, v0.x, v0.y, v0.z, v1_index, v1.x, v1.y, v1.z, v2_index, v2.x, v2.y, v2.z);
          
@@ -204,21 +215,27 @@ namespace poly {
          
          float3 n;
 
-         if (mesh_hit.has_vertex_normals) {
+         if (geometry.has_vertex_normals) {
             cuda_debug_printf(debug, "  Vertex normals\n");
             cuda_debug_printf(debug, "    u %f v %f w %f\n", intersection->u, intersection->v, intersection->w);
-            const float3 v0n = {mesh_hit.nx[intersection->face_index],
-                                mesh_hit.ny[intersection->face_index],
-                                mesh_hit.nz[intersection->face_index]};
+            float3 v0n = {geometry.nx[intersection->face_index],
+                          geometry.ny[intersection->face_index],
+                          geometry.nz[intersection->face_index]};
             cuda_debug_printf(debug, "    v0n: (%f, %f, %f)\n", v0n.x, v0n.y, v0n.z);
-            const float3 v1n = {mesh_hit.nx[v1_index],
-                                mesh_hit.ny[v1_index],
-                                mesh_hit.nz[v1_index]};
+            float3 v1n = {geometry.nx[v1_index],
+                          geometry.ny[v1_index],
+                          geometry.nz[v1_index]};
             cuda_debug_printf(debug, "    v1n: (%f, %f, %f)\n", v1n.x, v1n.y, v1n.z);
-            const float3 v2n = {mesh_hit.nx[v2_index],
-                                mesh_hit.ny[v2_index],
-                                mesh_hit.nz[v2_index]};
+            float3 v2n = {geometry.nx[v2_index],
+                          geometry.ny[v2_index],
+                          geometry.nz[v2_index]};
             cuda_debug_printf(debug, "    v2n: (%f, %f, %f)\n", v2n.x, v2n.y, v2n.z);
+
+            // use inverse matrix, i.e. world_to_object
+            v0n = matrix_apply_normal(mesh_hit.world_to_object, v0n);
+            v1n = matrix_apply_normal(mesh_hit.world_to_object, v1n);
+            v2n = matrix_apply_normal(mesh_hit.world_to_object, v2n);
+            
             n = v0n * intersection->u + v1n * intersection->v + v2n * intersection->w;
             cuda_debug_printf(debug, "    Interpolated normal: (%f, %f, %f)\n", n.x, n.y, n.z);
          }
@@ -271,8 +288,10 @@ namespace poly {
       future_node_stack[next_future_node_index] = 0;
 
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
-//      bool debug = pixel_index == DEBUG_PIXEL_INDEX;
       bool debug = false;
+      if (DEBUG_PRINT) {
+         debug = (pixel_index == DEBUG_PIXEL_INDEX);
+      }
 
       poly::device_bvh_node node;
       int current_node_index = 0;
@@ -326,7 +345,7 @@ namespace poly {
          
          float aabb_t = INFINITY;
          
-         if (aabb_hits(node.aabb, origin, direction_inverse, &aabb_t) && aabb_t < intersection->t) {
+         if (aabb_hits(node.bb, origin, direction_inverse, &aabb_t) && aabb_t < intersection->t) {
             cuda_debug_printf(debug, "  Ray hit node %i aabb\n", current_node_index);
             if (is_leaf) {
                cuda_debug_printf(debug, "  Node %i is leaf, intersecting faces\n", current_node_index);
@@ -337,19 +356,45 @@ namespace poly {
                   const unsigned int face_index = indices.face_index;
                   cuda_debug_printf(debug, "    Testing face_index %i\n", indices.face_index);
                   const DeviceMesh mesh = const_device_pointers.device_meshes[mesh_index];
-                  
-                  const unsigned int v1_index = face_index + (mesh.num_faces);
-                  const unsigned int v2_index = face_index + (mesh.num_faces * 2);
+                  cuda_debug_printf(debug, "      Loaded mesh_index %i\n", mesh_index);
+                  cuda_debug_printf(debug, "      obj_to_world: \t%f\t%f\t%f\t%f\n", mesh.obj_to_world[0], mesh.obj_to_world[1], mesh.obj_to_world[2], mesh.obj_to_world[3]);
+                  cuda_debug_printf(debug, "                    \t%f\t%f\t%f\t%f\n", mesh.obj_to_world[4], mesh.obj_to_world[5], mesh.obj_to_world[6], mesh.obj_to_world[7]);
+                  cuda_debug_printf(debug, "                    \t%f\t%f\t%f\t%f\n", mesh.obj_to_world[8], mesh.obj_to_world[9], mesh.obj_to_world[10], mesh.obj_to_world[11]);
+                  cuda_debug_printf(debug, "                    \t%f\t%f\t%f\t%f\n", mesh.obj_to_world[12], mesh.obj_to_world[13], mesh.obj_to_world[14], mesh.obj_to_world[15]);
 
-                  const float3 v0 = make_float3(__ldg(&mesh.x[face_index]), 
-                                                __ldg(&mesh.y[face_index]), 
-                                                __ldg(&mesh.z[face_index]));
-                  const float3 v1 = make_float3(__ldg(&mesh.x[v1_index]),
-                                                __ldg(&mesh.y[v1_index]),
-                                                __ldg(&mesh.z[v1_index]));
-                  const float3 v2 = make_float3(__ldg(&mesh.x[v2_index]),
-                                                __ldg(&mesh.y[v2_index]),
-                                                __ldg(&mesh.z[v2_index]));
+                  cuda_debug_printf(debug, "      world_to_obj: \t%f\t%f\t%f\t%f\n", mesh.world_to_object[0], mesh.world_to_object[1], mesh.world_to_object[2], mesh.world_to_object[3]);
+                  cuda_debug_printf(debug, "                    \t%f\t%f\t%f\t%f\n", mesh.world_to_object[4], mesh.world_to_object[5], mesh.world_to_object[6], mesh.world_to_object[7]);
+                  cuda_debug_printf(debug, "                    \t%f\t%f\t%f\t%f\n", mesh.world_to_object[8], mesh.world_to_object[9], mesh.world_to_object[10], mesh.world_to_object[11]);
+                  cuda_debug_printf(debug, "                    \t%f\t%f\t%f\t%f\n", mesh.world_to_object[12], mesh.world_to_object[13], mesh.world_to_object[14], mesh.world_to_object[15]);
+
+
+                  const device_mesh_geometry geometry = const_device_pointers.device_mesh_geometry[mesh.device_mesh_geometry_offset];
+                  cuda_debug_printf(debug, "      Loaded geometry %i\n", mesh.device_mesh_geometry_offset);
+                  
+                  const unsigned int v1_index = face_index + (geometry.num_faces);
+                  const unsigned int v2_index = face_index + (geometry.num_faces * 2);
+
+                  float3 v0 = make_float3(__ldg(&geometry.x[face_index]), 
+                                                __ldg(&geometry.y[face_index]), 
+                                                __ldg(&geometry.z[face_index]));
+                  cuda_debug_printf(debug, "      Loaded v0 %f %f %f\n", v0.x, v0.y, v0.z);
+                  float3 v0_world = matrix_apply_point(mesh.obj_to_world, v0);
+                  
+                  float3 v1 = make_float3(__ldg(&geometry.x[v1_index]),
+                                                __ldg(&geometry.y[v1_index]),
+                                                __ldg(&geometry.z[v1_index]));
+                  cuda_debug_printf(debug, "      Loaded v1 %f %f %f\n", v1.x, v1.y, v1.z);
+                  float3 v1_world = matrix_apply_point(mesh.obj_to_world, v1);
+                  
+                  float3 v2 = make_float3(__ldg(&geometry.x[v2_index]),
+                                                __ldg(&geometry.y[v2_index]),
+                                                __ldg(&geometry.z[v2_index]));
+                  cuda_debug_printf(debug, "      Loaded v2 %f %f %f\n", v2.x, v2.y, v2.z);
+                  float3 v2_world = matrix_apply_point(mesh.obj_to_world, v2);
+                  
+                  cuda_debug_printf(debug, "      World space: %f %f %f\n", v0_world.x, v0_world.y, v0_world.z);
+                  cuda_debug_printf(debug, "      World space: %f %f %f\n", v1_world.x, v1_world.y, v1_world.z);
+                  cuda_debug_printf(debug, "      World space: %f %f %f\n", v2_world.x, v2_world.y, v2_world.z);
 
                   // wald watertight intersection
                   // http://jcgt.org/published/0002/01/05/paper.pdf
@@ -358,9 +403,9 @@ namespace poly {
                   //int kz = max_dim(abs(dir));
                   
                   // calculate vertices relative to ray origin
-                  const float3 A = v0 - origin;
-                  const float3 B = v1 - origin;
-                  const float3 C = v2 - origin;
+                  const float3 A = v0_world - origin;
+                  const float3 B = v1_world - origin;
+                  const float3 C = v2_world - origin;
                   
                   // perform shear and scale of vertices
                   const float Ax = dim(A, kx) - Sx * dim(A, kz);
@@ -425,7 +470,7 @@ namespace poly {
                   intersection->hits = true;
                   intersection->face_index = face_index;
                   intersection->mesh_index = mesh_index;
-                  intersection->hit_point = v0 * u + v1 * v + v2 * w;
+                  intersection->hit_point = v0_world * u + v1_world * v + v2_world * w;
                   intersection->u = u;
                   intersection->v = v;
                   intersection->w = w;
@@ -490,9 +535,10 @@ namespace poly {
                ) {
       // loop over pixels
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
-      
       bool debug = false;
-//      bool debug = pixel_index == DEBUG_PIXEL_INDEX;
+      if (DEBUG_PRINT) {
+         debug = (pixel_index == DEBUG_PIXEL_INDEX);
+      }
 
       float3 src = { 1.0f, 1.0f, 1.0f};
       
@@ -747,6 +793,7 @@ namespace poly {
       struct device_pointers device_pointers {
          memory_manager->meshes,
          memory_manager->num_meshes,
+         memory_manager->mesh_geometries,
          memory_manager->device_samples,
          memory_manager->device_bvh,
          memory_manager->num_bvh_nodes,
@@ -777,7 +824,7 @@ namespace poly {
    
          if (error != cudaSuccess)
          {
-            fprintf(stderr, "Failed to launch init_curand_states_kernel (error code %s)!\n", cudaGetErrorString(error));
+            Log.error("Kernel init_curand_states_kernel failed (error: %s)!\n", cudaGetErrorString(error));
             exit(EXIT_FAILURE);
          }
       }
@@ -848,7 +895,7 @@ namespace poly {
       error = cudaGetLastError();
 
       if (error != cudaSuccess) {
-         fprintf(stderr, "Failed to launch reduce_samples_kernel (error code %s)!\n", cudaGetErrorString(error));
+         Log.error("Kernel reduce_samples_kernel failed (error: %s)!\n", cudaGetErrorString(error));
          exit(EXIT_FAILURE);
       }
       

@@ -1,0 +1,13 @@
+WorldBegin
+    
+    ObjectBegin "teapot"
+        # read the the file into geometry
+        Shape "plymesh" "string filename" [ "teapot.ply" ]
+    ObjectEnd
+    
+    # create a mesh with the geometry
+    ObjectInstance "teapot"
+    ObjectInstance "teapot"
+    Shape "plymesh" "string filename" [ "two-triangles.ply" ]
+    
+WorldEn

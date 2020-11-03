@@ -39,7 +39,7 @@ namespace Tests {
       
       poly::Ray ray = { {2, 0, 10}, { 0, 0, -1}};
       
-      bool actual = kernel.unit_test_hit_ray_against_bounding_box(ray, memory_manager.device_bvh->aabb);
+      bool actual = kernel.unit_test_hit_ray_against_bounding_box(ray, memory_manager.device_bvh->bb);
       EXPECT_TRUE(actual) << "should hit root";
    }
 
@@ -85,10 +85,10 @@ namespace Tests {
 
       bool actual;
       
-      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 1)->aabb);
+      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 1)->bb);
       EXPECT_FALSE(actual) << "shouldn't hit low child";
       
-      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 2)->aabb);
+      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 2)->bb);
       EXPECT_TRUE(actual) << "should hit high child";
    }
 
@@ -135,13 +135,13 @@ namespace Tests {
 
       bool actual;
 
-      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, memory_manager.device_bvh->aabb);
+      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, memory_manager.device_bvh->bb);
       EXPECT_TRUE(actual) << "should hit root";
       
-      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 1)->aabb);
+      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 1)->bb);
       EXPECT_TRUE(actual) << "should hit low child";
 
-      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 2)->aabb);
+      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 2)->bb);
       EXPECT_TRUE(actual) << "should hit high child";
    }
 
@@ -188,13 +188,13 @@ namespace Tests {
 
       bool actual;
 
-      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, memory_manager.device_bvh->aabb);
+      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, memory_manager.device_bvh->bb);
       EXPECT_TRUE(actual) << "should hit root";
 
-      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 1)->aabb);
+      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 1)->bb);
       EXPECT_TRUE(actual) << "should hit low child";
 
-      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 2)->aabb);
+      actual = kernel.unit_test_hit_ray_against_bounding_box(ray, (memory_manager.device_bvh + 2)->bb);
       EXPECT_TRUE(actual) << "should hit high child";
    }
 }

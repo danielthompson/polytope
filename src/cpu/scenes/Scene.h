@@ -21,13 +21,16 @@ namespace poly {
    public:
       
       explicit Scene(std::unique_ptr<AbstractCamera> camera)
-            : Camera(std::move(camera)), Shapes(0), Lights(0) {} ;
+            : Camera(std::move(camera)), Shapes(0), Lights(0), num_mesh_geometries(0) {} ;
       virtual ~Scene() = default;
 
       Intersection intersect(Ray &ray, int x, int y);
       
       std::unique_ptr<AbstractCamera> Camera{};
       std::vector<Mesh*> Shapes;
+      
+      unsigned int num_mesh_geometries;
+      
       std::vector<Mesh*> Lights;
       std::unique_ptr<AbstractSkybox> Skybox;
       
