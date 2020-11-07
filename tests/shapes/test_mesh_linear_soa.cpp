@@ -6,7 +6,7 @@
 #include "../../src/cpu/shapes/mesh.h"
 
 namespace Tests {
-   TEST(Mesh, Intersects) {
+   TEST(mesh_linear_ispc, intersects) {
       std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
       std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>(); 
       poly::Mesh tm(identity, identity, nullptr, geometry);

@@ -26,7 +26,8 @@ namespace poly {
          pbrt_spectrum,
          pbrt_string,
          pbrt_vector2,
-         pbrt_vector3
+         pbrt_vector3,
+         pbrt_texture
       } Type;
 
 
@@ -91,8 +92,10 @@ namespace poly {
             return pbrt_vector2;
          if (value == "vector" || value == "vector3")
             return pbrt_vector3;
+         if (value == "texture")
+            return pbrt_texture;
          
-         throw std::invalid_argument("Given argument type [" + value + "] is not a known PBRT type");
+         ERROR("Given argument type [" + value + "] is not a known (or implemented, yet) PBRT type");
             
       }
       
@@ -154,8 +157,32 @@ namespace poly {
 
    class pbrt_directive {
    public:
-      std::string name;
+      /**
+       * First statement of the directive, i.e. "WorldBegin", "Shape", etc. Should never be empty.
+       */
       std::string identifier;
+      
+      /**
+       * The type within the directive, if any; i.e. Shape "sphere" [...]
+       */
+      std::string type;
+      
+      /**
+       * The name of this directive, if any. Used by directives that define a name within the file that is later
+       * referenced within the file; i.e. Texture "my_texture" [...] or MakeNamedMaterial "my_material" [...].
+       */
+      std::string name;
+      
+      /**
+       * The class of the directive, if any. Currently used only by Texture directive; i.e.
+       * Texture <name> <type> "texture_class" [...], where class specifies one of the 13 different texture
+       * classes that PBRT implements. See https://www.pbrt.org/fileformat-v3.html#textures.
+       */
+      std::string class_name;
+      
+      /**
+       * The directive's arguments, if any.
+       */
       std::vector<poly::pbrt_argument> arguments;
    };
 

@@ -64,6 +64,8 @@ namespace poly {
          const std::string Scale = "Scale";
          const std::string Shape = "Shape";
          const std::string sphere = "sphere";
+         const std::string Texture = "Texture";
+         const std::string Transform = "Transform";
          const std::string TransformBegin = "TransformBegin";
          const std::string TransformEnd = "TransformEnd";
          const std::string Translate = "Translate";
@@ -76,7 +78,7 @@ namespace poly {
 
       // strings
 
-      enum DirectiveName {
+      enum DirectiveIdentifier {
          AreaLightSource,
          AttributeBegin,
          AttributeEnd,
@@ -96,14 +98,16 @@ namespace poly {
          Sampler,
          Scale,
          Shape,
-         Translate,
+         Texture,
+         Transform,
          TransformBegin,
          TransformEnd,
+         Translate,
          WorldBegin,
          WorldEnd
       };
 
-      const std::unordered_map<std::string, DirectiveName> SceneDirectiveMap {
+      const std::unordered_map<std::string, DirectiveIdentifier> SceneDirectiveMap {
             {str::Camera, Camera},
             {str::Film, Film},
             {str::Integrator, Integrator},
@@ -112,10 +116,11 @@ namespace poly {
             {str::Rotate, Rotate},
             {str::Sampler, Sampler},
             {str::Scale, Scale},
-            {str::Translate, Translate}
+            {str::Transform, Transform},
+            {str::Translate, Translate},
       };
 
-      const std::unordered_map<std::string, DirectiveName> WorldDirectiveMap {
+      const std::unordered_map<std::string, DirectiveIdentifier> WorldDirectiveMap {
             {str::AreaLightSource, AreaLightSource},
             {str::AttributeBegin, AttributeBegin},
             {str::AttributeEnd, AttributeEnd},
@@ -129,6 +134,8 @@ namespace poly {
             {str::Rotate, Rotate},
             {str::Scale, Scale},
             {str::Shape, Shape},
+            {str::Texture, Texture},
+            {str::Transform, Transform},
             {str::TransformBegin, TransformBegin},
             {str::TransformEnd, TransformEnd},
             {str::Translate, Translate},
@@ -207,19 +214,19 @@ namespace poly {
       }
 
       void LogOther(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
-         Log.warning(directive->name + ": " + error);
+         Log.warning(directive->identifier + ": " + error);
       }
 
       void log_illegal_directive(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
-         Log.error(directive->name + ": " + error);
+         Log.error(directive->identifier + ": " + error);
       }
 
       void log_illegal_identifier(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
-         Log.error(directive->name + ": \"" + directive->identifier + "\": " + error);
+         Log.error(directive->identifier + ": \"" + directive->type + "\": " + error);
       }
 
       void LogMissingArgument(const std::unique_ptr<pbrt_directive>& directive, const std::string& argument) {
-         Log.warning("Directive [" + directive->name + "] w/ identifier [" + directive->identifier + "] is missing argument [" + argument + "]");
+         Log.warning("Directive [" + directive->identifier + "] w/ identifier [" + directive->type + "] is missing argument [" + argument + "]");
       }
 
       void LogMissingDirective(const std::string& name, std::string& defaultOption) {
@@ -227,11 +234,11 @@ namespace poly {
       }
 
       void LogUnknownDirective(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->name + "] found, but is unknown. Ignoring.");
+         Log.warning("Directive [" + directive->identifier + "] found, but is unknown. Ignoring.");
       }
 
       void LogUnknownIdentifier(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->name + "] has unknown identifier [" + directive->identifier + "].");
+         Log.warning("Directive [" + directive->identifier + "] has unknown identifier [" + directive->type + "].");
       }
 
       void LogUnknownArgument(const pbrt_argument &argument) {
@@ -241,12 +248,12 @@ namespace poly {
       }
 
       void LogWrongArgumentType(const std::unique_ptr<pbrt_directive> &directive, const pbrt_argument &argument) {
-         Log.warning("Directive [" + directive->name + "] w/ identifier [" + directive->identifier + "] found has argument [" + argument.Name + "] with wrong type [" +
+         Log.warning("Directive [" + directive->identifier + "] w/ identifier [" + directive->type + "] found has argument [" + argument.Name + "] with wrong type [" +
                      pbrt_argument::get_argument_type_string(argument.Type) + "].");
       }
 
       void LogUnimplementedDirective(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->name + "] w/ identifier [" + directive->identifier + "] found, but is not yet implemented. Ignoring.");
+         Log.warning("Directive [" + directive->identifier + "] w/ identifier [" + directive->type + "] found, but is not yet implemented. Ignoring.");
       }
 
       unsigned int stoui(const std::string& text) {
@@ -379,21 +386,37 @@ namespace poly {
       return tokens;
    }
 
-   void LexFloatArrayArgument(const std::vector<std::string>& line, const int expected_num_elements, poly::pbrt_argument *argument) {
-      if (line.size() != expected_num_elements + 1) {
-         throw std::invalid_argument(line[0] + " requires exactly " + std::to_string(expected_num_elements) + " arguments, but found " + std::to_string(line.size()));
+   void LexFloatArrayArgument(const std::vector<std::string>& line, const int expected_num_elements, const bool in_brackets, poly::pbrt_argument *argument) {
+      const int expected_num_tokens = expected_num_elements + 1 + (in_brackets ? 2 : 0);
+      
+      if (line.size() != expected_num_tokens) {
+         ERROR("LexFloatArrayArgument(): " + line[0] + " requires exactly " + std::to_string(expected_num_elements) + " arguments, but found " + std::to_string(line.size()));
       }
 
+      if (in_brackets) {
+         if (line[1] != "[") {
+            ERROR("LexFloatArrayArgument(): Expected an opening bracket for token 1, but found ["  + line[1] + "]");
+         }
+         const int last_index = line.size() - 1;
+         if (line[last_index] != "]") {
+            ERROR("LexFloatArrayArgument(): Expected a closet bracket for token " + std::to_string(last_index) + ", but found ["  + line[last_index] + "]");
+         }
+      }
+      
       argument->Type = pbrt_argument::pbrt_float;
       argument->float_values = std::make_unique<std::vector<float>>();
-      for (int i = 1; i <= expected_num_elements; i++) {
+      
+      const int starting_index = in_brackets ? 2 : 1;
+      
+      for (int i = starting_index; i <= expected_num_elements; i++) {
          std::string current_arg = line[i];
+         
          float value;
          try {
             value = stof(current_arg);
          }
          catch (const std::invalid_argument &) {
-            throw std::invalid_argument(line[0] + ": failed to parse [" + current_arg + "] as a float");
+            ERROR("LexFloatArrayArgument():" + line[0] + ": failed to parse [" + current_arg + "] as a float");
          }
          argument->float_values->push_back(value);
       }
@@ -403,65 +426,114 @@ namespace poly {
       std::unique_ptr<poly::pbrt_directive> directive = std::make_unique<pbrt_directive>();
 
       if (line.empty()) {
-         Log.warning("Lexed empty line. Hmm...");
+         Log.warning("lex(): empty line. Hmm...");
          return directive;
       }
+      
+      Log.debug("lex(): processing line starting with [" + line[0] + "].");
+      
+      bool debug = false;
+      if (line[0] == "Texture")
+         bool debug = true;
 
-      directive->name = line[0];
+      directive->identifier = line[0];
       
       if (line.size() == 1) {
-         Log.debug("Lexed directive [" + directive->name + "]");
+         Log.debug("lex(): directive [" + directive->identifier + "] OK");
          return directive;
       }
 
+      int argument_start_index = 2;
+      
+      // TODO put this into a switch
+      
       // first, lex directives that use non-uniform argument syntax
-      if (directive->name == str::LookAt) {
+      if (directive->identifier == str::LookAt) {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
-         LexFloatArrayArgument(line, 9, &(directive->arguments[0]));
-         Log.debug("Lexed directive [" + directive->name + "]");
+         LexFloatArrayArgument(line, 9, false, &(directive->arguments[0]));
+         Log.debug("lex(): directive [" + directive->identifier + "] OK");
          return directive;
       }
       
-      if (directive->name == str::Rotate) {
+      else if (directive->identifier == str::Rotate) {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
-         LexFloatArrayArgument(line, 4, &(directive->arguments[0]));
-         Log.debug("Lexed directive [" + directive->name + "]");
+         LexFloatArrayArgument(line, 4, false, &(directive->arguments[0]));
+         Log.debug("lex(): directive [" + directive->identifier + "] OK");
          return directive;
       }
 
-      if (directive->name == str::Scale) {
+      else if (directive->identifier == str::Scale) {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
-         LexFloatArrayArgument(line, 3, &(directive->arguments[0]));
-         Log.debug("Lexed directive [" + directive->name + "]");
+         LexFloatArrayArgument(line, 3, false, &(directive->arguments[0]));
+         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         return directive;
+      }
+
+      else if (directive->identifier == str::Texture) {
+         // name
+         std::string name = line[1].substr(1, line[1].length() - 2);
+         if (name.empty()) {
+            ERROR("lex(): directive [" + directive->identifier + "] cannot have an empty name");
+         }
+         directive->name = name;
+         
+         // type
+         std::string type = line[2].substr(1, line[2].length() - 2);
+         if (type.empty()) {
+            ERROR("lex(): directive [" + directive->identifier + "] cannot have an empty type");
+         }
+         directive->type = type;
+         
+         // class
+         std::string class_name = line[3].substr(1, line[3].length() - 2);
+         if (class_name.empty()) {
+            ERROR("lex(): directive [" + directive->identifier + "] cannot have an empty class name");
+         }
+         directive->class_name = class_name;
+         
+         // regular arguments
+         argument_start_index = 4;
+         
+         Log.debug("lex(): directive [" + directive->identifier + "] started OK");
+      }
+
+      else if (directive->identifier == str::Transform) {
+         directive->arguments = std::vector<pbrt_argument>();
+         directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
+         LexFloatArrayArgument(line,  16, true, &(directive->arguments[0]));
+         Log.debug("lex(): directive [" + directive->identifier + "] OK");
          return directive;
       }
       
-      if (directive->name == str::Translate) {
+      else if (directive->identifier == str::Translate) {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
-         LexFloatArrayArgument(line, 3, &(directive->arguments[0]));
-         Log.debug("Lexed directive [" + directive->name + "]");
+         LexFloatArrayArgument(line, 3, false, &(directive->arguments[0]));
+         Log.debug("lex(): directive [" + directive->identifier + "] OK");
          return directive;
       }
       
-      if (is_quoted(line[1])) {
-         directive->identifier = line[1].substr(1, line[1].length() - 2);
-      } 
       else {
-         ERROR("Lex(): second token (identifier) %s isn't quoted, but should be", line[0].c_str());
-      }
+         if (is_quoted(line[1])) {
+            directive->type = line[1].substr(1, line[1].length() - 2);
+         }
+         else {
+            ERROR("lex(): second token (identifier) %s isn't quoted, but should be", line[0].c_str());
+         }
+      } 
+
 
       if (line.size() == 2) {
-         Log.debug("Lexed directive [" + directive->name + "]");
+         Log.debug("Lexed directive [" + directive->identifier + "]");
          return directive;
       }
       
       bool inValue = false;
       bool in_arg = false;
-      int i = 2;
+      int i = argument_start_index;
       int current_arg_index = -1;
       pbrt_argument* current_arg = nullptr;
       while (i < line.size()) {
@@ -498,6 +570,7 @@ namespace poly {
                std::string value = line[i].substr(1, line[i].length() - 2);
                
                switch (current_arg->Type) {
+                  case pbrt_argument::pbrt_argument_type::pbrt_texture:
                   case pbrt_argument::pbrt_argument_type::pbrt_string: {
                      assert(current_arg->bool_value == nullptr);
                      current_arg->string_value = std::make_unique<std::string>(value);
@@ -517,6 +590,7 @@ namespace poly {
                      break;
                   }
                   default: {
+                     // unimplemented arg type
                      assert(false);
                   }
                }
@@ -573,16 +647,79 @@ namespace poly {
             i++;
             continue;
          }
-         throw std::invalid_argument("Lexer: current line has invalid token [" + line[i] + "]");
+         ERROR("lex(): current line has invalid token [" + line[i] + "] :(");
       }
 
 //      if (inValue) {
 //         directive->Arguments.push_back(argument);
 //      }
 
-      Log.debug("Lexed directive [" + directive->name + "]");
+      Log.debug("lex(): directive [" + directive->identifier + "] OK");
 
       return directive;
+   }
+   
+   static std::unique_ptr<poly::Transform> rotate_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+      // TODO need to ensure just 1 argument with 4 values
+      
+      const float angle = directive->arguments[0].float_values->at(0) * PIOver180;
+      float x = directive->arguments[0].float_values->at(1);
+      float y = directive->arguments[0].float_values->at(2);
+      float z = directive->arguments[0].float_values->at(3);
+
+      // normalize
+      const float length_inverse = 1.f / std::sqrt(x * x + y * y + z * z);
+      x *= length_inverse;
+      y *= length_inverse;
+      z *= length_inverse;
+      
+      return std::make_unique<poly::Transform>(Transform::Rotate(angle, x, y, z));
+   }
+   
+   static std::unique_ptr<poly::Transform> scale_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+      pbrt_argument* arg = &(directive->arguments[0]);
+      float x = arg->float_values->at(0);
+      float y = arg->float_values->at(1);
+      float z = arg->float_values->at(2);
+
+      return std::make_unique<poly::Transform>(Transform::Scale(x, y, z));
+   }
+   
+   static std::unique_ptr<poly::Transform> transform_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+      pbrt_argument* arg = &(directive->arguments[0]);
+      float m00 = arg->float_values->at(0);
+      float m01 = arg->float_values->at(1);
+      float m02 = arg->float_values->at(2);
+      float m03 = arg->float_values->at(3);
+
+      float m10 = arg->float_values->at(4);
+      float m11 = arg->float_values->at(5);
+      float m12 = arg->float_values->at(6);
+      float m13 = arg->float_values->at(7);
+
+      float m20 = arg->float_values->at(8);
+      float m21 = arg->float_values->at(9);
+      float m22 = arg->float_values->at(10);
+      float m23 = arg->float_values->at(11);
+
+      float m30 = arg->float_values->at(12);
+      float m31 = arg->float_values->at(13);
+      float m32 = arg->float_values->at(14);
+      float m33 = arg->float_values->at(15);
+
+      return std::make_unique<poly::Transform>(m00, m01, m02, m03,
+                                               m10, m11, m12, m13,
+                                               m20, m21, m22, m23,
+                                               m30, m31, m32, m33);
+   }
+   
+   static std::unique_ptr<poly::Transform> translate_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+      // need to ensure just one argument with 3 values
+      pbrt_argument* arg = &(directive->arguments[0]);
+      float x = arg->float_values->at(0);
+      float y = arg->float_values->at(1);
+      float z = arg->float_values->at(2);
+      return std::make_unique<poly::Transform>(Transform::Translate(x, y, z));
    }
    
    std::unique_ptr<AbstractRunner> pbrt_parser::parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
@@ -595,7 +732,7 @@ namespace poly {
             std::unique_ptr<pbrt_directive> directive = lex(line);
             // TODO ensure directive is valid for scene/world
             
-            if (directive->name == str::WorldBegin) {
+            if (directive->identifier == str::WorldBegin) {
                current_directives = &world_directives;
             }
             
@@ -610,9 +747,9 @@ namespace poly {
       unsigned int numSamples = DefaultSamples;
 
       for (const std::unique_ptr<pbrt_directive> &directive : scene_directives) {
-         if (directive->name == str::Sampler) {
+         if (directive->identifier == str::Sampler) {
             missingSampler = false;
-            if (directive->identifier == str::halton) {
+            if (directive->type == str::halton) {
                sampler = std::make_unique<HaltonSampler>();
             } else {
                LogUnknownIdentifier(directive);
@@ -653,8 +790,8 @@ namespace poly {
       bool missingFilm = true;
 
       for (const std::unique_ptr<pbrt_directive> &directive : scene_directives) {
-         if (directive->name == str::Film) {
-            if (directive->identifier == str::image) {
+         if (directive->identifier == str::Film) {
+            if (directive->type == str::image) {
                unsigned int x = 0;
                unsigned int y = 0;
 
@@ -719,9 +856,9 @@ namespace poly {
       bool missingFilter = true;
 
       for (const std::unique_ptr<pbrt_directive>& directive : scene_directives) {
-         if (directive->name == str::PixelFilter) {
+         if (directive->identifier == str::PixelFilter) {
             missingFilter = false;
-            if (directive->identifier == "box") {
+            if (directive->type == "box") {
                unsigned int xWidth = 0;
                unsigned int yWidth = 0;
 
@@ -765,33 +902,62 @@ namespace poly {
          Point lookAt;
          Vector up;
 
-         Transform currentTransform;
+         poly::Transform current_transform;
          
          for (const std::unique_ptr<pbrt_directive>& directive : scene_directives) {
-            if (directive->name == str::LookAt) {
-               const float eyeX = directive->arguments[0].float_values->at(0);
-               const float eyeY = directive->arguments[0].float_values->at(1);
-               const float eyeZ = directive->arguments[0].float_values->at(2);
+            
+            DirectiveIdentifier identifier;
+            try {
+               identifier = SceneDirectiveMap.at(directive->identifier);
+            }
+            catch (...) {
+               ERROR("Indentifier [%s] is not valid in the scene block");
+            }
+            switch (identifier) {
+               case DirectiveIdentifier::LookAt: {
+                  const float eyeX = directive->arguments[0].float_values->at(0);
+                  const float eyeY = directive->arguments[0].float_values->at(1);
+                  const float eyeZ = directive->arguments[0].float_values->at(2);
 
-               eye = Point(eyeX, eyeY, eyeZ);
+                  eye = Point(eyeX, eyeY, eyeZ);
 
-               const float lookAtX = directive->arguments[0].float_values->at(3);
-               const float lookAtY = directive->arguments[0].float_values->at(4);
-               const float lookAtZ = directive->arguments[0].float_values->at(5);
+                  const float lookAtX = directive->arguments[0].float_values->at(3);
+                  const float lookAtY = directive->arguments[0].float_values->at(4);
+                  const float lookAtZ = directive->arguments[0].float_values->at(5);
 
-               lookAt = Point(lookAtX, lookAtY, lookAtZ);
+                  lookAt = Point(lookAtX, lookAtY, lookAtZ);
 
-               const float upX = directive->arguments[0].float_values->at(6);
-               const float upY = directive->arguments[0].float_values->at(7);
-               const float upZ = directive->arguments[0].float_values->at(8);
+                  const float upX = directive->arguments[0].float_values->at(6);
+                  const float upY = directive->arguments[0].float_values->at(7);
+                  const float upZ = directive->arguments[0].float_values->at(8);
 
-               up = Vector(upX, upY, upZ);
+                  up = Vector(upX, upY, upZ);
 
-               Transform t = Transform::LookAt(eye, lookAt, up, false);
-               currentTransform *= t;
+                  poly::Transform t = Transform::LookAt(eye, lookAt, up, false);
+                  current_transform *= t;
 
-               Log.debug("Found LookAt.");
-               break;
+                  Log.debug("Found LookAt.");
+                  break;
+               }
+               case DirectiveIdentifier::Rotate: {
+                  current_transform *= *rotate_directive(directive);
+                  break;
+               }
+               case DirectiveIdentifier::Scale: {
+                  current_transform *= *scale_directive(directive);
+                  break;
+               }
+               case DirectiveIdentifier::Transform: {
+                  current_transform *= *transform_directive(directive);
+                  break;
+               }
+               case DirectiveIdentifier::Translate: {
+                  current_transform *= *translate_directive(directive);
+                  break;
+               }
+               default:
+                  // intentionally take no action if it's not a transformation directive
+                  break;
             }
          }
 
@@ -800,8 +966,8 @@ namespace poly {
          bool foundCamera = false;
 
          for (const std::unique_ptr<pbrt_directive> &directive : scene_directives) {
-            if (directive->name == str::Camera) {
-               if (directive->identifier == "perspective") {
+            if (directive->identifier == str::Camera) {
+               if (directive->type == "perspective") {
                   float fov = DefaultCameraFOV;
 
                   foundCamera = true;
@@ -819,7 +985,7 @@ namespace poly {
 
                   settings.FieldOfView = fov;
 
-                  camera = std::make_unique<PerspectiveCamera>(settings, currentTransform, true);
+                  camera = std::make_unique<PerspectiveCamera>(settings, current_transform, true);
                   camera->eye = eye;
                   camera->lookAt = lookAt;
                   camera->up = up;
@@ -833,7 +999,7 @@ namespace poly {
             stringstream << "PerspectiveCamera with FOV = " << DefaultCameraFOV;
             std::string cameraDefaultString = stringstream.str();
             LogMissingDirective(str::Camera, cameraDefaultString);
-            camera = std::make_unique<PerspectiveCamera>(settings, currentTransform, true);
+            camera = std::make_unique<PerspectiveCamera>(settings, current_transform, true);
          }
       }
 
@@ -842,8 +1008,8 @@ namespace poly {
       bool missingIntegrator = true;
 
       for (const std::unique_ptr<pbrt_directive>& directive : scene_directives) {
-         if (directive->name == str::Integrator) {
-            if (directive->identifier == "path") {
+         if (directive->identifier == str::Integrator) {
+            if (directive->type == "path") {
                unsigned int maxDepth = 5;
 
                missingIntegrator = false;
@@ -890,11 +1056,11 @@ namespace poly {
 
       std::stack<std::shared_ptr<poly::Material>> materialStack;
       std::stack<std::shared_ptr<SpectralPowerDistribution>> lightStack;
-      std::stack<std::shared_ptr<Transform>> transformStack;
+      std::stack<std::shared_ptr<poly::Transform>> transformStack;
 
       std::shared_ptr<poly::Material> activeMaterial;
       std::shared_ptr<SpectralPowerDistribution> activeLight;
-      std::shared_ptr<Transform> activeTransform = std::make_shared<Transform>();
+      std::shared_ptr<poly::Transform> activeTransform = std::make_shared<poly::Transform>();
       
       /**
        * Maps mesh names to previously-defined mesh geometries.
@@ -907,9 +1073,9 @@ namespace poly {
       bool in_object_begin = false;
       
       for (const std::unique_ptr<pbrt_directive>& directive : world_directives) {
-         DirectiveName name;
+         DirectiveIdentifier name;
          try {
-            name = WorldDirectiveMap.at(directive->name);
+            name = WorldDirectiveMap.at(directive->identifier);
          }
          catch (...) {
             LogUnknownDirective(directive);
@@ -917,9 +1083,9 @@ namespace poly {
          }
 
          switch (name) {
-            case DirectiveName::AreaLightSource: {
+            case DirectiveIdentifier::AreaLightSource: {
                // lights with geometry
-               if (directive->identifier != "diffuse") {
+               if (directive->type != "diffuse") {
                   LogUnknownIdentifier(directive);
                   break;
                }
@@ -936,7 +1102,7 @@ namespace poly {
                }
                break;
             }
-            case DirectiveName::AttributeBegin: {
+            case DirectiveIdentifier::AttributeBegin: {
                // push onto material stack
                if (activeMaterial != nullptr) {
                   materialStack.push(activeMaterial);
@@ -949,10 +1115,10 @@ namespace poly {
 
                // push onto transform stack
                transformStack.push(activeTransform);
-               activeTransform = std::make_shared<Transform>(*(activeTransform.get()));
+               activeTransform = std::make_shared<poly::Transform>(*(activeTransform.get()));
                break;
             }
-            case DirectiveName::AttributeEnd: {
+            case DirectiveIdentifier::AttributeEnd: {
                // pop material stack
                if (!materialStack.empty()) {
                   std::shared_ptr<poly::Material> stackValue = materialStack.top();
@@ -971,16 +1137,16 @@ namespace poly {
 
                // pop transform stack
                if (!transformStack.empty()) {
-                  std::shared_ptr<Transform> stackValue = transformStack.top();
+                  std::shared_ptr<poly::Transform> stackValue = transformStack.top();
                   transformStack.pop();
                   assert (stackValue != nullptr);
                   activeTransform = stackValue;
                }
                break;
             }
-            case DirectiveName::LightSource: {
+            case DirectiveIdentifier::LightSource: {
                // lights without geometry
-               if (directive->identifier == "infinite") {
+               if (directive->type == "infinite") {
                   for (const pbrt_argument& argument : directive->arguments) {
                      if (argument.Name == "L") {
                         const float r = argument.float_values->at(0);
@@ -999,8 +1165,8 @@ namespace poly {
                }
                break;
             }
-            case DirectiveName::MakeNamedMaterial: {
-               const std::string materialName = directive->identifier;
+            case DirectiveIdentifier::MakeNamedMaterial: {
+               const std::string materialName = directive->type;
                std::shared_ptr<AbstractBRDF> brdf;
                poly::ReflectanceSpectrum reflectanceSpectrum;
                for (const pbrt_argument &argument : directive->arguments) {
@@ -1024,10 +1190,10 @@ namespace poly {
                namedMaterials.push_back(std::make_shared<poly::Material>(std::move(brdf), reflectanceSpectrum, materialName));
                break;
             }
-            case DirectiveName::Material: {
+            case DirectiveIdentifier::Material: {
                MaterialIdentifier identifier;
                try {
-                  identifier = MaterialIdentifierMap.at(directive->identifier);
+                  identifier = MaterialIdentifierMap.at(directive->type);
                }
                catch (...) {
                   LogUnknownIdentifier(directive);
@@ -1133,8 +1299,8 @@ namespace poly {
                }
                break;
             }
-            case DirectiveName::NamedMaterial: {
-               std::string materialName = directive->identifier;
+            case DirectiveIdentifier::NamedMaterial: {
+               std::string materialName = directive->type;
                bool found = false;
                // TODO hash table
                for (const auto &material : namedMaterials) {
@@ -1149,14 +1315,14 @@ namespace poly {
                }
                break;
             }
-            case DirectiveName::ObjectBegin: {
+            case DirectiveIdentifier::ObjectBegin: {
                if (in_object_begin) {
                   log_illegal_directive(directive, "ObjectBegin directive cannot be nested.");
                }
                else {
                   in_object_begin = true;
                   // TODO - record start of new object with given name
-                  if (directive->identifier.empty()) {
+                  if (directive->type.empty()) {
                      log_illegal_identifier(directive, "ObjectBegin directive cannot specify an empty name.");
                   }
                   
@@ -1165,22 +1331,22 @@ namespace poly {
                      std::shared_ptr<poly::mesh_geometry> previous_instance = nullptr;
                      // TODO find and use an exception-less hash table
                      try {
-                        previous_instance = name_mesh_map.at(directive->identifier);
+                        previous_instance = name_mesh_map.at(directive->type);
                      }
                      catch (...) {}
                      if (previous_instance != nullptr) {
-                        log_illegal_identifier(directive, "ObjectBegin directive cannot specify [" + directive->identifier +
+                        log_illegal_identifier(directive, "ObjectBegin directive cannot specify [" + directive->type +
                                                           "]; that name has already been previously defined.");
                      }
                   }
                   
                   // create geometry and insert into the map
                   current_geometry = std::make_shared<mesh_geometry>();
-                  name_mesh_map[directive->identifier] = current_geometry;
+                  name_mesh_map[directive->type] = current_geometry;
                }
                break;
             }
-            case DirectiveName::ObjectEnd: {
+            case DirectiveIdentifier::ObjectEnd: {
                if (in_object_begin) {
                   in_object_begin = false;
                   current_geometry = nullptr;
@@ -1190,14 +1356,14 @@ namespace poly {
                }
                break;
             }
-            case DirectiveName::ObjectInstance: {
+            case DirectiveIdentifier::ObjectInstance: {
                if (in_object_begin) {
                   log_illegal_directive(directive, "ObjectInstance directive cannot appear between ObjectBegin and ObjectEnd directives");
                } 
                else if (current_geometry != nullptr) {
                   ERROR("BUG: current geometry isn't null, but should be");
                }
-               std::string object_name = directive->identifier;
+               std::string object_name = directive->type;
                if (object_name.empty()) {
                   log_illegal_identifier(directive, "ObjectInstance directive cannot specify an empty name.");
                }
@@ -1225,44 +1391,18 @@ namespace poly {
                scene->Shapes.push_back(mesh);
                break;
             }
-            case DirectiveName::Rotate: {
-               // TODO need to ensure just 1 argument with 4 values
-               pbrt_argument* arg = &(directive->arguments[0]);
-               const float angle = arg->float_values->at(0) * PIOver180;
-               float x = arg->float_values->at(1);
-               float y = arg->float_values->at(2);
-               float z = arg->float_values->at(3);
-
-               // normalize
-               const float oneOverLength = 1.f / std::sqrt(x * x + y * y + z * z);
-               x *= oneOverLength;
-               y *= oneOverLength;
-               z *= oneOverLength;
-
-               Transform t = Transform::Rotate(angle, x, y, z);
-
-               assert (activeTransform != nullptr);
-               Transform *active = activeTransform.get();
-               *active *= t;
+            case DirectiveIdentifier::Rotate: {
+               *activeTransform *= *rotate_directive(directive);
                break;
             }
-            case DirectiveName::Scale: {
-               pbrt_argument* arg = &(directive->arguments[0]);
-               float x = arg->float_values->at(0);
-               float y = arg->float_values->at(1);
-               float z = arg->float_values->at(2);
-
-               Transform t = Transform::Scale(x, y, z);
-
-               assert (activeTransform != nullptr);
-               Transform *active = activeTransform.get();
-               *active *= t;
+            case DirectiveIdentifier::Scale: {
+               *activeTransform *= *scale_directive(directive);
                break;
             }
-            case DirectiveName::Shape: {
+            case DirectiveIdentifier::Shape: {
                ShapeIdentifier identifier;
                try {
-                  identifier = ShapeIdentifierMap.at(directive->identifier);
+                  identifier = ShapeIdentifierMap.at(directive->type);
                }
                catch (...) {
                   LogUnknownIdentifier(directive);
@@ -1443,34 +1583,29 @@ namespace poly {
                }
                break;
             }
-            case DirectiveName::TransformBegin: {
+            case DirectiveIdentifier::Transform: {
+               *activeTransform *= *transform_directive(directive);
+               break;
+            }
+            case DirectiveIdentifier::TransformBegin: {
                // push onto transform stack
                assert (activeTransform != nullptr);
                transformStack.push(activeTransform);
-               activeTransform = std::make_shared<Transform>(*(activeTransform.get()));
+               activeTransform = std::make_shared<poly::Transform>(*(activeTransform.get()));
                break;
             }
-            case DirectiveName::TransformEnd: {
+            case DirectiveIdentifier::TransformEnd: {
                // pop transform stack
                if (!transformStack.empty()) {
-                  std::shared_ptr<Transform> stackValue = transformStack.top();
+                  std::shared_ptr<poly::Transform> stackValue = transformStack.top();
                   transformStack.pop();
                   assert (stackValue != nullptr);
                   activeTransform = stackValue;
                }
                break;
             }
-            case DirectiveName::Translate: {
-               // need to ensure just one argument with 3 values
-               pbrt_argument* arg = &(directive->arguments[0]);
-               float x = arg->float_values->at(0);
-               float y = arg->float_values->at(1);
-               float z = arg->float_values->at(2);
-               Transform t = Transform::Translate(x, y, z);
-
-               assert (activeTransform != nullptr);
-               Transform *active = activeTransform.get();
-               *active *= t;
+            case DirectiveIdentifier::Translate: {
+               *activeTransform *= *translate_directive(directive);
                break;
             }
             // TODO - other transform directives

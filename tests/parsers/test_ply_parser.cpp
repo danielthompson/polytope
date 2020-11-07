@@ -6,9 +6,6 @@
 
 #include "../../src/common/utilities/Logger.h"
 #include "../../src/common/parsers/mesh_parsers.h"
-#include "../../src/cpu/structures/Vectors.h"
-#include "../../src/common/parsers/mesh_parsers.h"
-#include "../../src/cpu/shapes/mesh.h"
 
 namespace Tests {
 
@@ -17,7 +14,6 @@ namespace Tests {
 
          const poly::ply_parser parser;
          const std::string file = "../scenes/teapot/teapot.ply";
-         const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
          auto geometry = std::make_shared<poly::mesh_geometry>();
 
          parser.parse_file(geometry, file);
@@ -48,8 +44,6 @@ namespace Tests {
       }
 
       TEST(PLYParser, TeapotConverted) {
-
-         const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
          auto ply_geometry = std::make_shared<poly::mesh_geometry>();
          {
             const poly::ply_parser ply_parser;
@@ -115,7 +109,6 @@ namespace Tests {
       
       TEST(PLYParser, Binary) {
          const poly::ply_parser parser;
-         const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
          constexpr unsigned int expected_num_vertices = 8;
          constexpr unsigned int expected_num_faces = 4;
 
@@ -149,6 +142,167 @@ namespace Tests {
 //         for (unsigned int i = 0; i < expected_num_faces; i++) {
 //            EXPECT_EQ(binary_mesh->Vertices[i], ascii_mesh->Vertices[i]);
 //         }
+      }
+
+      void simple_parse_helper(const std::string& file) {
+         const poly::ply_parser parser;
+         auto geometry = std::make_shared<poly::mesh_geometry>();
+         parser.parse_file(geometry, file);
+
+         // ensure nothing is null
+         ASSERT_NE(nullptr, geometry);
+
+         ASSERT_EQ(3, geometry->num_vertices_packed);
+         const poly::Point v0 = geometry->get_vertex(0);
+
+         EXPECT_EQ(1, v0.x);
+         EXPECT_EQ(2, v0.y);
+         EXPECT_EQ(3, v0.z);
+
+         const poly::Point v1 = geometry->get_vertex(1);
+
+         EXPECT_EQ(4, v1.x);
+         EXPECT_EQ(5, v1.y);
+         EXPECT_EQ(6, v1.z);
+
+         const poly::Point v2 = geometry->get_vertex(2);
+
+         EXPECT_EQ(7, v2.x);
+         EXPECT_EQ(8, v2.y);
+         EXPECT_EQ(9, v2.z);
+
+         // faces
+         ASSERT_EQ(1, geometry->num_faces);
+      }
+      
+      TEST(PLYParser, parse_xyz) {
+         simple_parse_helper("../scenes/test/ply_parsing/xyz.ply");
+      }
+
+      TEST(PLYParser, parse_xzy) {
+         simple_parse_helper("../scenes/test/ply_parsing/xzy.ply");
+      }
+      
+      TEST(PLYParser, element_vertex_first) {
+         simple_parse_helper("../scenes/test/ply_parsing/element-vertex-first.ply");
+      }
+
+      TEST(PLYParser, element_face_first) {
+         simple_parse_helper("../scenes/test/ply_parsing/element-face-first.ply");
+      }
+
+      TEST(PLYParser, header_1) {
+         using poly::ply_parser;
+         
+         const poly::ply_parser parser;
+         auto geometry = std::make_shared<poly::mesh_geometry>();
+         std::string file = "../scenes/test/ply_parsing/element-vertex-first.ply";
+         poly::ply_parser::parser_state state = parser.parse_header(file);
+
+         EXPECT_EQ(ply_parser::ply_format::ascii, state.data_format);
+         EXPECT_FALSE( state.has_vertex_normals);
+         EXPECT_FALSE(state.elements.empty());
+         ASSERT_EQ(2, state.elements.size());
+         
+         auto& first_element = state.elements[0];
+         EXPECT_EQ(ply_parser::ply_element_type::vertex, first_element.type);
+         EXPECT_FALSE(first_element.properties.empty());
+         EXPECT_EQ(3, first_element.properties.size());
+         EXPECT_EQ(3, first_element.num_instances);
+         
+         auto& vertex_property_x = first_element.properties[0];
+         EXPECT_EQ(ply_parser::ply_property_type::ply_float, vertex_property_x.type);
+         EXPECT_EQ(ply_parser::ply_property_name::x, vertex_property_x.name);
+
+         auto& vertex_property_y = first_element.properties[1];
+         EXPECT_EQ(ply_parser::ply_property_type::ply_float, vertex_property_y.type);
+         EXPECT_EQ(ply_parser::ply_property_name::y, vertex_property_y.name);
+
+         auto& vertex_property_z = first_element.properties[2];
+         EXPECT_EQ(ply_parser::ply_property_type::ply_float, vertex_property_z.type);
+         EXPECT_EQ(ply_parser::ply_property_name::z, vertex_property_z.name);
+         
+         auto& second_element = state.elements[1];
+         EXPECT_EQ(ply_parser::ply_element_type::face, second_element.type);
+         EXPECT_FALSE(second_element.properties.empty());
+         EXPECT_EQ(1, second_element.properties.size());
+         
+         auto& face_property = second_element.properties[0];
+         EXPECT_EQ(ply_parser::ply_property_type::ply_uchar, face_property.list_prefix_type);
+         EXPECT_EQ(ply_parser::ply_property_type::ply_int, face_property.list_elements_type);
+      }
+
+      TEST(PLYParser, header_2) {
+         using poly::ply_parser;
+
+         const poly::ply_parser parser;
+         auto geometry = std::make_shared<poly::mesh_geometry>();
+         std::string file = "../scenes/test/ply_parsing/element-face-first.ply";
+         poly::ply_parser::parser_state state = parser.parse_header(file);
+
+         EXPECT_EQ(ply_parser::ply_format::ascii, state.data_format);
+         EXPECT_FALSE( state.has_vertex_normals);
+         EXPECT_FALSE(state.elements.empty());
+         ASSERT_EQ(2, state.elements.size());
+
+         auto& first_element = state.elements[0];
+         EXPECT_EQ(ply_parser::ply_element_type::face, first_element.type);
+         EXPECT_FALSE(first_element.properties.empty());
+         EXPECT_EQ(1, first_element.properties.size());
+
+         auto& face_property = first_element.properties[0];
+         EXPECT_EQ(ply_parser::ply_property_type::ply_uchar, face_property.list_prefix_type);
+         EXPECT_EQ(ply_parser::ply_property_type::ply_int, face_property.list_elements_type);
+         
+         auto& second_element = state.elements[1];
+         EXPECT_EQ(ply_parser::ply_element_type::vertex, second_element.type);
+         EXPECT_FALSE(second_element.properties.empty());
+         EXPECT_EQ(3, second_element.properties.size());
+         EXPECT_EQ(3, second_element.num_instances);
+
+         auto& vertex_property_x = second_element.properties[0];
+         EXPECT_EQ(ply_parser::ply_property_type::ply_float, vertex_property_x.type);
+         EXPECT_EQ(ply_parser::ply_property_name::x, vertex_property_x.name);
+
+         auto& vertex_property_y = second_element.properties[1];
+         EXPECT_EQ(ply_parser::ply_property_type::ply_float, vertex_property_y.type);
+         EXPECT_EQ(ply_parser::ply_property_name::y, vertex_property_y.name);
+
+         auto& vertex_property_z = second_element.properties[2];
+         EXPECT_EQ(ply_parser::ply_property_type::ply_float, vertex_property_z.type);
+         EXPECT_EQ(ply_parser::ply_property_name::z, vertex_property_z.name);
+      }
+
+      TEST(PLYParser, header_geometry_agreement1) {
+
+         const poly::ply_parser parser;
+         const std::string file = "../scenes/test/ply_parsing/dragon_vrip-normals-cleaned.ply";
+         auto geometry = std::make_shared<poly::mesh_geometry>();
+
+         parser.parse_file(geometry, file);
+
+         // ensure nothing is null
+         ASSERT_NE(nullptr, geometry);
+
+         ASSERT_EQ(437645, geometry->num_vertices_packed);
+         ASSERT_EQ(871306, geometry->num_faces);
+         ASSERT_EQ(2613918, geometry->num_vertices);
+      }
+
+      TEST(PLYParser, header_geometry_agreement2) {
+
+         const poly::ply_parser parser;
+         const std::string file = "../scenes/test/ply_parsing/dragon_vrip-normals-cleaned-binary.ply";
+         auto geometry = std::make_shared<poly::mesh_geometry>();
+
+         parser.parse_file(geometry, file);
+
+         // ensure nothing is null
+         ASSERT_NE(nullptr, geometry);
+
+         ASSERT_EQ(437645, geometry->num_vertices_packed);
+         ASSERT_EQ(871306, geometry->num_faces);
+         ASSERT_EQ(2613918, geometry->num_vertices);
       }
    }
 }

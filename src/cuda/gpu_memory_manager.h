@@ -105,6 +105,10 @@ namespace poly {
       unsigned int num_bvh_nodes;
       
       device_index_pair* index_pair;
+      
+      /**
+       * Number of 
+       */
       unsigned int num_indices;
    };
 

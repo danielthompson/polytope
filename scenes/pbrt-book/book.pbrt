@@ -1,0 +1,94 @@
+Sampler "sobol" 
+        "integer pixelsamples" [ 1 ] 
+PixelFilter "box" 
+Film "image" 
+        "integer xresolution" [ 1280 ] 
+        "integer yresolution" [ 720 ] 
+        "string filename" [ "book.png" ] 
+Scale -1 1 1
+LookAt 0 2.10879993 13.5740004
+        0 2.10879993 12.5740004
+        0 1 0
+Camera "perspective" 
+        # "float fov" [ 26.5 ] 
+        "float fov" [ 26.5 ]
+
+#############################################
+WorldBegin
+    LightSource "infinite" "rgb L" [5 5 4.5]
+
+
+# AttributeBegin
+#     AreaLightSource "diffuse" 
+#             "rgb L" [ 41.559399 43.312698 45.066002 ] 
+#     Translate 34.9199982 55.9199982 -15.3509998
+#     Shape "sphere" 
+#             "float radius" [ 7.5 ] 
+# AttributeEnd
+
+# AttributeBegin
+#     AreaLightSource "diffuse" 
+#             "rgb L" [ 65.066002 63.312698 61.559399 ] 
+#     Translate -32.8919983 55.9199982 36.2929993
+#     Shape "sphere" 
+#             "float radius" [ 7.5 ] 
+# AttributeEnd
+
+# FLOOR
+AttributeBegin
+    Material "mirror" "rgb Kr" [ .2 .2 1 ] 
+    # Material "matte" "rgb Kd" [ .8 .8 .8 ]
+    Scale 0.213 0.213 0.213
+    Shape "plymesh" "string filename" "geometry/mesh_00001.ply" 
+AttributeEnd
+
+Texture "book_cover" "color" "imagemap" 
+        "string filename" [ "texture/book_pbrt.png" ] 
+Texture "book_pages" "color" "imagemap" 
+        "string filename" [ "texture/book_pages.png" ] 
+Texture "uneven_bump_raw" "float" "imagemap" 
+        "float uscale" [ 1.5 ] 
+        "float vscale" [ 1.5 ] 
+        "string filename" [ "texture/uneven_bump.png" ] 
+Texture "uneven_bump_scale" "float" "constant" 
+        "float value" [ 0.00019999999 ] 
+Texture "uneven_bump" "float" "scale" 
+        "texture tex1" [ "uneven_bump_raw" ] 
+        "texture tex2" [ "uneven_bump_scale" ] 
+
+# PAGES
+AttributeBegin
+    # Material "matte" "texture Kd" [ "book_pages" ]
+    
+    # Material "matte" "rgb Kd" [ 0.6 0.3 0.3 ]  
+    Translate 0 2.20000005 0
+    Rotate 77.3424988 0.403387994 -0.75483799 -0.51720202
+    Scale 0.5 0.5 0.5
+
+        # TODO REMOVE
+        Material "mirror" "rgb Kr" [ 0.3 0.5 0.6 ]
+        # Material "matte" "rgb Kd" [ 0.3 0.5 0.6 ]
+        Shape "plymesh" "string filename" "geometry/mesh_00002.ply" 
+    
+AttributeEnd
+
+# BOOK COVER
+AttributeBegin
+#     Material "plastic" 
+#             "float roughness" [ 0.00030000001 ] 
+#            "texture Kd" [ "book_cover" ] 
+#            "texture bumpmap" [ "uneven_bump" ] 
+#            "rgb Ks" [ 0.039999999 0.039999999 0.039999999 ] 
+    # TODO REMOVE
+    # Material "matte" "rgb Kd" [ 0.039999999 0.039999999 0.039999999 ]
+    Translate 0 2.20000005 0
+    Rotate 77.3424988 0.403387994 -0.75483799 -0.51720202
+    Scale 0.5 0.5 0.5
+
+    AttributeBegin
+        # Material "matte" "rgb Kd" [ 0.4 0.039999999 0.039999999 ]
+        Material "mirror" "rgb Kr" [ 0.4 0.039999999 0.039999999 ]
+        Shape "plymesh" "string filename" "geometry/mesh_00003-ascii.ply" 
+    AttributeEnd
+AttributeEnd
+WorldEnd

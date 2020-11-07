@@ -22,8 +22,8 @@ namespace Tests {
          std::vector<std::string> line_tokens = {"directive_name"};
          const std::unique_ptr<poly::pbrt_directive> directive = test_lex(line_tokens);
          ASSERT_NE(directive, nullptr);
-         EXPECT_EQ(directive->name, "directive_name");
-         EXPECT_EQ(directive->identifier, "");
+         EXPECT_EQ(directive->identifier, "directive_name");
+         EXPECT_EQ(directive->type, "");
          EXPECT_EQ(directive->arguments.size(), 0);
       }
 
@@ -31,8 +31,8 @@ namespace Tests {
          std::vector<std::string> line_tokens = {"directive_name", R"("identifier")"};
          const std::unique_ptr<poly::pbrt_directive> directive = test_lex(line_tokens);
          ASSERT_NE(directive, nullptr);
-         EXPECT_EQ(directive->name, "directive_name");
-         EXPECT_EQ(directive->identifier, "identifier");
+         EXPECT_EQ(directive->identifier, "directive_name");
+         EXPECT_EQ(directive->type, "identifier");
          EXPECT_EQ(directive->arguments.size(), 0);
       }
 
@@ -40,8 +40,8 @@ namespace Tests {
          std::vector<std::string> line_tokens = {"Scale", "1", "2", "3"};
          const std::unique_ptr<poly::pbrt_directive> directive = test_lex(line_tokens);
          ASSERT_NE(directive, nullptr);
-         EXPECT_EQ(directive->name, "Scale");
-         EXPECT_EQ(directive->identifier, "");
+         EXPECT_EQ(directive->identifier, "Scale");
+         EXPECT_EQ(directive->type, "");
          EXPECT_EQ(directive->arguments.size(), 1);
          EXPECT_EQ(directive->arguments[0].Type, poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          EXPECT_EQ(directive->arguments[0].Name, "");
@@ -53,39 +53,20 @@ namespace Tests {
 
       TEST(PBRTLex, ScaleDirective2) {
          std::vector<std::string> line_tokens = {"Scale", "1", "2"};
-         try {
-            const std::unique_ptr<poly::pbrt_directive> directive = test_lex(line_tokens);
-            FAIL() << "Expected std::invalid_argument";
-         }
-         catch (const std::invalid_argument& ex) {
-            SUCCEED();
-         }
-         catch (...) {
-            FAIL() << "Expected std::invalid_argument";
-         }
-
+         ASSERT_EXIT( {const std::unique_ptr<poly::pbrt_directive> directive = test_lex(line_tokens); }, testing::ExitedWithCode(1), ".*");
       }
 
       TEST(PBRTLex, ScaleDirective3) {
          std::vector<std::string> line_tokens = {"Scale", "1", "2", "3", "4"};
-         try {
-            const std::unique_ptr<poly::pbrt_directive> directive = test_lex(line_tokens);
-            FAIL() << "Expected std::invalid_argument";
-         }
-         catch (const std::invalid_argument& ex) {
-            SUCCEED();
-         }
-         catch (...) {
-            FAIL() << "Expected std::invalid_argument";
-         }
+         ASSERT_EXIT( {const std::unique_ptr<poly::pbrt_directive> directive = test_lex(line_tokens); }, testing::ExitedWithCode(1), ".*");
       }
 
       TEST(PBRTLex, AreaLightSource) {
          std::vector<std::string> line_tokens = {"AreaLightSource", R"("diffuse")", R"("color)", R"(L")", "[", "100.0", "100.0", "100.0", "]"};
          const std::unique_ptr<poly::pbrt_directive> directive = test_lex(line_tokens);
          ASSERT_NE(directive, nullptr);
-         EXPECT_EQ(directive->name, "AreaLightSource");
-         EXPECT_EQ(directive->identifier, "diffuse");
+         EXPECT_EQ(directive->identifier, "AreaLightSource");
+         EXPECT_EQ(directive->type, "diffuse");
          EXPECT_EQ(directive->arguments.size(), 1);
          EXPECT_EQ(directive->arguments[0].Type, poly::pbrt_argument::pbrt_argument_type::pbrt_rgb);
          EXPECT_EQ(directive->arguments[0].Name, "L");
@@ -99,8 +80,8 @@ namespace Tests {
          std::vector<std::string> line_tokens = {"TestDirective", R"("identifier")", R"("bool)", R"(param_name")", R"("true")"};
          const std::unique_ptr<poly::pbrt_directive> directive = test_lex(line_tokens);
          ASSERT_NE(directive, nullptr);
-         EXPECT_EQ(directive->name, "TestDirective");
-         EXPECT_EQ(directive->identifier, "identifier");
+         EXPECT_EQ(directive->identifier, "TestDirective");
+         EXPECT_EQ(directive->type, "identifier");
          EXPECT_EQ(directive->arguments.size(), 1);
          EXPECT_EQ(directive->arguments[0].Type, poly::pbrt_argument::pbrt_argument_type::pbrt_bool);
          EXPECT_EQ(directive->arguments[0].Name, "param_name");
@@ -112,8 +93,8 @@ namespace Tests {
          std::vector<std::string> line_tokens = {"TestDirective", R"("identifier")", R"("bool)", R"(param_name")", R"("false")"};
          const std::unique_ptr<poly::pbrt_directive> directive = test_lex(line_tokens);
          ASSERT_NE(directive, nullptr);
-         EXPECT_EQ(directive->name, "TestDirective");
-         EXPECT_EQ(directive->identifier, "identifier");
+         EXPECT_EQ(directive->identifier, "TestDirective");
+         EXPECT_EQ(directive->type, "identifier");
          EXPECT_EQ(directive->arguments.size(), 1);
          EXPECT_EQ(directive->arguments[0].Type, poly::pbrt_argument::pbrt_argument_type::pbrt_bool);
          EXPECT_EQ(directive->arguments[0].Name, "param_name");

@@ -252,18 +252,19 @@ add_executable(runUnitTests
         tests/TestCommon.cpp
         tests/TestIntersectionTests.cpp
         tests/TestMatrix4x4.cpp
-        tests/shading/test_mirror_brdf.cpp
+        tests/TestPoint.cpp
+        tests/TestVector.cpp
+        tests/TestTransform.cpp
+        tests/test_bvh.cpp
         tests/parsers/test_obj_parser.cpp
         tests/parsers/pbrt/test_scan.cpp
         tests/parsers/pbrt/test_parse.cpp
         tests/parsers/pbrt/test_lex.cpp
+        tests/shading/test_mirror_brdf.cpp
         tests/parsers/test_ply_parser.cpp
-        tests/TestPoint.cpp
-        tests/TestTransform.cpp
+        tests/shapes/test_mesh.cpp
         tests/shapes/test_mesh_linear_soa.cpp
-        tests/TestVector.cpp
         tests/shapes/TestTesselators.cpp
-        tests/test_bvh.cpp
         tests/cuda/test_bvh_traversal.cpp
         tests/thread_pool_tests.cpp
         tests/parsers/pbrt/test_instancing.cpp)

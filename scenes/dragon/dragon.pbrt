@@ -2,12 +2,12 @@ Integrator "path" "integer maxdepth" [ 10 ]
 LookAt 0.125 3 5 # eye
        0 0 0 # look at point
        0 1 0 # up
-Sampler "halton" "integer pixelsamples" [ 256 ]
+Sampler "halton" "integer pixelsamples" [ 4 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
 Film "image" "integer xresolution" [ 1920 ] "integer yresolution" [ 1080 ] "string filename" [ "dragon.png" ]
 Camera "perspective" "float fov" [ 3 ]
 WorldBegin
-    LightSource "infinite" "rgb L" [5 5 4.5]
+    LightSource "infinite" "rgb L" [1 1 1]
 
     ObjectBegin "dragon"
         # read the the file into geometry

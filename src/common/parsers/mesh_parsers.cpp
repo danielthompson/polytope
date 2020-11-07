@@ -10,6 +10,8 @@
 
 namespace poly {
 
+   
+   
    float ply_parser::read_float(const std::unique_ptr<std::ifstream> &stream, ply_format format) {
       char buffer[4];
       float value;
@@ -41,7 +43,54 @@ namespace poly {
       return unsigned_value;
    }
 
-   struct ply_parser::parser_state ply_parser::parse_header(const std::string &filepath, int* num_vertices, int* num_faces, ply_format* format) const {
+   ply_parser::ply_property_type ply_parser::get_type_for_token(const std::string& token) {
+      
+      // 1 byte
+      
+      if (token == "char" || token == "int8" || token == "int_8") {
+         return ply_char;
+      }
+      else if (token == "uchar" || token == "u_char" || token == "uint8" || token == "u_int8" || token == "uint_8" || token == "u_int_8") {
+         return ply_uchar;
+      }
+
+      // 2 bytes
+
+      else if (token == "short" || token == "int16" || token == "int_16") {
+         return ply_short;
+      }
+      else if (token == "ushort" || token == "u_short" || token == "uint16" || token == "u_int16" || token == "uint_16" || token == "u_int_16") {
+         return ply_ushort;
+      }
+
+      // 4 bytes
+
+      else if (token == "int" || token == "int32" || token == "int_32") {
+         return ply_int;
+      }
+      else if (token == "uint" || token == "u_int" || token == "uint32" || token == "u_int32" || token == "uint_32" || token == "u_int_32") {
+         return ply_uint;
+      }
+      else if (token == "float" || token == "float32" || token == "float_32") {
+         return ply_float;
+      }
+
+      // 8 bytes
+
+      else if (token == "double" || token == "float64" || token == "float_64") {
+         return ply_double;
+      }
+
+      // list
+
+      else if (token == "list") {
+         return ply_list;
+      }
+      
+      return ply_unknown;
+   }
+   
+   struct ply_parser::parser_state ply_parser::parse_header(const std::string &filepath) const {
 
       struct parser_state state;
       state.stream = abstract_file_parser::open_ascii_stream(filepath);
@@ -76,13 +125,13 @@ namespace poly {
             ERROR("%s:%i Read error when reading format type", filepath.c_str(), line_number);
          }
          if (word == "ascii") {
-            *format = ply_format::ascii;
+            state.data_format = ply_format::ascii;
          }
          else if (word == "binary_little_endian") {
-            *format = ply_format::binary_le;
+            state.data_format = ply_format::binary_le;
          }
          else if (word == "binary_big_endian") {
-            *format = ply_format::binary_be;
+            state.data_format = ply_format::binary_be;
          }
          else {
             ERROR("%s:%i Unsupported format [%s]", filepath.c_str(), line_number, word.c_str());
@@ -100,115 +149,160 @@ namespace poly {
       }
 
       // rest of header
-
-      bool has_x, has_y, has_z;
-      bool has_nx, has_ny, has_nz;
-      has_nx = 0;
-      has_ny = 0;
-      has_nz = 0;
+      bool has_x = false, has_y = false, has_z = false;
+      bool has_nx = false, has_ny = false, has_nz = false;
       
-      bool in_vertex = false;
-      bool in_face = false;
+      state.elements = std::vector<ply_element>();
       while (getline(*state.stream, line)) {
          line_number++;
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
          iss >> word;
-         if (word == "end_header") {
-            if (!has_x) {
-               ERROR("%s:%i Header missing element x property", filepath.c_str(), line_number);
-            }
-            if (!has_y) {
-               ERROR("%s:%i Header missing element y property", filepath.c_str(), line_number);
-            }
-            if (!has_z) {
-               ERROR("%s:%i Header missing element z property", filepath.c_str(), line_number);
-            }
-            // must have all 3 vertex normals or none
-            if (!((has_nx && has_ny && has_nz) || (!has_nx && !has_ny && !has_nz))) {
-               int normals = has_nx + has_ny + has_nz;
-               ERROR("%s:%i Header has %i normal directions per vertex; must have all (3) or none (0)", filepath.c_str(), line_number, normals);
-            }
+         if (word == "element") {
+            ply_element element;
+            std::string element_name;
             
-            if (has_nx && has_ny && has_nz) {
-               state.has_vertex_normals = true;
+            // element name
+            iss >> element_name;
+            if (element_name.empty()) {
+               ERROR("%s:%i Element name may not be empty", filepath.c_str(), line_number, element_name.c_str());
+            }
+            if (element_name == "vertex") {
+               element.type = ply_element_type::vertex;
+            }
+            else if (element_name == "face") {
+               element.type = ply_element_type::face;
             }
             else {
-               state.has_vertex_normals = false;
+               Log.warning("%s:%i Element name [%s] not recognized; will ignore data for it...", filepath.c_str(), line_number, element_name.c_str());
             }
             
-            break;
-         }
-         else if (word == "element") {
-            in_vertex = false;
-            in_face = false;
+            // number of instances
             iss >> word;
-            if (word == "vertex") {
-               in_vertex = true;
-               iss >> word;
-               *num_vertices = stoi(word);
+            try {
+               element.num_instances = stoi(word);
             }
-            else if (word == "face") {
-               in_face = true;
-               iss >> word;
-               *num_faces = stoi(word);
+            catch (...) {
+               ERROR("%s:%i Failed to parse [%s] as an int", filepath.c_str(), line_number, word.c_str());
             }
+            if (element.num_instances == 0) {
+               Log.warning("%s:%i Element [%s] declares 0 instances", filepath.c_str(), line_number, element_name.c_str());
+            }
+            else if (element.num_instances < 0) {
+               ERROR("%s:%i Element [%s] must declare a non-negative number of instances, but found [%i]", filepath.c_str(), line_number, element_name.c_str(), element.num_instances);
+            }
+
+            state.elements.push_back(element);
+            continue;
          }
          else if (word == "property") {
-            if (in_vertex) {
-               iss >> word;
-               if (word != "float32" && word != "float") {
-                  Log.warning("%s:%i Ignoring unknown property type [%s]", filepath.c_str(), line_number, word.c_str());
-                  continue;
-               }
-               iss >> word;
-               
-               if (word == "x") {
-                  has_x = true;
-                  continue;
-               }
-               else if (word == "y") {
-                  has_y = true;
-                  continue;
-               }
-               else if (word == "z") {
-                  has_z = true;
-                  continue;
-               }
-               else if (word == "nx") {
-                  has_nx = true;
-                  continue;
-               }
-               else if (word == "ny") {
-                  has_ny = true;
-                  continue;
-               }
-               else if (word == "nz") {
-                  has_nz = true;
-                  continue;
-               }
-               else {
-                  Log.warning("%s:%i Ignoring unknown property name [%s]", filepath.c_str(), line_number, word.c_str());
-               }
+            if (state.elements.empty()) {
+               ERROR("%s:%i Found property with no valid preceding element", filepath.c_str(), line_number);
             }
-            else if (in_face) {
 
+            ply_element& current_element = state.elements[state.elements.size() - 1];
+            ply_property current_property;
+            
+            // get type of property
+            iss >> word;
+            current_property.type = get_type_for_token(word);
+            if (current_property.type == ply_unknown) {
+               ERROR("%s:%i Unrecognized property type [%s]", filepath.c_str(), line_number, word.c_str());
             }
-            else {
-               ERROR("%s:%i Property outside of element", filepath.c_str(), line_number);
+            
+            switch (current_element.type) {
+               case ply_element_type::vertex: {
+                  iss >> word;
+                  if (word == "x") {
+                     current_property.name = ply_property_name::x;
+                     has_x = true;
+                     break;
+                  }
+                  else if (word == "y") {
+                     current_property.name = ply_property_name::y;
+                     has_y = true;
+                     break;
+                  }
+                  else if (word == "z") {
+                     current_property.name = ply_property_name::z;
+                     has_z = true;
+                     break;
+                  }
+                  else if (word == "nx") {
+                     current_property.name = ply_property_name::nx;
+                     has_nx = true;
+                     break;
+                  }
+                  else if (word == "ny") {
+                     current_property.name = ply_property_name::ny;
+                     has_ny = true;
+                     break;
+                  }
+                  else if (word == "nz") {
+                     current_property.name = ply_property_name::nz;
+                     has_nz = true;
+                     break;
+                  }
+                  else {
+                     Log.warning("%s:%i Ignoring unknown property name [%s] for vertex element", filepath.c_str(), line_number, word.c_str());
+                     current_property.name = ply_property_name::unknown;
+                  }
+                  break;
+               }
+               case ply_element_type::face: {
+                  if (current_property.type != ply_property_type::ply_list) {
+                     ERROR("%s:%i Face property must have type list (for now) but found type [%s]", filepath.c_str(), line_number, word.c_str());
+                  }
+
+                  iss >> word;
+                  current_property.list_prefix_type = get_type_for_token(word);
+                  if (current_property.list_prefix_type == ply_property_type::ply_unknown) {
+                     ERROR("%s:%i Face property list has unknown prefix type [%s]", filepath.c_str(), line_number, word.c_str());
+                  }
+
+                  iss >> word;
+                  current_property.list_elements_type = get_type_for_token(word);
+                  if (current_property.list_elements_type == ply_property_type::ply_unknown) {
+                     ERROR("%s:%i Face property list has unknown elements type [%s]", filepath.c_str(), line_number, word.c_str());
+                  }
+
+                  iss >> word;
+                  if (word != "vertex_indices" && word != "vertex_index" && word != "vertices" && word != "vertex") {
+                     ERROR("%s:%i Face property list has unknown name [%s], expecting [vertex_indices]", filepath.c_str(), line_number, word.c_str());
+                  }
+                  break;
+               }
+               default: {
+                  ERROR("%s:%i Property outside of element", filepath.c_str(), line_number);
+               }
             }
+            
+            current_element.properties.push_back(current_property);
+         }
+         else if (word == "end_header") {
+            if (!has_x) {
+               ERROR("%s:%i Header missing element vertex x property", filepath.c_str(), line_number);
+            }
+            if (!has_y) {
+               ERROR("%s:%i Header missing element vertex y property", filepath.c_str(), line_number);
+            }
+            if (!has_z) {
+               ERROR("%s:%i Header missing element vertex z property", filepath.c_str(), line_number);
+            }
+            
+            int num_normals = has_nx + has_ny + has_nz;
+            
+            // must have all 3 vertex normals or none
+            if (num_normals != 3 && num_normals != 0) {
+               ERROR("%s:%i Header has %i normal directions per vertex; must have all (3) or none (0)", filepath.c_str(), line_number, num_normals);
+            }
+            
+            state.has_vertex_normals = num_normals;
+            break;
          }
       }
-      
-      if (*num_vertices == 0) {
-         ERROR("%s:%i Header contains no vertices", filepath.c_str(), line_number);
-      }
 
-      if (*num_faces == 0) {
-         ERROR("%s:%i Header contains no faces", filepath.c_str(), line_number);
-      }
-
-      if (*format == ply_format::binary_le || *format == ply_format::binary_be) {
+      if (state.data_format == ply_format::binary_le || state.data_format == ply_format::binary_be) {
          std::streampos offset = state.stream->tellg();
          state.stream->close();
          state.stream = abstract_file_parser::open_binary_stream(filepath);
@@ -219,121 +313,177 @@ namespace poly {
    }
 
    void ply_parser::parse_file(std::shared_ptr<poly::mesh_geometry> mesh, const std::string &filepath) const {
-      int num_vertices = -1;
-      int num_faces = -1;
-
-      ply_format format = ply_format::ascii;
-      struct parser_state state = parse_header(filepath, &num_vertices, &num_faces, &format);
+      struct parser_state state = parse_header(filepath);
       
       mesh->has_vertex_normals = state.has_vertex_normals;
       
-      // data - vertices
+      for (const auto& element : state.elements) {
+         switch (element.type) {
+            case ply_element_type::vertex: {
+               std::string line;
 
-      std::string line;
-      
-      if (format == ascii) {
-         std::string word;
-         Point v;
-         for (int i = 0; i < num_vertices; i++) {
-            if (!getline(*state.stream, line)) {
-               ERROR("%s:%i Error reading vertex %i", filepath.c_str(), state.line_number, i);
-            }
+               if (state.data_format == ply_format::ascii) {
+                  std::string word;
+                  Point v;
+                  Normal n;
+                  for (int i = 0; i < element.num_instances; i++) {
+                     if (!getline(*state.stream, line)) {
+                        ERROR("%s:%i Error reading vertex %i", filepath.c_str(), state.line_number, i);
+                     }
+                     word.clear();
+                     std::istringstream iss(line, std::istringstream::in);
+                     for (const auto& property : element.properties) {
+                        iss >> word;
+                        // TODO investigate whether we need to ever parse this as anything other than float
+                        float parsed_value = stof(word);
+                        switch (property.name) {
+                           case ply_property_name::x: {
+                              v.x = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::y: {
+                              v.y = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::z: {
+                              v.z = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::nx: {
+                              n.x = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::ny: {
+                              n.y = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::nz: {
+                              n.z = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::unknown: {
+                              // do nothing, since we already warned about this above
+                              break;
+                           }
+                        }
+                     }
+                     if (state.has_vertex_normals) {
+                        mesh->add_vertex(v, n);
+                     }
+                     else {
+                        mesh->add_vertex(v);
+                     }
+                  }
+               }
+               else {
+                  for (int i = 0; i < element.num_instances; i++) {
+                     Point v;
+                     Normal n;
+                     for (const auto& property : element.properties) {
+                        float parsed_value = read_float(state.stream, state.data_format);
+                        switch (property.name) {
+                           case ply_property_name::x: {
+                              v.x = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::y: {
+                              v.y = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::z: {
+                              v.z = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::nx: {
+                              n.x = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::ny: {
+                              n.y = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::nz: {
+                              n.z = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::unknown: {
+                              // do nothing, since we already warned about this above
+                              break;
+                           }
+                        }
+                     }
 
-            // TODO fix such that property order is not hardcoded
-            
-            word.clear();
-            std::istringstream iss(line, std::istringstream::in);
-            iss >> word;
-            v.x = stof(word);
-            iss >> word;
-            v.y = stof(word);
-            iss >> word;
-            v.z = stof(word);
-            
-            if (state.has_vertex_normals) {
-               Normal n;
-               iss >> word;
-               n.x = stof(word);
-               iss >> word;
-               n.y = stof(word);
-               iss >> word;
-               n.z = stof(word);
-               mesh->add_vertex(v, n);
-            }
-            else {
-               mesh->add_vertex(v);
-            }
-         }
-      }
-      
-      else {
-         for (int i = 0; i < num_vertices; i++) {
-            const float x = read_float(state.stream, format);
-            const float y = read_float(state.stream, format);
-            const float z = read_float(state.stream, format);
-            Point p(x, y, z);
-            
-            if (state.has_vertex_normals) {
-               const float nx = read_float(state.stream, format);
-               const float ny = read_float(state.stream, format);
-               const float nz = read_float(state.stream, format);
-               Normal n(nx, ny, nz);
-               mesh->add_vertex(p, n);
-            }
-            else {
-               mesh->add_vertex(p);   
-            }
-         }
-      }
+                     if (state.has_vertex_normals) {
+                        mesh->add_vertex(v, n);
+                     } 
+                     else {
+                        mesh->add_vertex(v);
+                     }
+                  }
+               }
 
-      Log.debug("Parsed " + add_commas(mesh->num_vertices_packed) + " vertices.");
-      
-      // data - faces
-
-      if (format == ascii) {
-         for (int i = 0; i < num_faces; i++) {
-            unsigned int v0, v1, v2;
-            if (!getline(*state.stream, line)) {
-               ERROR("%s:%i Failed to read face line", filepath.c_str(), state.line_number);
+               Log.debug("Parsed " + add_commas(mesh->num_vertices_packed) + " vertices.");
+               
+               continue;
             }
-            std::string word;
-            std::istringstream iss(line, std::istringstream::in);
+            case ply_element_type::face: {
 
-            // parse vertex indices
+               // data - faces
 
-            iss >> word;
-            int num_vertex_indices = stoi(word);
-            if (num_vertex_indices != 3) {
-               ERROR("%s:%i Face has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), state.line_number, num_vertex_indices);
+               if (state.data_format == ascii) {
+                  std::string line;
+                  for (int i = 0; i < element.num_instances; i++) {
+                     // TODO respect declared list member types
+                     unsigned int v0, v1, v2;
+                     if (!getline(*state.stream, line)) {
+                        ERROR("%s:%i Failed to read face line", filepath.c_str(), state.line_number);
+                     }
+                     std::string word;
+                     std::istringstream iss(line, std::istringstream::in);
+
+                     // parse vertex indices
+
+                     iss >> word;
+                     int num_vertex_indices = stoi(word);
+                     if (num_vertex_indices != 3) {
+                        ERROR("%s:%i Face instance has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), state.line_number, num_vertex_indices);
+                     }
+
+                     iss >> word;
+                     // TODO error handling for non-existent face
+                     v0 = abstract_file_parser::stoui(word);
+                     iss >> word;
+                     v1 = abstract_file_parser::stoui(word);
+                     iss >> word;
+                     v2 = abstract_file_parser::stoui(word);
+                     mesh->add_packed_face(v0, v1, v2);
+                  }
+               }
+               else {
+                  for (int i = 0; i < element.num_instances; i++) {
+                     unsigned int v0, v1, v2;
+                     const unsigned char num_vertex_indices = read_uchar(state.stream);
+                     if (num_vertex_indices != 3) {
+                        ERROR("%s:%i Face has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), state.line_number, num_vertex_indices);
+                     }
+                     v0 = read_int(state.stream, state.data_format);
+                     v1 = read_int(state.stream, state.data_format);
+                     v2 = read_int(state.stream, state.data_format);
+                     mesh->add_packed_face(v0, v1, v2);
+                  }
+               }
+
+               Log.debug("Parsed " + add_commas(mesh->num_faces) + " faces.");
+               
+               continue;
             }
-
-            iss >> word;
-            // TODO error handling for non-existent face
-            v0 = abstract_file_parser::stoui(word);
-            iss >> word;
-            v1 = abstract_file_parser::stoui(word);
-            iss >> word;
-            v2 = abstract_file_parser::stoui(word);
-            mesh->add_packed_face(v0, v1, v2);
-         }
-      }
-      else {
-         for (int i = 0; i < num_faces; i++) {
-            unsigned int v0, v1, v2;
-            const unsigned char num_vertex_indices = read_uchar(state.stream);
-            if (num_vertex_indices != 3) {
-               ERROR("%s:%i Face has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), state.line_number, num_vertex_indices);
-               return;
+            default: {
+               ERROR("%s:%i Unknown element type", filepath.c_str(), state.line_number);
             }
-            v0 = read_int(state.stream, format);
-            v1 = read_int(state.stream, format);
-            v2 = read_int(state.stream, format);
-            mesh->add_packed_face(v0, v1, v2);
          }
       }
 
       mesh->unpack_faces();
-      Log.debug("Parsed " + add_commas(mesh->num_faces) + " faces.");
    }
 
    void obj_parser::parse_file(std::shared_ptr<poly::mesh_geometry> mesh, const std::string &filepath) const {

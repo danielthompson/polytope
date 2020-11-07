@@ -611,7 +611,7 @@ namespace poly {
                      break;
                   }
                   default:
-                     printf("mesh %i missing brdf :/\n", intersection.mesh_index);
+                     //printf("mesh %i missing brdf :/\n", intersection.mesh_index);
                      local_outgoing = {0.0f / 0.0f, 0.0f / 0.0f, 0.0f / 0.0f};
                      src = {0.0f / 0.0f, 0.0f / 0.0f, 0.0f / 0.0f};
                      break;
@@ -734,25 +734,133 @@ namespace poly {
       }
    }
    
+   __global__ void sample_stratified_1d(
+         curandState_t* const rng_states,
+         float* const samples, 
+         int num_samples) {
+      const unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
+      if (index >= num_samples)
+         return;
+      
+      const float stratum_width = 1.f / (float)num_samples;
+      const float uniform_sample = curand_uniform(&rng_states[index]);
+      const float scaled_uniform_sample = uniform_sample * stratum_width;
+      const float stratum_offset = stratum_width * (float)index;
+      const float stratified_sample = stratum_offset + scaled_uniform_sample;
+      samples[index] = stratified_sample;
+   }
+
+   __global__ void sample_stratified_2d(
+         curandState_t* const rng_states,
+         float* const samples,
+         int num_samples_x,
+         int num_samples_y) {
+      const unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
+      if (index >= num_samples_x * num_samples_y)
+         return;
+
+      const float stratum_width_x = 1.f / (float)num_samples_x;
+      const float uniform_sample_x = curand_uniform(&rng_states[index]);
+      const float scaled_uniform_sample_x = uniform_sample_x * stratum_width_x;
+      const float stratum_offset_x = stratum_width_x * (float)index;
+      const float stratified_sample_x = stratum_offset_x + scaled_uniform_sample_x;
+
+      const float stratum_width_y = 1.f / (float)num_samples_y;
+      const float uniform_sample_y = curand_uniform(&rng_states[index]);
+      const float scaled_uniform_sample_y = uniform_sample_y * stratum_width_y;
+      const float stratum_offset_y = stratum_width_y * (float)index;
+      const float stratified_sample_y = stratum_offset_y + scaled_uniform_sample_y;
+      
+
+      samples[2 * index] = stratified_sample_x;
+      samples[2 * index + 1] = stratified_sample_y;
+   }
+
+   __global__ void generate_camera_rays_stratified_random_kernel(
+         float3* const sample_origins,
+         float3* const sample_directions,
+         float3* const sample_directions_inverse,
+         curandState_t* const rng_states,
+         const unsigned int width,
+         const float height,
+         const float tan_fov_half,
+         const int sample_num,
+         const int total_num_samples) {
+      const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
+
+      const float width_f = (float)width;
+      const float pixel_x = (float) (pixel_index % width);
+      const float pixel_y = (float) (pixel_index / width);
+
+      const float num_samples_sqrt = sqrtf((float)total_num_samples);
+
+      const float stratum_width_x = 1.f / (float)num_samples_sqrt;
+      const float uniform_sample_x = curand_uniform(&rng_states[pixel_index]);
+      const float scaled_uniform_sample_x = uniform_sample_x * stratum_width_x;
+      const float stratum_offset_x = stratum_width_x * (float)(sample_num / num_samples_sqrt);
+      const float stratified_sample_x = stratum_offset_x + scaled_uniform_sample_x;
+
+      const float stratum_width_y = 1.f / (float)num_samples_sqrt;
+      const float uniform_sample_y = curand_uniform(&rng_states[pixel_index]);
+      const float scaled_uniform_sample_y = uniform_sample_y * stratum_width_y;
+      const float stratum_offset_y = stratum_width_y * (float)(sample_num % (int)num_samples_sqrt);
+      const float stratified_sample_y = stratum_offset_y + scaled_uniform_sample_y;
+      
+      const float x_offset = stratified_sample_x;
+      const float y_offset = stratified_sample_y;
+
+      const float aspect = width_f / height;
+
+      // non-stratified
+      const float pixel_ndc_x = (pixel_x + x_offset) / width_f;
+      const float pixel_ndc_y = (pixel_y + y_offset) / height;
+      float3 camera_direction = {
+            (2 * pixel_ndc_x - 1) * aspect * tan_fov_half,
+            (1 - 2 * pixel_ndc_y) * tan_fov_half,
+            // TODO -1 for right-handed
+            1
+      };
+
+      normalize(camera_direction);
+      float3 world_direction = matrix_apply_vector(camera_to_world_matrix, camera_direction);
+      normalize(world_direction);
+      sample_origins[pixel_index] = matrix_apply_point(camera_to_world_matrix, {0, 0, 0});
+      sample_directions[pixel_index] = world_direction;
+      sample_directions_inverse[pixel_index] = {
+            1.f / world_direction.x,
+            1.f / world_direction.y,
+            1.f / world_direction.z
+      };
+   }
+   
    __global__ void generate_camera_rays_random_kernel(
          float3* const sample_origins,
          float3* const sample_directions,
          float3* const sample_directions_inverse,
          curandState_t* const rng_states,
-         const unsigned int width, const float height, const float tan_fov_half) {
+         const unsigned int width, 
+         const float height, 
+         const float tan_fov_half,
+         const int sample_num,
+         const int total_num_samples) {
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
+      
       
       const float width_f = (float)width;
       const float pixel_x = (float) (pixel_index % width);
       const float pixel_y = (float) (pixel_index / width);
 
+      const float num_samples_sqrt = sqrtf((float)total_num_samples);
+
+
       const float x_offset = curand_uniform(&rng_states[pixel_index]);
       const float y_offset = curand_uniform(&rng_states[pixel_index]);
-
+      
       const float aspect = width_f / height;
+
+      // non-stratified
       const float pixel_ndc_x = (pixel_x + x_offset) / width_f;
       const float pixel_ndc_y = (pixel_y + y_offset) / height;
-
       float3 camera_direction = {
             (2 * pixel_ndc_x - 1) * aspect * tan_fov_half,
             (1 - 2 * pixel_ndc_y) * tan_fov_half,
@@ -851,7 +959,11 @@ namespace poly {
             //printf("launching generate_camera_rays_centered_kernel<<<%i, %i>>>\n", blocksPerGrid, threads_per_block);
             generate_camera_rays_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
                   sample_origins, sample_directions, sample_directions_inverse, device_states,
-                  width, (float) height, tan_fov_half);
+                  width, (float) height, tan_fov_half, i, num_samples);
+
+//            generate_camera_rays_stratified_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
+//                  sample_origins, sample_directions, sample_directions_inverse, device_states,
+//                  width, (float) height, tan_fov_half, i, num_samples);
 
 //            generate_camera_rays_centered_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
 //                  sample_origins, sample_directions, sample_directions_inverse, 

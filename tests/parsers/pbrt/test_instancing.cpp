@@ -11,7 +11,7 @@
 #include "../../../src/cpu/cameras/PerspectiveCamera.h"
 
 namespace Tests {
-   TEST(Instancing, Teapot1) {
+   TEST(instancing_scene, teapot1) {
    
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing1.pbrt";
@@ -33,7 +33,7 @@ namespace Tests {
       
    }
 
-   TEST(Instancing, Teapot2) {
+   TEST(instancing_scene, teapot2) {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing2.pbrt";
@@ -66,7 +66,7 @@ namespace Tests {
       ASSERT_EQ(geometry0, geometry1);
    }
 
-   TEST(Instancing, Teapot3) {
+   TEST(instancing_scene, teapot3) {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing3.pbrt";
@@ -99,7 +99,7 @@ namespace Tests {
       ASSERT_NE(geometry0, geometry1);
    }
 
-   TEST(Instancing, Teapot4a) {
+   TEST(instancing_scene, teapot4a) {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
@@ -137,7 +137,7 @@ namespace Tests {
     * and are not instanced by any ObjectInstance directive, they are removed from the scene after
     * parsing.
     */
-   TEST(Instancing, Teapot4b) {
+   TEST(instancing_scene, teapot4b) {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
@@ -173,7 +173,7 @@ namespace Tests {
    /**
     * Test number of shapes in scene
     */
-   TEST(Instancing, Teapot4c) {
+   TEST(instancing_scene, teapot4c) {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
@@ -188,7 +188,7 @@ namespace Tests {
     * Test number of geometries in scene
     * TODO - remove unused geometries that are never instanced
     */
-   TEST(Instancing, Teapot4d) {
+   TEST(instancing_scene, teapot4d) {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
@@ -202,7 +202,7 @@ namespace Tests {
    /**
     * Test number of shapes in scene
     */
-   TEST(Instancing, Teapot5a) {
+   TEST(instancing_scene, teapot5a) {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing5.pbrt";
@@ -216,7 +216,7 @@ namespace Tests {
    /**
     * Test number of geometries in scene
     */
-   TEST(Instancing, Teapot5b) {
+   TEST(instancing_scene, teapot5b) {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing5.pbrt";

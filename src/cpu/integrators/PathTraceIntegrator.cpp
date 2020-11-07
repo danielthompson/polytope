@@ -17,7 +17,7 @@ namespace poly {
       
       bool debug = false;
 #ifndef NDEBUG
-      if (x == 665 && y == 347) {
+      if (x == 87 && y == 31) {
          debug = false;
          
 //         printf("ro: %f %f %f\n", ray.Origin.x, ray.Origin.y, ray.Origin.z);

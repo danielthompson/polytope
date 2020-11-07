@@ -7,6 +7,7 @@
 #include "mesh.h"
 #include "mesh_intersect.h"
 #include "../structures/stats.h"
+#include "../../common/utilities/Common.h"
 
 #define assert_eq(a, b) do { if (a != b) fprintf(stderr, "a %f != b %f", a, b); assert(a == b); } while (0)
 
@@ -89,18 +90,20 @@ namespace poly {
       fv2.push_back(v2_index);
 
       // calculate face normal
-      const Point v0 = {x_packed[fv0[num_faces]], y_packed[fv0[num_faces]], z_packed[fv0[num_faces]]};
-      const Point v1 = {x_packed[fv1[num_faces]], y_packed[fv1[num_faces]], z_packed[fv1[num_faces]]};
-      const Point v2 = {x_packed[fv2[num_faces]], y_packed[fv2[num_faces]], z_packed[fv2[num_faces]]};
-
-      const poly::Vector e0 = v1 - v0;
-      const poly::Vector e1 = v2 - v1;
-      poly::Vector plane_normal = e0.Cross(e1);
-      plane_normal.Normalize();
-
-      fnx.push_back(plane_normal.x);
-      fny.push_back(plane_normal.y);
-      fnz.push_back(plane_normal.z);
+      // TODO we can't do this here, because depending on the order of the input file,
+      // the vertices might not have been defined yet
+//      const Point v0 = {x_packed[fv0[num_faces]], y_packed[fv0[num_faces]], z_packed[fv0[num_faces]]};
+//      const Point v1 = {x_packed[fv1[num_faces]], y_packed[fv1[num_faces]], z_packed[fv1[num_faces]]};
+//      const Point v2 = {x_packed[fv2[num_faces]], y_packed[fv2[num_faces]], z_packed[fv2[num_faces]]};
+//
+//      const poly::Vector e0 = v1 - v0;
+//      const poly::Vector e1 = v2 - v1;
+//      poly::Vector plane_normal = e0.Cross(e1);
+//      plane_normal.Normalize();
+//
+//      fnx.push_back(plane_normal.x);
+//      fny.push_back(plane_normal.y);
+//      fnz.push_back(plane_normal.z);
 
       num_faces++;
    }
@@ -129,14 +132,14 @@ namespace poly {
          unsigned int face_index = face_indices[face_index_index];
 
          Point v0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
-                           mesh_geometry->y_packed[mesh_geometry->fv0[face_index]],
-                           mesh_geometry->z_packed[mesh_geometry->fv0[face_index]]};
+                     mesh_geometry->y_packed[mesh_geometry->fv0[face_index]],
+                     mesh_geometry->z_packed[mesh_geometry->fv0[face_index]]};
          Point v1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
-                           mesh_geometry->y_packed[mesh_geometry->fv1[face_index]],
-                           mesh_geometry->z_packed[mesh_geometry->fv1[face_index]]};
+                     mesh_geometry->y_packed[mesh_geometry->fv1[face_index]],
+                     mesh_geometry->z_packed[mesh_geometry->fv1[face_index]]};
          Point v2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
-                           mesh_geometry->y_packed[mesh_geometry->fv2[face_index]],
-                           mesh_geometry->z_packed[mesh_geometry->fv2[face_index]]};
+                     mesh_geometry->y_packed[mesh_geometry->fv2[face_index]],
+                     mesh_geometry->z_packed[mesh_geometry->fv2[face_index]]};
          
          // transform to world space
          
@@ -213,10 +216,11 @@ namespace poly {
          // Perform edge tests. Moving this test before and at the end of the previous
          // conditional gives higher performance.
          // backface culling:
-         if (U < 0.0f || V < 0.0f || W < 0.0f)
+          if (U < 0.0f || V < 0.0f || W < 0.0f)
             continue;
          // no backface culling:
-         //if ((U<0.0f || V<0.0f || W<0.0f) &&(U>0.0f || V>0.0f || W>0.0f)) return;
+//         if ((U < 0.0f || V < 0.0f || W < 0.0f) && (U > 0.0f || V > 0.0f || W > 0.0f)) 
+//            return;
 
          // calculate determinant
          float det = U + V + W;
@@ -234,7 +238,10 @@ namespace poly {
             continue;
 
          // no backface culling
-         // int det_sign = sign_mask(det);if (xorf(T,det_sign) < 0.0f) ||xorf(T,det_sign) > hit.t*xorf(det, det_sign))return;
+//         if (det < 0.f && (T >= 0 || T < world_ray.MinT * det))
+//            return;
+//         if (det > 0.f && (T <= 0 || T > world_ray.MinT * det))
+//            return;
 
          // normalize
          const float rcpDet = 1.0f / det;
@@ -574,19 +581,19 @@ namespace poly {
 
    float Mesh::surface_area(const unsigned int face_index) const {
 
-      Point p0 = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
+      Point v0_local = {mesh_geometry->x_packed[mesh_geometry->fv0[face_index]],
                         mesh_geometry->y_packed[mesh_geometry->fv0[face_index]],
                         mesh_geometry->z_packed[mesh_geometry->fv0[face_index]]};
-      Point p1 = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
+      Point v1_local = {mesh_geometry->x_packed[mesh_geometry->fv1[face_index]],
                         mesh_geometry->y_packed[mesh_geometry->fv1[face_index]],
                         mesh_geometry->z_packed[mesh_geometry->fv1[face_index]]};
-      Point p2 = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
+      Point v2_local = {mesh_geometry->x_packed[mesh_geometry->fv2[face_index]],
                         mesh_geometry->y_packed[mesh_geometry->fv2[face_index]],
                         mesh_geometry->z_packed[mesh_geometry->fv2[face_index]]};
 
-      object_to_world->ApplyInPlace(p0);
-      object_to_world->ApplyInPlace(p1);
-      object_to_world->ApplyInPlace(p2);
+      Point p0 = object_to_world->Apply(v0_local);
+      Point p1 = object_to_world->Apply(v1_local);
+      Point p2 = object_to_world->Apply(v2_local);
       
       const Vector e0 = p0 - p1;
       const Vector e1 = p1 - p2;
@@ -606,9 +613,12 @@ namespace poly {
       assert(a >= b);
       assert(b >= c);
       
-      if (c - (a - b) < 0.f) {
-         fprintf(stderr, "triangle side length fail :/\n");
-         exit(1);
+      bool debug = false;
+      
+      if (c - (a - b) < -.000001) {
+         
+         debug = true;
+         ERROR("triangle side length fail :/\n");
       }
 
       const float sa = std::sqrt((a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c)));

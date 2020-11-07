@@ -25,6 +25,7 @@ namespace Tests {
       
       poly::Scene scene(nullptr);
       scene.Shapes.emplace_back(&mesh);
+      scene.num_mesh_geometries = 1;
 
       scene.bvh_root.root = new poly::bvh_node();
       scene.bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
@@ -58,7 +59,8 @@ namespace Tests {
 
       poly::Scene scene(nullptr);
       scene.Shapes.emplace_back(&mesh);
-
+      scene.num_mesh_geometries = 1;
+      
       scene.bvh_root.root = new poly::bvh_node();
       scene.bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
       scene.bvh_root.root->axis = poly::Axis::x;
@@ -108,7 +110,8 @@ namespace Tests {
 
       poly::Scene scene(nullptr);
       scene.Shapes.emplace_back(&mesh);
-
+      scene.num_mesh_geometries = 1;
+      
       scene.bvh_root.root = new poly::bvh_node();
       scene.bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
       scene.bvh_root.root->axis = poly::Axis::x;
@@ -161,7 +164,8 @@ namespace Tests {
 
       poly::Scene scene(nullptr);
       scene.Shapes.emplace_back(&mesh);
-
+      scene.num_mesh_geometries = 1;
+      
       scene.bvh_root.root = new poly::bvh_node();
       scene.bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
       scene.bvh_root.root->axis = poly::Axis::x;
