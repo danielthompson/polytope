@@ -10,7 +10,7 @@
 namespace Tests {
 
    namespace Parse {
-      TEST(PLYParser, Teapot) {
+      TEST(parse_ply, Teapot) {
 
          const poly::ply_parser parser;
          const std::string file = "../scenes/teapot/teapot.ply";
@@ -43,7 +43,7 @@ namespace Tests {
          EXPECT_EQ(1087, secondToLastFace.z);
       }
 
-      TEST(PLYParser, TeapotConverted) {
+      TEST(parse_ply, TeapotConverted) {
          auto ply_geometry = std::make_shared<poly::mesh_geometry>();
          {
             const poly::ply_parser ply_parser;
@@ -107,7 +107,7 @@ namespace Tests {
          }
       }
       
-      TEST(PLYParser, Binary) {
+      TEST(parse_ply, Binary) {
          const poly::ply_parser parser;
          constexpr unsigned int expected_num_vertices = 8;
          constexpr unsigned int expected_num_faces = 4;
@@ -175,23 +175,23 @@ namespace Tests {
          ASSERT_EQ(1, geometry->num_faces);
       }
       
-      TEST(PLYParser, parse_xyz) {
+      TEST(parse_ply, parse_xyz) {
          simple_parse_helper("../scenes/test/ply_parsing/xyz.ply");
       }
 
-      TEST(PLYParser, parse_xzy) {
+      TEST(parse_ply, parse_xzy) {
          simple_parse_helper("../scenes/test/ply_parsing/xzy.ply");
       }
       
-      TEST(PLYParser, element_vertex_first) {
+      TEST(parse_ply, element_vertex_first) {
          simple_parse_helper("../scenes/test/ply_parsing/element-vertex-first.ply");
       }
 
-      TEST(PLYParser, element_face_first) {
+      TEST(parse_ply, element_face_first) {
          simple_parse_helper("../scenes/test/ply_parsing/element-face-first.ply");
       }
 
-      TEST(PLYParser, header_1) {
+      TEST(parse_ply, header_1) {
          using poly::ply_parser;
          
          const poly::ply_parser parser;
@@ -232,7 +232,7 @@ namespace Tests {
          EXPECT_EQ(ply_parser::ply_property_type::ply_int, face_property.list_elements_type);
       }
 
-      TEST(PLYParser, header_2) {
+      TEST(parse_ply, header_2) {
          using poly::ply_parser;
 
          const poly::ply_parser parser;
@@ -273,7 +273,7 @@ namespace Tests {
          EXPECT_EQ(ply_parser::ply_property_name::z, vertex_property_z.name);
       }
 
-      TEST(PLYParser, header_geometry_agreement1) {
+      TEST(parse_ply, header_geometry_agreement1) {
 
          const poly::ply_parser parser;
          const std::string file = "../scenes/test/ply_parsing/dragon_vrip-normals-cleaned.ply";
@@ -289,7 +289,7 @@ namespace Tests {
          ASSERT_EQ(2613918, geometry->num_vertices);
       }
 
-      TEST(PLYParser, header_geometry_agreement2) {
+      TEST(parse_ply, header_geometry_agreement2) {
 
          const poly::ply_parser parser;
          const std::string file = "../scenes/test/ply_parsing/dragon_vrip-normals-cleaned-binary.ply";
@@ -303,6 +303,42 @@ namespace Tests {
          ASSERT_EQ(437645, geometry->num_vertices_packed);
          ASSERT_EQ(871306, geometry->num_faces);
          ASSERT_EQ(2613918, geometry->num_vertices);
+      }
+
+      void properly_ignore_unknown_vertex_property_helper(const std::string& file) {
+         const poly::ply_parser parser;
+         auto geometry = std::make_shared<poly::mesh_geometry>();
+
+         parser.parse_file(geometry, file);
+         ASSERT_NE(nullptr, geometry);
+
+         ASSERT_EQ(3, geometry->num_vertices_packed);
+         ASSERT_EQ(1, geometry->num_faces);
+         ASSERT_EQ(3, geometry->num_vertices);
+
+         ASSERT_EQ(3, geometry->x.size());
+         ASSERT_EQ(3, geometry->y.size());
+         ASSERT_EQ(3, geometry->z.size());
+
+         EXPECT_FLOAT_EQ(-1.f, geometry->x[0]);
+         EXPECT_FLOAT_EQ(1.f, geometry->y[0]);
+         EXPECT_FLOAT_EQ(0.f, geometry->z[0]);
+
+         EXPECT_FLOAT_EQ(1.f, geometry->x[2]);
+         EXPECT_FLOAT_EQ(1.f, geometry->y[2]);
+         EXPECT_FLOAT_EQ(0.f, geometry->z[2]);
+
+         EXPECT_FLOAT_EQ(1.f, geometry->x[1]);
+         EXPECT_FLOAT_EQ(-1.f, geometry->y[1]);
+         EXPECT_FLOAT_EQ(0.f, geometry->z[1]);
+      }
+      
+      TEST(parse_ply, properly_ignore_unknown_vertex_property_ascii) {
+         properly_ignore_unknown_vertex_property_helper("../scenes/test/ply_parsing/unknown_vertex_property_ascii.ply");
+      }
+
+      TEST(parse_ply, properly_ignore_unknown_vertex_property_binary) {
+         properly_ignore_unknown_vertex_property_helper("../scenes/test/ply_parsing/unknown_vertex_property_binary.ply");
       }
    }
 }
