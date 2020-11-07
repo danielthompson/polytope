@@ -333,11 +333,11 @@ namespace Tests {
          EXPECT_FLOAT_EQ(0.f, geometry->z[1]);
       }
       
-      TEST(parse_ply, properly_ignore_unknown_vertex_property_ascii) {
+      TEST(parse_ply, ignore_unknown_vertex_property_ascii) {
          properly_ignore_unknown_vertex_property_helper("../scenes/test/ply_parsing/unknown_vertex_property_ascii.ply");
       }
 
-      TEST(parse_ply, properly_ignore_unknown_vertex_property_binary) {
+      TEST(parse_ply, ignore_unknown_vertex_property_binary) {
          properly_ignore_unknown_vertex_property_helper("../scenes/test/ply_parsing/unknown_vertex_property_binary.ply");
       }
    }
