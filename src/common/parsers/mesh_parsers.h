@@ -38,6 +38,8 @@ namespace poly {
          nx,
          ny,
          nz,
+         u,
+         v,
          unknown
       };
 
@@ -78,6 +80,7 @@ namespace poly {
          unsigned int line_number;
          std::vector<ply_element> elements;
          bool has_vertex_normals;
+         bool has_vertex_uv;
       };
    
       struct parser_state parse_header(const std::string &filepath) const;

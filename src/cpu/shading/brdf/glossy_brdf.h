@@ -22,7 +22,7 @@ namespace poly {
          return 0;
       }
 
-      Vector sample(const Vector &incoming, ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
+      Vector sample(const Vector &incoming, const float u, const float v, ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
          
          assert(!std::isnan(incoming.x));
          assert(!std::isnan(incoming.y));
@@ -31,7 +31,7 @@ namespace poly {
          float lambert_pdf = 1;
          
          while (true) {
-            Vector lambert_outgoing = AbstractBRDF::sample(incoming, refl_spectrum, pdf);;
+            Vector lambert_outgoing = AbstractBRDF::sample(incoming, u, v, refl_spectrum, pdf);;
 
             // 0. measure angle between normal and mirror
             const Normal normal = Normal(0, 1, 0);

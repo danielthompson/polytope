@@ -24,6 +24,7 @@
 #include "../../cpu/shapes/mesh.h"
 #include "../../cpu/shapes/tesselators.h"
 #include "../../cpu/shading/brdf/glossy_brdf.h"
+#include "../../../lib/lodepng.h"
 
 namespace poly {
 
@@ -239,6 +240,10 @@ namespace poly {
 
       void LogUnknownIdentifier(const std::unique_ptr<pbrt_directive> &directive) {
          Log.warning("Directive [" + directive->identifier + "] has unknown identifier [" + directive->type + "].");
+      }
+
+      void LogUnimplementedIdentifier(const std::unique_ptr<pbrt_directive> &directive) {
+         Log.warning("Directive [" + directive->identifier + "] has known but unimplemented identifier [" + directive->type + "].");
       }
 
       void LogUnknownArgument(const pbrt_argument &argument) {
@@ -722,6 +727,172 @@ namespace poly {
       return std::make_unique<poly::Transform>(Transform::Translate(x, y, z));
    }
    
+   static std::unique_ptr<poly::texture> texture_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+      std::unique_ptr<poly::texture> texture = std::make_unique<poly::texture>();
+      if (directive->name.empty()) {
+         Log.warning("Texture has an empty name value, so it can't be referenced by a material");
+      }
+      texture->name = directive->name;
+      if (directive->type != "color" && directive->type != "spectrum") {
+         ERROR("Unknown/unimplemented texture type [%s]", directive->type.c_str());
+      }
+      
+      if (directive->class_name != "imagemap") {
+         ERROR("Unknown/unimplemented texture class [%s]", directive->class_name.c_str());
+      }
+      
+      if (directive->arguments.empty()) {
+         LogMissingArgument(directive, "filename");         
+      }
+      
+      for (const auto& arg : directive->arguments) {
+         if (arg.Type == pbrt_argument::pbrt_string && arg.Name == str::filename) {
+            
+            std::string texture_file_path = _basePathFromCWD + '/' + *arg.string_value;
+            
+            Log.debug("Trying to open texture at [%s]...", texture_file_path.c_str());
+            
+            // load filename
+            unsigned error = lodepng::decode(texture->data, texture->width, texture->height, texture_file_path);
+            if (error) 
+               ERROR("Failed to read/decode png file [" +  *arg.string_value + "] with error " + std::to_string(error) + ": " + lodepng_error_text(error));
+            
+            return texture;
+         }
+      }
+      
+      ERROR("Texture directives / arguments insufficient :/");
+   }
+   
+   static std::shared_ptr<poly::Material> material_directive(
+         const std::unique_ptr<poly::pbrt_directive>& directive,
+         const std::unordered_map<std::string, std::shared_ptr<poly::texture>> &texture_map
+         ) {
+      MaterialIdentifier identifier;
+      try {
+         identifier = MaterialIdentifierMap.at(directive->type);
+      }
+      catch (...) {
+         LogUnknownIdentifier(directive);
+         return nullptr;
+      }
+      switch (identifier) {
+         case MaterialIdentifier::Plastic: {
+            // diffuse reflectivity
+            ReflectanceSpectrum kd(0.25f, 0.25f, 0.25f);
+
+            // specular reflectivity
+            ReflectanceSpectrum ks(0.25f, 0.25f, 0.25f);
+
+            float roughness = 0.1f;
+
+            for (const pbrt_argument &argument : directive->arguments) {
+               MaterialArgumentName param;
+               try {
+                  param = MaterialPlasticArgumentMap.at(argument.Name);
+               }
+               catch (...) {
+                  LogUnknownArgument(argument);
+                  continue;
+               }
+               switch (param) {
+                  case Kd: {
+                     if (argument.Type == pbrt_argument::pbrt_rgb) {
+                        kd.r = argument.float_values->at(0);
+                        kd.g = argument.float_values->at(1);
+                        kd.b = argument.float_values->at(2);
+                     }
+                     break;
+                  }
+                  case Ks: {
+                     if (argument.Type == pbrt_argument::pbrt_rgb) {
+                        ks.r = argument.float_values->at(0);
+                        ks.g = argument.float_values->at(1);
+                        ks.b = argument.float_values->at(2);
+                     }
+                     break;
+                  }
+                  case Roughness: {
+                     if (argument.Type == pbrt_argument::pbrt_float) {
+                        roughness = argument.float_values->at(0);
+                     }
+                     break;
+                  }
+                  default: {
+                     LogUnknownArgument(argument);
+                     break;
+                  }
+               }
+            }
+
+            std::shared_ptr<poly::AbstractBRDF> brdf = std::make_shared<poly::GlossyBRDF>(ks, kd, roughness);
+            std::shared_ptr<poly::Material> material = std::make_shared<poly::Material>(brdf);
+            return material;
+         }
+         case MaterialIdentifier::Matte: {
+            for (const pbrt_argument& argument : directive->arguments) {
+               MaterialArgumentName param;
+               try {
+                  param = MaterialMatteArgumentMap.at(argument.Name);
+               }
+               catch (...) {
+                  LogUnknownArgument(argument);
+                  continue;
+               }
+               switch (param) {
+                  case MaterialArgumentName::Kd: {
+                     switch (argument.Type) {
+                        case pbrt_argument::pbrt_rgb: {
+                           const float r = argument.float_values->at(0);
+                           const float g = argument.float_values->at(1);
+                           const float b = argument.float_values->at(2);
+
+                           ReflectanceSpectrum refl(r, g, b);
+                           std::shared_ptr<poly::AbstractBRDF> brdf = std::make_shared<poly::LambertBRDF>(refl);
+                           std::shared_ptr<poly::Material> material = std::make_shared<poly::Material>(brdf);
+                           return material;
+                        }
+                        case pbrt_argument::pbrt_texture: {
+                           if (texture_map.count(*argument.string_value) == 0) {
+                              ERROR("Material references a texture [%s] that hasn't been defined yet", argument.string_value->c_str());
+                           }
+                           
+                           std::shared_ptr<poly::texture> texture = texture_map.at(*argument.string_value);
+                           std::shared_ptr<poly::AbstractBRDF> brdf = std::make_shared<poly::LambertBRDF>(texture);
+                           std::shared_ptr<poly::Material> material = std::make_shared<poly::Material>(brdf);
+                           return material;
+                        }
+                     }
+                  }
+               }
+            }
+            
+            LogMissingArgument(directive, "Kd");
+            break;
+         }
+         case MaterialIdentifier::Mirror: {
+            for (const pbrt_argument& argument : directive->arguments) {
+               if (argument.Name == str::Kr && argument.Type == pbrt_argument::pbrt_rgb) {
+                  const float r = argument.float_values->at(0);
+                  const float g = argument.float_values->at(1);
+                  const float b = argument.float_values->at(2);
+
+                  ReflectanceSpectrum refl(r, g, b);
+                  std::shared_ptr<poly::AbstractBRDF> brdf = std::make_shared<poly::MirrorBRDF>(refl);
+                  std::shared_ptr<poly::Material> material = std::make_shared<poly::Material>(brdf);
+                  return material;
+               }
+            }
+            LogMissingArgument(directive, "Kr");
+            break;
+         }
+         default: {
+            LogUnimplementedIdentifier(directive);
+            return nullptr;
+         }
+      }
+   }
+   
    std::unique_ptr<AbstractRunner> pbrt_parser::parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
       std::vector<std::unique_ptr<pbrt_directive>> scene_directives;
       std::vector<std::unique_ptr<pbrt_directive>> world_directives;
@@ -1062,6 +1233,8 @@ namespace poly {
       std::shared_ptr<SpectralPowerDistribution> activeLight;
       std::shared_ptr<poly::Transform> activeTransform = std::make_shared<poly::Transform>();
       
+      std::unordered_map<std::string, std::shared_ptr<poly::texture>> texture_map;
+      
       /**
        * Maps mesh names to previously-defined mesh geometries.
        */
@@ -1191,112 +1364,8 @@ namespace poly {
                break;
             }
             case DirectiveIdentifier::Material: {
-               MaterialIdentifier identifier;
-               try {
-                  identifier = MaterialIdentifierMap.at(directive->type);
-               }
-               catch (...) {
-                  LogUnknownIdentifier(directive);
-                  continue;
-               }
-               switch (identifier) {
-                  case MaterialIdentifier::Plastic: {
-                     // diffuse reflectivity
-                     ReflectanceSpectrum kd(0.25f, 0.25f, 0.25f);
-
-                     // specular reflectivity
-                     ReflectanceSpectrum ks(0.25f, 0.25f, 0.25f);
-
-                     float roughness = 0.1f;
-
-                     for (const pbrt_argument &argument : directive->arguments) {
-                        MaterialArgumentName param;
-                        try {
-                           param = MaterialPlasticArgumentMap.at(argument.Name);
-                        }
-                        catch (...) {
-                           LogUnknownArgument(argument);
-                           continue;
-                        }
-                        switch (param) {
-                           case Kd: {
-                              if (argument.Type == pbrt_argument::pbrt_rgb) {
-                                 kd.r = argument.float_values->at(0);
-                                 kd.g = argument.float_values->at(1);
-                                 kd.b = argument.float_values->at(2);
-                              }
-                              break;
-                           }
-                           case Ks: {
-                              if (argument.Type == pbrt_argument::pbrt_rgb) {
-                                 ks.r = argument.float_values->at(0);
-                                 ks.g = argument.float_values->at(1);
-                                 ks.b = argument.float_values->at(2);
-                              }
-                              break;
-                           }
-                           case Roughness: {
-                              if (argument.Type == pbrt_argument::pbrt_float) {
-                                 roughness = argument.float_values->at(0);
-                              }
-                              break;
-                           }
-                           default: {
-                              LogUnknownArgument(argument);
-                              break;
-                           }
-                        }
-                     }
-                     
-                     std::shared_ptr<poly::AbstractBRDF> brdf = std::make_shared<poly::GlossyBRDF>(ks, kd, roughness);
-                     std::shared_ptr<poly::Material> material = std::make_shared<poly::Material>(brdf);
-                     activeMaterial = material;
-                     break;
-                  }
-                  case MaterialIdentifier::Matte: {
-                     for (const pbrt_argument& argument : directive->arguments) {
-                        MaterialArgumentName param;
-                        try {
-                           param = MaterialMatteArgumentMap.at(argument.Name);
-                        }
-                        catch (...) {
-                           LogUnknownArgument(argument);
-                           continue;
-                        }
-                        switch (param) {
-                           case MaterialArgumentName::Kd: {
-                              
-                           }
-                        }
-                        if (argument.Name == str::Kd && argument.Type == pbrt_argument::pbrt_rgb) {
-                           const float r = argument.float_values->at(0);
-                           const float g = argument.float_values->at(1);
-                           const float b = argument.float_values->at(2);
-
-                           ReflectanceSpectrum refl(r, g, b);
-                           std::shared_ptr<poly::AbstractBRDF> brdf = std::make_shared<poly::LambertBRDF>(refl);
-                           std::shared_ptr<poly::Material> material = std::make_shared<poly::Material>(brdf);
-                           activeMaterial = material;
-                        }
-                     }
-                     break;
-                  }
-                  case MaterialIdentifier::Mirror: {
-                     for (const pbrt_argument& argument : directive->arguments) {
-                        if (argument.Name == str::Kr && argument.Type == pbrt_argument::pbrt_rgb) {
-                           const float r = argument.float_values->at(0);
-                           const float g = argument.float_values->at(1);
-                           const float b = argument.float_values->at(2);
-
-                           ReflectanceSpectrum refl(r, g, b);
-                           std::shared_ptr<poly::AbstractBRDF> brdf = std::make_shared<poly::MirrorBRDF>(refl);
-                           std::shared_ptr<poly::Material> material = std::make_shared<poly::Material>(brdf);
-                           activeMaterial = material;
-                        }
-                     }
-                     break;
-                  }
-               }
+               auto material = material_directive(directive, texture_map);
+               activeMaterial = material;
                break;
             }
             case DirectiveIdentifier::NamedMaterial: {
@@ -1581,6 +1650,16 @@ namespace poly {
                      break;
                   }
                }
+               break;
+            }
+            case DirectiveIdentifier::Texture: {
+               
+               if (texture_map.count(directive->name) > 0) {
+                  ERROR("Texture name [%s] has already previously been defined.");
+               }
+               
+               std::shared_ptr<poly::texture> texture = std::move(texture_directive(directive));
+               texture_map[directive->name] = texture;
                break;
             }
             case DirectiveIdentifier::Transform: {

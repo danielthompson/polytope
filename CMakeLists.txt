@@ -132,7 +132,7 @@ add_library(polytope_lib
         src/cpu/acceleration/bvh.h 
         src/cpu/structures/stats.h
         src/common/utilities/thread_pool.h
-        src/common/utilities/thread_pool.cpp)
+        src/common/utilities/thread_pool.cpp src/cpu/shading/texture.h)
 
 #set_target_properties(
 #        polytope_lib
@@ -257,9 +257,10 @@ add_executable(runUnitTests
         tests/TestTransform.cpp
         tests/test_bvh.cpp
         tests/parsers/test_obj_parser.cpp
-        tests/parsers/pbrt/test_scan.cpp
-        tests/parsers/pbrt/test_parse.cpp
         tests/parsers/pbrt/test_lex.cpp
+        tests/parsers/pbrt/test_parse.cpp
+        tests/parsers/pbrt/test_scan.cpp
+        tests/parsers/pbrt/test_textures.cpp
         tests/shading/test_mirror_brdf.cpp
         tests/parsers/test_ply_parser.cpp
         tests/shapes/test_mesh.cpp

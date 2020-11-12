@@ -151,6 +151,7 @@ namespace poly {
       // rest of header
       bool has_x = false, has_y = false, has_z = false;
       bool has_nx = false, has_ny = false, has_nz = false;
+      bool has_u = false, has_v = false;
       
       state.elements = std::vector<ply_element>();
       while (getline(*state.stream, line)) {
@@ -243,6 +244,16 @@ namespace poly {
                      has_nz = true;
                      break;
                   }
+                  else if (word == "u" || word == "s") {
+                     current_property.name = ply_property_name::u;
+                     has_u = true;
+                     break;
+                  }
+                  else if (word == "v" || word == "t") {
+                     current_property.name = ply_property_name::v;
+                     has_v = true;
+                     break;
+                  }
                   else {
                      Log.warning("%s:%i Ignoring unknown property name [%s] for vertex element", filepath.c_str(), line_number, word.c_str());
                      current_property.name = ply_property_name::unknown;
@@ -298,6 +309,16 @@ namespace poly {
             }
             
             state.has_vertex_normals = num_normals;
+            
+            int num_uv = has_u + has_v;
+            
+            // must have both u and v, or neither
+            if (num_uv != 0 && num_uv != 2) {
+               ERROR("%s:%i Header has %i uv per vertex; must have all (2) or none (0)", filepath.c_str(), line_number, num_uv);
+            }
+            
+            state.has_vertex_uv = true;
+            
             break;
          }
       }
@@ -316,16 +337,18 @@ namespace poly {
       struct parser_state state = parse_header(filepath);
       
       mesh->has_vertex_normals = state.has_vertex_normals;
+      mesh->has_vertex_uvs = state.has_vertex_uv;
       
       for (const auto& element : state.elements) {
          switch (element.type) {
             case ply_element_type::vertex: {
                std::string line;
-
+               
                if (state.data_format == ply_format::ascii) {
                   std::string word;
-                  Point v;
+                  Point p;
                   Normal n;
+                  float u, v;
                   for (int i = 0; i < element.num_instances; i++) {
                      if (!getline(*state.stream, line)) {
                         ERROR("%s:%i Error reading vertex %i", filepath.c_str(), state.line_number, i);
@@ -338,15 +361,15 @@ namespace poly {
                         float parsed_value = stof(word);
                         switch (property.name) {
                            case ply_property_name::x: {
-                              v.x = parsed_value;
+                              p.x = parsed_value;
                               break;
                            }
                            case ply_property_name::y: {
-                              v.y = parsed_value;
+                              p.y = parsed_value;
                               break;
                            }
                            case ply_property_name::z: {
-                              v.z = parsed_value;
+                              p.z = parsed_value;
                               break;
                            }
                            case ply_property_name::nx: {
@@ -359,6 +382,14 @@ namespace poly {
                            }
                            case ply_property_name::nz: {
                               n.z = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::u: {
+                              u = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::v: {
+                              v = parsed_value;
                               break;
                            }
                            case ply_property_name::unknown: {
@@ -368,30 +399,41 @@ namespace poly {
                         }
                      }
                      if (state.has_vertex_normals) {
-                        mesh->add_vertex(v, n);
+                        if (state.has_vertex_uv) {
+                           mesh->add_vertex(p, n, u, v);
+                        }
+                        else {
+                           mesh->add_vertex(p, n);
+                        }
                      }
                      else {
-                        mesh->add_vertex(v);
+                        if (state.has_vertex_uv) {
+                           mesh->add_vertex(p, u, v);
+                        }
+                        else {
+                           mesh->add_vertex(p);   
+                        }
                      }
                   }
                }
                else {
                   for (int i = 0; i < element.num_instances; i++) {
-                     Point v;
+                     Point p;
                      Normal n;
+                     float u, v;
                      for (const auto& property : element.properties) {
                         float parsed_value = read_float(state.stream, state.data_format);
                         switch (property.name) {
                            case ply_property_name::x: {
-                              v.x = parsed_value;
+                              p.x = parsed_value;
                               break;
                            }
                            case ply_property_name::y: {
-                              v.y = parsed_value;
+                              p.y = parsed_value;
                               break;
                            }
                            case ply_property_name::z: {
-                              v.z = parsed_value;
+                              p.z = parsed_value;
                               break;
                            }
                            case ply_property_name::nx: {
@@ -404,6 +446,14 @@ namespace poly {
                            }
                            case ply_property_name::nz: {
                               n.z = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::u: {
+                              u = parsed_value;
+                              break;
+                           }
+                           case ply_property_name::v: {
+                              v = parsed_value;
                               break;
                            }
                            case ply_property_name::unknown: {
@@ -414,10 +464,18 @@ namespace poly {
                      }
 
                      if (state.has_vertex_normals) {
-                        mesh->add_vertex(v, n);
-                     } 
+                        if (state.has_vertex_uv) {
+                           mesh->add_vertex(p, n, u, v);
+                        }
+                        else {
+                           mesh->add_vertex(p, n);
+                        }
+                     }
                      else {
-                        mesh->add_vertex(v);
+                        if (state.has_vertex_uv) {
+                           mesh->add_vertex(p, u, v);
+                        }
+                        mesh->add_vertex(p);
                      }
                   }
                }

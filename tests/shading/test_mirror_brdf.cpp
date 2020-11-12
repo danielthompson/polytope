@@ -48,7 +48,7 @@ namespace Tests {
          
          float pdf = 0.0;
 
-         Vector actual = brdf.sample(incoming, refl, pdf);
+         Vector actual = brdf.sample(incoming, 0, 0, refl, pdf);
 
          EXPECT_EQ(expected, actual);
       }
@@ -69,7 +69,7 @@ namespace Tests {
          
          float pdf = 0.0;
 
-         Vector actual = brdf.sample(incoming, refl, pdf);
+         Vector actual = brdf.sample(incoming, 0, 0, refl, pdf);
 
 
          EXPECT_EQ(expected, actual);
@@ -90,7 +90,7 @@ namespace Tests {
          
          float pdf = 0.0;
 
-         Vector actual = brdf.sample(incoming, refl, pdf);
+         Vector actual = brdf.sample(incoming, 0, 0, refl, pdf);
 
 
          EXPECT_EQ(expected, actual);

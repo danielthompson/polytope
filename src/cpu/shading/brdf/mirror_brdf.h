@@ -6,11 +6,13 @@
 #define POLY_MIRRORBRDF_H
 
 #include "abstract_brdf.h"
+#include "../texture.h"
 
 namespace poly {
 
    class MirrorBRDF : public AbstractBRDF {
    public:
+      std::shared_ptr<poly::texture> texture;
       MirrorBRDF(const ReflectanceSpectrum &refl) : AbstractBRDF(BRDF_TYPE::Mirror), refl(refl) { }
       float f(const float thetaIncoming, const float thetaOutgoing) const override {
          if (poly::WithinEpsilon(thetaIncoming, thetaOutgoing))
@@ -18,7 +20,7 @@ namespace poly {
          return 0.0f;
       }
 
-      Vector sample(const Vector &incoming, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
+      Vector sample(const Vector &incoming, const float u, const float v, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
          //const Normal normal = Normal(0, 1, 0);
 //         const float factor = incoming.Dot(normal) * 2;
 //         const Vector scaled = Vector(normal * factor);

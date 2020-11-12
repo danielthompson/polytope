@@ -77,6 +77,27 @@ namespace poly {
       num_vertices_packed++;
    }
 
+   void mesh_geometry::add_vertex(Point &p, const float u, const float v) {
+      x_packed.push_back(p.x);
+      y_packed.push_back(p.y);
+      z_packed.push_back(p.z);
+      u_packed.push_back(u);
+      v_packed.push_back(v);
+      num_vertices_packed++;
+   }
+
+   void mesh_geometry::add_vertex(Point &p, Normal &n, const float u, const float v) {
+      x_packed.push_back(p.x);
+      y_packed.push_back(p.y);
+      z_packed.push_back(p.z);
+      nx_packed.push_back(n.x);
+      ny_packed.push_back(n.y);
+      nz_packed.push_back(n.z);
+      u_packed.push_back(u);
+      v_packed.push_back(v);
+      num_vertices_packed++;
+   }
+
    void mesh_geometry::add_vertex(float vx, float vy, float vz) {
       x_packed.push_back(vx);
       y_packed.push_back(vy);
@@ -258,6 +279,20 @@ namespace poly {
          intersection.u = u;
          intersection.v = v;
          intersection.w = w;
+         
+         if (mesh_geometry->has_vertex_uvs) {
+            float p0_u = mesh_geometry->u_packed[mesh_geometry->fv0[face_index]];
+            float p0_v = mesh_geometry->v_packed[mesh_geometry->fv0[face_index]];
+            
+            float p1_u = mesh_geometry->u_packed[mesh_geometry->fv1[face_index]];
+            float p1_v = mesh_geometry->v_packed[mesh_geometry->fv1[face_index]];
+            
+            float p2_u = mesh_geometry->u_packed[mesh_geometry->fv2[face_index]];
+            float p2_v = mesh_geometry->v_packed[mesh_geometry->fv2[face_index]];
+            
+            intersection.u_tex_lerp = p0_u * u + p1_u * v + p2_u * w;
+            intersection.v_tex_lerp = p0_v * u + p1_v * v + p2_v * w;
+         }
       }
 
       if (!intersection.Hits) {
@@ -302,7 +337,7 @@ namespace poly {
          const Vector v = e0.Cross(e1);
          n = {v.x, v.y, v.z};
       }
-
+      
       const float ray_dot_normal = world_ray.Direction.Dot(n);
       const float flip_factor = ray_dot_normal > 0 ? -1 : 1;
       n = n * flip_factor;
@@ -441,51 +476,35 @@ namespace poly {
          nz.reserve(num_faces * 3);
       }
       
-      // for each face
-      for (unsigned int i = 0; i < num_faces; i++) {
-         const unsigned int index = fv0[i];
-
-         x.push_back(x_packed[index]);
-         y.push_back(y_packed[index]);
-         z.push_back(z_packed[index]);
-
-         if (has_vertex_normals) {
-            nx.push_back(nx_packed[index]);
-            ny.push_back(ny_packed[index]);
-            nz.push_back(nz_packed[index]);
-         }
+      if (has_vertex_uvs) {
+         u.reserve(num_faces * 3);
+         v.reserve(num_faces * 3);
       }
+      
+      std::vector<std::vector<unsigned int>> fvs = { fv0, fv1, fv2 };
+      
+      for (const auto& fv : fvs) {
+         for (unsigned int i = 0; i < num_faces; i++) {
+            const unsigned int index = fv[i];
 
-      for (unsigned int i = 0; i < num_faces; i++) {
-         unsigned int index = fv1[i];
+            x.push_back(x_packed[index]);
+            y.push_back(y_packed[index]);
+            z.push_back(z_packed[index]);
 
-         x.push_back(x_packed[index]);
-         y.push_back(y_packed[index]);
-         z.push_back(z_packed[index]);
+            if (has_vertex_normals) {
+               nx.push_back(nx_packed[index]);
+               ny.push_back(ny_packed[index]);
+               nz.push_back(nz_packed[index]);
+            }
 
-         if (has_vertex_normals) {
-            nx.push_back(nx_packed[index]);
-            ny.push_back(ny_packed[index]);
-            nz.push_back(nz_packed[index]);
-         }
-      }
-
-      for (unsigned int i = 0; i < num_faces; i++) {
-         unsigned int index = fv2[i];
-
-         x.push_back(x_packed[index]);
-         y.push_back(y_packed[index]);
-         z.push_back(z_packed[index]);
-
-         if (has_vertex_normals) {
-            nx.push_back(nx_packed[index]);
-            ny.push_back(ny_packed[index]);
-            nz.push_back(nz_packed[index]);
+            if (has_vertex_uvs) {
+               u.push_back(u_packed[index]);
+               v.push_back(v_packed[index]);
+            }
          }
       }
 
       num_vertices = 3 * num_faces;
-
    }
 
    Point mesh_geometry::get_vertex(const unsigned int i) const {

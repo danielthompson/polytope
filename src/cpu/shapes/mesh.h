@@ -21,13 +21,15 @@ namespace poly {
       void add_vertex(Point &v);
       void add_vertex(Point &v, Normal &n);
       void add_vertex(float x, float y, float z);
+      void add_vertex(Point &p, const float u, const float v);
+      void add_vertex(Point &p, Normal &n, const float u, const float v);
       void add_packed_face(unsigned int v0_index, unsigned int v1_index, unsigned int v2_index);
       void unpack_faces();
       Point get_vertex(unsigned int i) const;
       Point3ui get_vertex_indices_for_face(unsigned int i) const;
       void get_vertices_for_face(unsigned int i, poly::Point vertices[3]) const;
       
-      // vertexes
+      // vertex locations
       std::vector<float> x;
       std::vector<float> y;
       std::vector<float> z;
@@ -46,6 +48,14 @@ namespace poly {
       std::vector<float> ny_packed;
       std::vector<float> nz_packed;
 
+      // vertex UVs
+      bool has_vertex_uvs = false;
+      std::vector<float> u;
+      std::vector<float> v;
+      
+      std::vector<float> u_packed;
+      std::vector<float> v_packed;
+      
       // given a face index, returns that face's vertex index, etc
       std::vector<unsigned int> fv0;
       std::vector<unsigned int> fv1;

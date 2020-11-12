@@ -5,6 +5,7 @@
 #ifndef POLY_ABSTRACTBRDF_H
 #define POLY_ABSTRACTBRDF_H
 
+#include <memory>
 #include "../../constants.h"
 #include "../../structures/Vectors.h"
 #include "../spectrum.h"
@@ -32,7 +33,7 @@ namespace poly {
        * @param pdf The pdf of the returned vector.
        * @return A vector randomly samplb
        */
-      virtual Vector sample(const Vector &incoming, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const {
+      virtual Vector sample(const Vector &incoming, const float u, const float v, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const {
          const float u0 = NormalizedUniformRandom();
          const float u1 = NormalizedUniformRandom();
 

@@ -17,7 +17,7 @@ namespace poly {
       
       bool debug = false;
 #ifndef NDEBUG
-      if (x == 87 && y == 31) {
+      if (x == 610 && y == 343) {
          debug = false;
          
 //         printf("ro: %f %f %f\n", ray.Origin.x, ray.Origin.y, ray.Origin.z);
@@ -77,7 +77,7 @@ namespace poly {
             ReflectanceSpectrum refl;
             
             const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
-            const poly::Vector local_outgoing = intersection.Shape->material->BRDF->sample(local_incoming, refl,
+            const poly::Vector local_outgoing = intersection.Shape->material->BRDF->sample(local_incoming, intersection.u_tex_lerp, intersection.v_tex_lerp, refl,
                                                                                                current_pdf);
             const poly::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
 

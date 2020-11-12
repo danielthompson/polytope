@@ -1,0 +1,27 @@
+Sampler "sobol" 
+    "integer pixelsamples" [ 1 ] 
+PixelFilter "box" 
+Film "image" 
+    "integer xresolution" [ 1280 ] 
+    "integer yresolution" [ 720 ] 
+    "string filename" [ "rainbow-out-2.png" ] 
+LookAt 0 0 -10 # eye
+       0 0 0 # lookat
+       0 1 0 # up
+Camera "perspective" 
+    "float fov" [ 15 ]
+
+#############################################
+WorldBegin
+#       name      type    class
+
+LightSource "infinite" "rgb L" [1 1 1]
+Texture "rainbow" "color" "imagemap" 
+    "string filename" [ "rainbow-25p.png" ] 
+        
+Material "matte" 
+    "texture Kd" [ "rainbow" ] 
+
+Shape "plymesh" "string filename" "two-triangles.ply" 
+
+WorldEnd
