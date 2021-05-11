@@ -25,6 +25,8 @@ set(ispc_options -g --pic)
 SET(CMAKE_CUDA_FLAGS_DEBUG "-G -g")
 SET(CMAKE_CUDA_FLAGS_RELEASE "--generate-line-info")
 
+
+
 IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
    set(ispc_options --pic -O3)
 # ELSE()
@@ -225,6 +227,9 @@ endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC polytope_lib)
 target_link_libraries(polytope_cuda PUBLIC polytope_lib)
 target_link_libraries(polytope_cuda PUBLIC polytope_cuda_lib)
+
+set_property(TARGET polytope_cuda PROPERTY CUDA_ARCHITECTURES 61)
+set_property(TARGET polytope_cuda_lib PROPERTY CUDA_ARCHITECTURES 61)
 
 ################################
 # Testing

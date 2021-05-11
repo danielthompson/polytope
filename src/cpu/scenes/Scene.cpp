@@ -15,6 +15,8 @@ namespace poly {
 //      return linear_intersection;
 
       Intersection bvh_intersection;
+      bvh_intersection.x = x;
+      bvh_intersection.y = y;
       bvh_root.intersect_compact(ray, bvh_intersection);
 //      bvh_root.intersect(ray, bvh_intersection);
       return bvh_intersection;

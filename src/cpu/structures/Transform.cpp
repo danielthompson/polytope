@@ -71,11 +71,11 @@ namespace poly {
       float y = p.y;
       float z = p.z;
 
-      float newX = x * Matrix.Matrix[0][0] + y * Matrix.Matrix[0][1] + z * Matrix.Matrix[0][2] + Matrix.Matrix[0][3];
-      float newY = x * Matrix.Matrix[1][0] + y * Matrix.Matrix[1][1] + z * Matrix.Matrix[1][2] + Matrix.Matrix[1][3];
-      float newZ = x * Matrix.Matrix[2][0] + y * Matrix.Matrix[2][1] + z * Matrix.Matrix[2][2] + Matrix.Matrix[2][3];
+      float newX = sum_of_products(x, Matrix.Matrix[0][0], y, Matrix.Matrix[0][1]) + std::fmaf(z, Matrix.Matrix[0][2], Matrix.Matrix[0][3]);
+      float newY = sum_of_products(x, Matrix.Matrix[1][0], y, Matrix.Matrix[1][1]) + std::fmaf(z, Matrix.Matrix[1][2], Matrix.Matrix[1][3]);
+      float newZ = sum_of_products(x, Matrix.Matrix[2][0], y, Matrix.Matrix[2][1]) + std::fmaf(z, Matrix.Matrix[2][2], Matrix.Matrix[2][3]);
 
-      float w = x * Matrix.Matrix[3][0] + y * Matrix.Matrix[3][1] + z * Matrix.Matrix[3][2] + Matrix.Matrix[3][3];
+      float w = sum_of_products(x, Matrix.Matrix[3][0], y, Matrix.Matrix[3][1]) + std::fmaf(z, Matrix.Matrix[3][2], Matrix.Matrix[3][3]);
 
       if (w == 1) {
          p.x = newX;

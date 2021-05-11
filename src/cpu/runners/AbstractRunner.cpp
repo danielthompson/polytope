@@ -18,8 +18,13 @@ namespace poly {
 
          Point2f sampleLocation = points[i];
 
-         Ray ray = Scene->Camera->GetRay(sampleLocation);
-
+         bool debug = false;
+         
+         
+         Ray ray = Scene->Camera->get_ray_for_pixel(sampleLocation);
+         if (x == 200 && y == 200)
+            debug = true;
+         
          Sample sample = Integrator->GetSample(ray, 0, x, y);
          Film->AddSample(sampleLocation, sample);
       }

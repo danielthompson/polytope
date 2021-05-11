@@ -51,12 +51,7 @@ namespace poly {
             refl_spectrum = refl;   
          }
          else {
-            const unsigned int u_texel = (unsigned int)(u * (float)texture->width);
-            const unsigned int v_texel = (unsigned int)((1.f - v) * (float)texture->height);
-            
-            const unsigned int index = (v_texel * texture->width + u_texel) * 4;
-            
-            refl_spectrum = { texture->data[index], texture->data[index + 1],texture->data[index + 2]};
+            refl_spectrum = texture->evaluate_rgba(u, v);
          }
          return AbstractBRDF::sample(incoming, u, v, refl_spectrum, pdf);
       }

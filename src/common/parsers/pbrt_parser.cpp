@@ -733,7 +733,16 @@ namespace poly {
          Log.warning("Texture has an empty name value, so it can't be referenced by a material");
       }
       texture->name = directive->name;
-      if (directive->type != "color" && directive->type != "spectrum") {
+      LodePNGColorType color_type;
+      if (directive->type == "color" || directive->type == "spectrum") {
+         color_type = LodePNGColorType::LCT_RGBA;
+         texture->data_format = texture::format::RGBA;
+      }
+      else if (directive->type == "float") {
+         color_type = LodePNGColorType::LCT_GREY;
+         texture->data_format = texture::format::GREY;
+      }
+      else {
          ERROR("Unknown/unimplemented texture type [%s]", directive->type.c_str());
       }
       
@@ -753,9 +762,11 @@ namespace poly {
             Log.debug("Trying to open texture at [%s]...", texture_file_path.c_str());
             
             // load filename
-            unsigned error = lodepng::decode(texture->data, texture->width, texture->height, texture_file_path);
+            unsigned error = lodepng::decode(texture->data, texture->width, texture->height, texture_file_path, color_type);
             if (error) 
                ERROR("Failed to read/decode png file [" +  *arg.string_value + "] with error " + std::to_string(error) + ": " + lodepng_error_text(error));
+            
+            Log.debug("Read texture with size [%i] x [%i] and decoded to [%s].", texture->width, texture->height, texture->data_format == texture::format::RGBA ? "RGBA" : "greyscale");
             
             return texture;
          }
@@ -921,10 +932,10 @@ namespace poly {
          if (directive->identifier == str::Sampler) {
             missingSampler = false;
             if (directive->type == str::halton) {
-               sampler = std::make_unique<HaltonSampler>();
+               sampler = std::make_unique<CenterSampler>();
             } else {
                LogUnknownIdentifier(directive);
-               sampler = std::make_unique<HaltonSampler>();
+               sampler = std::make_unique<CenterSampler>();
             }
 
             for (const pbrt_argument& arg : directive->arguments) {

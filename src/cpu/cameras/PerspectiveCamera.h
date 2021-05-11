@@ -13,7 +13,8 @@ namespace poly {
    public:
       PerspectiveCamera(const CameraSettings &settings, const Transform &cameraToWorld, bool leftHanded);
 
-      Ray GetRay(Point2f pixel) override;
+      Ray get_ray_for_pixel(const Point2f pixel) override;
+      Ray get_ray_for_ndc(const Point2f ndc) override;
 
    public:
       float OneOverWidth;

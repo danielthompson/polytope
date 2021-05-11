@@ -59,7 +59,7 @@ namespace poly {
       return z;
    }
 
-   float Point::operator[](const Axis axis) const {
+   float &Point::operator[](const Axis axis) {
       if (axis == Axis::x)
          return x;
       if (axis == Axis::y)
@@ -128,7 +128,7 @@ namespace poly {
       return v.x * x + v.y * y + v.z * z;
    }
 
-   float Point::operator[](const int index) const {
+   float& Point::operator[](const int index) {
       assert(index >= 0);
       assert(index <= 2);
       if (index == 0)

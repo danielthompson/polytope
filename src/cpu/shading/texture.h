@@ -11,19 +11,28 @@ namespace poly {
 
    class texture {
    public:
+      
+      enum format {
+         RGBA,
+         GREY
+      };
+      
+      format data_format;
+      
       /**
        * given (u,v), should return a color 
        */
-      ReflectanceSpectrum evaluate(float u, float v) {
-         // TODO
-         return ReflectanceSpectrum();
+      ReflectanceSpectrum evaluate_rgba(float u, float v) {
+         const unsigned int u_texel = (unsigned int)(u * (float)width);
+         const unsigned int v_texel = (unsigned int)((1.f - v) * (float)height);
+
+         const unsigned int index = (v_texel * width + u_texel) * 4;
+
+         return {data[index], data[index + 1], data[index + 2]};
       }
 
       unsigned int width, height;
 
-      /**
-       * 4 bytes per pixel, RGBA.
-       */
       std::vector<unsigned char> data;
 
       /**

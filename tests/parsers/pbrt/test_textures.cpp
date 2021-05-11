@@ -10,6 +10,7 @@
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
 #include "../../../src/cpu/cameras/PerspectiveCamera.h"
 #include "../../../src/cpu/shading/brdf/lambert_brdf.h"
+#include "../../../lib/lodepng.h"
 
 namespace Tests {
    TEST(parse_texture, imagemap_prelim) {
@@ -56,7 +57,12 @@ namespace Tests {
       std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
       // ensure nothing is null
-      
-      
+   }
+   
+   TEST(parse_texture, grey) {
+      std::vector<unsigned char> v;
+      unsigned int width, height;
+      unsigned int error = lodepng::decode(v, width, height, "../scenes/pbrt-book/texture/uneven_bump.png", LodePNGColorType::LCT_GREY);
+      std::cout << width << " " << height << std::endl;
    }
 }

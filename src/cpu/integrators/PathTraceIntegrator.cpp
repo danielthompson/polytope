@@ -17,12 +17,7 @@ namespace poly {
       
       bool debug = false;
 #ifndef NDEBUG
-      if (x == 610 && y == 343) {
-         debug = false;
-         
-//         printf("ro: %f %f %f\n", ray.Origin.x, ray.Origin.y, ray.Origin.z);
-//         printf("rd: %f %f %f\n", ray.Direction.x, ray.Direction.y, ray.Direction.z);
-      }
+
 #endif
       while (true) {
          if (src.is_zero())
@@ -30,8 +25,11 @@ namespace poly {
 //         current_ray.x = x;
 //         current_ray.y = y;
 //         current_ray.bounce = num_bounces;
+         if (x == 128 && y == 128) {
+            debug = false;
+         }
          Intersection intersection = Scene->intersect(current_ray, x, y);
-         
+
 //         SpectralPowerDistribution bb_spd;
 //         
 //         bb_spd.r = 255.f - (float)(intersection.num_bb_hits) * 2.f;
@@ -81,8 +79,12 @@ namespace poly {
                                                                                                current_pdf);
             const poly::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
 
+            bool whoops = false;
+            if (x == 128 && y == 128 && std::isnan(world_outgoing.x))
+               whoops = true;
 
             current_ray = Ray(intersection.Location, world_outgoing);
+            
             //current_ray.OffsetOrigin(intersection.bent_normal, poly::OffsetEpsilon);
             if (debug) {
                printf("n: %f %f %f\n", intersection.geo_normal.x, intersection.geo_normal.y, intersection.geo_normal.z);

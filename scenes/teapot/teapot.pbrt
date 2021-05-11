@@ -24,7 +24,7 @@ WorldBegin
         Material "mirror" "rgb Kr" [ .5  .8  .5 ]
         # Shape "objmesh" "string filename" [ "teapot.obj" ]
         # Shape "plymesh" "string filename" [ "teapot.ply" ]
-        Shape "plymesh" "string filename" [ "teapot-normals.ply" ]
+        #  Shape "plymesh" "string filename" [ "teapot-normals.ply" ]
     AttributeEnd
     TransformBegin
         Translate 3 0 0

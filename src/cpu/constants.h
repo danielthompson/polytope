@@ -118,10 +118,26 @@ namespace poly {
       return (p - pointOnPlane).Dot(normal);
    }
 
+   inline float difference_of_products(float a, float b, float c, float d) {
+      float cd = c * d;
+      float dop = std::fma(a, b, -cd);
+      float error = std::fma(-c, d, cd);
+      return dop + error;
+   }
+
+   inline float sum_of_products(float a, float b, float c, float d) {
+      float cd = c * d;
+      float sop = std::fma(a, b, cd);
+      float error = std::fma(c, d, -cd);
+      return sop + error;
+   }
+   
    // source - http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#x1-ErrorPropagation
    constexpr float Gamma(const int n) {
       return (n * MachineEpsilon) / (1.f - n * MachineEpsilon);
    }
+   
+   
 
    constexpr float Gamma1 = (1 * MachineEpsilon) / (1 - 1 * MachineEpsilon);
    constexpr float Gamma2 = (2 * MachineEpsilon) / (1 - 2 * MachineEpsilon);

@@ -140,6 +140,24 @@ namespace poly {
       }
    }
    
+
+   
+   poly::Vector abs(const poly::Vector& v) {
+      return {std::abs(v.x), std::abs(v.y), std::abs(v.z)};
+   }
+   
+   float max_component(const poly::Vector& v) {
+      if (v.x >= v.y && v.x >= v.z)
+         return v.x;
+      else if (v.y >= v.x && v.y >= v.z)
+         return v.y;
+      return v.z; 
+   }
+   
+   poly::Vector permute(const poly::Vector& v, const int order[3]) {
+      return { v[order[0]], v[order[1]], v[order[2]]};
+   }
+   
    void Mesh::intersect(
          poly::Ray &world_ray,
          poly::Intersection &intersection,
@@ -171,6 +189,10 @@ namespace poly {
          // wald watertight intersection
          // http://jcgt.org/published/0002/01/05/paper.pdf
 
+         if (intersection.x == 128 && intersection.y == 128 && std::isnan(world_ray.Direction.x)) {
+            continue;
+         }
+         
          float dx_abs = fabsf(world_ray.Direction.x);
          float dy_abs = fabsf(world_ray.Direction.y);
          float dz_abs = fabsf(world_ray.Direction.z);
@@ -189,59 +211,66 @@ namespace poly {
             ky = 0;
          
          // calculate vertices relative to ray origin
-         const Vector A = v0 - world_ray.Origin;
-         const Vector B = v1 - world_ray.Origin;
-         const Vector C = v2 - world_ray.Origin;
-
+         Vector p0t = v0 - world_ray.Origin;
+         Vector p1t = v1 - world_ray.Origin;
+         Vector p2t = v2 - world_ray.Origin;
+         
          // swap kx and ky dimension to preserve winding direction of triangles
-         if (dim(world_ray.Direction, kz) < 0.0f) {
-            // swap(kx, ky)
-            int temp = kx;
-            kx = ky;
-            ky = temp;
-         }
+//         if (dim(world_ray.Direction, kz) < 0.0f) {
+//            // swap(kx, ky)
+//            int temp = kx;
+//            kx = ky;
+//            ky = temp;
+//         }
 
+         int permutation[3] = {kx, ky, kz};
+         Vector d = permute(world_ray.Direction, permutation);
+
+         p0t = permute(p0t, permutation);
+         p1t = permute(p1t, permutation);
+         p2t = permute(p2t, permutation);
+         
          // calculate shear constants
-         float Sx = dim(world_ray.Direction, kx) / dim(world_ray.Direction, kz);
-         float Sy = dim(world_ray.Direction, ky) / dim(world_ray.Direction, kz);
-         float Sz = 1.0f / dim(world_ray.Direction, kz);
+         float Sx = -d.x / d.z;
+         float Sy = -d.y / d.z;
+         float Sz = 1.f / d.z;
 
          // perform shear and scale of vertices
-         const float Ax = dim(A, kx) - Sx * dim(A, kz);
-         const float Ay = dim(A, ky) - Sy * dim(A, kz);
-         const float Bx = dim(B, kx) - Sx * dim(B, kz);
-         const float By = dim(B, ky) - Sy * dim(B, kz);
-         const float Cx = dim(C, kx) - Sx * dim(C, kz);
-         const float Cy = dim(C, ky) - Sy * dim(C, kz);
+         p0t.x = std::fma(Sx, p0t.z, p0t.x);
+         p0t.y = std::fma(Sy, p0t.z, p0t.y);
+         p1t.x = std::fma(Sx, p1t.z, p1t.x);
+         p1t.y = std::fma(Sy, p1t.z, p1t.y);
+         p2t.x = std::fma(Sx, p2t.z, p2t.x);
+         p2t.y = std::fma(Sy, p2t.z, p2t.y);
 
          // calculate scaled barycentric coordinates
-         float U = Cx * By - Cy * Bx;
-         float V = Ax * Cy - Ay * Cx;
-         float W = Bx * Ay - By * Ax;
+         float U = difference_of_products(p1t.x, p2t.y, p1t.y, p2t.x);
+         float V = difference_of_products(p2t.x, p0t.y, p2t.y, p0t.x);
+         float W = difference_of_products(p0t.x, p1t.y, p0t.y, p1t.x);
 
          // fallback to test against edges using double precision
          if (U == 0.0f || V == 0.0f || W == 0.0f) {
-            double CxBy = (double)Cx*(double)By;
-            double CyBx = (double)Cy*(double)Bx;
-            U = (float)(CxBy - CyBx);
+            double CxBy = (double)p2t.x * (double)p1t.y;
+            double CyBx = (double)p2t.y * (double)p1t.x;
+            U = (float)(CyBx - CxBy);
 
-            double AxCy = (double)Ax*(double)Cy;
-            double AyCx = (double)Ay*(double)Cx;
-            V = (float)(AxCy - AyCx);
+            double AxCy = (double)p0t.x * (double)p2t.y;
+            double AyCx = (double)p0t.y * (double)p2t.x;
+            V = (float)(AyCx - AxCy);
 
-            double BxAy = (double)Bx*(double)Ay;
-            double ByAx = (double)By*(double)Ax;
-            W = (float)(BxAy - ByAx);
+            double BxAy = (double)p1t.x * (double)p0t.y;
+            double ByAx = (double)p1t.y * (double)p0t.x;
+            W = (float)(ByAx - BxAy);
          }
 
          // Perform edge tests. Moving this test before and at the end of the previous
          // conditional gives higher performance.
          // backface culling:
-          if (U < 0.0f || V < 0.0f || W < 0.0f)
-            continue;
+//          if (U < 0.0f || V < 0.0f || W < 0.0f)
+//            continue;
          // no backface culling:
-//         if ((U < 0.0f || V < 0.0f || W < 0.0f) && (U > 0.0f || V > 0.0f || W > 0.0f)) 
-//            return;
+         if ((U < 0.0f || V < 0.0f || W < 0.0f) && (U > 0.0f || V > 0.0f || W > 0.0f)) 
+            continue;
 
          // calculate determinant
          float det = U + V + W;
@@ -249,33 +278,63 @@ namespace poly {
             continue;
 
          // calculate scaled z-coordinates of vertices and use them to calculate the hit distance
-         const float Az = Sz * dim(A, kz);
-         const float Bz = Sz * dim(B, kz);
-         const float Cz = Sz * dim(C, kz);
-         const float T = U * Az + V * Bz + W * Cz;
+         p0t.z *= Sz;
+         p1t.z *= Sz;
+         p2t.z *= Sz;
+         
+         const float T = std::fma(U, p0t.z, sum_of_products(V, p1t.z, W, p2t.z));
 
          // backface culling
-         if (T < 0.0f || T > world_ray.MinT * det)
-            continue;
+//         bool backface = false;
+//         if (T < 0.0f || T > world_ray.MinT * det)
+//            continue;
 
          // no backface culling
-//         if (det < 0.f && (T >= 0 || T < world_ray.MinT * det))
-//            return;
-//         if (det > 0.f && (T <= 0 || T > world_ray.MinT * det))
-//            return;
+         if (det < 0.f && (T >= 0 || T < world_ray.MinT * det)) {
+            continue;
+         }
+         if (det > 0.f && (T <= 0 || T > world_ray.MinT * det)) {
+            continue;
+         }
 
          // normalize
          const float rcpDet = 1.0f / det;
          float u = U * rcpDet;
          float v = V * rcpDet;
          float w = W * rcpDet;
-         world_ray.MinT = T * rcpDet;
+         const float computed_t = T * rcpDet;
+
+         if (std::isnan(computed_t) && intersection.x == 128 && intersection.y == 128) {
+            // but... why is it nan to begin with?
+            continue;
+         }
+         
+         float maxZt = max_component(abs(poly::Vector(p0t.z, p1t.z, p2t.z)));
+         float deltaZ = poly::Gamma3 * maxZt;
+         float maxXt = max_component(abs(poly::Vector(p0t.x, p1t.x, p2t.x)));
+         float maxYt = max_component(abs(poly::Vector(p0t.y, p1t.y, p2t.y)));
+         float deltaX = poly::Gamma5 * (maxXt + maxZt);
+         float deltaY = poly::Gamma5 * (maxYt + maxZt);
+         float deltaE = 2 * (poly::Gamma2 * maxXt * maxYt + deltaY * maxXt + deltaX * maxYt);
+         float maxE = max_component(abs(poly::Vector(U, V, W)));
+         float deltaT = 3 * (poly::Gamma3 * maxE * maxZt + deltaE * maxZt + deltaZ * maxE) * std::abs(rcpDet);
+         if (computed_t <= deltaT)
+            continue;
+         
+         // http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#x4-ParametricEvaluation:Triangles
+         float x_error_sum = std::abs(u * v0.x) + std::abs(v * v1.x) + std::abs(w * v2.x);
+         float y_error_sum = std::abs(u * v0.y) + std::abs(v * v1.y) + std::abs(w * v2.y);
+         float z_error_sum = std::abs(u * v0.z) + std::abs(v * v1.z) + std::abs(w * v2.z);
+         intersection.error = Vector(x_error_sum, y_error_sum, z_error_sum) * poly::Gamma7;
+
+         
+         world_ray.MinT = computed_t; 
          intersection.Hits = true;
          intersection.faceIndex = face_index;
          intersection.Shape = this;
-         intersection.Location = Point(v0.x * u + v1.x * v + v2.x * w,
-                                       v0.y * u + v1.y * v + v2.y * w,
-                                       v0.z * u + v1.z * v + v2.z * w);
+         intersection.Location = Point(std::fmaf(v0.x, u, sum_of_products(v1.x, v, v2.x, w)),
+                                       std::fmaf(v0.y, u, sum_of_products(v1.y, v, v2.y, w)),
+                                       std::fmaf(v0.z, u, sum_of_products(v1.z, v, v2.z, w)));
          intersection.u = u;
          intersection.v = v;
          intersection.w = w;
@@ -299,6 +358,9 @@ namespace poly {
          return;
       }
 
+      if (intersection.x == 128 && intersection.y == 128)
+         Log.debug("Hits with t %f", world_ray.MinT);
+      
       thread_stats.num_triangle_intersections_hit++;
 
       intersection.Hits = true;
@@ -307,10 +369,14 @@ namespace poly {
       const unsigned int v1_index = intersection.faceIndex + mesh_geometry->num_faces;
       const unsigned int v2_index = intersection.faceIndex + mesh_geometry->num_faces * 2;
       
-      const Point v0 = {mesh_geometry->x[intersection.faceIndex], mesh_geometry->y[intersection.faceIndex], mesh_geometry->z[intersection.faceIndex]};
-      const Point v1 = {mesh_geometry->x[v1_index], mesh_geometry->y[v1_index], mesh_geometry->z[v1_index]};
-      const Point v2 = {mesh_geometry->x[v2_index], mesh_geometry->y[v2_index], mesh_geometry->z[v2_index]};
+      Point v0 = {mesh_geometry->x[intersection.faceIndex], mesh_geometry->y[intersection.faceIndex], mesh_geometry->z[intersection.faceIndex]};
+      Point v1 = {mesh_geometry->x[v1_index], mesh_geometry->y[v1_index], mesh_geometry->z[v1_index]};
+      Point v2 = {mesh_geometry->x[v2_index], mesh_geometry->y[v2_index], mesh_geometry->z[v2_index]};
 
+      object_to_world->ApplyInPlace(v0);
+      object_to_world->ApplyInPlace(v1);
+      object_to_world->ApplyInPlace(v2);
+      
       // edge functions
       const Vector e0 = v1 - v0;
       const Vector e1 = v2 - v1;
@@ -319,15 +385,20 @@ namespace poly {
       Normal n;
       
       if (mesh_geometry->has_vertex_normals) {
-         const Vector v0n = {mesh_geometry->nx[intersection.faceIndex], 
-                             mesh_geometry->ny[intersection.faceIndex],
-                             mesh_geometry->nz[intersection.faceIndex]};
-         const Vector v1n = {mesh_geometry->nx[v1_index], 
-                             mesh_geometry->ny[v1_index],
-                             mesh_geometry->nz[v1_index]};
-         const Vector v2n = {mesh_geometry->nx[v2_index], 
-                             mesh_geometry->ny[v2_index],
-                             mesh_geometry->nz[v2_index]};
+         Normal v0n = {mesh_geometry->nx[intersection.faceIndex], 
+                       mesh_geometry->ny[intersection.faceIndex],
+                       mesh_geometry->nz[intersection.faceIndex]};
+         Normal v1n = {mesh_geometry->nx[v1_index], 
+                       mesh_geometry->ny[v1_index],
+                       mesh_geometry->nz[v1_index]};
+         Normal v2n = {mesh_geometry->nx[v2_index], 
+                       mesh_geometry->ny[v2_index],
+                       mesh_geometry->nz[v2_index]};
+         
+         object_to_world->ApplyInPlace(v0n);
+         object_to_world->ApplyInPlace(v1n);
+         object_to_world->ApplyInPlace(v2n);
+         
          n = {v0n.x * intersection.u + v1n.x * intersection.v + v2n.x * intersection.w,
               v0n.y * intersection.u + v1n.y * intersection.v + v2n.y * intersection.w,
               v0n.z * intersection.u + v1n.z * intersection.v + v2n.z * intersection.w
@@ -344,6 +415,26 @@ namespace poly {
       n.Normalize();
       intersection.bent_normal = n;
       intersection.geo_normal = n;
+      
+      // offset ray origin along normal
+      // http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#RobustSpawnedRayOrigins
+      poly::Vector abs_normal = { std::abs(n.x), std::abs(n.y), std::abs(n.z) };
+      float d = intersection.error.Dot(abs_normal);
+      poly::Vector offset = poly::Vector(n.x, n.y, n.z) * d;
+      if (world_ray.Direction.Dot(n) > 0)
+         offset = -offset;
+      poly::Point new_p = intersection.Location + offset;
+      for (int i = 0; i < 3; i++) {
+         if (offset[i] > 0) {
+            new_p[i] = std::nextafter(new_p[i], poly::Infinity);
+         } 
+         else if (offset[i] < 0) {
+            new_p[i] = std::nextafter(new_p[i], -poly::Infinity);
+         }
+      }
+      
+      intersection.Location = new_p;
+      
       const float edge0dot = fabsf(e0.Dot(e1));
       const float edge1dot = fabsf(e1.Dot(e2));
       const float edge2dot = fabsf(e2.Dot(e0));
@@ -357,8 +448,16 @@ namespace poly {
       }
 
       intersection.Tangent2 = intersection.Tangent1.Cross(n);
+      bool debug = false;
+      if (intersection.x == 128 && intersection.y == 128) {
+         debug = true;   
+      }
+      
       intersection.Tangent1.Normalize();
       intersection.Tangent2.Normalize();
+      if (intersection.x == 128 && intersection.y == 128 && std::isnan(intersection.Tangent2.x)) {
+         debug = true;
+      }
       
    }
 

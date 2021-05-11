@@ -20,6 +20,7 @@ namespace poly {
 
       const poly::Mesh *Shape = nullptr;
       poly::Point Location;
+      poly::Vector error;
       poly::Normal geo_normal;
       poly::Normal bent_normal;
       poly::Vector Tangent1;
@@ -31,6 +32,7 @@ namespace poly {
       unsigned int num_triangle_isects;
       float u, v, w;
       float u_tex_lerp, v_tex_lerp;
+      int x, y;
    };
 }
 

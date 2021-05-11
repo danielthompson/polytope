@@ -69,8 +69,8 @@ namespace poly {
       Vector operator-(const Point &rhs) const;
       Point operator+(const Point &rhs) const;
       Point operator+(const Vector &rhs) const;
-      float operator[] (const int index) const;
-      float operator[] (const Axis axis) const;
+      float &operator[] (const int index);
+      float &operator[] (const Axis axis);
       Point &operator+=(const Vector &rhs);
       Point &operator+=(const Normal &rhs);
 

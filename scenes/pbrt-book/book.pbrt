@@ -1,9 +1,9 @@
-Sampler "sobol" 
-        "integer pixelsamples" [ 1 ] 
+Sampler "random" 
+        "integer pixelsamples" [ 64 ] 
 PixelFilter "box" 
 Film "image" 
-        "integer xresolution" [ 1280 ] 
-        "integer yresolution" [ 720 ] 
+        "integer xresolution" [ 320 ] 
+        "integer yresolution" [ 240 ] 
         "string filename" [ "book.png" ] 
 Scale -1 1 1
 LookAt 0 2.10879993 13.5740004
@@ -39,22 +39,24 @@ AttributeBegin
     Material "mirror" "rgb Kr" [ .2 .2 1 ] 
     # Material "matte" "rgb Kd" [ .8 .8 .8 ]
     Scale 0.213 0.213 0.213
-    Shape "plymesh" "string filename" "geometry/mesh_00001.ply" 
+    # Shape "plymesh" "string filename" "geometry/mesh_00001.ply" 
 AttributeEnd
 
 Texture "book_cover" "color" "imagemap" 
         "string filename" [ "texture/book_pbrt.png" ] 
 Texture "book_pages" "color" "imagemap" 
         "string filename" [ "texture/book_pages.png" ] 
-Texture "uneven_bump_raw" "float" "imagemap" 
-        "float uscale" [ 1.5 ] 
-        "float vscale" [ 1.5 ] 
-        "string filename" [ "texture/uneven_bump.png" ] 
-Texture "uneven_bump_scale" "float" "constant" 
-        "float value" [ 0.00019999999 ] 
-Texture "uneven_bump" "float" "scale" 
-        "texture tex1" [ "uneven_bump_raw" ] 
-        "texture tex2" [ "uneven_bump_scale" ] 
+# Texture "uneven_bump_raw" "float" "imagemap" 
+#        "float uscale" [ 1.5 ] 
+#        "float vscale" [ 1.5 ] 
+#        "string filename" [ "texture/uneven_bump.png" ] 
+# Texture "uneven_bump_scale" "float" "constant" 
+#        "float value" [ 0.00019999999 ] 
+# Texture "uneven_bump" "float" "scale" 
+#         "texture tex1" [ "uneven_bump_raw" ] 
+#         "texture tex2" [ "uneven_bump_scale" ] 
+
+Rotate -20 0 1 0
 
 # PAGES
 AttributeBegin
@@ -66,9 +68,9 @@ AttributeBegin
     Scale 0.5 0.5 0.5
 
         # TODO REMOVE
-        Material "mirror" "rgb Kr" [ 0.3 0.5 0.6 ]
+        Material "mirror" "rgb Kr" [ 0.01 0.02 0.3 ]
         # Material "matte" "rgb Kd" [ 0.3 0.5 0.6 ]
-        Shape "plymesh" "string filename" "geometry/mesh_00002.ply" 
+        Shape "plymesh" "string filename" "geometry/inside_cleaned.ply" 
     
 AttributeEnd
 
@@ -88,7 +90,7 @@ AttributeBegin
     AttributeBegin
         # Material "matte" "rgb Kd" [ 0.4 0.039999999 0.039999999 ]
         Material "mirror" "rgb Kr" [ 0.4 0.039999999 0.039999999 ]
-        Shape "plymesh" "string filename" "geometry/mesh_00003-ascii.ply" 
+        Shape "plymesh" "string filename" "geometry/outside_cleaned.ply" 
     AttributeEnd
 AttributeEnd
 WorldEnd

@@ -19,7 +19,8 @@ namespace poly {
             : Settings(settings), CameraToWorld(cameraToWorld) { }
       virtual ~AbstractCamera() = default;
 
-      virtual Ray GetRay(Point2f pixel) = 0;
+      virtual Ray get_ray_for_pixel(const Point2f pixel) = 0;
+      virtual Ray get_ray_for_ndc(const Point2f pixel) = 0;
 
       const CameraSettings Settings;
       const Transform CameraToWorld;

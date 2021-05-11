@@ -8,9 +8,11 @@ Film "image" "integer xresolution" [ 512 ] "integer yresolution" [ 512 ] "string
 Camera "perspective" "float fov" [ 50 ]
 WorldBegin
     LightSource "infinite" "rgb L" [1 1 1]
-    Material "matte" "rgb Kd" [ 0 .3 .6 ]
+    Material "mirror" "rgb Kr" [ 0 .3 .6 ]
+    # Material "matte" "rgb Kd" [ 0 .3 .6 ]
     TransformBegin
         Translate 0 0 -5
+        # Rotate 180 0 1 0
         Shape "plymesh" "string filename" [ "one-triangle.ply" ]
     TransformEnd
 WorldEnd
