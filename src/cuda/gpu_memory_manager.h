@@ -8,6 +8,7 @@
 #include <cuda_runtime.h>
 #include "../cpu/shapes/mesh.h"
 #include "../cpu/scenes/Scene.h"
+#include "check_error.h"
 
 namespace poly {
    
@@ -80,6 +81,8 @@ namespace poly {
       GPUMemoryManager(const unsigned int width, const unsigned int height) 
       : width(width), height(height), device_camera(nullptr), meshes(nullptr) { 
          num_pixels = width * height;
+         
+         cuda_check_error(cudaGetDeviceCount(&num_devices));
       }
       ~GPUMemoryManager();
       
@@ -99,7 +102,8 @@ namespace poly {
       
       unsigned int width, height, num_pixels;
       
-      std::vector<void *> to_free_list;
+      std::vector<std::vector<void *>> device_free_lists;
+      //std::vector<void *> to_free_list;
       
       device_bvh_node* device_bvh;
       unsigned int num_bvh_nodes;
@@ -110,6 +114,8 @@ namespace poly {
        * Number of 
        */
       unsigned int num_indices;
+      
+      int num_devices;
    };
 
 }

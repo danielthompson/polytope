@@ -1,10 +1,6 @@
 # Polytope  
 Hobby ray/path tracer in C++.  
 
-#### Build Status
-
-[![Build Status](https://travis-ci.org/danielthompson/polytope.svg?branch=master)](https://travis-ci.org/danielthompson/polytope) [![Coverage Status](https://coveralls.io/repos/github/danielthompson/polytope/badge.svg?branch=master)](https://coveralls.io/github/danielthompson/polytope?branch=master)
-
 #### Goals
 * Path tracer
 * Support a variety of materials and reflection / transmission models
@@ -15,8 +11,11 @@ Hobby ray/path tracer in C++.
   * `.pbrt`
   * `.obj`
   * `.ply`
-* Rasterization output path with OpenGL (or Vulkan)
-* Stream processing, perhaps with CUDA and/or ISPC
+* Render paths
+  * vanilla CPU
+  * Explicit SPMD with [ispc](https://ispc.github.io/)
+  * CUDA
+  * Rasterization with OpenGL (or Vulkan)
 
 #### Renders
 
@@ -25,6 +24,9 @@ Lambertian reflection:
 
 Specular reflection:
 ![dragon](renders/dragon-specular.png)
+
+Instancing:
+![dragon](renders/instancing.png)
 
 Bounding-volume hierarchy heatmap:
 ![dragon](renders/dragon-bb-heatmap.png)
