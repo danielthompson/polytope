@@ -8,7 +8,6 @@
 #include <cuda_runtime.h>
 #include "../cpu/shapes/mesh.h"
 #include "../cpu/scenes/Scene.h"
-#include "check_error.h"
 
 namespace poly {
    
@@ -56,14 +55,14 @@ namespace poly {
 
    };
    
-   struct DeviceMesh {
+   struct device_mesh {
       float obj_to_world[16];
       float world_to_object[16];
       float brdf_params[10];
       float world_bb[6];
       
       /**
-       * Index into GPUMemoryManager::mesh_geometries for this mesh's geometry
+       * Index into device_context::mesh_geometries for this mesh's geometry
        */
       size_t device_mesh_geometry_offset;
       
@@ -76,20 +75,21 @@ namespace poly {
       float* b;
    };
    
-   class GPUMemoryManager {
+   /**
+    * Render context for a single device.
+    */
+   class device_context {
    public:
-      GPUMemoryManager(const unsigned int width, const unsigned int height) 
-      : width(width), height(height), device_camera(nullptr), meshes(nullptr) { 
-         num_pixels = width * height;
-         
-         cuda_check_error(cudaGetDeviceCount(&num_devices));
+      device_context(const unsigned int width, const unsigned int height, const unsigned int device_index) 
+      : width(width), height(height), device_index(device_index), device_camera(nullptr), meshes(nullptr) {
+         pixel_count = width * height;
       }
-      ~GPUMemoryManager();
+      ~device_context();
       
       poly::Scene* scene_field;
-      size_t MallocScene(poly::Scene* scene);
+      size_t malloc_scene(poly::Scene* scene);
       struct DeviceCamera* device_camera;
-      struct DeviceMesh* meshes;
+      struct device_mesh* meshes;
       struct device_mesh_geometry* mesh_geometries;
       
       unsigned int num_meshes;
@@ -100,24 +100,33 @@ namespace poly {
       struct Samples* device_samples;
       struct Samples host_samples;
       
-      unsigned int width, height, num_pixels;
+      unsigned int width, height, pixel_count;
       
-      std::vector<std::vector<void *>> device_free_lists;
-      //std::vector<void *> to_free_list;
+      std::vector<void *> to_free_list;
       
       device_bvh_node* device_bvh;
       unsigned int num_bvh_nodes;
       
       device_index_pair* index_pair;
+
+      unsigned int device_index;
       
       /**
        * Number of 
        */
       unsigned int num_indices;
-      
-      int num_devices;
    };
 
+   /**
+    * Render context for the entire system; includes all non-device-specific context like total pixel count, etc.
+    */
+   struct render_context {
+      int device_count;
+      int width;
+      int height;
+      int total_pixel_count;
+      std::vector<poly::device_context> device_contexts;
+   };
 }
 
 #endif //POLY_GPU_MEMORY_MANAGER_H

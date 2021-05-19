@@ -7,19 +7,19 @@
 
 #include <utility>
 
-#include "../gpu_memory_manager.h"
+#include "../context.h"
 
 namespace poly {
-   class PathTracerKernel {
+   class path_tracer {
    public:
-      explicit PathTracerKernel(poly::GPUMemoryManager* memory_manager) 
-         : memory_manager(memory_manager) { }
+      explicit path_tracer(poly::device_context* device_context) 
+         : device_context(device_context) { }
          
       void Trace(unsigned int num_samples) const;
 
       bool unit_test_hit_ray_against_bounding_box(const poly::Ray &ray, const float* const device_aabb);
       
-      poly::GPUMemoryManager* memory_manager;
+      poly::device_context* device_context;
    };
 }
 

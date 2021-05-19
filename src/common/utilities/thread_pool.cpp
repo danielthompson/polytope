@@ -140,12 +140,11 @@ namespace poly {
       thread_pool_printf("synchronize(): done\n");
    }
    
-   void thread_pool::enqueue(const std::function<void()>& task, int indices) {
+   void thread_pool::enqueue(const std::function<void()>& task) {
       thread_pool_printf("enqueue(): started\n");
       {
          std::lock_guard<std::mutex> lock(q_mutex);
          ready_q.push(task);
-         indices_count_q.push(indices);
          thread_pool_printf("enqueue(): enqueued %i indices, signalling ready cvar...\n", indices);
          ready_cvar.notify_one();
       }
@@ -190,9 +189,8 @@ namespace poly {
          }
 
          std::function<void()> task = ready_q.front();
-         int indices = indices_count_q.front();
+         
          ready_q.pop();
-         indices_count_q.pop();
          thread_pool_printf("run(%i): Popped task with %i indices, unlocking\n", thread_num, indices);
          thread_states[thread_num] = running;
          q_lock.unlock();

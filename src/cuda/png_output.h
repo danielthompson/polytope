@@ -5,12 +5,12 @@
 #ifndef POLY_PNG_OUTPUT_H
 #define POLY_PNG_OUTPUT_H
 
-#include "gpu_memory_manager.h"
+#include "context.h"
 
 namespace poly {
-   class OutputPNG {
+   class output_png {
    public:
-      static void Output(const poly::GPUMemoryManager* memory_manager, const std::string& filename);
+      static void output(const poly::render_context *render_context, const std::string& filename);
    };
 }
 

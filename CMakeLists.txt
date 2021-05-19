@@ -148,8 +148,8 @@ add_executable(${PROJECT_NAME} src/cpu/main.cpp
 
 add_library(polytope_cuda_lib
         src/cuda/check_error.h
-        src/cuda/gpu_memory_manager.cpp
-        src/cuda/gpu_memory_manager.h
+    src/cuda/context.cpp
+    src/cuda/context.h
         src/cuda/kernels/common_device_functions.cuh
         src/cuda/kernels/path_tracer.cu
         src/cuda/kernels/path_tracer.cuh

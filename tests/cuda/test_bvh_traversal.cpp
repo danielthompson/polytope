@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include "../../src/cpu/scenes/Scene.h"
 #include "../../src/common/parsers/mesh_parsers.h"
-#include "../../src/cuda/gpu_memory_manager.h"
+#include "../../src/cuda/context.h"
 #include "../../src/cuda/kernels/path_tracer.cuh"
 
 namespace Tests {
@@ -32,11 +32,11 @@ namespace Tests {
       scene.bvh_root.num_nodes = 1;
       scene.bvh_root.compact();
       
-      poly::GPUMemoryManager memory_manager = poly::GPUMemoryManager(1, 1);
-      size_t bytes_copied = memory_manager.MallocScene(&scene);
+      poly::device_context memory_manager = poly::device_context(1, 1, 0);
+      size_t bytes_copied = memory_manager.malloc_scene(&scene);
       EXPECT_GT(bytes_copied, 0);
       
-      poly::PathTracerKernel kernel(&memory_manager);
+      poly::path_tracer kernel(&memory_manager);
       
       poly::Ray ray = { {2, 0, 10}, { 0, 0, -1}};
       
@@ -76,12 +76,12 @@ namespace Tests {
       scene.bvh_root.num_nodes = 3;
       scene.bvh_root.compact();
 
-      poly::GPUMemoryManager memory_manager = poly::GPUMemoryManager(1, 1);
-      size_t bytes_copied = memory_manager.MallocScene(&scene);
+      poly::device_context memory_manager = poly::device_context(1, 1, 0);
+      size_t bytes_copied = memory_manager.malloc_scene(&scene);
 
       EXPECT_GT(bytes_copied, 0);
       
-      poly::PathTracerKernel kernel(&memory_manager);
+      poly::path_tracer kernel(&memory_manager);
 
       poly::Ray ray = { {2, 0, 10}, { 0, 0, -1}};
 
@@ -127,12 +127,12 @@ namespace Tests {
       scene.bvh_root.num_nodes = 3;
       scene.bvh_root.compact();
 
-      poly::GPUMemoryManager memory_manager = poly::GPUMemoryManager(1, 1);
-      size_t bytes_copied = memory_manager.MallocScene(&scene);
+      poly::device_context memory_manager = poly::device_context(1, 1, 0);
+      size_t bytes_copied = memory_manager.malloc_scene(&scene);
 
       EXPECT_GT(bytes_copied, 0);
 
-      poly::PathTracerKernel kernel(&memory_manager);
+      poly::path_tracer kernel(&memory_manager);
 
       poly::Ray ray = { {2, 0, 0}, { -1, 0, 0}};
 
@@ -181,12 +181,12 @@ namespace Tests {
       scene.bvh_root.num_nodes = 3;
       scene.bvh_root.compact();
 
-      poly::GPUMemoryManager memory_manager = poly::GPUMemoryManager(1, 1);
-      size_t bytes_copied = memory_manager.MallocScene(&scene);
+      poly::device_context memory_manager = poly::device_context(1, 1, 0);
+      size_t bytes_copied = memory_manager.malloc_scene(&scene);
 
       EXPECT_GT(bytes_copied, 0);
 
-      poly::PathTracerKernel kernel(&memory_manager);
+      poly::path_tracer kernel(&memory_manager);
 
       poly::Ray ray = { {-1.701634, -0.397628, -0.295537}, { 0.985882, -0.038071, 0.163058}};
 
