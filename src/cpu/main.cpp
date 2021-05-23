@@ -157,8 +157,8 @@ Other:
 
          if (options.gl) {
             Log.debug("Rasterizing with OpenGL...");
-            poly::gl_renderer renderer;
-            renderer.render(runner->Scene);
+            poly::gl_renderer renderer(runner->Scene);
+            renderer.render();
          }
          else {
             Log.debug("Rendering...");

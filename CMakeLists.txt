@@ -142,7 +142,7 @@ add_library(polytope_lib
 add_executable(${PROJECT_NAME} src/cpu/main.cpp
         src/cpu/platforms/win32-cygwin.h
     src/gl/gl_renderer.cpp
-    src/gl/gl_renderer.h)
+    src/gl/gl_renderer.h src/gl/bb_vao.h src/gl/mesh_vao.h)
 
 add_library(polytope_cuda_lib
         src/cuda/check_error.h
