@@ -11,7 +11,7 @@ Hobby ray/path tracer in C++.
   * `.pbrt`
   * `.obj`
   * `.ply`
-* Render paths
+* render paths
   * vanilla CPU
   * Explicit SPMD with [ispc](https://ispc.github.io/)
   * CUDA

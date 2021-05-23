@@ -14,9 +14,7 @@
 
 namespace poly {
 
-//   __constant__ float camera_to_world_matrix[16];
-   
-   size_t device_context::malloc_scene(poly::Scene *scene) {
+   size_t device_context::malloc_scene(std::shared_ptr<scene> scene) {
 
       this->scene_field = scene;
       
@@ -58,7 +56,7 @@ namespace poly {
       
       // TODO unit test to ensure scene->num_mesh_geometries is the right number
       struct device_mesh_geometry* device_mesh_geometries_temp = nullptr;
-      size_t device_mesh_geometries_size = sizeof(struct device_mesh_geometry) * scene->num_mesh_geometries;
+      size_t device_mesh_geometries_size = sizeof(struct device_mesh_geometry) * scene->mesh_geometry_count;
       cuda_check_error( cudaMalloc((void **)&(device_mesh_geometries_temp), device_mesh_geometries_size) );
       this->mesh_geometries = device_mesh_geometries_temp;
 
@@ -241,7 +239,7 @@ namespace poly {
       bytes_copied += num_bvh_bytes;
       to_free_list.push_back(device_bvh);
       
-      const size_t num_index_bytes = scene->bvh_root.compact_root->leaf_ordered_indices.size() * sizeof(scene->bvh_root.compact_root->leaf_ordered_indices);
+      const size_t num_index_bytes = scene->bvh_root.compact_root->leaf_ordered_indices.size() * sizeof(std::pair<unsigned int, unsigned int>);
       cuda_check_error( cudaMalloc((void**)&index_pair, num_index_bytes) );
       cuda_check_error( cudaMemcpy(index_pair, &scene->bvh_root.compact_root->leaf_ordered_indices[0], num_index_bytes, cudaMemcpyHostToDevice) );
 

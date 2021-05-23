@@ -10,7 +10,7 @@
 #include "../../../src/cpu/films/PNGFilm.h"
 #include "../../../src/cpu/filters/BoxFilter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
-#include "../../../src/cpu/scenes/Scene.h"
+#include "../../../src/cpu/scenes/scene.h"
 #include "../../../src/cpu/cameras/PerspectiveCamera.h"
 #include "../../../src/cpu/shapes/mesh.h"
 

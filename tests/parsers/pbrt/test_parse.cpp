@@ -10,7 +10,7 @@
 #include "../../../src/cpu/films/PNGFilm.h"
 #include "../../../src/cpu/filters/BoxFilter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
-#include "../../../src/cpu/scenes/Scene.h"
+#include "../../../src/cpu/scenes/scene.h"
 #include "../../../src/cpu/cameras/PerspectiveCamera.h"
 #include "../../../src/cpu/shapes/mesh.h"
 
@@ -64,11 +64,10 @@ namespace Tests {
          ASSERT_NE(nullptr, actualIntegrator);
 
          // integrator's scene
-         poly::Scene* scene = actualIntegrator->Scene;
-         poly::Scene* actualScene = dynamic_cast<poly::Scene *>(scene);
-         ASSERT_NE(nullptr, actualScene);
-         EXPECT_EQ(0, actualScene->Lights.size());
-         EXPECT_EQ(0, actualScene->Shapes.size());
+         auto scene = actualIntegrator->Scene;
+         ASSERT_NE(nullptr, scene);
+         EXPECT_EQ(0, scene->Lights.size());
+         EXPECT_EQ(0, scene->Shapes.size());
 
          // camera
          std::unique_ptr<poly::AbstractCamera> camera = std::move(scene->Camera);
@@ -146,11 +145,10 @@ namespace Tests {
 
 
          // integrator's scene
-         poly::Scene* scene = actualIntegrator->Scene;
-         poly::Scene* actualScene = dynamic_cast<poly::Scene *>(scene);
-         ASSERT_NE(nullptr, actualScene);
-         EXPECT_EQ(0, actualScene->Lights.size());
-         EXPECT_EQ(0, actualScene->Shapes.size());
+         auto scene = actualIntegrator->Scene;
+         ASSERT_NE(nullptr, scene);
+         EXPECT_EQ(0, scene->Lights.size());
+         EXPECT_EQ(0, scene->Shapes.size());
 
          // camera
          std::unique_ptr<poly::AbstractCamera> camera = std::move(scene->Camera);

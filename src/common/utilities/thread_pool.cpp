@@ -8,8 +8,6 @@ std::mutex fprintf_mutex;
 
 namespace poly {
    
-   
-   
 //#define THREAD_POOL_DEBUG
 #ifdef THREAD_POOL_DEBUG
 #define thread_pool_printf(...) do { std::lock_guard<std::mutex> guard(fprintf_mutex); fprintf(stderr, __VA_ARGS__); } while (0)

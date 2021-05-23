@@ -57,7 +57,10 @@ namespace poly {
       compact_bvh(unsigned int num_nodes) : num_nodes(num_nodes){
          Log.debug("sizeof compact_bvh_node: %i", sizeof(compact_bvh_node));
 //         nodes = static_cast<compact_bvh_node *>(malloc(sizeof(compact_bvh_node) * num_nodes));
-         nodes = static_cast<compact_bvh_node *>(aligned_alloc(64, sizeof(compact_bvh_node) * num_nodes));
+         
+         size_t size = sizeof(compact_bvh_node) * num_nodes;
+
+         nodes = static_cast<compact_bvh_node *>(aligned_alloc(64, size));
          if (nodes == nullptr) {
             ERROR( "compact_bvh: couldn't get aligned address :/");
          }
@@ -78,7 +81,7 @@ namespace poly {
    
    class bvh {
    public:
-      bvh() = default;
+      bvh() : compact_root(nullptr), root(nullptr), num_nodes(0) { }
       ~bvh();
       unsigned int bound(const std::vector<poly::Mesh*>& meshes);
       void compact();

@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include "../../src/cpu/scenes/Scene.h"
+#include "../../src/cpu/scenes/scene.h"
 #include "../../src/common/parsers/mesh_parsers.h"
 #include "../../src/cuda/context.h"
 #include "../../src/cuda/kernels/path_tracer.cuh"
@@ -23,17 +23,17 @@ namespace Tests {
       parser.parse_file(geometry, file);
       poly::Mesh mesh(identity, identity, nullptr, geometry);
       
-      poly::Scene scene(nullptr);
-      scene.Shapes.emplace_back(&mesh);
-      scene.num_mesh_geometries = 1;
+      std::shared_ptr<poly::scene> scene(nullptr);
+      scene->Shapes.emplace_back(&mesh);
+      scene->mesh_geometry_count = 1;
 
-      scene.bvh_root.root = new poly::bvh_node();
-      scene.bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
-      scene.bvh_root.num_nodes = 1;
-      scene.bvh_root.compact();
+      scene->bvh_root.root = new poly::bvh_node();
+      scene->bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
+      scene->bvh_root.num_nodes = 1;
+      scene->bvh_root.compact();
       
       poly::device_context memory_manager = poly::device_context(1, 1, 0);
-      size_t bytes_copied = memory_manager.malloc_scene(&scene);
+      size_t bytes_copied = memory_manager.malloc_scene(scene);
       EXPECT_GT(bytes_copied, 0);
       
       poly::path_tracer kernel(&memory_manager);
@@ -57,27 +57,27 @@ namespace Tests {
       parser.parse_file(geometry, file);
       poly::Mesh mesh(identity, identity, nullptr, geometry);
 
-      poly::Scene scene(nullptr);
-      scene.Shapes.emplace_back(&mesh);
-      scene.num_mesh_geometries = 1;
+      std::shared_ptr<poly::scene> scene = std::make_shared<poly::scene>(nullptr);
+      scene->Shapes.emplace_back(&mesh);
+      scene->mesh_geometry_count = 1;
       
-      scene.bvh_root.root = new poly::bvh_node();
-      scene.bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
-      scene.bvh_root.root->axis = poly::Axis::x;
+      scene->bvh_root.root = new poly::bvh_node();
+      scene->bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
+      scene->bvh_root.root->axis = poly::Axis::x;
       
       // low child
-      scene.bvh_root.root->low = new poly::bvh_node();
-      scene.bvh_root.root->low->bb = { { -3, -1, -1 }, {-1, 2, 1} };
+      scene->bvh_root.root->low = new poly::bvh_node();
+      scene->bvh_root.root->low->bb = { { -3, -1, -1 }, {-1, 2, 1} };
       
       // high child
-      scene.bvh_root.root->high = new poly::bvh_node();
-      scene.bvh_root.root->high->bb = { { 1, -1, -1 }, {3, 2, 1} };
+      scene->bvh_root.root->high = new poly::bvh_node();
+      scene->bvh_root.root->high->bb = { { 1, -1, -1 }, {3, 2, 1} };
       
-      scene.bvh_root.num_nodes = 3;
-      scene.bvh_root.compact();
+      scene->bvh_root.num_nodes = 3;
+      scene->bvh_root.compact();
 
       poly::device_context memory_manager = poly::device_context(1, 1, 0);
-      size_t bytes_copied = memory_manager.malloc_scene(&scene);
+      size_t bytes_copied = memory_manager.malloc_scene(scene);
 
       EXPECT_GT(bytes_copied, 0);
       
@@ -108,27 +108,27 @@ namespace Tests {
       parser.parse_file(geometry, file);
       poly::Mesh mesh(identity, identity, nullptr, geometry);
 
-      poly::Scene scene(nullptr);
-      scene.Shapes.emplace_back(&mesh);
-      scene.num_mesh_geometries = 1;
+      std::shared_ptr<poly::scene> scene = std::make_shared<poly::scene>(nullptr);
+      scene->Shapes.emplace_back(&mesh);
+      scene->mesh_geometry_count = 1;
       
-      scene.bvh_root.root = new poly::bvh_node();
-      scene.bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
-      scene.bvh_root.root->axis = poly::Axis::x;
+      scene->bvh_root.root = new poly::bvh_node();
+      scene->bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
+      scene->bvh_root.root->axis = poly::Axis::x;
 
       // low child
-      scene.bvh_root.root->low = new poly::bvh_node();
-      scene.bvh_root.root->low->bb = { { -3, -1, -1 }, {-1, 2, 1} };
+      scene->bvh_root.root->low = new poly::bvh_node();
+      scene->bvh_root.root->low->bb = { { -3, -1, -1 }, {-1, 2, 1} };
 
       // high child
-      scene.bvh_root.root->high = new poly::bvh_node();
-      scene.bvh_root.root->high->bb = { { 1, -1, -1 }, {3, 2, 1} };
+      scene->bvh_root.root->high = new poly::bvh_node();
+      scene->bvh_root.root->high->bb = { { 1, -1, -1 }, {3, 2, 1} };
 
-      scene.bvh_root.num_nodes = 3;
-      scene.bvh_root.compact();
+      scene->bvh_root.num_nodes = 3;
+      scene->bvh_root.compact();
 
       poly::device_context memory_manager = poly::device_context(1, 1, 0);
-      size_t bytes_copied = memory_manager.malloc_scene(&scene);
+      size_t bytes_copied = memory_manager.malloc_scene(scene);
 
       EXPECT_GT(bytes_copied, 0);
 
@@ -162,27 +162,27 @@ namespace Tests {
       parser.parse_file(geometry, file);
       poly::Mesh mesh(identity, identity, nullptr, geometry);
 
-      poly::Scene scene(nullptr);
-      scene.Shapes.emplace_back(&mesh);
-      scene.num_mesh_geometries = 1;
+      std::shared_ptr<poly::scene> scene = std::make_shared<poly::scene>(nullptr);
+      scene->Shapes.emplace_back(&mesh);
+      scene->mesh_geometry_count = 1;
       
-      scene.bvh_root.root = new poly::bvh_node();
-      scene.bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
-      scene.bvh_root.root->axis = poly::Axis::x;
+      scene->bvh_root.root = new poly::bvh_node();
+      scene->bvh_root.root->bb = { { -3, -1, -1 }, {3, 2, 1} };
+      scene->bvh_root.root->axis = poly::Axis::x;
 
       // low child
-      scene.bvh_root.root->low = new poly::bvh_node();
-      scene.bvh_root.root->low->bb = { { -3, -1, -1 }, {-1, 2, 1} };
+      scene->bvh_root.root->low = new poly::bvh_node();
+      scene->bvh_root.root->low->bb = { { -3, -1, -1 }, {-1, 2, 1} };
 
       // high child
-      scene.bvh_root.root->high = new poly::bvh_node();
-      scene.bvh_root.root->high->bb = { { 1, -1, -1 }, {3, 2, 1} };
+      scene->bvh_root.root->high = new poly::bvh_node();
+      scene->bvh_root.root->high->bb = { { 1, -1, -1 }, {3, 2, 1} };
 
-      scene.bvh_root.num_nodes = 3;
-      scene.bvh_root.compact();
+      scene->bvh_root.num_nodes = 3;
+      scene->bvh_root.compact();
 
       poly::device_context memory_manager = poly::device_context(1, 1, 0);
-      size_t bytes_copied = memory_manager.malloc_scene(&scene);
+      size_t bytes_copied = memory_manager.malloc_scene(scene);
 
       EXPECT_GT(bytes_copied, 0);
 

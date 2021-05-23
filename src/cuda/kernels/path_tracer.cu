@@ -266,7 +266,6 @@ namespace poly {
          normalize(intersection->tangent1);
          normalize(intersection->tangent2);
       }
-      
    }
    
    __device__ void bvh_intersect(
@@ -557,7 +556,6 @@ namespace poly {
          
          // TODO also break if all samples are inactive
          if (num_bounces > 20) {
-            
             break;
          }
          
@@ -954,23 +952,21 @@ namespace poly {
       cuda_check_error( cudaMalloc((void**)&sample_directions_inverse, sample_bytes) );
 
       for (int i = 0; i < num_samples; i++) {
-         {
-            const unsigned int generate_rays_tpb = 64;
-            const unsigned int generate_rays_bpg = (device_context->pixel_count + generate_rays_tpb - 1) / generate_rays_tpb;
-            
-            // generate rays
-            //printf("launching generate_camera_rays_centered_kernel<<<%i, %i>>>\n", blocksPerGrid, threads_per_block);
-            generate_camera_rays_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
-                  sample_origins, 
-                  sample_directions, 
-                  sample_directions_inverse, 
-                  device_states,
-                  width, 
-                  (float) height, 
-                  tan_fov_half, 
-                  i,
-                  num_samples, 
-                  device_context->device_index);
+         const unsigned int generate_rays_tpb = 64;
+         const unsigned int generate_rays_bpg = (device_context->pixel_count + generate_rays_tpb - 1) / generate_rays_tpb;
+         
+         // generate rays
+         generate_camera_rays_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
+               sample_origins, 
+               sample_directions, 
+               sample_directions_inverse, 
+               device_states,
+               width, 
+               (float) height, 
+               tan_fov_half, 
+               i,
+               num_samples, 
+               device_context->device_index);
 
 //            generate_camera_rays_stratified_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
 //                  sample_origins, sample_directions, sample_directions_inverse, device_states,
@@ -987,7 +983,7 @@ namespace poly {
 //                       cudaGetErrorString(error));
 //               exit(EXIT_FAILURE);
 //            }
-         }
+         
 
          // run path tracer => sample_results
 

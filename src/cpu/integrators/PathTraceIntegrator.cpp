@@ -25,8 +25,8 @@ namespace poly {
 //         current_ray.x = x;
 //         current_ray.y = y;
 //         current_ray.bounce = num_bounces;
-         if (x == 128 && y == 128) {
-            debug = false;
+         if (x == 50 && y == 200) {
+            debug = true;
          }
          Intersection intersection = Scene->intersect(current_ray, x, y);
 
@@ -54,7 +54,7 @@ namespace poly {
          }
 
          if (debug) {
-            printf("hit face index %i\n", intersection.faceIndex);
+            printf("hit mesh index %i face index %i\n", intersection.mesh_index, intersection.faceIndex);
          }
          
          if (intersection.Shape->is_light()) {

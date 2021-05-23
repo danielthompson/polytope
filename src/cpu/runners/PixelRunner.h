@@ -18,7 +18,7 @@ namespace poly {
 
       PixelRunner(
             std::unique_ptr<AbstractSampler> sampler,
-            poly::Scene *scene,
+            std::shared_ptr<poly::scene> scene,
             std::unique_ptr<AbstractIntegrator> integrator,
             std::unique_ptr<AbstractFilm> film,
             const poly::Bounds bounds,

@@ -5,17 +5,17 @@
 #ifndef POLY_ABSTRACTINTEGRATOR_H
 #define POLY_ABSTRACTINTEGRATOR_H
 
-#include "../scenes/Scene.h"
+#include "../scenes/scene.h"
 #include "../structures/Sample.h"
 
 namespace poly {
 
    class AbstractIntegrator {
    public:
-      poly::Scene *Scene;
+      std::shared_ptr<poly::scene> Scene;
       int MaxDepth;
 
-      AbstractIntegrator(poly::Scene *scene, int maxDepth)
+      AbstractIntegrator(poly::scene *scene, int maxDepth)
          : Scene(scene), MaxDepth(maxDepth) { };
 
       AbstractIntegrator(int maxDepth)

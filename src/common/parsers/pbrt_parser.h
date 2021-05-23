@@ -197,16 +197,16 @@ namespace poly {
       // constructors
       explicit pbrt_parser() = default;
 
-      std::unique_ptr<AbstractRunner> parse_file(const std::string &filepath) noexcept(false);
+      std::unique_ptr<poly::AbstractRunner> parse_file(const std::string &filepath) noexcept(false);
       
-      std::unique_ptr<AbstractRunner> parse_string(const std::string &text) noexcept(false);
-      static std::unique_ptr<pbrt_directive> lex(std::vector<std::string> line);
+      std::unique_ptr<poly::AbstractRunner> parse_string(const std::string &text) noexcept(false);
+      static std::unique_ptr<poly::pbrt_directive> lex(std::vector<std::string> line);
       static std::unique_ptr<std::vector<std::vector<std::string>>> scan(const std::unique_ptr<std::istream>& stream);
-      std::unique_ptr<AbstractSampler> sampler;
-      Scene* scene = nullptr;
-      std::unique_ptr<AbstractIntegrator> integrator;
-      std::unique_ptr<AbstractFilm> film;
-      std::unique_ptr<AbstractFilter> filter;
+      std::unique_ptr<poly::AbstractSampler> sampler;
+      std::shared_ptr<poly::scene> scene = nullptr;
+      std::unique_ptr<poly::AbstractIntegrator> integrator;
+      std::unique_ptr<poly::AbstractFilm> film;
+      std::unique_ptr<poly::AbstractFilter> filter;
       poly::Bounds bounds;
    
    private:

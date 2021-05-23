@@ -11,7 +11,7 @@ namespace poly {
 
    class DebugIntegrator : public AbstractIntegrator {
    public:
-      DebugIntegrator(poly::Scene *scene, int maxDepth)
+      DebugIntegrator(poly::scene *scene, int maxDepth)
       : AbstractIntegrator(scene, maxDepth) { };
 
       explicit DebugIntegrator(int maxDepth)

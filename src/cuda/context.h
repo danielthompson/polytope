@@ -7,7 +7,7 @@
 
 #include <cuda_runtime.h>
 #include "../cpu/shapes/mesh.h"
-#include "../cpu/scenes/Scene.h"
+#include "../cpu/scenes/scene.h"
 
 namespace poly {
    
@@ -76,7 +76,7 @@ namespace poly {
    };
    
    /**
-    * Render context for a single device.
+    * render context for a single device.
     */
    class device_context {
    public:
@@ -86,8 +86,8 @@ namespace poly {
       }
       ~device_context();
       
-      poly::Scene* scene_field;
-      size_t malloc_scene(poly::Scene* scene);
+      std::shared_ptr<poly::scene> scene_field;
+      size_t malloc_scene(std::shared_ptr<scene> scene);
       struct DeviceCamera* device_camera;
       struct device_mesh* meshes;
       struct device_mesh_geometry* mesh_geometries;
@@ -118,7 +118,7 @@ namespace poly {
    };
 
    /**
-    * Render context for the entire system; includes all non-device-specific context like total pixel count, etc.
+    * render context for the entire system; includes all non-device-specific context like total pixel count, etc.
     */
    struct render_context {
       int device_count;

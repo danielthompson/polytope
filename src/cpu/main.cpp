@@ -9,14 +9,13 @@
 
 #include "../common/utilities/OptionsParser.h"
 #include "../common/utilities/Common.h"
-#include "scenes/SceneBuilder.h"
 #include "integrators/PathTraceIntegrator.h"
 #include "samplers/samplers.h"
 #include "filters/BoxFilter.h"
 #include "runners/TileRunner.h"
 #include "films/PNGFilm.h"
 #include "../common/parsers/pbrt_parser.h"
-#include "../gl/GLRenderer.h"
+#include "../gl/gl_renderer.h"
 #include "shapes/mesh.h"
 #include "structures/stats.h"
 
@@ -88,7 +87,7 @@ File options:
                      defaults to the input file name (with .png extension).
 
 Other:
-   -gl               Render the scene with OpenGL, for reference.
+   -gl               render the scene with OpenGL, for reference.
    --help            Print this help text and exit.)");
          std::cout << std::endl;
          exit(0);
@@ -128,24 +127,8 @@ Other:
                runner->NumSamples = options.samples;
             }
          } else {
-            Log.debug("No input file specified, using default scene.");
-            poly::SceneBuilder sceneBuilder = poly::SceneBuilder(bounds);
-            poly::Scene *scene = sceneBuilder.Default();
-
-            // TODO fix
-            // Compile(scene);
-
-            std::unique_ptr<poly::AbstractSampler> sampler = std::make_unique<poly::HaltonSampler>();
-            std::unique_ptr<poly::AbstractIntegrator> integrator = std::make_unique<poly::PathTraceIntegrator>(scene,
-                                                                                                               5);
-
-            std::unique_ptr<poly::BoxFilter> filter = std::make_unique<poly::BoxFilter>(bounds);
-            filter->SetSamples(options.samples);
-            std::unique_ptr<poly::AbstractFilm> film = std::make_unique<poly::PNGFilm>(bounds, options.output_filename,
-                                                                                       std::move(filter));
-
-            runner = std::make_unique<poly::TileRunner>(std::move(sampler), scene, std::move(integrator),
-                                                        std::move(film), bounds, options.samples);
+            Log.debug("No input file specified, quitting.");
+            exit(0);
          }
 
          const auto bound_start = std::chrono::system_clock::now();
@@ -153,7 +136,7 @@ Other:
          unsigned int num_nodes = runner->Scene->bvh_root.bound(runner->Scene->Shapes);
          const auto bound_end = std::chrono::system_clock::now();
          const std::chrono::duration<double> bound_duration = bound_end - bound_start;
-         Log.debug("Created BVH in " + std::to_string(bound_duration.count()) + "s.");
+         Log.debug("Created BVH with " + std::to_string(num_nodes) + " nodes in " + std::to_string(bound_duration.count()) + "s.");
          Log.debug("Number of leaves with multiple triangles with the same centroid: " + std::to_string(thread_stats.num_bvh_bound_leaf_same_centroid));
          
          const auto compact_start = std::chrono::system_clock::now();
@@ -174,8 +157,8 @@ Other:
 
          if (options.gl) {
             Log.debug("Rasterizing with OpenGL...");
-            poly::GLRenderer renderer;
-            renderer.Render(runner->Scene);
+            poly::gl_renderer renderer;
+            renderer.render(runner->Scene);
          }
          else {
             Log.debug("Rendering...");

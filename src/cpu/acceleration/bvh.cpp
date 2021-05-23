@@ -480,6 +480,10 @@ namespace poly {
             1.f / ray.Direction.z
       };
       
+      bool debug = false;
+      if (intersection.x == 50 && intersection.y == 200)
+         bool debug = true;
+      
       bool neg_dir[3] = { inverse_direction.x < 0, inverse_direction.y < 0, inverse_direction.z < 0 };
       
       // TODO change this to a plain array and allocate on a 64-byte boundary
@@ -498,7 +502,10 @@ namespace poly {
                for (unsigned int i = 0; i < node->num_faces; i++) {
                   std::pair<unsigned int, unsigned int> indices = compact_root->leaf_ordered_indices[node->face_index_offset + i];
                   poly::Mesh* mesh = meshes[indices.first];
+                  bool already_hit = intersection.Hits;
                   mesh->intersect(ray, intersection, &indices.second, 1);
+                  if (already_hit != intersection.Hits)
+                     intersection.mesh_index = indices.first;
                   intersection.num_triangle_isects++;
                }
                // otherwise, keep traversing               
@@ -631,16 +638,16 @@ namespace poly {
       
       faces_per_leaf_avg = (float)total_faces / (float)num_leaf_nodes;
       
-      Log.debug("height: %i\n", tree_height);
-      Log.debug("leaves: %i\n", num_leaf_nodes);
-      Log.debug("good interior: %i\n", num_interior_nodes);
-      Log.debug("high interior: %i\n", num_single_high_child_nodes);
-      Log.debug("low interior : %i\n", num_single_low_child_nodes);
-      Log.debug("total faces : %i\n", total_faces);
-      Log.debug("faces per leaf (avg): %f\n", faces_per_leaf_avg);
-      Log.debug("faces per leaf (min): %i\n", faces_per_leaf_min);
-      Log.debug("faces per leaf (max): %i\n", faces_per_leaf_max);
-      Log.debug("bb : tri SA ratio (avg): %f\n", leaf_ratio_avg);
+      Log.debug("height: %i", tree_height);
+      Log.debug("leaves: %i", num_leaf_nodes);
+      Log.debug("good interior: %i", num_interior_nodes);
+      Log.debug("high interior: %i", num_single_high_child_nodes);
+      Log.debug("low interior : %i", num_single_low_child_nodes);
+      Log.debug("total faces : %i", total_faces);
+      Log.debug("faces per leaf (avg): %f", faces_per_leaf_avg);
+      Log.debug("faces per leaf (min): %i", faces_per_leaf_min);
+      Log.debug("faces per leaf (max): %i", faces_per_leaf_max);
+      Log.debug("bb : tri SA ratio (avg): %f", leaf_ratio_avg);
       
       const float bucket_index_width = (leaf_counts.size()) / 500.0f;
       
@@ -710,6 +717,7 @@ namespace poly {
          }
       }
 
-      delete compact_root;
+      if (compact_root != nullptr)
+         delete compact_root;
    }
 }

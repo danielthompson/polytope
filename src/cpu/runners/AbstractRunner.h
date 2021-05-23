@@ -8,7 +8,7 @@
 #include <memory>
 #include <thread>
 #include "../samplers/samplers.h"
-#include "../scenes/Scene.h"
+#include "../scenes/scene.h"
 #include "../integrators/AbstractIntegrator.h"
 #include "../films/AbstractFilm.h"
 #include "../structures/stats.h"
@@ -22,7 +22,7 @@ namespace poly {
 
       explicit AbstractRunner(
             std::unique_ptr<AbstractSampler> sampler,
-            Scene *scene,
+            std::shared_ptr<poly::scene> scene,
             std::unique_ptr<AbstractIntegrator> integrator,
             std::unique_ptr<AbstractFilm> film,
             const unsigned int numSamples,
@@ -51,7 +51,7 @@ namespace poly {
       unsigned int NumSamples;
       std::unique_ptr<AbstractSampler> Sampler;
       std::unique_ptr<AbstractFilm> Film;
-      poly::Scene *Scene;
+      std::shared_ptr<poly::scene> Scene;
       std::unique_ptr<AbstractIntegrator> Integrator;
 
       const poly::Bounds Bounds;

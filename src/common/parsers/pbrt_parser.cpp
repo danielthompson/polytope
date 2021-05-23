@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cert-err58-cpp"
 //
 // Created by Daniel on 07-Apr-18.
 //
@@ -15,7 +17,7 @@
 #include "../../cpu/runners/TileRunner.h"
 #include "../../cpu/films/PNGFilm.h"
 #include "../../cpu/filters/BoxFilter.h"
-#include "../../cpu/scenes/Scene.h"
+#include "../../cpu/scenes/scene.h"
 #include "../utilities/Common.h"
 #include "../../cpu/scenes/skyboxes/ColorSkybox.h"
 #include "../../cpu/structures/Vectors.h"
@@ -74,8 +76,8 @@ namespace poly {
          const std::string WorldEnd = "WorldEnd";
       }
       
-      std::string _inputFilename = "";
-      std::string _basePathFromCWD = "";
+      std::string _inputFilename;
+      std::string _basePathFromCWD;
 
       // strings
 
@@ -932,7 +934,7 @@ namespace poly {
          if (directive->identifier == str::Sampler) {
             missingSampler = false;
             if (directive->type == str::halton) {
-               sampler = std::make_unique<CenterSampler>();
+               sampler = std::make_unique<HaltonSampler>();
             } else {
                LogUnknownIdentifier(directive);
                sampler = std::make_unique<CenterSampler>();
@@ -962,10 +964,10 @@ namespace poly {
       }
 
       if (sampler == nullptr) {
-         sampler = std::make_unique<CenterSampler>();
+         sampler = std::make_unique<HaltonSampler>();
       }
 
-      Log.debug("Made (center) sampler.");
+      Log.debug("Made sampler.");
 
       // film
 
@@ -1252,7 +1254,7 @@ namespace poly {
       std::unordered_map<std::string, std::shared_ptr<poly::mesh_geometry>> name_mesh_map;
       std::shared_ptr<poly::mesh_geometry> current_geometry = nullptr;
 
-      scene = new Scene(std::move(camera));
+      scene = std::make_shared<poly::scene>(std::move(camera));
 
       bool in_object_begin = false;
       
@@ -1532,7 +1534,7 @@ namespace poly {
                      else {
                         geometry = std::make_shared<poly::mesh_geometry>();
                      }
-                     scene->num_mesh_geometries++;
+                     scene->mesh_geometry_count++;
                      const std::string absolute_path = _basePathFromCWD + mesh_filename;
                      parser.parse_file(geometry, absolute_path);
 
@@ -1595,7 +1597,7 @@ namespace poly {
                      else {
                         geometry = std::make_shared<poly::mesh_geometry>();
                      }
-                     scene->num_mesh_geometries++;
+                     scene->mesh_geometry_count++;
                      
                      const std::string absolute_path = _basePathFromCWD + mesh_filename;
                      parser.parse_file(geometry, absolute_path);
@@ -1631,7 +1633,7 @@ namespace poly {
                            std::shared_ptr<poly::Transform> temp_radius_inverse = std::make_shared<poly::Transform>(temp_radius_transform->Invert());
                            
                            std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
-                           scene->num_mesh_geometries++;
+                           scene->mesh_geometry_count++;
                            const int subdivisions = std::max((int)radius, 20);
                            poly::SphereTesselator::Create(subdivisions, subdivisions, geometry);
 
@@ -1670,6 +1672,7 @@ namespace poly {
                }
                
                std::shared_ptr<poly::texture> texture = std::move(texture_directive(directive));
+               scene->textures.push_back(texture);
                texture_map[directive->name] = texture;
                break;
             }
@@ -1719,3 +1722,5 @@ namespace poly {
    }
    
 }
+
+#pragma clang diagnostic pop

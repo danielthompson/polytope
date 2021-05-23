@@ -100,17 +100,17 @@ namespace Tests {
                poly::Mesh mesh(identity, identity, nullptr, geometry);
 
                mesh.intersect(ray, intersection, &face_index, geometry->num_faces);
-               EXPECT_TRUE(intersection.Hits);
-               EXPECT_EQ(&mesh, intersection.Shape);
+               ASSERT_TRUE(intersection.Hits);
+               ASSERT_EQ(&mesh, intersection.Shape);
 
-               EXPECT_FLOAT_EQ(0, intersection.geo_normal.x);
-               EXPECT_FLOAT_EQ(0, intersection.geo_normal.y);
-               EXPECT_FLOAT_EQ(-1, intersection.geo_normal.z);
+               ASSERT_FLOAT_EQ(0, intersection.geo_normal.x);
+               ASSERT_FLOAT_EQ(0, intersection.geo_normal.y);
+               ASSERT_FLOAT_EQ(-1, intersection.geo_normal.z);
 
 //               EXPECT_FLOAT_EQ(expected_hit_point.x, intersection.Location.x);
 //               EXPECT_FLOAT_EQ(expected_hit_point.y, intersection.Location.y);
                if (k == 9999999)
-                  EXPECT_FLOAT_EQ(expected_hit_point.z, intersection.Location.z);
+                  ASSERT_FLOAT_EQ(expected_hit_point.z, intersection.Location.z);
             }
 //         }
 //      }

@@ -358,8 +358,8 @@ namespace poly {
          return;
       }
 
-      if (intersection.x == 128 && intersection.y == 128)
-         Log.debug("Hits with t %f", world_ray.MinT);
+//      if (intersection.x == 128 && intersection.y == 128)
+//         Log.debug("Hits with t %f", world_ray.MinT);
       
       thread_stats.num_triangle_intersections_hit++;
 

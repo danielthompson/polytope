@@ -196,7 +196,7 @@ namespace Tests {
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
-      EXPECT_EQ(3, runner->Scene->num_mesh_geometries);
+      EXPECT_EQ(3, runner->Scene->mesh_geometry_count);
    }
    
    /**
@@ -224,6 +224,6 @@ namespace Tests {
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
-      EXPECT_EQ(2, runner->Scene->num_mesh_geometries);
+      EXPECT_EQ(2, runner->Scene->mesh_geometry_count);
    }
 }

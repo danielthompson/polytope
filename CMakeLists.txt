@@ -84,11 +84,9 @@ add_library(polytope_lib
         src/cpu/runners/TileRunner.h
         src/cpu/samplers/samplers.h
         src/cpu/samplers/samplers.cpp
-        src/cpu/scenes/Scene.cpp
-        src/cpu/scenes/Scene.h
-        src/cpu/scenes/SceneBuilder.cpp
-        src/cpu/scenes/SceneBuilder.h
-        src/cpu/scenes/skyboxes/AbstractSkybox.h
+    src/cpu/scenes/scene.cpp
+    src/cpu/scenes/scene.h
+    src/cpu/scenes/skyboxes/AbstractSkybox.h
         src/cpu/scenes/skyboxes/ColorSkybox.cpp
         src/cpu/scenes/skyboxes/ColorSkybox.h
         src/cpu/shading/Material.h
@@ -143,8 +141,8 @@ add_library(polytope_lib
 
 add_executable(${PROJECT_NAME} src/cpu/main.cpp
         src/cpu/platforms/win32-cygwin.h
-      src/gl/GLRenderer.cpp
-      src/gl/GLRenderer.h )
+    src/gl/gl_renderer.cpp
+    src/gl/gl_renderer.h)
 
 add_library(polytope_cuda_lib
         src/cuda/check_error.h

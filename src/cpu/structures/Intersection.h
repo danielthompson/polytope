@@ -26,6 +26,7 @@ namespace poly {
       poly::Vector Tangent1;
       poly::Vector Tangent2;
       unsigned int faceIndex;
+      unsigned int mesh_index;
       bool Hits = false;
       unsigned int num_bb_hits;
       unsigned int num_bb_misses;
