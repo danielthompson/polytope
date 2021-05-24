@@ -11,6 +11,7 @@
 #include <glbinding/glbinding.h>
 #include "../cpu/structures/Vectors.h"
 #include "../cpu/acceleration/bvh.h"
+#include "shaders.h"
 
 namespace poly {
    class bb_vao {
@@ -27,6 +28,11 @@ namespace poly {
       
       std::vector<unsigned int> all_lines_index_buffer;
 
+      std::shared_ptr<poly::shader_program> all_program;
+      
+      const std::string uniform_color = "colorIn";
+      const std::string uniform_mvp = "mvp";
+      
       // selected node
       unsigned selected_vao_handle;
       unsigned selected_node_index_handle;
@@ -97,6 +103,17 @@ namespace poly {
       }
       
       void init(const poly::bvh& bvh) {
+
+         all_program = poly::shader_cache::get_program({
+              {
+                    {"../src/gl/bbox/vert.glsl", poly::shader_type::vert},
+                    {"../src/gl/bbox/frag.glsl", poly::shader_type::frag}
+              },
+              {
+                    uniform_mvp,
+                    uniform_color
+              }
+         });
 
          std::queue<std::pair<poly::bvh_node *, unsigned int>> queue;
 
@@ -298,12 +315,20 @@ namespace poly {
          select_node(bvh.root);
       }
 
-      void draw_all() {
+      void draw_all(const glm::mat4 &mvp) {
+         gl::glEnable(gl::GL_DEPTH_TEST);
+         all_program->use();
+         all_program->set_uniform(uniform_color, {1.0f, 1.0f, 1.0f, 0.06250f});
+         all_program->set_uniform(uniform_mvp, mvp);
          gl::glBindVertexArray(all_vao_handle);
          gl::glDrawElements(gl::GL_LINES, all_lines_index_buffer.size(), gl::GL_UNSIGNED_INT, (void*)0);
       }
 
-      void draw_selected() {
+      void draw_selected(const glm::mat4 &mvp) {
+         gl::glDisable(gl::GL_DEPTH_TEST);
+         all_program->use();
+         all_program->set_uniform(uniform_color, {1.0f, 1.0f, 1.0f, 0.5f});
+         all_program->set_uniform(uniform_mvp, mvp);
          gl::glBindVertexArray(selected_vao_handle);
          gl::glDrawElements(gl::GL_LINES, 24, gl::GL_UNSIGNED_INT, (void*)0);
       }

@@ -472,7 +472,7 @@ namespace poly {
       // we made it all the way through the tree and nothing hit, so no hit
       return false;
    }
-
+   
    void bvh::intersect_compact(poly::Ray& ray, poly::Intersection& intersection) const {
       const poly::Vector inverse_direction = {
             1.f / ray.Direction.x,
@@ -481,7 +481,7 @@ namespace poly {
       };
       
       bool debug = false;
-      if (intersection.x == 50 && intersection.y == 200)
+      if (intersection.x == 50 && intersection.y == 150)
          bool debug = true;
       
       bool neg_dir[3] = { inverse_direction.x < 0, inverse_direction.y < 0, inverse_direction.z < 0 };

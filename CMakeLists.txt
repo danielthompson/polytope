@@ -84,8 +84,8 @@ add_library(polytope_lib
         src/cpu/runners/TileRunner.h
         src/cpu/samplers/samplers.h
         src/cpu/samplers/samplers.cpp
-    src/cpu/scenes/scene.cpp
-    src/cpu/scenes/scene.h
+      src/cpu/scenes/scene.cpp
+         src/cpu/scenes/scene.h
     src/cpu/scenes/skyboxes/AbstractSkybox.h
         src/cpu/scenes/skyboxes/ColorSkybox.cpp
         src/cpu/scenes/skyboxes/ColorSkybox.h
@@ -132,7 +132,9 @@ add_library(polytope_lib
         src/cpu/acceleration/bvh.h 
         src/cpu/structures/stats.h
         src/common/utilities/thread_pool.h
-        src/common/utilities/thread_pool.cpp src/cpu/shading/texture.h)
+        src/common/utilities/thread_pool.cpp 
+         src/cpu/shading/texture.h
+         )
 
 #set_target_properties(
 #        polytope_lib
@@ -142,7 +144,12 @@ add_library(polytope_lib
 add_executable(${PROJECT_NAME} src/cpu/main.cpp
         src/cpu/platforms/win32-cygwin.h
     src/gl/gl_renderer.cpp
-    src/gl/gl_renderer.h src/gl/bb_vao.h src/gl/mesh_vao.h)
+    src/gl/gl_renderer.h 
+    src/gl/bb_vao.h 
+    src/gl/mesh_vao.h
+    src/gl/shaders.h
+    src/gl/shaders.cpp
+    )
 
 add_library(polytope_cuda_lib
         src/cuda/check_error.h

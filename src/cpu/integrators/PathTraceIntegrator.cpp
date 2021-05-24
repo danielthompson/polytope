@@ -16,6 +16,14 @@ namespace poly {
       float back_pdf = 1;
       
       bool debug = false;
+      if (x == 50 && y == 200) {
+         debug = true;
+      }
+      
+      if (debug) {
+         printf("o: %f %f %f\n", current_ray.Origin.x, current_ray.Origin.y, current_ray.Origin.z);
+         printf("d: %f %f %f\n\n", current_ray.Direction.x, current_ray.Direction.y, current_ray.Direction.z);
+      }
 #ifndef NDEBUG
 
 #endif
@@ -25,9 +33,6 @@ namespace poly {
 //         current_ray.x = x;
 //         current_ray.y = y;
 //         current_ray.bounce = num_bounces;
-         if (x == 50 && y == 200) {
-            debug = true;
-         }
          Intersection intersection = Scene->intersect(current_ray, x, y);
 
 //         SpectralPowerDistribution bb_spd;
@@ -87,7 +92,8 @@ namespace poly {
             
             //current_ray.OffsetOrigin(intersection.bent_normal, poly::OffsetEpsilon);
             if (debug) {
-               printf("n: %f %f %f\n", intersection.geo_normal.x, intersection.geo_normal.y, intersection.geo_normal.z);
+               printf("gn: %f %f %f\n", intersection.geo_normal.x, intersection.geo_normal.y, intersection.geo_normal.z);
+               printf("uvw: %f %f %f\n", intersection.u, intersection.v, intersection.w);
                printf("o: %f %f %f\n", current_ray.Origin.x, current_ray.Origin.y, current_ray.Origin.z);
                printf("d: %f %f %f\n", current_ray.Direction.x, current_ray.Direction.y, current_ray.Direction.z);
 

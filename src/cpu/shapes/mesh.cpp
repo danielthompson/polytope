@@ -373,9 +373,25 @@ namespace poly {
       Point v1 = {mesh_geometry->x[v1_index], mesh_geometry->y[v1_index], mesh_geometry->z[v1_index]};
       Point v2 = {mesh_geometry->x[v2_index], mesh_geometry->y[v2_index], mesh_geometry->z[v2_index]};
 
+      if (intersection.x == 50 && intersection.y == 200) {
+         printf("v0: %f %f %f\n", v0.x, v0.y, v0.z);
+         printf("v1: %f %f %f\n", v1.x, v1.y, v1.z);
+         printf("v2: %f %f %f\n\n", v2.x, v2.y, v2.z);
+         //printf("n: %f %f %f\n\n", n.x, n.y, n.z);
+
+      }
+      
       object_to_world->ApplyInPlace(v0);
       object_to_world->ApplyInPlace(v1);
       object_to_world->ApplyInPlace(v2);
+
+      if (intersection.x == 50 && intersection.y == 200) {
+         printf("v0: %f %f %f\n", v0.x, v0.y, v0.z);
+         printf("v1: %f %f %f\n", v1.x, v1.y, v1.z);
+         printf("v2: %f %f %f\n", v2.x, v2.y, v2.z);
+         //printf("n: %f %f %f\n\n", n.x, n.y, n.z);
+
+      }
       
       // edge functions
       const Vector e0 = v1 - v0;
@@ -409,12 +425,21 @@ namespace poly {
          n = {v.x, v.y, v.z};
       }
       
+
+      
       const float ray_dot_normal = world_ray.Direction.Dot(n);
       const float flip_factor = ray_dot_normal > 0 ? -1 : 1;
       n = n * flip_factor;
       n.Normalize();
       intersection.bent_normal = n;
       intersection.geo_normal = n;
+      if (intersection.x == 50 && intersection.y == 200) {
+//         printf("e0: %f %f %f\n", e0.x, e0.y, e0.z);
+//         printf("e1: %f %f %f\n", e1.x, e1.y, e1.z);
+//         printf("e2: %f %f %f\n", e2.x, e2.y, e2.z);
+         printf("n: %f %f %f\n\n", n.x, n.y, n.z);
+
+      }
       
       // offset ray origin along normal
       // http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#RobustSpawnedRayOrigins
