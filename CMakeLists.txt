@@ -25,8 +25,6 @@ set(ispc_options -g --pic)
 SET(CMAKE_CUDA_FLAGS_DEBUG "-G -g")
 SET(CMAKE_CUDA_FLAGS_RELEASE "--generate-line-info")
 
-
-
 IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
    set(ispc_options --pic -O3)
 # ELSE()
@@ -136,20 +134,17 @@ add_library(polytope_lib
          src/cpu/shading/texture.h
          )
 
-#set_target_properties(
-#        polytope_lib
-#        PROPERTIES
-#        CUDA_SEPARABLE_COMPILATION ON)
-
 add_executable(${PROJECT_NAME} src/cpu/main.cpp
-        src/cpu/platforms/win32-cygwin.h
+    )
+
+add_executable(polytope-gl
+    src/gl/main.cpp
     src/gl/gl_renderer.cpp
-    src/gl/gl_renderer.h 
-    src/gl/bb_vao.h 
+    src/gl/gl_renderer.h
+    src/gl/bb_vao.h
     src/gl/mesh_vao.h
     src/gl/shaders.h
-    src/gl/shaders.cpp
-    )
+    src/gl/shaders.cpp)
 
 add_library(polytope_cuda_lib
         src/cuda/check_error.h
@@ -196,10 +191,10 @@ if (UNIX)
       find_package(glfw3 3.2 REQUIRED)
    endif()
 
-   target_link_libraries(polytope PRIVATE glfw)
+   target_link_libraries(polytope-gl PRIVATE glfw)
 
    find_package(glbinding PATHS /usr/share/glbinding/ REQUIRED)
-   target_link_libraries(polytope PRIVATE glbinding::glbinding)
+   target_link_libraries(polytope-gl PRIVATE glbinding::glbinding)
 
    # find_package(glm REQUIRED)
    # target_link_libraries(polytope PRIVATE glm)
@@ -230,6 +225,7 @@ if (UNIX)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC polytope_lib)
+target_link_libraries(polytope-gl PUBLIC polytope_lib)
 target_link_libraries(polytope_cuda PUBLIC polytope_lib)
 target_link_libraries(polytope_cuda PUBLIC polytope_cuda_lib)
 

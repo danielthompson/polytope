@@ -5,7 +5,6 @@
 #include <iostream>
 #include <sstream>
 #include <map>
-#include <atomic>
 
 #include "../common/utilities/OptionsParser.h"
 #include "../common/utilities/Common.h"
@@ -15,13 +14,9 @@
 #include "runners/TileRunner.h"
 #include "films/PNGFilm.h"
 #include "../common/parsers/pbrt_parser.h"
-#include "../gl/gl_renderer.h"
 #include "shapes/mesh.h"
 #include "structures/stats.h"
 
-#ifdef __CYGWIN__
-#include "platforms/win32-cygwin.h"
-#endif
 
 poly::Logger Log;
 
@@ -87,7 +82,6 @@ File options:
                      defaults to the input file name (with .png extension).
 
 Other:
-   -gl               render the scene with OpenGL, for reference.
    --help            Print this help text and exit.)");
          std::cout << std::endl;
          exit(0);
@@ -155,58 +149,52 @@ Other:
                std::string("], ") +
                std::to_string(runner->NumSamples) + " spp.");
 
-         if (options.gl) {
-            Log.debug("Rasterizing with OpenGL...");
-            poly::gl_renderer renderer(runner->Scene);
-            renderer.render();
+         Log.debug("Rendering...");
+
+         const auto renderingStart = std::chrono::system_clock::now();
+
+         //   runner->Run();
+
+         std::map<std::thread::id, int> threadMap;
+         std::vector<std::thread> threads;
+         poly::stats stats;
+         
+         for (int i = 0; i < usingThreads; i++) {
+
+            Log.debug(std::string("Starting thread " + std::to_string(i) + std::string("...")));
+            threads.emplace_back(runner->Spawn(i/*, stats*/));
+            const std::thread::id threadID = threads[i].get_id();
+            threadMap[threadID] = i;
+
+            // set thread affinity
+            // linux only
+            cpu_set_t cpuset;
+            CPU_ZERO(&cpuset);
+            CPU_SET(i, &cpuset);
+            int rc = pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
+            if (rc != 0)
+               Log.debug("Couldn't set thread affinity :/");
          }
-         else {
-            Log.debug("Rendering...");
 
-            const auto renderingStart = std::chrono::system_clock::now();
-
-            //   runner->Run();
-
-            std::map<std::thread::id, int> threadMap;
-            std::vector<std::thread> threads;
-            poly::stats stats;
-            
-            for (int i = 0; i < usingThreads; i++) {
-
-               Log.debug(std::string("Starting thread " + std::to_string(i) + std::string("...")));
-               threads.emplace_back(runner->Spawn(i/*, stats*/));
-               const std::thread::id threadID = threads[i].get_id();
-               threadMap[threadID] = i;
-
-               // set thread affinity
-               // linux only
-               cpu_set_t cpuset;
-               CPU_ZERO(&cpuset);
-               CPU_SET(i, &cpuset);
-               int rc = pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
-               if (rc != 0)
-                  Log.debug("Couldn't set thread affinity :/");
-            }
-
-            for (int i = 0; i < usingThreads; i++) {
-               threads[i].join();
-               Log.debug(std::string("Joined thread " + std::to_string(i) + std::string(".")));
-            }
-
-            const auto renderingEnd = std::chrono::system_clock::now();
-
-            const std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
-            Log.debug("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
-
-            Log.debug("Outputting to film...");
-            const auto outputStart = std::chrono::system_clock::now();
-            runner->Output();
-            const auto outputEnd = std::chrono::system_clock::now();
-
-            const std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
-            Log.debug("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
+         for (int i = 0; i < usingThreads; i++) {
+            threads[i].join();
+            Log.debug(std::string("Joined thread " + std::to_string(i) + std::string(".")));
          }
+
+         const auto renderingEnd = std::chrono::system_clock::now();
+
+         const std::chrono::duration<double> renderingElapsedSeconds = renderingEnd - renderingStart;
+         Log.debug("Rendering complete in " + std::to_string(renderingElapsedSeconds.count()) + "s.");
+
+         Log.debug("Outputting to film...");
+         const auto outputStart = std::chrono::system_clock::now();
+         runner->Output();
+         const auto outputEnd = std::chrono::system_clock::now();
+
+         const std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;
+         Log.debug("Outputting complete in " + std::to_string(outputtingElapsedSeconds.count()) + "s.");
       }
+      
 
       const auto totalRunTimeEnd = std::chrono::system_clock::now();
       const std::chrono::duration<double> totalElapsedSeconds = totalRunTimeEnd - totalRunTimeStart;
