@@ -3,13 +3,14 @@
 //
 
 #include "PathTraceIntegrator.h"
-#include "../structures/Sample.h"
 
 namespace poly {
 
    Sample PathTraceIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
       Ray current_ray = ray;
       unsigned num_bounces = 0;
+      
+      Sample sample;
       
       ReflectanceSpectrum src(1.f, 1.f, 1.f);
       SpectralPowerDistribution direct_spd;
@@ -29,12 +30,16 @@ namespace poly {
 #endif
       while (true) {
          if (src.is_zero())
-            return Sample(SpectralPowerDistribution());
+            return sample;
 //         current_ray.x = x;
 //         current_ray.y = y;
 //         current_ray.bounce = num_bounces;
          Intersection intersection = Scene->intersect(current_ray, x, y);
 
+#ifdef POLYTOPEGL
+         sample.intersections.push_back(intersection);
+#endif
+         
 //         SpectralPowerDistribution bb_spd;
 //         
 //         bb_spd.r = 255.f - (float)(intersection.num_bb_hits) * 2.f;
@@ -55,7 +60,8 @@ namespace poly {
             }
             
             spd += direct_spd;
-            return Sample(spd);
+            sample.SpectralPowerDistribution = spd;
+            return sample;
          }
 
          if (debug) {
@@ -63,7 +69,8 @@ namespace poly {
          }
          
          if (intersection.Shape->is_light()) {
-            return Sample((*(intersection.Shape->spd) + direct_spd) * src);
+            sample.SpectralPowerDistribution = (*(intersection.Shape->spd) + direct_spd) * src;
+            return sample;
          }
 
          // base case
@@ -71,7 +78,7 @@ namespace poly {
             if (debug) {
                printf("max depth\n");
             }
-            return Sample(SpectralPowerDistribution());
+            return sample;
          } else {
             num_bounces++;
 

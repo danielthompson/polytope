@@ -273,7 +273,7 @@ namespace poly {
          gl::glGenBuffers(1, &all_index_buffer_handle);
          gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, all_index_buffer_handle);
          gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, all_index_buffer.size() * sizeof(float),
-                          &all_lines_index_buffer[0], gl::GL_STATIC_DRAW);
+                          &all_index_buffer[0], gl::GL_STATIC_DRAW);
 
          
          gl::glGenBuffers(1, &all_vertex_buffer_handle);

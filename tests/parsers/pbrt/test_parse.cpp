@@ -25,7 +25,7 @@ namespace Tests {
 
          auto fp = pbrt_parser();
          std::string file = "../scenes/minimum-emptyworld.pbrt";
-         std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+         std::shared_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
          // ensure nothing is null
          ASSERT_NE(nullptr, runner);
@@ -59,7 +59,7 @@ namespace Tests {
          EXPECT_EQ(640, actualFilm->Bounds.y);
 
          // integrator
-         std::unique_ptr<poly::AbstractIntegrator> integrator = std::move(runner->Integrator);
+         std::shared_ptr<poly::AbstractIntegrator> integrator = std::move(runner->Integrator);
          poly::PathTraceIntegrator *actualIntegrator = dynamic_cast<poly::PathTraceIntegrator *>(integrator.get());
          ASSERT_NE(nullptr, actualIntegrator);
 
@@ -107,7 +107,7 @@ namespace Tests {
 
          pbrt_parser fp = pbrt_parser();
          std::string file = "../scenes/minimum-emptyworld-missingcamera.pbrt";
-         std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+         std::shared_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
          // ensure nothing is null
          ASSERT_NE(nullptr, runner);
@@ -138,7 +138,7 @@ namespace Tests {
          EXPECT_EQ(640, actualFilm->Bounds.y);
 
          // integrator
-         std::unique_ptr<poly::AbstractIntegrator> integrator = std::move(runner->Integrator);
+         std::shared_ptr<poly::AbstractIntegrator> integrator = std::move(runner->Integrator);
          poly::PathTraceIntegrator *actualIntegrator = dynamic_cast<poly::PathTraceIntegrator *>(integrator.get());
          ASSERT_NE(nullptr, actualIntegrator);
          EXPECT_EQ(7, actualIntegrator->MaxDepth);

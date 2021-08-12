@@ -11,7 +11,7 @@ namespace poly {
 
    class PathTraceIntegrator : public AbstractIntegrator {
    public:
-      PathTraceIntegrator(poly::scene *scene, int maxDepth)
+      PathTraceIntegrator(std::shared_ptr<poly::scene> scene, int maxDepth)
             : AbstractIntegrator(scene, maxDepth) { }
       explicit PathTraceIntegrator(int maxDepth)
          : AbstractIntegrator(maxDepth) { }

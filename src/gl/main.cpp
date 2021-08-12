@@ -10,7 +10,6 @@
 #include "../cpu/integrators/PathTraceIntegrator.h"
 #include "../cpu/samplers/samplers.h"
 #include "../cpu/filters/BoxFilter.h"
-#include "../cpu/runners/TileRunner.h"
 #include "../common/parsers/pbrt_parser.h"
 #include "gl_renderer.h"
 
@@ -72,7 +71,7 @@ Other:
       }
 
       {
-         std::unique_ptr<poly::AbstractRunner> runner;
+         std::shared_ptr<poly::AbstractRunner> runner;
          if (options.inputSpecified) {
             // load file
             const auto parse_start = std::chrono::system_clock::now();
@@ -108,7 +107,7 @@ Other:
          runner->Scene->bvh_root.metrics();
 
          Log.debug("Rasterizing with OpenGL...");
-         poly::gl_renderer renderer(runner->Scene);
+         poly::gl_renderer renderer(runner);
          renderer.render();
          
       }

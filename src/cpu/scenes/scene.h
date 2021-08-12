@@ -26,7 +26,7 @@ namespace poly {
             delete element;
          }
       }
-      
+
       poly::Intersection intersect(poly::Ray &ray, int x, int y) {
          poly::Intersection bvh_intersection;
          bvh_intersection.x = x;

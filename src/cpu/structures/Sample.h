@@ -28,6 +28,12 @@ namespace poly {
          }
       }
       poly::SpectralPowerDistribution SpectralPowerDistribution;
+
+#ifdef POLYTOPEGL
+#include <vector>
+#include "Intersection.h"
+      std::vector<poly::Intersection> intersections;
+#endif
    };
 }
 

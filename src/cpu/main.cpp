@@ -11,7 +11,6 @@
 #include "integrators/PathTraceIntegrator.h"
 #include "samplers/samplers.h"
 #include "filters/BoxFilter.h"
-#include "runners/TileRunner.h"
 #include "films/PNGFilm.h"
 #include "../common/parsers/pbrt_parser.h"
 #include "shapes/mesh.h"
@@ -106,7 +105,7 @@ Other:
       Log.info("Using " + std::to_string(usingThreads) + " threads.");
 
       {
-         std::unique_ptr<poly::AbstractRunner> runner;
+         std::shared_ptr<poly::AbstractRunner> runner;
          if (options.inputSpecified) {
             // load file
             const auto parse_start = std::chrono::system_clock::now();

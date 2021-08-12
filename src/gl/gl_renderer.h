@@ -7,15 +7,16 @@
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-#include "../cpu/scenes/scene.h"
+#include "../cpu/runners/AbstractRunner.h"
+#include "../cpu/integrators/PathTraceIntegrator.h"
 #include "bb_vao.h"
 
 namespace poly {
    class gl_renderer {
    public:
-      explicit gl_renderer(std::shared_ptr<poly::scene> source_scene);
+      explicit gl_renderer(std::shared_ptr<poly::AbstractRunner> source_scene);
       poly::bb_vao bb;
-      std::shared_ptr<poly::scene> scene;
+      std::shared_ptr<poly::AbstractRunner> runner;
       GLFWwindow* window;
       void render();
    };

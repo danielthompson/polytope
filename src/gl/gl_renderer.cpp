@@ -120,7 +120,7 @@ namespace poly {
       const float dphi = ((float)ypos - currentYpos) * .25f;
 
       glm::vec3 dir = glm::normalize(eye - lookAt);
-      glm::vec3 thetaDir = glm::rotate(dir, glm::radians(dtheta), up);
+      glm::vec3 thetaDir = glm::rotate(dir, -glm::radians(dtheta), up);
       eye = lookAt + distance * thetaDir;
 
       dir = glm::normalize(eye - lookAt);
@@ -144,16 +144,14 @@ namespace poly {
             
             // get first intersection at clicked pixel
             poly::Point2f pixel = {currentXpos / (float)viewport_width, currentYpos / (float)viewport_height};
-            poly::Ray camera_ray = renderer->scene->Camera->get_ray_for_ndc(pixel);
+            poly::Ray camera_ray = renderer->runner->Scene->Camera->get_ray_for_ndc(pixel);
             
-            poly::Intersection intersection = renderer->scene->intersect(camera_ray, currentXpos, currentYpos);
+            auto integrator = renderer->runner->Integrator;
             
-            // set cursor position to intersection location
-            if (intersection.Hits) {
-               lookAt.x = intersection.Location.x;
-               lookAt.y = intersection.Location.y;
-               lookAt.z = intersection.Location.z;
-            }
+            poly::Sample sample = integrator->GetSample(camera_ray, 0, pixel.x, pixel.y);
+            
+            Log.debug("Found " + std::to_string(sample.intersections.size()) + " intersections");
+            
             
             // draw cursor
             
@@ -186,7 +184,7 @@ namespace poly {
       }
    }
 
-   gl_renderer::gl_renderer(std::shared_ptr<poly::scene> source_scene) : scene(source_scene) {
+   gl_renderer::gl_renderer(std::shared_ptr<poly::AbstractRunner> runner) : runner(runner) {
       viewport_width = 1600;
       viewport_height = 1000;
    
@@ -204,7 +202,7 @@ namespace poly {
 
       glfwWindowHint(GLFW_SAMPLES, 16);
 
-      window = glfwCreateWindow(viewport_width, viewport_height, "Polytope", NULL, NULL);
+      window = glfwCreateWindow(viewport_width, viewport_height, "Polytope", nullptr, nullptr);
       if (!window) {
          fprintf(stderr, "Failed to open GLFW window :/");
          glfwTerminate();
@@ -229,27 +227,27 @@ namespace poly {
    
    void gl_renderer::render()
    {
-      bb.init(scene->bvh_root);
-      rootNode = scene->bvh_root.root;
+      bb.init(runner->Scene->bvh_root);
+      rootNode = runner->Scene->bvh_root.root;
       currentNode = rootNode;
       
       std::vector<poly::mesh_vao> mesh_vaos;
-      mesh_vaos.reserve(scene->Shapes.size());
+      mesh_vaos.reserve(runner->Scene->Shapes.size());
 
       // TODO do proper instancing
-      for (int mesh_index = 0; mesh_index < scene->Shapes.size(); mesh_index++) {
+      for (int mesh_index = 0; mesh_index < runner->Scene->Shapes.size(); mesh_index++) {
          mesh_vaos.emplace_back();
-         mesh_vaos[mesh_index].init(scene->Shapes[mesh_index]);
+         mesh_vaos[mesh_index].init(runner->Scene->Shapes[mesh_index]);
       }
 
       // projection matrix - 45deg fov, 4:3 ratio, display range - 0.1 <-> 100 units
-      fov = scene->Camera->Settings.FieldOfView;
+      fov = runner->Scene->Camera->Settings.FieldOfView;
       projectionMatrix = glm::perspective(glm::radians(fov), (float)viewport_width / (float)viewport_height, 0.1f, 100.0f);
       
 
-      eye = glm::vec3(scene->Camera->eye.x, scene->Camera->eye.y, scene->Camera->eye.z);
-      lookAt = glm::vec3(scene->Camera->lookAt.x, scene->Camera->lookAt.y, -scene->Camera->lookAt.z);
-      up = glm::vec3(scene->Camera->up.x, scene->Camera->up.y, scene->Camera->up.z);
+      eye = glm::vec3(runner->Scene->Camera->eye.x, runner->Scene->Camera->eye.y, runner->Scene->Camera->eye.z);
+      lookAt = glm::vec3(runner->Scene->Camera->lookAt.x, runner->Scene->Camera->lookAt.y, -runner->Scene->Camera->lookAt.z);
+      up = glm::vec3(runner->Scene->Camera->up.x, runner->Scene->Camera->up.y, runner->Scene->Camera->up.z);
 
       // camera matrix
 
@@ -283,8 +281,8 @@ namespace poly {
          glm::mat4 mvp = projectionMatrix * viewMatrix * model;
          bb.draw_all(mvp);
          
-         for (int mesh_index = 0; mesh_index < mesh_vaos.size(); mesh_index++) {
-            mesh_vaos[mesh_index].draw(mvp);
+         for (auto & mesh_vao : mesh_vaos) {
+            mesh_vao.draw(mvp);
          }
 
          bb.draw_all(mvp);

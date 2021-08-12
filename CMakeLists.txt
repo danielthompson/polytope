@@ -74,13 +74,9 @@ add_library(polytope_lib
         src/cpu/lights/PointLight.h
         src/common/parsers/pbrt_parser.cpp
         src/common/parsers/pbrt_parser.h
-        src/cpu/runners/AbstractRunner.cpp
-        src/cpu/runners/AbstractRunner.h
-        src/cpu/runners/PixelRunner.cpp
-        src/cpu/runners/PixelRunner.h
-        src/cpu/runners/TileRunner.cpp
-        src/cpu/runners/TileRunner.h
-        src/cpu/samplers/samplers.h
+    src/cpu/runners/AbstractRunner.h
+    src/cpu/runners/AbstractRunner.cpp
+    src/cpu/samplers/samplers.h
         src/cpu/samplers/samplers.cpp
       src/cpu/scenes/scene.cpp
          src/cpu/scenes/scene.h
@@ -145,6 +141,8 @@ add_executable(polytope-gl
     src/gl/mesh_vao.h
     src/gl/shaders.h
     src/gl/shaders.cpp)
+
+target_compile_definitions(polytope-gl PUBLIC POLYTOPEGL)
 
 add_library(polytope_cuda_lib
         src/cuda/check_error.h

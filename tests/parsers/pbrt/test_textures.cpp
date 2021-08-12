@@ -17,7 +17,7 @@ namespace Tests {
    
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/texture/rainbow-texture.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
    
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -54,7 +54,7 @@ namespace Tests {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/texture/rainbow-texture.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
 
       // ensure nothing is null
    }

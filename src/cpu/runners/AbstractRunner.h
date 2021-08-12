@@ -17,42 +17,28 @@ namespace poly {
 
    class AbstractRunner {
    public:
-
-      // constructors
-
-      explicit AbstractRunner(
+      AbstractRunner(
             std::unique_ptr<AbstractSampler> sampler,
             std::shared_ptr<poly::scene> scene,
-            std::unique_ptr<AbstractIntegrator> integrator,
+            std::shared_ptr<poly::AbstractIntegrator> integrator,
             std::unique_ptr<AbstractFilm> film,
             const unsigned int numSamples,
-            const poly::Bounds bounds)
-            : Sampler(std::move(sampler)),
-              Scene(scene),
-              Integrator(std::move(integrator)),
-              Film(std::move(film)),
-              NumSamples(numSamples),
-              Bounds(bounds) { }
+            const poly::Bounds bounds);
 
-      // methods
-      virtual void Run(int threadId) = 0;
-      void Trace(int x, int y) const;
-
-      void Output() const;
-
+      void Run(int threadId) const;
+      void Trace(const int x, const int y) const;
+      void Output() const {
+         Film->Output();
+      };
       std::thread Spawn(const int id) {
          return std::thread(&AbstractRunner::Run, this, id);
       }
 
-      // destructors
-      virtual ~AbstractRunner() = default;
-
-      // data
       unsigned int NumSamples;
       std::unique_ptr<AbstractSampler> Sampler;
       std::unique_ptr<AbstractFilm> Film;
       std::shared_ptr<poly::scene> Scene;
-      std::unique_ptr<AbstractIntegrator> Integrator;
+      std::shared_ptr<poly::AbstractIntegrator> Integrator;
 
       const poly::Bounds Bounds;
    };

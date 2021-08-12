@@ -14,7 +14,6 @@
 #include "../../cpu/integrators/DebugIntegrator.h"
 #include "../../cpu/cameras/PerspectiveCamera.h"
 #include "../../cpu/samplers/samplers.h"
-#include "../../cpu/runners/TileRunner.h"
 #include "../../cpu/films/PNGFilm.h"
 #include "../../cpu/filters/BoxFilter.h"
 #include "../../cpu/scenes/scene.h"
@@ -274,7 +273,7 @@ namespace poly {
       constexpr unsigned int DefaultSamples = 8;
    }
 
-   std::unique_ptr<AbstractRunner> pbrt_parser::parse_file(const std::string &filepath) {
+   std::shared_ptr<poly::AbstractRunner> pbrt_parser::parse_file(const std::string &filepath) {
 
       std::unique_ptr<std::vector<std::vector<std::string>>> tokens = scan(open_ascii_stream(filepath));
 
@@ -293,7 +292,7 @@ namespace poly {
       return parse(std::move(tokens));
    }
 
-   std::unique_ptr<AbstractRunner> pbrt_parser::parse_string(const std::string &text) {
+   std::shared_ptr<poly::AbstractRunner> pbrt_parser::parse_string(const std::string &text) {
       auto tokens = scan(std::make_unique<std::istringstream>(text));
       return parse(std::move(tokens));
    }
@@ -905,8 +904,8 @@ namespace poly {
          }
       }
    }
-   
-   std::unique_ptr<AbstractRunner> pbrt_parser::parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
+
+   std::shared_ptr<poly::AbstractRunner> pbrt_parser::parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
       std::vector<std::unique_ptr<pbrt_directive>> scene_directives;
       std::vector<std::unique_ptr<pbrt_directive>> world_directives;
 
@@ -1216,7 +1215,7 @@ namespace poly {
                   LogMissingArgument(directive, "maxdepth");
                }
                //_integrator = std::make_unique<poly::DebugIntegrator>(maxDepth);
-               integrator = std::make_unique<poly::PathTraceIntegrator>(maxDepth);
+               integrator = std::make_shared<poly::PathTraceIntegrator>(maxDepth);
             }
             else {
                LogUnimplementedDirective(directive);
@@ -1231,7 +1230,7 @@ namespace poly {
       }
 
       if (integrator == nullptr) {
-         integrator = std::make_unique<PathTraceIntegrator>(5);
+         integrator = std::make_shared<poly::PathTraceIntegrator>(5);
       }
 
       // world
@@ -1711,16 +1710,15 @@ namespace poly {
 
       integrator->Scene = scene;
 
-      return std::make_unique<TileRunner>(
+      return std::make_shared<AbstractRunner>(
             std::move(sampler),
             scene,
-            std::move(integrator),
+            integrator,
             std::move(film),
-            bounds,
-            numSamples
+            numSamples,
+            bounds            
       );
    }
-   
 }
 
 #pragma clang diagnostic pop

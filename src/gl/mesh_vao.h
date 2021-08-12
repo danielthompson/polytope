@@ -178,7 +178,7 @@ namespace poly {
          gl::glDisable(gl::GL_DEPTH_TEST);
          gl::glEnable(gl::GL_BLEND);
 
-         program->set_uniform(uniform_color, {1.0f, 1.0f, 1.0f, 0.06250f});
+         program->set_uniform(uniform_color, {1.0f, 1.0f, 1.0f, 0.16250f});
          gl::glPolygonMode(gl::GL_FRONT_AND_BACK, gl::GL_LINE);
          gl::glDrawElements(gl::GL_TRIANGLES, shapeIndexVector.size(), gl::GL_UNSIGNED_INT, (void*)0);
       }

@@ -197,20 +197,20 @@ namespace poly {
       // constructors
       explicit pbrt_parser() = default;
 
-      std::unique_ptr<poly::AbstractRunner> parse_file(const std::string &filepath) noexcept(false);
+      std::shared_ptr<poly::AbstractRunner> parse_file(const std::string &filepath) noexcept(false);
       
-      std::unique_ptr<poly::AbstractRunner> parse_string(const std::string &text) noexcept(false);
+      std::shared_ptr<poly::AbstractRunner> parse_string(const std::string &text) noexcept(false);
       static std::unique_ptr<poly::pbrt_directive> lex(std::vector<std::string> line);
       static std::unique_ptr<std::vector<std::vector<std::string>>> scan(const std::unique_ptr<std::istream>& stream);
       std::unique_ptr<poly::AbstractSampler> sampler;
       std::shared_ptr<poly::scene> scene = nullptr;
-      std::unique_ptr<poly::AbstractIntegrator> integrator;
+      std::shared_ptr<poly::AbstractIntegrator> integrator;
       std::unique_ptr<poly::AbstractFilm> film;
       std::unique_ptr<poly::AbstractFilter> filter;
       poly::Bounds bounds;
    
    private:
-      std::unique_ptr<AbstractRunner> parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false);
+      std::shared_ptr<poly::AbstractRunner> parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false);
    };
 }
 #endif //POLY_FILEPARSER_H

@@ -15,13 +15,15 @@ namespace poly {
       std::shared_ptr<poly::scene> Scene;
       int MaxDepth;
 
-      AbstractIntegrator(poly::scene *scene, int maxDepth)
+      AbstractIntegrator(std::shared_ptr<poly::scene> scene, int maxDepth)
          : Scene(scene), MaxDepth(maxDepth) { };
 
       AbstractIntegrator(int maxDepth)
          : MaxDepth(maxDepth) { };
 
-      virtual ~AbstractIntegrator() { }
+      virtual ~AbstractIntegrator() {
+         
+      }
 
       virtual Sample GetSample(Ray &ray, int depth, int x, int y) = 0;
    };
