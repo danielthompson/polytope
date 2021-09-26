@@ -6,14 +6,15 @@
 
 namespace poly {
 
-   Sample PathTraceIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
-      Ray current_ray = ray;
+   poly::Sample PathTraceIntegrator::get_sample(poly::ray &ray, int depth, int x, int y) {
+      Log.debug("PathTraceIntegrator::this: %p", this);
+      poly::ray current_ray = ray;
       unsigned num_bounces = 0;
-      
-      Sample sample;
-      
-      ReflectanceSpectrum src(1.f, 1.f, 1.f);
-      SpectralPowerDistribution direct_spd;
+
+      poly::Sample sample;
+
+      poly::ReflectanceSpectrum src(1.f, 1.f, 1.f);
+      poly::SpectralPowerDistribution direct_spd;
       float back_pdf = 1;
       
       bool debug = false;
@@ -22,8 +23,8 @@ namespace poly {
       }
       
       if (debug) {
-         printf("o: %f %f %f\n", current_ray.Origin.x, current_ray.Origin.y, current_ray.Origin.z);
-         printf("d: %f %f %f\n\n", current_ray.Direction.x, current_ray.Direction.y, current_ray.Direction.z);
+         printf("o: %f %f %f\n", current_ray.origin.x, current_ray.origin.y, current_ray.origin.z);
+         printf("d: %f %f %f\n\n", current_ray.direction.x, current_ray.direction.y, current_ray.direction.z);
       }
 #ifndef NDEBUG
 
@@ -34,7 +35,7 @@ namespace poly {
 //         current_ray.x = x;
 //         current_ray.y = y;
 //         current_ray.bounce = num_bounces;
-         Intersection intersection = Scene->intersect(current_ray, x, y);
+         poly::intersection intersection = Scene->intersect(current_ray, x, y);
 
 #ifdef POLYTOPEGL
          sample.intersections.push_back(intersection);
@@ -54,9 +55,9 @@ namespace poly {
          }
          
          if (!intersection.Hits) {
-            SpectralPowerDistribution spd;
+            poly::SpectralPowerDistribution spd;
             if (Scene->Skybox != nullptr) {
-               spd = Scene->Skybox->GetSpd(ray.Direction) * src;
+               spd = Scene->Skybox->GetSpd(ray.direction) * src;
             }
             
             spd += direct_spd;
@@ -65,11 +66,11 @@ namespace poly {
          }
 
          if (debug) {
-            printf("hit mesh index %i face index %i\n", intersection.mesh_index, intersection.faceIndex);
+            printf("hit mesh index %i face index %i\n", intersection.mesh_index, intersection.face_index);
          }
          
-         if (intersection.Shape->is_light()) {
-            sample.SpectralPowerDistribution = (*(intersection.Shape->spd) + direct_spd) * src;
+         if (intersection.shape->is_light()) {
+            sample.SpectralPowerDistribution = (*(intersection.shape->spd) + direct_spd) * src;
             return sample;
          }
 
@@ -83,26 +84,26 @@ namespace poly {
             num_bounces++;
 
             float current_pdf;
+
+            poly::ReflectanceSpectrum refl;
             
-            ReflectanceSpectrum refl;
-            
-            const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
-            const poly::Vector local_outgoing = intersection.Shape->material->BRDF->sample(local_incoming, intersection.u_tex_lerp, intersection.v_tex_lerp, refl,
-                                                                                               current_pdf);
-            const poly::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
+            const poly::vector local_incoming = intersection.world_to_local(current_ray.direction);
+            const poly::vector local_outgoing = intersection.shape->material->BRDF->sample(local_incoming, intersection.u_tex_lerp, intersection.v_tex_lerp, refl,
+                                                                                           current_pdf);
+            const poly::vector world_outgoing = intersection.local_to_world(local_outgoing);
 
             bool whoops = false;
             if (x == 128 && y == 128 && std::isnan(world_outgoing.x))
                whoops = true;
 
-            current_ray = Ray(intersection.Location, world_outgoing);
+            current_ray = poly::ray(intersection.location, world_outgoing);
             
             //current_ray.OffsetOrigin(intersection.bent_normal, poly::OffsetEpsilon);
             if (debug) {
                printf("gn: %f %f %f\n", intersection.geo_normal.x, intersection.geo_normal.y, intersection.geo_normal.z);
                printf("uvw: %f %f %f\n", intersection.u, intersection.v, intersection.w);
-               printf("o: %f %f %f\n", current_ray.Origin.x, current_ray.Origin.y, current_ray.Origin.z);
-               printf("d: %f %f %f\n", current_ray.Direction.x, current_ray.Direction.y, current_ray.Direction.z);
+               printf("o: %f %f %f\n", current_ray.origin.x, current_ray.origin.y, current_ray.origin.z);
+               printf("d: %f %f %f\n", current_ray.direction.x, current_ray.direction.y, current_ray.direction.z);
 
             }
             src = src * refl; //intersection.Shape->Material->ReflectanceSpectrum;

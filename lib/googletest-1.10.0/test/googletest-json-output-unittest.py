@@ -608,7 +608,7 @@ class GTestJsonOutputUnitTest(gtest_test_utils.TestCase):
   """
 
   # This test currently breaks on platforms that do not support typed and
-  # type-parameterized tests, so we don't run it under them.
+  # type-parameterized tests, so we don't thread_entrypoint it under them.
   if SUPPORTS_TYPED_TESTS:
 
     def testNonEmptyJsonOutput(self):

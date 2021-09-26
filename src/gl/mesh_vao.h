@@ -62,11 +62,11 @@ namespace poly {
             
             std::shared_ptr<poly::mesh_geometry> geometry = mesh->mesh_geometry;
 
-            poly::Point p = {geometry->x_packed[geometry->fv0[i]],
+            poly::point p = {geometry->x_packed[geometry->fv0[i]],
                              geometry->y_packed[geometry->fv0[i]],
                              geometry->z_packed[geometry->fv0[i]]
             };
-            mesh->object_to_world->ApplyInPlace(p);
+            mesh->object_to_world->apply_in_place(p);
             shapeVertexVector[9 * i] = p.x;
             shapeVertexVector[9 * i + 1] = p.y;
             shapeVertexVector[9 * i + 2] = p.z;
@@ -75,7 +75,7 @@ namespace poly {
                  geometry->y_packed[geometry->fv1[i]],
                  geometry->z_packed[geometry->fv1[i]]
             };
-            mesh->object_to_world->ApplyInPlace(p);
+            mesh->object_to_world->apply_in_place(p);
             shapeVertexVector[9 * i + 3] = p.x;
             shapeVertexVector[9 * i + 4] = p.y;
             shapeVertexVector[9 * i + 5] = p.z;
@@ -84,7 +84,7 @@ namespace poly {
                  geometry->y_packed[geometry->fv2[i]],
                  geometry->z_packed[geometry->fv2[i]]
             };
-            mesh->object_to_world->ApplyInPlace(p);
+            mesh->object_to_world->apply_in_place(p);
             shapeVertexVector[9 * i + 6] = p.x;
             shapeVertexVector[9 * i + 7] = p.y;
             shapeVertexVector[9 * i + 8] = p.z;
@@ -93,9 +93,9 @@ namespace poly {
 //                            geometry->ny_packed[geometry->fv0[i]],
 //                            geometry->nz_packed[geometry->fv0[i]]
 //         };
-            poly::Normal n = {0, 0, 0};
+            poly::normal n = {0, 0, 0};
 
-            mesh->object_to_world->ApplyInPlace(n);
+            mesh->object_to_world->apply_in_place(n);
             shapeNormalVector[9 * i] = n.x;
             shapeNormalVector[9 * i + 1] = n.y;
             shapeNormalVector[9 * i + 2] = n.z;
@@ -105,7 +105,7 @@ namespace poly {
 //              geometry->nz_packed[geometry->fv1[i]]
 //         };
             n = {0, 0, 0};
-            mesh->object_to_world->ApplyInPlace(n);
+            mesh->object_to_world->apply_in_place(n);
             shapeNormalVector[9 * i + 3] = n.x;
             shapeNormalVector[9 * i + 4] = n.y;
             shapeNormalVector[9 * i + 5] = n.z;
@@ -115,7 +115,7 @@ namespace poly {
 //               geometry->nz_packed[geometry->fv2[i]]
 //         };
             n = {0, 0, 0};
-            mesh->object_to_world->ApplyInPlace(n);
+            mesh->object_to_world->apply_in_place(n);
             shapeNormalVector[9 * i + 6] = n.x;
             shapeNormalVector[9 * i + 7] = n.y;
             shapeNormalVector[9 * i + 8] = n.z;

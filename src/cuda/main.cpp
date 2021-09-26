@@ -7,7 +7,7 @@
 #include <sstream>
 #include "../common/utilities/Common.h"
 #include "../common/utilities/OptionsParser.h"
-#include "../common/structures/Point2.h"
+#include "../common/structures/point2.h"
 #include "../common/parsers/pbrt_parser.h"
 
 #include "context.h"
@@ -120,10 +120,10 @@ Other:
          
          // override parsed with options here
          if (options.samplesSpecified) {
-            runner->NumSamples = options.samples;
+            runner->sample_count = options.samples;
          }
          
-         Log.info("Image is [%i] x [%i], %i spp.", runner->Bounds.x, runner->Bounds.y, runner->NumSamples);
+         Log.info("Image is [%i] x [%i], %i spp.", runner->Bounds.x, runner->Bounds.y, runner->sample_count);
          
          const auto bound_start = std::chrono::system_clock::now();
          thread_stats.num_bvh_bound_leaf_same_centroid = 0;
@@ -138,8 +138,8 @@ Other:
          const std::chrono::duration<double> compact_duration = compact_end - compact_start;
          Log.debug("Compacted BVH in %f s.", compact_duration.count());
 
-         render_context.width = runner->Scene->Camera->Settings.Bounds.x;
-         render_context.height = runner->Scene->Camera->Settings.Bounds.y;
+         render_context.width = runner->Scene->Camera->settings.bounds.x;
+         render_context.height = runner->Scene->Camera->settings.bounds.y;
          render_context.total_pixel_count = render_context.width * render_context.height;
          
          poly::thread_pool thread_pool(render_context.device_count);
@@ -161,11 +161,11 @@ Other:
                          std::to_string(copy_duration.count()) + " (" + bandwidth_string + ").");
 
                Log.info(
-                     "[" + std::to_string(device_index) + "] - Rendering with " + std::to_string(runner->NumSamples) + "spp...");
+                     "[" + std::to_string(device_index) + "] - Rendering with " + std::to_string(runner->sample_count) + "spp...");
 
                poly::path_tracer path_tracer_kernel(&render_context.device_contexts[device_index]);
                const auto render_start_time = std::chrono::system_clock::now();
-               path_tracer_kernel.Trace(runner->NumSamples);
+               path_tracer_kernel.Trace(runner->sample_count);
                const auto render_end_time = std::chrono::system_clock::now();
                const std::chrono::duration<double> render_duration = render_end_time - render_start_time;
                Log.info("[%i] - Sampling complete in %f s.", device_index, render_duration.count());
@@ -180,7 +180,7 @@ Other:
          poly::output_png::output(&render_context, options.output_filename);
          const auto output_end_time = std::chrono::system_clock::now();
          const std::chrono::duration<double> output_duration = output_end_time - output_start_time;
-         Log.info("Output complete in %f s.", output_duration.count());
+         Log.info("output complete in %f s.", output_duration.count());
       }
 
       const auto totalRunTimeEnd = std::chrono::system_clock::now();

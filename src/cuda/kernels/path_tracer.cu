@@ -146,13 +146,13 @@ namespace poly {
          *result = aabb_hits(aabb, o, id, &t) ? 1 : 0;
    }
    
-   bool path_tracer::unit_test_hit_ray_against_bounding_box(const poly::Ray &ray, const float* const device_aabb) {
+   bool path_tracer::unit_test_hit_ray_against_bounding_box(const poly::ray &ray, const float* const device_aabb) {
       
       int* device_result;
       cuda_check_error( cudaMalloc((void**)&device_result, sizeof(int)) );
       
-      float3 o = make_float3(ray.Origin.x, ray.Origin.y, ray.Origin.z);
-      float3 id = {1.0f / ray.Direction.x, 1.0f / ray.Direction.y, 1.0f / ray.Direction.z};
+      float3 o = make_float3(ray.origin.x, ray.origin.y, ray.origin.z);
+      float3 id = {1.0f / ray.direction.x, 1.0f / ray.direction.y, 1.0f / ray.direction.z};
 
       // invoke kernel that calls aabb_hits()
       unit_test_ray_against_aabb_kernel<<<1, 1>>>(device_aabb, o, id, device_result);

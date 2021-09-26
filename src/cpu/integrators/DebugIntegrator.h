@@ -5,19 +5,19 @@
 #ifndef POLY_DEBUGINTEGRATOR_H
 #define POLY_DEBUGINTEGRATOR_H
 
-#include "AbstractIntegrator.h"
+#include "abstract_integrator.h"
 
 namespace poly {
 
-   class DebugIntegrator : public AbstractIntegrator {
+   class DebugIntegrator : public abstract_integrator {
    public:
-      DebugIntegrator(std::shared_ptr<poly::scene> scene, int maxDepth)
-      : AbstractIntegrator(scene, maxDepth) { };
+      DebugIntegrator(std::shared_ptr<poly::scene> scene, int max_depth)
+      : abstract_integrator(scene, max_depth) { };
 
-      explicit DebugIntegrator(int maxDepth)
-            : AbstractIntegrator(maxDepth) { }
+      explicit DebugIntegrator(int max_depth)
+            : abstract_integrator(max_depth) { }
       
-      Sample GetSample(Ray &ray, int depth, int x, int y) override;
+      poly::Sample get_sample(poly::ray &ray, int depth, int x, int y) override;
    };
 
 }

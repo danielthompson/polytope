@@ -33,14 +33,14 @@ import re
 
 
 def normalize(obj):
-  """Normalize output object.
+  """normalize output object.
 
   Args:
      obj: Google Test's JSON output object to normalize.
 
   Returns:
      Normalized output without any references to transient information that may
-     change from run to run.
+     change from run to thread_entrypoint.
   """
   def _normalize(key, value):
     if key == 'time':

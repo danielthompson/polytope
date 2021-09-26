@@ -346,8 +346,8 @@ namespace poly {
                
                if (state.data_format == ply_format::ascii) {
                   std::string word;
-                  Point p;
-                  Normal n;
+                  poly::point p;
+                  normal n;
                   float u, v;
                   for (int i = 0; i < element.num_instances; i++) {
                      if (!getline(*state.stream, line)) {
@@ -418,8 +418,8 @@ namespace poly {
                }
                else {
                   for (int i = 0; i < element.num_instances; i++) {
-                     Point p;
-                     Normal n;
+                     point p;
+                     normal n;
                      float u, v;
                      for (const auto& property : element.properties) {
                         float parsed_value = read_float(state.stream, state.data_format);
@@ -548,7 +548,7 @@ namespace poly {
 
       std::unique_ptr<std::istream> stream = abstract_file_parser::open_ascii_stream(filepath);
       std::string line;
-      Point p;
+      point p;
       while (getline(*stream, line)) {
          std::string word;
          std::istringstream iss(line, std::istringstream::in);

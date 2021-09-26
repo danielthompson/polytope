@@ -136,19 +136,28 @@ namespace poly {
 
    void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
    {
-      auto renderer = static_cast<gl_renderer *>(glfwGetWindowUserPointer(window));
+      auto renderer = static_cast<poly::gl_renderer *>(glfwGetWindowUserPointer(window));
       switch (button) {
          case GLFW_MOUSE_BUTTON_LEFT: {
             if (action != GLFW_PRESS)
                break;
             
             // get first intersection at clicked pixel
-            poly::Point2f pixel = {currentXpos / (float)viewport_width, currentYpos / (float)viewport_height};
-            poly::Ray camera_ray = renderer->runner->Scene->Camera->get_ray_for_ndc(pixel);
+            poly::point2f pixel = {currentXpos / (float)viewport_width, currentYpos / (float)viewport_height};
+            Log.info("renderer->runner.use_count() == %i", renderer->runner.use_count());
+            Log.info("renderer->runner->Scene.use_count() == %i", renderer->runner->Scene.use_count());
+            poly::ray camera_ray = renderer->runner->Scene->Camera->get_ray_for_ndc(pixel);
+
+            Log.info("renderer->runner->integrator.use_count() == %i", renderer->runner->integrator.use_count());
+
+            auto integrator = renderer->runner->integrator;
+            Log.info("renderer->runner->integrator.use_count() == %i", renderer->runner->integrator.use_count());
+
+            poly::PathTraceIntegrator* ptr = (poly::PathTraceIntegrator*)(integrator.get());
+
+            Log.debug("PathTraceIntegrator::this: %p", ptr);
             
-            auto integrator = renderer->runner->Integrator;
-            
-            poly::Sample sample = integrator->GetSample(camera_ray, 0, pixel.x, pixel.y);
+            poly::Sample sample = ptr->get_sample(camera_ray, 0, pixel.x, pixel.y);
             
             Log.debug("Found " + std::to_string(sample.intersections.size()) + " intersections");
             
@@ -184,7 +193,7 @@ namespace poly {
       }
    }
 
-   gl_renderer::gl_renderer(std::shared_ptr<poly::AbstractRunner> runner) : runner(runner) {
+   gl_renderer::gl_renderer(std::shared_ptr<poly::runner> runner) : runner(runner) {
       viewport_width = 1600;
       viewport_height = 1000;
    
@@ -241,7 +250,7 @@ namespace poly {
       }
 
       // projection matrix - 45deg fov, 4:3 ratio, display range - 0.1 <-> 100 units
-      fov = runner->Scene->Camera->Settings.FieldOfView;
+      fov = runner->Scene->Camera->settings.field_of_view;
       projectionMatrix = glm::perspective(glm::radians(fov), (float)viewport_width / (float)viewport_height, 0.1f, 100.0f);
       
 

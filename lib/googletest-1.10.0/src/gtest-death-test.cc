@@ -98,7 +98,7 @@ static const char kDefaultDeathTestStyle[] = GTEST_DEFAULT_DEATH_TEST_STYLE;
 GTEST_DEFINE_string_(
     death_test_style,
     internal::StringFromGTestEnv("death_test_style", kDefaultDeathTestStyle),
-    "Indicates how to run a death test in a forked child process: "
+    "Indicates how to thread_entrypoint a death test in a forked child process: "
     "\"threadsafe\" (child process re-executes the test binary "
     "from the beginning, running only the specific death test) or "
     "\"fast\" (child process runs the death test immediately "
@@ -120,7 +120,7 @@ namespace internal {
 GTEST_DEFINE_string_(
     internal_run_death_test, "",
     "Indicates the file, line number, temporal index of "
-    "the single death test to run, and a file descriptor to "
+    "the single death test to thread_entrypoint, and a file descriptor to "
     "which a success code may be sent, all separated by "
     "the '|' characters.  This flag is specified if and only if the "
     "current process is a sub-process launched for running a thread-safe "
@@ -369,7 +369,7 @@ static void FailFromInternalError(int fd) {
 DeathTest::DeathTest() {
   TestInfo* const info = GetUnitTestImpl()->current_test_info();
   if (info == nullptr) {
-    DeathTestAbort("Cannot run a death test outside of a TEST or "
+    DeathTestAbort("Cannot thread_entrypoint a death test outside of a TEST or "
                    "TEST_F construct");
   }
 }

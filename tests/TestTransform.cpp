@@ -6,120 +6,120 @@
 #include "gtest/gtest.h"
 
 #include "../src/cpu/structures/Vectors.h"
-#include "../src/cpu/structures/Transform.h"
-#include "../src/cpu/cameras/PerspectiveCamera.h"
+#include "../src/cpu/structures/transform.h"
+#include "../src/cpu/cameras/perspective_camera.h"
 
 namespace Tests {
 
-    using poly::Transform;
+    using poly::transform;
 
     namespace Equality {
         TEST(Transform, Equals) {
-           Transform element1 = Transform();
-           Transform element2 = Transform();
+           transform element1 = transform();
+           transform element2 = transform();
            EXPECT_EQ(element1, element2);
         }
     }
 
    namespace HasScale {
       TEST(Transform, DoesntHaveScale1) {
-         Transform element = Transform();
-         bool actual = element.HasScale();
+         transform element = transform();
+         bool actual = element.has_scale();
          EXPECT_FALSE(actual);
       }
 
       TEST(Transform, DoesntHaveScale2) {
-         Transform element = Transform::Scale(1);
-         bool actual = element.HasScale();
+         transform element = transform::scale(1);
+         bool actual = element.has_scale();
          EXPECT_FALSE(actual);
       }
 
       TEST(Transform, DoesntHaveScale3) {
-         Transform element = Transform::Scale(1, 1, 1);
-         bool actual = element.HasScale();
+         transform element = transform::scale(1, 1, 1);
+         bool actual = element.has_scale();
          EXPECT_FALSE(actual);
       }
 
       TEST(Transform, DoesntHaveScale4) {
-         poly::Vector delta = poly::Vector(1, 1, 1);
-         Transform element = Transform::Scale(delta);
-         bool actual = element.HasScale();
+         poly::vector delta = poly::vector(1, 1, 1);
+         transform element = transform::scale(delta);
+         bool actual = element.has_scale();
          EXPECT_FALSE(actual);
       }
 
       TEST(Transform, HasScale1) {
-         Transform element = Transform::Scale(2);
-         bool actual = element.HasScale();
+         transform element = transform::scale(2);
+         bool actual = element.has_scale();
          EXPECT_TRUE(actual);
       }
 
       TEST(Transform, HasScale2) {
-         Transform element = Transform::Scale(2, 2, 2);
-         bool actual = element.HasScale();
+         transform element = transform::scale(2, 2, 2);
+         bool actual = element.has_scale();
          EXPECT_TRUE(actual);
       }
 
       TEST(Transform, HasScale3) {
-         Transform element = Transform::Scale(2, 1, 1);
-         bool actual = element.HasScale();
+         transform element = transform::scale(2, 1, 1);
+         bool actual = element.has_scale();
          EXPECT_TRUE(actual);
       }
 
       TEST(Transform, HasScale4) {
-         Transform element = Transform::Scale(1.002, 1, 1);
-         bool actual = element.HasScale();
+         transform element = transform::scale(1.002, 1, 1);
+         bool actual = element.has_scale();
          EXPECT_TRUE(actual);
       }
 
       TEST(Transform, HasScale5) {
-         poly::Vector delta = poly::Vector(0, 1, 1);
-         Transform element = Transform::Scale(delta);
-         bool actual = element.HasScale();
+         poly::vector delta = poly::vector(0, 1, 1);
+         transform element = transform::scale(delta);
+         bool actual = element.has_scale();
          EXPECT_TRUE(actual);
       }
    }
 
    TEST(Transform, LookAt1) {
 
-      const poly::Point eye = {0, 0, 35};
-      const poly::Point look_at = {0, 0, -1};
-      poly::Vector up = {0, 1, 0};
+      const poly::point eye = {0, 0, 35};
+      const poly::point look_at = {0, 0, -1};
+      poly::vector up = {0, 1, 0};
 
-      Transform t = Transform::LookAt(eye, look_at, up);
+      transform t = transform::look_at(eye, look_at, up);
       
       //poly::PerspectiveCamera camera = poly::PerspectiveCamera() 
-      poly::Ray cameraSpaceRay = {{0, 0, 0}, {0, 0, -1}};
+      poly::ray cameraSpaceRay = {{0, 0, 0}, {0, 0, -1}};
       
-      poly::Ray worldSpaceRay = t.Apply(cameraSpaceRay);
+      poly::ray worldSpaceRay = t.apply(cameraSpaceRay);
       
-      EXPECT_EQ(worldSpaceRay.Origin.x, eye.x);
-      EXPECT_EQ(worldSpaceRay.Origin.y, eye.y);
-      EXPECT_EQ(worldSpaceRay.Origin.z, eye.z);
+      EXPECT_EQ(worldSpaceRay.origin.x, eye.x);
+      EXPECT_EQ(worldSpaceRay.origin.y, eye.y);
+      EXPECT_EQ(worldSpaceRay.origin.z, eye.z);
 
-      EXPECT_EQ(worldSpaceRay.Direction.x, 0);
-      EXPECT_EQ(worldSpaceRay.Direction.y, 0);
-      EXPECT_EQ(worldSpaceRay.Direction.z, -1);
+      EXPECT_EQ(worldSpaceRay.direction.x, 0);
+      EXPECT_EQ(worldSpaceRay.direction.y, 0);
+      EXPECT_EQ(worldSpaceRay.direction.z, -1);
    }
 
    TEST(Transform, LookAt2) {
 
-      const poly::Point eye = {0, 0, -35};
-      const poly::Point look_at = {0, 0, -1};
-      poly::Vector up = {0, 1, 0};
+      const poly::point eye = {0, 0, -35};
+      const poly::point look_at = {0, 0, -1};
+      poly::vector up = {0, 1, 0};
 
-      Transform t = Transform::LookAt(eye, look_at, up);
+      transform t = transform::look_at(eye, look_at, up);
 
       //poly::PerspectiveCamera camera = poly::PerspectiveCamera() 
-      poly::Ray cameraSpaceRay = {{0, 0, 0}, {0, 0, -1}};
+      poly::ray cameraSpaceRay = {{0, 0, 0}, {0, 0, -1}};
 
-      poly::Ray worldSpaceRay = t.Apply(cameraSpaceRay);
+      poly::ray worldSpaceRay = t.apply(cameraSpaceRay);
 
-      EXPECT_EQ(worldSpaceRay.Origin.x, eye.x);
-      EXPECT_EQ(worldSpaceRay.Origin.y, eye.y);
-      EXPECT_EQ(worldSpaceRay.Origin.z, eye.z);
+      EXPECT_EQ(worldSpaceRay.origin.x, eye.x);
+      EXPECT_EQ(worldSpaceRay.origin.y, eye.y);
+      EXPECT_EQ(worldSpaceRay.origin.z, eye.z);
 
-      EXPECT_EQ(worldSpaceRay.Direction.x, 0);
-      EXPECT_EQ(worldSpaceRay.Direction.y, 0);
-      EXPECT_EQ(worldSpaceRay.Direction.z, 1);
+      EXPECT_EQ(worldSpaceRay.direction.x, 0);
+      EXPECT_EQ(worldSpaceRay.direction.y, 0);
+      EXPECT_EQ(worldSpaceRay.direction.z, 1);
    }
 }

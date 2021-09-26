@@ -206,7 +206,7 @@ class Subprocess:
     Restores the old directory afterwards.
 
     Args:
-      command:        The command to run, in the form of sys.argv.
+      command:        The command to thread_entrypoint, in the form of sys.argv.
       working_dir:    The directory to change into.
       capture_stderr: Determines whether to capture stderr in the output member
                       or to discard it.

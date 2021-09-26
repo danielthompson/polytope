@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <string>
-#include "../../cpu/runners/AbstractRunner.h"
+#include "../../cpu/runners/runner.h"
 #include "abstract_file_parser.h"
 
 namespace poly {
@@ -197,20 +197,20 @@ namespace poly {
       // constructors
       explicit pbrt_parser() = default;
 
-      std::shared_ptr<poly::AbstractRunner> parse_file(const std::string &filepath) noexcept(false);
+      std::shared_ptr<poly::runner> parse_file(const std::string &filepath) noexcept(false);
       
-      std::shared_ptr<poly::AbstractRunner> parse_string(const std::string &text) noexcept(false);
+      std::shared_ptr<poly::runner> parse_string(const std::string &text) noexcept(false);
       static std::unique_ptr<poly::pbrt_directive> lex(std::vector<std::string> line);
       static std::unique_ptr<std::vector<std::vector<std::string>>> scan(const std::unique_ptr<std::istream>& stream);
-      std::unique_ptr<poly::AbstractSampler> sampler;
+      std::unique_ptr<poly::abstract_sampler> sampler;
       std::shared_ptr<poly::scene> scene = nullptr;
-      std::shared_ptr<poly::AbstractIntegrator> integrator;
-      std::unique_ptr<poly::AbstractFilm> film;
+      std::shared_ptr<poly::abstract_integrator> integrator;
+      std::unique_ptr<poly::abstract_film> film;
       std::unique_ptr<poly::AbstractFilter> filter;
-      poly::Bounds bounds;
+      poly::bounds bounds;
    
    private:
-      std::shared_ptr<poly::AbstractRunner> parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false);
+      std::shared_ptr<poly::runner> parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false);
    };
 }
 #endif //POLY_FILEPARSER_H

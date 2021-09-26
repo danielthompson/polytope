@@ -2,7 +2,7 @@
 
 #include "../../src/cpu/structures/Vectors.h"
 #include "../../src/cpu/constants.h"
-#include "../../src/cpu/structures/Intersection.h"
+#include "../../src/cpu/structures/intersection.h"
 #include "../../src/cpu/shapes/mesh.h"
 
 namespace Tests {
@@ -33,28 +33,28 @@ namespace Tests {
    }
    
    void test_helper(float fv0, float fv1, float fv2, float o_z, float d_z, float n_z) {
-      std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
+      std::shared_ptr<poly::transform> identity = std::make_shared<poly::transform>();
       std::shared_ptr<poly::mesh_geometry> geometry = one_triangle_xy(fv0, fv1, fv2); 
       
       // hits, from front
 
-      poly::Ray ray(poly::Point(0.2f, 0.2f, o_z), poly::Vector(0, 0, d_z));
-      poly::Intersection intersection;
+      poly::ray ray(poly::point(0.2f, 0.2f, o_z), poly::vector(0, 0, d_z));
+      poly::intersection intersection;
 
       unsigned int face_index = 0;
       poly::Mesh mesh(identity, identity, nullptr, geometry);
 
       mesh.intersect(ray, intersection, &face_index, geometry->num_faces);
       EXPECT_TRUE(intersection.Hits);
-      EXPECT_EQ(&mesh, intersection.Shape);
+      EXPECT_EQ(&mesh, intersection.shape);
       
       EXPECT_FLOAT_EQ(0, intersection.geo_normal.x);
       EXPECT_FLOAT_EQ(0, intersection.geo_normal.y);
       EXPECT_FLOAT_EQ(n_z, intersection.geo_normal.z);
       
-      EXPECT_FLOAT_EQ(.2f, intersection.Location.x);
-      EXPECT_FLOAT_EQ(.2f, intersection.Location.y);
-      EXPECT_FLOAT_EQ(0, intersection.Location.z);
+      EXPECT_FLOAT_EQ(.2f, intersection.location.x);
+      EXPECT_FLOAT_EQ(.2f, intersection.location.y);
+      EXPECT_FLOAT_EQ(0, intersection.location.z);
    }
 
 
@@ -75,7 +75,7 @@ namespace Tests {
    }
    
    TEST(mesh_cpu, intersect_stay_above_surface) {
-      std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
+      std::shared_ptr<poly::transform> identity = std::make_shared<poly::transform>();
       std::shared_ptr<poly::mesh_geometry> geometry = one_triangle_xy(0, 1, 2);
       float z = .2f;
       geometry->z[0] = z;
@@ -85,23 +85,23 @@ namespace Tests {
       geometry->z_packed[1] = z;
       geometry->z_packed[2] = z;
 
-      poly::Point expected_hit_point = {0.2f, .2f, z};
+      poly::point expected_hit_point = {0.2f, .2f, z};
       
       for (int k = 100; k < 10000000; k++) {
 //         for (int j = -50; j < 50; j++) {
 //            for (int i = -50; i < 50; i++) {
-               poly::Point origin = {1.464552f, 3.635245f, -1.0364f * (float)k};
-               poly::Vector direction = expected_hit_point - origin;
-               direction.Normalize();
-               poly::Ray ray(origin, direction);
-               poly::Intersection intersection;
+               poly::point origin = {1.464552f, 3.635245f, -1.0364f * (float)k};
+               poly::vector direction = expected_hit_point - origin;
+         direction.normalize();
+               poly::ray ray(origin, direction);
+               poly::intersection intersection;
 
                unsigned int face_index = 0;
                poly::Mesh mesh(identity, identity, nullptr, geometry);
 
                mesh.intersect(ray, intersection, &face_index, geometry->num_faces);
                ASSERT_TRUE(intersection.Hits);
-               ASSERT_EQ(&mesh, intersection.Shape);
+               ASSERT_EQ(&mesh, intersection.shape);
 
                ASSERT_FLOAT_EQ(0, intersection.geo_normal.x);
                ASSERT_FLOAT_EQ(0, intersection.geo_normal.y);
@@ -110,7 +110,7 @@ namespace Tests {
 //               EXPECT_FLOAT_EQ(expected_hit_point.x, intersection.Location.x);
 //               EXPECT_FLOAT_EQ(expected_hit_point.y, intersection.Location.y);
                if (k == 9999999)
-                  ASSERT_FLOAT_EQ(expected_hit_point.z, intersection.Location.z);
+                  ASSERT_FLOAT_EQ(expected_hit_point.z, intersection.location.z);
             }
 //         }
 //      }

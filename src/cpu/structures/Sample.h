@@ -31,8 +31,8 @@ namespace poly {
 
 #ifdef POLYTOPEGL
 #include <vector>
-#include "Intersection.h"
-      std::vector<poly::Intersection> intersections;
+#include "intersection.h"
+      std::vector<poly::intersection> intersections;
 #endif
    };
 }

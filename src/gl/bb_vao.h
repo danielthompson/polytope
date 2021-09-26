@@ -61,8 +61,8 @@ namespace poly {
       
    public:
       void select_node(poly::bvh_node* node) {
-         const Point low = node->bb.p0;
-         const Point high = node->bb.p1;
+         const point low = node->bb.p0;
+         const point high = node->bb.p1;
 
          selected_vertex_buffer[0] = low.x;
          selected_vertex_buffer[1] = low.y;
@@ -129,8 +129,8 @@ namespace poly {
                const unsigned int nodeDepth = pair.second;
                queue.pop();
 
-               const Point low = node->bb.p0;
-               const Point high = node->bb.p1;
+               const point low = node->bb.p0;
+               const point high = node->bb.p1;
 
                // add BB box to shapes
                all_vertex_buffer.push_back(low.x);

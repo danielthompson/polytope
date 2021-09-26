@@ -7,8 +7,8 @@
 
 #include <memory>
 #include <vector>
-#include "../cameras/AbstractCamera.h"
-#include "../structures/Intersection.h"
+#include "../cameras/abstract_camera.h"
+#include "../structures/intersection.h"
 #include "../lights/AbstractLight.h"
 #include "skyboxes/AbstractSkybox.h"
 #include "../acceleration/bvh.h"
@@ -18,7 +18,7 @@ namespace poly {
    class scene {
    public:
       
-      explicit scene(std::unique_ptr<poly::AbstractCamera> camera)
+      explicit scene(std::unique_ptr<poly::abstract_camera> camera)
             : Camera(std::move(camera)), Shapes(0), Lights(0), mesh_geometry_count(0) {} ;
 
       ~scene() {
@@ -27,15 +27,15 @@ namespace poly {
          }
       }
 
-      poly::Intersection intersect(poly::Ray &ray, int x, int y) {
-         poly::Intersection bvh_intersection;
+      poly::intersection intersect(poly::ray &ray, int x, int y) {
+         poly::intersection bvh_intersection;
          bvh_intersection.x = x;
          bvh_intersection.y = y;
          bvh_root.intersect_compact(ray, bvh_intersection);
          return bvh_intersection;
       }
       
-      std::unique_ptr<poly::AbstractCamera> Camera { };
+      std::unique_ptr<poly::abstract_camera> Camera { };
       std::unique_ptr<poly::AbstractSkybox> Skybox;
       
       std::vector<poly::Mesh*> Shapes;

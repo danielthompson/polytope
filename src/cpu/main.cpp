@@ -16,7 +16,6 @@
 #include "shapes/mesh.h"
 #include "structures/stats.h"
 
-
 poly::Logger Log;
 
 void segfaultHandler(int signalNumber) {
@@ -91,7 +90,7 @@ Other:
       constexpr unsigned int width = 640;
       constexpr unsigned int height = 480;
 
-      const poly::Bounds bounds(width, height);
+      const poly::bounds bounds(width, height);
 
       const unsigned int concurrentThreadsSupported = std::thread::hardware_concurrency();
       Log.info("Detected " + std::to_string(concurrentThreadsSupported) + " cores.");
@@ -105,7 +104,7 @@ Other:
       Log.info("Using " + std::to_string(usingThreads) + " threads.");
 
       {
-         std::shared_ptr<poly::AbstractRunner> runner;
+         std::shared_ptr<poly::runner> runner;
          if (options.inputSpecified) {
             // load file
             const auto parse_start = std::chrono::system_clock::now();
@@ -117,7 +116,7 @@ Other:
             
             // override parsed with options here
             if (options.samplesSpecified) {
-               runner->NumSamples = options.samples;
+               runner->sample_count = options.samples;
             }
          } else {
             Log.debug("No input file specified, quitting.");
@@ -146,7 +145,7 @@ Other:
                std::string("] x [") +
                std::to_string(runner->Bounds.y) +
                std::string("], ") +
-               std::to_string(runner->NumSamples) + " spp.");
+               std::to_string(runner->sample_count) + " spp.");
 
          Log.debug("Rendering...");
 
@@ -161,7 +160,7 @@ Other:
          for (int i = 0; i < usingThreads; i++) {
 
             Log.debug(std::string("Starting thread " + std::to_string(i) + std::string("...")));
-            threads.emplace_back(runner->Spawn(i/*, stats*/));
+            threads.emplace_back(runner->spawn_thread(i/*, stats*/));
             const std::thread::id threadID = threads[i].get_id();
             threadMap[threadID] = i;
 
@@ -187,7 +186,7 @@ Other:
 
          Log.debug("Outputting to film...");
          const auto outputStart = std::chrono::system_clock::now();
-         runner->Output();
+         runner->output();
          const auto outputEnd = std::chrono::system_clock::now();
 
          const std::chrono::duration<double> outputtingElapsedSeconds = outputEnd - outputStart;

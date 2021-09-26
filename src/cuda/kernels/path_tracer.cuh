@@ -17,7 +17,7 @@ namespace poly {
          
       void Trace(unsigned int num_samples) const;
 
-      bool unit_test_hit_ray_against_bounding_box(const poly::Ray &ray, const float* const device_aabb);
+      bool unit_test_hit_ray_against_bounding_box(const poly::ray &ray, const float* const device_aabb);
       
       poly::device_context* device_context;
    };

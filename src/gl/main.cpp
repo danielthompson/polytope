@@ -71,7 +71,7 @@ Other:
       }
 
       {
-         std::shared_ptr<poly::AbstractRunner> runner;
+         std::shared_ptr<poly::runner> runner;
          if (options.inputSpecified) {
             // load file
             const auto parse_start = std::chrono::system_clock::now();
@@ -83,7 +83,7 @@ Other:
             
             // override parsed with options here
             if (options.samplesSpecified) {
-               runner->NumSamples = options.samples;
+               runner->sample_count = options.samples;
             }
          } else {
             Log.debug("No input file specified, quitting.");

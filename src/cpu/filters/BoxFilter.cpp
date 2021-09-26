@@ -4,14 +4,14 @@
 
 #include <sstream>
 #include "BoxFilter.h"
-#include "../../common/structures/Point2.h"
+#include "../../common/structures/point2.h"
 #include "../../common/utilities/Common.h"
 
 namespace poly {
 
    //std::mutex BoxFilter::_mutex;
 
-   void BoxFilter::AddSample(const Point2f &location, const Sample &sample) {
+   void BoxFilter::AddSample(const point2f &location, const Sample &sample) {
       const int x = static_cast<int>(location.x);
       const int y = static_cast<int>(location.y);
 
@@ -34,7 +34,7 @@ namespace poly {
       _data[index].push_back(clamped);
    }
 
-   void BoxFilter::AddSamples(const Point2f &location, const std::vector<Sample> &samples) {
+   void BoxFilter::AddSamples(const point2f &location, const std::vector<Sample> &samples) {
       const int x = static_cast<int>(location.x);
       const int y = static_cast<int>(location.y);
 
@@ -51,7 +51,7 @@ namespace poly {
       }
    }
 
-   SpectralPowerDistribution BoxFilter::Output(const Point2i &pixel) const {
+   SpectralPowerDistribution BoxFilter::Output(const point2i &pixel) const {
       const unsigned int index = pixel.y * Bounds.x + pixel.x;
 
       const unsigned long numSamples = _data[index].size();

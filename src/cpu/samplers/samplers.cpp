@@ -6,22 +6,22 @@
 
 namespace poly {
 
-   Point2f CenterSampler::GetSample(const int x, const int y) const {
-      return Point2f(x + 0.5f, y + 0.5f);
+   point2f CenterSampler::GetSample(const int x, const int y) const {
+      return point2f(x + 0.5f, y + 0.5f);
    }
 
-   void CenterSampler::GetSamples(Point2f points[], const unsigned int number, const int x, const int y) const {
+   void CenterSampler::GetSamples(point2f points[], const unsigned int number, const int x, const int y) const {
       for (int i = 0; i < number; i++) {
          points[i].x = x + 0.5f;
          points[i].y = y + 0.5f;
       }
    }
 
-   Point2f HaltonSampler::GetSample(const int x, const int y) const {
-      return Point2f(x + 0.5f, y + 0.5f);
+   point2f HaltonSampler::GetSample(const int x, const int y) const {
+      return point2f(x + 0.5f, y + 0.5f);
    }
 
-   void HaltonSampler::GetSamples(Point2f points[], const unsigned int number, const int x, const int y) const {
+   void HaltonSampler::GetSamples(point2f points[], const unsigned int number, const int x, const int y) const {
       const int base0 = 2;
       const int base1 = 3;
 
@@ -60,11 +60,11 @@ namespace poly {
       }
    }
 
-   Point2f GridSampler::GetSample(const int x, const int y) const {
-      return Point2f(x + 0.5f, y + 0.5f);
+   point2f GridSampler::GetSample(const int x, const int y) const {
+      return point2f(x + 0.5f, y + 0.5f);
    }
 
-   void GridSampler::GetSamples(Point2f points[], const unsigned int number, const int x, const int y) const {
+   void GridSampler::GetSamples(point2f points[], const unsigned int number, const int x, const int y) const {
       switch (number) {
          case 1: {
             points[0].x = 0.5f;

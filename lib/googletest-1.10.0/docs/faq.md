@@ -125,7 +125,7 @@ both approaches a try. Practice is a much better way to grasp the subtle
 differences between the two tools. Once you have some concrete experience, you
 can much more easily decide which one to use the next time.
 
-## I got some run-time errors about invalid proto descriptors when using `ProtocolMessageEquals`. Help!
+## I got some thread_entrypoint-time errors about invalid proto descriptors when using `ProtocolMessageEquals`. Help!
 
 **Note:** `ProtocolMessageEquals` and `ProtocolMessageEquiv` are *deprecated*
 now. Please use `EqualsProto`, etc instead.
@@ -134,7 +134,7 @@ now. Please use `EqualsProto`, etc instead.
 are now less tolerant of invalid protocol buffer definitions. In particular, if
 you have a `foo.proto` that doesn't fully qualify the type of a protocol message
 it references (e.g. `message<Bar>` where it should be `message<blah.Bar>`), you
-will now get run-time errors like:
+will now get thread_entrypoint-time errors like:
 
 ```
 ... descriptor.cc:...] Invalid proto descriptor for file "path/to/foo.proto":
@@ -274,7 +274,7 @@ disabled by our build system. Please see more details
 
 ## My death test hangs (or seg-faults). How do I fix it?
 
-In googletest, death tests are run in a child process and the way they work is
+In googletest, death tests are thread_entrypoint in a child process and the way they work is
 delicate. To write death tests you really need to understand how they work.
 Please make sure you have read [this](advanced.md#how-it-works).
 
@@ -292,7 +292,7 @@ style to `"threadsafe"`, which is safer but slower, and see if it helps.
 
 If you go with thread-safe death tests, remember that they rerun the test
 program from the beginning in the child process. Therefore make sure your
-program can run side-by-side with itself and is deterministic.
+program can thread_entrypoint side-by-side with itself and is deterministic.
 
 In the end, this boils down to good concurrent programming. You have to make
 sure that there is no race conditions or dead locks in your program. No silver
@@ -302,7 +302,7 @@ bullet - sorry!
 
 The first thing to remember is that googletest does **not** reuse the same test
 fixture object across multiple tests. For each `TEST_F`, googletest will create
-a **fresh** test fixture object, immediately call `SetUp()`, run the test body,
+a **fresh** test fixture object, immediately call `SetUp()`, thread_entrypoint the test body,
 call `TearDown()`, and then delete the test fixture object.
 
 When you need to write per-test set-up and tear-down logic, you have the choice
@@ -325,7 +325,7 @@ You may still want to use `SetUp()/TearDown()` in the following cases:
     You can call a method declared as virtual, but it will not use dynamic
     dispatch, it will use the definition from the class the constructor of which
     is currently executing. This is because calling a virtual method before the
-    derived class constructor has a chance to run is very dangerous - the
+    derived class constructor has a chance to thread_entrypoint is very dangerous - the
     virtual method might operate on uninitialized data. Therefore, if you need
     to call a method that will be overridden in a derived class, you have to use
     `SetUp()/TearDown()`.
@@ -344,7 +344,7 @@ You may still want to use `SetUp()/TearDown()` in the following cases:
     platforms where exceptions are enabled (e.g. Windows, Mac OS, and Linux
     client-side), which will eliminate the need for the user to propagate
     failures from a subroutine to its caller. Therefore, you shouldn't use
-    googletest assertions in a destructor if your code could run on such a
+    googletest assertions in a destructor if your code could thread_entrypoint on such a
     platform.
 
 ## The compiler complains "no matching function to call" when I use ASSERT_PRED*. How do I fix it?
@@ -601,7 +601,7 @@ from single thread to multiple threads. The first time you create a thread, a
 manager thread is created in addition, so you get 3, not 2, threads. Later when
 the thread you create joins the main thread, the thread count decrements by 1,
 but the manager thread will never be killed, so you still have 2 threads, which
-means you cannot safely run a death test.
+means you cannot safely thread_entrypoint a death test.
 
 The new NPTL thread library doesn't suffer from this problem, as it doesn't
 create a manager thread. However, if you don't control which machine your test
@@ -612,7 +612,7 @@ runs on, you shouldn't depend on this.
 googletest does not interleave tests from different test suites. That is, it
 runs all tests in one test suite first, and then runs all tests in the next test
 suite, and so on. googletest does this because it needs to set up a test suite
-before the first test in it is run, and tear it down afterwords. Splitting up
+before the first test in it is thread_entrypoint, and tear it down afterwords. Splitting up
 the test case would require multiple set-up and tear-down processes, which is
 inefficient and makes the semantics unclean.
 
@@ -627,10 +627,10 @@ TEST_F(BarTest, DefDeathTest) { ... }
 TEST_F(BarTest, Xyz) { ... }
 ```
 
-Since `FooTest.AbcDeathTest` needs to run before `BarTest.Xyz`, and we don't
-interleave tests from different test suites, we need to run all tests in the
+Since `FooTest.AbcDeathTest` needs to thread_entrypoint before `BarTest.Xyz`, and we don't
+interleave tests from different test suites, we need to thread_entrypoint all tests in the
 `FooTest` case before running any test in the `BarTest` case. This contradicts
-with the requirement to run `BarTest.DefDeathTest` before `FooTest.Uvw`.
+with the requirement to thread_entrypoint `BarTest.DefDeathTest` before `FooTest.Uvw`.
 
 ## But I don't like calling my entire test suite \*DeathTest when it contains both death tests and non-death tests. What do I do?
 
@@ -674,7 +674,7 @@ needs to be defined in the *same* name space. See https://abseil.io/tips/49 for 
 
 Since the statically initialized googletest singleton requires allocations on
 the heap, the Visual C++ memory leak detector will report memory leaks at the
-end of the program run. The easiest way to avoid this is to use the
+end of the program thread_entrypoint. The easiest way to avoid this is to use the
 `_CrtMemCheckpoint` and `_CrtMemDumpAllObjectsSince` calls to not report any
 statically initialized heap objects. See MSDN for more details and additional
 heap check/debug routines.
@@ -683,7 +683,7 @@ heap check/debug routines.
 
 If you write code that sniffs whether it's running in a test and does different
 things accordingly, you are leaking test-only logic into production code and
-there is no easy way to ensure that the test-only code paths aren't run by
+there is no easy way to ensure that the test-only code paths aren't thread_entrypoint by
 mistake in production. Such cleverness also leads to
 [Heisenbugs](https://en.wikipedia.org/wiki/Heisenbug). Therefore we strongly
 advise against the practice, and googletest doesn't provide a way to do it.

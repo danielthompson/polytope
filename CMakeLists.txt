@@ -17,6 +17,10 @@ find_library(CUDART_LIBRARY cudart ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
 SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -Wno-error=unused-function -pthread")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-error=unused-function -pthread")
 
+# Address Sanitizer in debug builds
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-scope")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-scope")
+
 #SET(CMAKE_CUDA_FLAGS " -gencode arch=compute_61,code=sm_61")
 #SET(CMAKE_CUDA_FLAGS " -arch=sm_61")
 
@@ -54,18 +58,18 @@ add_library(polytope_lib
         lib/lodepng.cpp
         lib/lodepng.h
         src/cpu/constants.h
-        src/cpu/cameras/AbstractCamera.h
-        src/cpu/cameras/CameraSettings.h
-        src/cpu/cameras/PerspectiveCamera.cpp
-        src/cpu/cameras/PerspectiveCamera.h
-        src/cpu/films/AbstractFilm.h
+    src/cpu/cameras/abstract_camera.h
+    src/cpu/cameras/camera_settings.h
+    src/cpu/cameras/perspective_camera.cpp
+    src/cpu/cameras/perspective_camera.h
+    src/cpu/films/abstract_film.h
         src/cpu/films/PNGFilm.cpp
         src/cpu/films/PNGFilm.h
         src/cpu/filters/AbstractFilter.h
         src/cpu/filters/BoxFilter.cpp
         src/cpu/filters/BoxFilter.h
-        src/cpu/integrators/AbstractIntegrator.h
-        src/cpu/integrators/AbstractIntegrator.h
+    src/cpu/integrators/abstract_integrator.h
+    src/cpu/integrators/abstract_integrator.h
         src/cpu/integrators/DebugIntegrator.cpp
         src/cpu/integrators/DebugIntegrator.h
         src/cpu/integrators/PathTraceIntegrator.cpp
@@ -74,8 +78,8 @@ add_library(polytope_lib
         src/cpu/lights/PointLight.h
         src/common/parsers/pbrt_parser.cpp
         src/common/parsers/pbrt_parser.h
-    src/cpu/runners/AbstractRunner.h
-    src/cpu/runners/AbstractRunner.cpp
+    src/cpu/runners/runner.h
+    src/cpu/runners/runner.cpp
     src/cpu/samplers/samplers.h
         src/cpu/samplers/samplers.cpp
       src/cpu/scenes/scene.cpp
@@ -89,17 +93,14 @@ add_library(polytope_lib
         src/cpu/shading/brdf/mirror_brdf.h
         src/cpu/shading/brdf/glossy_brdf.h
         src/cpu/shading/spectrum.h
-        src/cpu/structures/Intersection.cpp
-        src/cpu/structures/Intersection.h
-        src/cpu/structures/Matrix4x4.cpp
-        src/cpu/structures/Matrix4x4.h
-        src/common/structures/Point2.h
-        src/cpu/structures/Ray.cpp
-        src/cpu/structures/Ray.h
-        src/cpu/structures/Sample.cpp
-        src/cpu/structures/Sample.h
-        src/cpu/structures/Transform.cpp
-        src/cpu/structures/Transform.h
+    src/cpu/structures/intersection.h
+    src/cpu/structures/matrix.cpp
+    src/cpu/structures/matrix.h
+    src/common/structures/point2.h
+    src/cpu/structures/ray.h
+    src/cpu/structures/Sample.h
+    src/cpu/structures/transform.cpp
+    src/cpu/structures/transform.h
         src/common/utilities/Common.h
         src/common/utilities/GeometryCalculations.h
         src/common/utilities/GlobalDefines.h
@@ -112,8 +113,8 @@ add_library(polytope_lib
         src/common/parsers/abstract_file_parser.h
         src/cpu/structures/Vectors.cpp
         src/cpu/structures/Vectors.h
-        src/cpu/structures/BoundingBox.cpp
-        src/cpu/structures/BoundingBox.h
+    src/cpu/structures/bounding_box.cpp
+    src/cpu/structures/bounding_box.h
         src/common/parsers/mesh_parsers.h
         src/common/parsers/mesh_parsers.cpp
         src/cpu/shapes/tesselators.cpp

@@ -5,7 +5,7 @@
 #include <sstream>
 #include <queue>
 #include <mutex>
-#include "AbstractRunner.h"
+#include "runner.h"
 
 extern struct poly::stats main_stats;
 extern thread_local struct poly::stats thread_stats;
@@ -15,22 +15,22 @@ namespace poly {
    namespace {
       constexpr unsigned int _tile_width_x = 2;
       constexpr unsigned int _tile_width_y = 2;
-      std::vector<poly::Point2i> _tiles;
+      std::vector<poly::point2i> _tiles;
       std::mutex _mutex;
       std::atomic<int> _tiles_current_index;
    }
 
-   AbstractRunner::AbstractRunner(std::unique_ptr<AbstractSampler> sampler, 
-                                  std::shared_ptr<poly::scene> scene,
-                                  std::shared_ptr<poly::AbstractIntegrator> integrator,
-                                  std::unique_ptr<AbstractFilm> film, 
-                                  const unsigned int numSamples,
-                                  const poly::Bounds bounds)
+   runner::runner(std::unique_ptr<poly::abstract_sampler> sampler,
+                  std::shared_ptr<poly::scene> scene,
+                  std::shared_ptr<poly::abstract_integrator> integrator,
+                  std::unique_ptr<poly::abstract_film> film,
+                  const unsigned int sample_count,
+                  const poly::bounds bounds)
                                   : Sampler(std::move(sampler)),
                                     Scene(scene),
-                                    Integrator(integrator),
+                                    integrator(integrator),
                                     Film(std::move(film)),
-                                    NumSamples(numSamples),
+                                    sample_count(sample_count),
                                     Bounds(bounds) {
 
       for (int y = 0; y < bounds.y; y += _tile_width_y) {
@@ -41,7 +41,7 @@ namespace poly {
       _tiles_current_index = 0;
    }
    
-   void AbstractRunner::Run(int threadId) const {
+   void runner::thread_entrypoint(int threadId) const {
 
       while (1) {
          
@@ -49,11 +49,11 @@ namespace poly {
          if (tile_index >= _tiles.size())
             break;
          
-         poly::Point2i tile = _tiles[tile_index];
+         poly::point2i tile = _tiles[tile_index];
          
          for (unsigned int y = tile.y; y < tile.y + _tile_width_y && y < Bounds.y; y++) {
             for (unsigned int x = tile.x; x < tile.x + _tile_width_x && x < Bounds.x; x++) {
-               Trace(x, y);
+               trace(x, y);
             }
          }
       }
@@ -63,18 +63,22 @@ namespace poly {
       main_stats.add(thread_stats);
    }
 
-   void AbstractRunner::Trace(const int x, const int y) const {
+   void runner::trace(const int x, const int y) const {
 
-      Point2f points[NumSamples];
+      poly::point2f points[sample_count];
 
-      Sampler->GetSamples(points, NumSamples, x, y);
+      Sampler->GetSamples(points, sample_count, x, y);
 
-      for (unsigned int i = 0; i < NumSamples; i++) {
+      for (unsigned int i = 0; i < sample_count; i++) {
 
-         Point2f sampleLocation = points[i];
-         Ray ray = Scene->Camera->get_ray_for_pixel(sampleLocation);
-         Sample sample = Integrator->GetSample(ray, 0, x, y);
+         poly::point2f sampleLocation = points[i];
+         poly::ray ray = Scene->Camera->get_ray_for_pixel(sampleLocation);
+         poly::Sample sample = integrator->get_sample(ray, 0, x, y);
          Film->AddSample(sampleLocation, sample);
       }
+   }
+
+   runner::~runner() {
+      Log.info("runner destructing");
    }
 }

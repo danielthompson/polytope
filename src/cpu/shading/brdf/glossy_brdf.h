@@ -18,11 +18,11 @@ namespace poly {
          return 0;
       }
 
-      float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const override {
+      float f(const poly::vector &incoming, const poly::normal &normal, const vector &outgoing) const override {
          return 0;
       }
 
-      Vector sample(const Vector &incoming, const float u, const float v, ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
+      poly::vector sample(const poly::vector &incoming, const float u, const float v, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
          
          assert(!std::isnan(incoming.x));
          assert(!std::isnan(incoming.y));
@@ -31,27 +31,27 @@ namespace poly {
          float lambert_pdf = 1;
          
          while (true) {
-            Vector lambert_outgoing = AbstractBRDF::sample(incoming, u, v, refl_spectrum, pdf);;
+            poly::vector lambert_outgoing = AbstractBRDF::sample(incoming, u, v, refl_spectrum, pdf);;
 
             // 0. measure angle between normal and mirror
-            const Normal normal = Normal(0, 1, 0);
-            const float factor = incoming.Dot(normal) * 2;
-            const Vector scaled = Vector(normal * factor);
+            const poly::normal normal(0, 1, 0);
+            const float factor = incoming.dot(normal) * 2;
+            const poly::vector scaled = vector(normal * factor);
             pdf = 1.0f;
-            Vector specular_outgoing = incoming - scaled;
-            specular_outgoing.Normalize();
-            const float angle = -std::acos(specular_outgoing.Dot(normal));
+            poly::vector specular_outgoing = incoming - scaled;
+            specular_outgoing.normalize();
+            const float angle = -std::acos(specular_outgoing.dot(normal));
 
             // 1. cross normal and mirror together to get a perp vector
-            const Vector perp = specular_outgoing.Cross(normal);
+            const poly::vector perp = specular_outgoing.cross(normal);
 
             // 2. rotate lambert by [0] degrees around [1] axis
-            Transform t = Transform::Rotate(angle, perp.x, perp.y, perp.z);
-            Vector rotated_lambert = t.Apply(lambert_outgoing);
+            poly::transform t = poly::transform::rotate(angle, perp.x, perp.y, perp.z);
+            poly::vector rotated_lambert = t.apply(lambert_outgoing);
 
             // 3. lerp between [2] and mirror vector using roughness factor
             refl_spectrum = specular * (1 - roughness) + diffuse * roughness;
-            Vector outgoing = specular_outgoing * (1 - roughness) + rotated_lambert * roughness;
+            poly::vector outgoing = specular_outgoing * (1 - roughness) + rotated_lambert * roughness;
             if (outgoing.y < 0)
                continue;
             //outgoing.y = outgoing.y > 0 ? outgoing.y : -outgoing.y;
@@ -60,7 +60,7 @@ namespace poly {
       }
 
    private:
-      ReflectanceSpectrum specular, diffuse;
+      poly::ReflectanceSpectrum specular, diffuse;
       
       // 0 - specular, 1 - diffuse
       float roughness;

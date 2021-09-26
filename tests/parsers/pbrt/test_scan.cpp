@@ -11,7 +11,7 @@
 #include "../../../src/cpu/filters/BoxFilter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
 #include "../../../src/cpu/scenes/scene.h"
-#include "../../../src/cpu/cameras/PerspectiveCamera.h"
+#include "../../../src/cpu/cameras/perspective_camera.h"
 #include "../../../src/cpu/shapes/mesh.h"
 
 // TODO - put all test globals somewhere

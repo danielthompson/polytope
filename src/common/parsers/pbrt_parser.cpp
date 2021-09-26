@@ -12,7 +12,7 @@
 #include "mesh_parsers.h"
 #include "../../cpu/integrators/PathTraceIntegrator.h"
 #include "../../cpu/integrators/DebugIntegrator.h"
-#include "../../cpu/cameras/PerspectiveCamera.h"
+#include "../../cpu/cameras/perspective_camera.h"
 #include "../../cpu/samplers/samplers.h"
 #include "../../cpu/films/PNGFilm.h"
 #include "../../cpu/filters/BoxFilter.h"
@@ -110,16 +110,16 @@ namespace poly {
       };
 
       const std::unordered_map<std::string, DirectiveIdentifier> SceneDirectiveMap {
-            {str::Camera, Camera},
-            {str::Film, Film},
-            {str::Integrator, Integrator},
-            {str::LookAt, LookAt},
+            {str::Camera,      Camera},
+            {str::Film,        Film},
+            {str::Integrator,  Integrator},
+            {str::LookAt,      LookAt},
             {str::PixelFilter, PixelFilter},
-            {str::Rotate, Rotate},
-            {str::Sampler, Sampler},
-            {str::Scale, Scale},
-            {str::Transform, Transform},
-            {str::Translate, Translate},
+            {str::Rotate,      Rotate},
+            {str::Sampler,     Sampler},
+            {str::Scale,       Scale},
+            {str::Transform,   Transform},
+            {str::Translate,   Translate},
       };
 
       const std::unordered_map<std::string, DirectiveIdentifier> WorldDirectiveMap {
@@ -128,21 +128,21 @@ namespace poly {
             {str::AttributeEnd, AttributeEnd},
             {str::LightSource, LightSource},
             {str::MakeNamedMaterial, MakeNamedMaterial},
-            {str::Material, Material},
-            {str::NamedMaterial, NamedMaterial},
-            {str::ObjectBegin, ObjectBegin},
-            {str::ObjectEnd, ObjectEnd},
-            {str::ObjectInstance, ObjectInstance},
-            {str::Rotate, Rotate},
-            {str::Scale, Scale},
-            {str::Shape, Shape},
-            {str::Texture, Texture},
-            {str::Transform, Transform},
-            {str::TransformBegin, TransformBegin},
-            {str::TransformEnd, TransformEnd},
-            {str::Translate, Translate},
-            {str::WorldBegin, WorldBegin},
-            {str::WorldEnd, WorldEnd},
+            {str::Material,          Material},
+            {str::NamedMaterial,     NamedMaterial},
+            {str::ObjectBegin,       ObjectBegin},
+            {str::ObjectEnd,         ObjectEnd},
+            {str::ObjectInstance,    ObjectInstance},
+            {str::Rotate,            Rotate},
+            {str::Scale,             Scale},
+            {str::Shape,             Shape},
+            {str::Texture,           Texture},
+            {str::Transform,         Transform},
+            {str::TransformBegin,    TransformBegin},
+            {str::TransformEnd,      TransformEnd},
+            {str::Translate,         Translate},
+            {str::WorldBegin,        WorldBegin},
+            {str::WorldEnd,          WorldEnd},
       };
 
       enum ShapeIdentifier {
@@ -273,7 +273,7 @@ namespace poly {
       constexpr unsigned int DefaultSamples = 8;
    }
 
-   std::shared_ptr<poly::AbstractRunner> pbrt_parser::parse_file(const std::string &filepath) {
+   std::shared_ptr<poly::runner> pbrt_parser::parse_file(const std::string &filepath) {
 
       std::unique_ptr<std::vector<std::vector<std::string>>> tokens = scan(open_ascii_stream(filepath));
 
@@ -292,7 +292,7 @@ namespace poly {
       return parse(std::move(tokens));
    }
 
-   std::shared_ptr<poly::AbstractRunner> pbrt_parser::parse_string(const std::string &text) {
+   std::shared_ptr<poly::runner> pbrt_parser::parse_string(const std::string &text) {
       auto tokens = scan(std::make_unique<std::istringstream>(text));
       return parse(std::move(tokens));
    }
@@ -665,7 +665,7 @@ namespace poly {
       return directive;
    }
    
-   static std::unique_ptr<poly::Transform> rotate_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+   static std::unique_ptr<poly::transform> rotate_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
       // TODO need to ensure just 1 argument with 4 values
       
       const float angle = directive->arguments[0].float_values->at(0) * PIOver180;
@@ -679,19 +679,19 @@ namespace poly {
       y *= length_inverse;
       z *= length_inverse;
       
-      return std::make_unique<poly::Transform>(Transform::Rotate(angle, x, y, z));
+      return std::make_unique<poly::transform>(transform::rotate(angle, x, y, z));
    }
    
-   static std::unique_ptr<poly::Transform> scale_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+   static std::unique_ptr<poly::transform> scale_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
       pbrt_argument* arg = &(directive->arguments[0]);
       float x = arg->float_values->at(0);
       float y = arg->float_values->at(1);
       float z = arg->float_values->at(2);
 
-      return std::make_unique<poly::Transform>(Transform::Scale(x, y, z));
+      return std::make_unique<poly::transform>(transform::scale(x, y, z));
    }
    
-   static std::unique_ptr<poly::Transform> transform_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+   static std::unique_ptr<poly::transform> transform_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
       pbrt_argument* arg = &(directive->arguments[0]);
       float m00 = arg->float_values->at(0);
       float m01 = arg->float_values->at(1);
@@ -713,19 +713,19 @@ namespace poly {
       float m32 = arg->float_values->at(14);
       float m33 = arg->float_values->at(15);
 
-      return std::make_unique<poly::Transform>(m00, m01, m02, m03,
+      return std::make_unique<poly::transform>(m00, m01, m02, m03,
                                                m10, m11, m12, m13,
                                                m20, m21, m22, m23,
                                                m30, m31, m32, m33);
    }
    
-   static std::unique_ptr<poly::Transform> translate_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+   static std::unique_ptr<poly::transform> translate_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
       // need to ensure just one argument with 3 values
       pbrt_argument* arg = &(directive->arguments[0]);
       float x = arg->float_values->at(0);
       float y = arg->float_values->at(1);
       float z = arg->float_values->at(2);
-      return std::make_unique<poly::Transform>(Transform::Translate(x, y, z));
+      return std::make_unique<poly::transform>(transform::translate(x, y, z));
    }
    
    static std::unique_ptr<poly::texture> texture_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
@@ -905,7 +905,7 @@ namespace poly {
       }
    }
 
-   std::shared_ptr<poly::AbstractRunner> pbrt_parser::parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
+   std::shared_ptr<poly::runner> pbrt_parser::parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
       std::vector<std::unique_ptr<pbrt_directive>> scene_directives;
       std::vector<std::unique_ptr<pbrt_directive>> world_directives;
 
@@ -1078,14 +1078,14 @@ namespace poly {
 
       // camera
 
-      std::unique_ptr<AbstractCamera> camera;
+      std::unique_ptr<abstract_camera> camera;
 
       {
-         Point eye;
-         Point lookAt;
-         Vector up;
+         point eye;
+         point lookAt;
+         vector up;
 
-         poly::Transform current_transform;
+         poly::transform current_transform;
          
          for (const std::unique_ptr<pbrt_directive>& directive : scene_directives) {
             
@@ -1102,21 +1102,21 @@ namespace poly {
                   const float eyeY = directive->arguments[0].float_values->at(1);
                   const float eyeZ = directive->arguments[0].float_values->at(2);
 
-                  eye = Point(eyeX, eyeY, eyeZ);
+                  eye = point(eyeX, eyeY, eyeZ);
 
                   const float lookAtX = directive->arguments[0].float_values->at(3);
                   const float lookAtY = directive->arguments[0].float_values->at(4);
                   const float lookAtZ = directive->arguments[0].float_values->at(5);
 
-                  lookAt = Point(lookAtX, lookAtY, lookAtZ);
+                  lookAt = point(lookAtX, lookAtY, lookAtZ);
 
                   const float upX = directive->arguments[0].float_values->at(6);
                   const float upY = directive->arguments[0].float_values->at(7);
                   const float upZ = directive->arguments[0].float_values->at(8);
 
-                  up = Vector(upX, upY, upZ);
+                  up = vector(upX, upY, upZ);
 
-                  poly::Transform t = Transform::LookAt(eye, lookAt, up, false);
+                  poly::transform t = transform::look_at(eye, lookAt, up, false);
                   current_transform *= t;
 
                   Log.debug("Found LookAt.");
@@ -1144,7 +1144,7 @@ namespace poly {
             }
          }
 
-         CameraSettings settings = CameraSettings(bounds, DefaultCameraFOV);
+         camera_settings settings = camera_settings(bounds, DefaultCameraFOV);
 
          bool foundCamera = false;
 
@@ -1166,9 +1166,9 @@ namespace poly {
                      }
                   }
 
-                  settings.FieldOfView = fov;
+                  settings.field_of_view = fov;
 
-                  camera = std::make_unique<PerspectiveCamera>(settings, current_transform, true);
+                  camera = std::make_unique<perspective_camera>(settings, current_transform, true);
                   camera->eye = eye;
                   camera->lookAt = lookAt;
                   camera->up = up;
@@ -1182,7 +1182,7 @@ namespace poly {
             stringstream << "PerspectiveCamera with FOV = " << DefaultCameraFOV;
             std::string cameraDefaultString = stringstream.str();
             LogMissingDirective(str::Camera, cameraDefaultString);
-            camera = std::make_unique<PerspectiveCamera>(settings, current_transform, true);
+            camera = std::make_unique<perspective_camera>(settings, current_transform, true);
          }
       }
 
@@ -1239,11 +1239,11 @@ namespace poly {
 
       std::stack<std::shared_ptr<poly::Material>> materialStack;
       std::stack<std::shared_ptr<SpectralPowerDistribution>> lightStack;
-      std::stack<std::shared_ptr<poly::Transform>> transformStack;
+      std::stack<std::shared_ptr<poly::transform>> transformStack;
 
       std::shared_ptr<poly::Material> activeMaterial;
       std::shared_ptr<SpectralPowerDistribution> activeLight;
-      std::shared_ptr<poly::Transform> activeTransform = std::make_shared<poly::Transform>();
+      std::shared_ptr<poly::transform> activeTransform = std::make_shared<poly::transform>();
       
       std::unordered_map<std::string, std::shared_ptr<poly::texture>> texture_map;
       
@@ -1300,7 +1300,7 @@ namespace poly {
 
                // push onto transform stack
                transformStack.push(activeTransform);
-               activeTransform = std::make_shared<poly::Transform>(*(activeTransform.get()));
+               activeTransform = std::make_shared<poly::transform>(*(activeTransform.get()));
                break;
             }
             case DirectiveIdentifier::AttributeEnd: {
@@ -1322,7 +1322,7 @@ namespace poly {
 
                // pop transform stack
                if (!transformStack.empty()) {
-                  std::shared_ptr<poly::Transform> stackValue = transformStack.top();
+                  std::shared_ptr<poly::transform> stackValue = transformStack.top();
                   transformStack.pop();
                   assert (stackValue != nullptr);
                   activeTransform = stackValue;
@@ -1459,7 +1459,8 @@ namespace poly {
                }
                
                // create mesh with current geometry and add to scene
-               std::shared_ptr<poly::Transform> activeInverse = std::make_shared<poly::Transform>(activeTransform->Invert());
+               std::shared_ptr<poly::transform> activeInverse = std::make_shared<poly::transform>(
+                     activeTransform->invert());
                poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
                if (activeLight != nullptr) {
                   // TODO
@@ -1490,7 +1491,8 @@ namespace poly {
                   continue;
                }
 
-               std::shared_ptr<poly::Transform> activeInverse = std::make_shared<poly::Transform>(activeTransform->Invert());
+               std::shared_ptr<poly::transform> activeInverse = std::make_shared<poly::transform>(
+                     activeTransform->invert());
                
                switch (identifier) {
                   case ShapeIdentifier::objmesh: {
@@ -1627,9 +1629,10 @@ namespace poly {
                         if (argument.Type == pbrt_argument::pbrt_argument_type::pbrt_float) {
                            const float radius = argument.float_values->at(0);
                            
-                           poly::Transform radius_transform = Transform::Scale(radius);
-                           std::shared_ptr<poly::Transform> temp_radius_transform = std::make_shared<poly::Transform>((*activeTransform) * radius_transform);
-                           std::shared_ptr<poly::Transform> temp_radius_inverse = std::make_shared<poly::Transform>(temp_radius_transform->Invert());
+                           poly::transform radius_transform = transform::scale(radius);
+                           std::shared_ptr<poly::transform> temp_radius_transform = std::make_shared<poly::transform>((*activeTransform) * radius_transform);
+                           std::shared_ptr<poly::transform> temp_radius_inverse = std::make_shared<poly::transform>(
+                                 temp_radius_transform->invert());
                            
                            std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
                            scene->mesh_geometry_count++;
@@ -1683,13 +1686,13 @@ namespace poly {
                // push onto transform stack
                assert (activeTransform != nullptr);
                transformStack.push(activeTransform);
-               activeTransform = std::make_shared<poly::Transform>(*(activeTransform.get()));
+               activeTransform = std::make_shared<poly::transform>(*(activeTransform.get()));
                break;
             }
             case DirectiveIdentifier::TransformEnd: {
                // pop transform stack
                if (!transformStack.empty()) {
-                  std::shared_ptr<poly::Transform> stackValue = transformStack.top();
+                  std::shared_ptr<poly::transform> stackValue = transformStack.top();
                   transformStack.pop();
                   assert (stackValue != nullptr);
                   activeTransform = stackValue;
@@ -1710,7 +1713,7 @@ namespace poly {
 
       integrator->Scene = scene;
 
-      return std::make_shared<AbstractRunner>(
+      return std::make_shared<runner>(
             std::move(sampler),
             scene,
             integrator,

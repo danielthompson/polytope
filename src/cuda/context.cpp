@@ -22,13 +22,13 @@ namespace poly {
       
       if (scene->Camera == nullptr) {
          Log.warning("Warning: scene has no camera, using identity matrix with FOV = 50.");
-         poly::Transform identity;
-         memcpy(camera_to_world_matrix, identity.Matrix.Matrix, 16 * sizeof(float));
+         poly::transform identity;
+         memcpy(camera_to_world_matrix, identity.matrix.mat, 16 * sizeof(float));
          camera_fov = 50;
       }
       else {
-         memcpy(camera_to_world_matrix, scene->Camera->CameraToWorld.Matrix.Matrix, 16 * sizeof(float));
-         camera_fov = scene->Camera->Settings.FieldOfView;
+         memcpy(camera_to_world_matrix, scene->Camera->camera_to_world.matrix.mat, 16 * sizeof(float));
+         camera_fov = scene->Camera->settings.field_of_view;
       }
       
       // samples
@@ -186,8 +186,8 @@ namespace poly {
          host_mesh_temp.world_bb[5] = host_mesh->world_bb.p1.z;
          host_mesh_temp.device_mesh_geometry_offset = device_mesh_geometry_index;
 
-         memcpy(host_mesh_temp.obj_to_world, host_mesh->object_to_world->Matrix.Matrix, 16 * sizeof(float));
-         memcpy(host_mesh_temp.world_to_object, host_mesh->world_to_object->Matrix.Matrix, 16 * sizeof(float));
+         memcpy(host_mesh_temp.obj_to_world, host_mesh->object_to_world->matrix.mat, 16 * sizeof(float));
+         memcpy(host_mesh_temp.world_to_object, host_mesh->world_to_object->matrix.mat, 16 * sizeof(float));
          
          // TODO material / BRDF
 //         cuda_check_error( cudaMalloc((void **)&(host_mesh_temp.src), sizeof(float) * 3) );

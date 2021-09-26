@@ -79,8 +79,8 @@ namespace poly {
          return (TwoEpsilon + number >= target);
    }
 
-   inline float RadiansBetween(const Vector &v, const Normal &n) {
-      return float(std::abs(acos(v.Dot(n))));
+   inline float RadiansBetween(const vector &v, const normal &n) {
+      return float(std::abs(acos(v.dot(n))));
    }
 
    static thread_local std::random_device random_device;
@@ -103,7 +103,7 @@ namespace poly {
       return distribution(Generator);
    }
 
-   inline Vector CosineSampleHemisphere(float u0, float u1) {
+   inline vector CosineSampleHemisphere(float u0, float u1) {
       const float r = std::sqrt(u0);
       const float theta = TwoPI * u1;
 
@@ -111,11 +111,11 @@ namespace poly {
       const float y = std::sqrt(std::max(0.0f, 1.0f - u0));
       const float z = r * std::sin(theta);
 
-      return Vector(x, y, z);
+      return vector(x, y, z);
    }
 
-   inline float SignedDistanceFromPlane(const Point &pointOnPlane, const Normal &normal, const Point &p) {
-      return (p - pointOnPlane).Dot(normal);
+   inline float SignedDistanceFromPlane(const point &pointOnPlane, const normal &normal, const point &p) {
+      return (p - pointOnPlane).dot(normal);
    }
 
    inline float difference_of_products(float a, float b, float c, float d) {

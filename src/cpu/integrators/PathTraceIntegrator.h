@@ -5,18 +5,22 @@
 #ifndef POLY_PATHTRACEINTEGRATOR_H
 #define POLY_PATHTRACEINTEGRATOR_H
 
-#include "AbstractIntegrator.h"
+#include "abstract_integrator.h"
 
 namespace poly {
 
-   class PathTraceIntegrator : public AbstractIntegrator {
+   class PathTraceIntegrator : public abstract_integrator {
    public:
-      PathTraceIntegrator(std::shared_ptr<poly::scene> scene, int maxDepth)
-            : AbstractIntegrator(scene, maxDepth) { }
-      explicit PathTraceIntegrator(int maxDepth)
-         : AbstractIntegrator(maxDepth) { }
+      PathTraceIntegrator(std::shared_ptr<poly::scene> scene, int max_depth)
+            : abstract_integrator(scene, max_depth) { }
+      explicit PathTraceIntegrator(int max_depth)
+         : abstract_integrator(max_depth) { }
 
-      Sample GetSample(Ray &ray, int depth, int x, int y) override;
+      virtual ~PathTraceIntegrator() {
+         int i = 0;
+      }
+
+      poly::Sample get_sample(poly::ray &ray, int depth, int x, int y) override;
 
    };
 

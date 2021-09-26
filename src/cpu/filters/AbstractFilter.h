@@ -7,7 +7,7 @@
 
 #include <vector>
 #include "../structures/Sample.h"
-#include "../../common/structures/Point2.h"
+#include "../../common/structures/point2.h"
 
 namespace poly {
 
@@ -17,15 +17,15 @@ namespace poly {
     */
    class AbstractFilter {
    public:
-      const poly::Bounds Bounds;
+      const poly::bounds Bounds;
 
-      explicit AbstractFilter(const poly::Bounds &bounds) : Bounds(bounds) { }
+      explicit AbstractFilter(const poly::bounds &bounds) : Bounds(bounds) { }
       virtual ~AbstractFilter() { }
 
-      virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
-      virtual void AddSamples(const Point2f &location, const std::vector<Sample> &samples) = 0;
+      virtual void AddSample(const point2f &location, const Sample &sample) = 0;
+      virtual void AddSamples(const point2f &location, const std::vector<Sample> &samples) = 0;
 
-      virtual SpectralPowerDistribution Output(const Point2i &pixel) const = 0;
+      virtual SpectralPowerDistribution Output(const point2i &pixel) const = 0;
 
    };
 

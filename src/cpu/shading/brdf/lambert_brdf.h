@@ -40,12 +40,12 @@ namespace poly {
          return 1.0f;
       }
 
-      float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const override {
+      float f(const vector &incoming, const normal &normal, const vector &outgoing) const override {
 //      return poly::OneOverPi;
          return 1.0f;
       }
 
-      Vector sample(const Vector &incoming, const float u, const float v, ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
+      vector sample(const vector &incoming, const float u, const float v, ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
          
          if (texture == nullptr) {
             refl_spectrum = refl;   

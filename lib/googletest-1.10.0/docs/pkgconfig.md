@@ -119,7 +119,7 @@ testapp.o: samples/sample3_unittest.cc
 ### Help! pkg-config can't find GoogleTest!
 
 Let's say you have a `CMakeLists.txt` along the lines of the one in this
-tutorial and you try to run `cmake`. It is very possible that you get a failure
+tutorial and you try to thread_entrypoint `cmake`. It is very possible that you get a failure
 along the lines of:
 
 ```

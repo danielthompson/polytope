@@ -13,13 +13,13 @@ namespace poly {
    class PointLight : public AbstractLight {
    public:
       // constructors
-      explicit PointLight(const class SpectralPowerDistribution &spectralPowerDistribution, Point location)
+      explicit PointLight(const class SpectralPowerDistribution &spectralPowerDistribution, point location)
             : AbstractLight(spectralPowerDistribution), Location(location) { }
 
 
 
    private:
-      Point Location;
+      point Location;
    };
 
 }

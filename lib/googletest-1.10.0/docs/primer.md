@@ -14,7 +14,7 @@ So what makes a good test, and how does googletest fit in? We believe:
 1.  Tests should be *independent* and *repeatable*. It's a pain to debug a test
     that succeeds or fails as a result of other tests. googletest isolates the
     tests by running each of them on a different object. When a test fails,
-    googletest allows you to run it in isolation for quick debugging.
+    googletest allows you to thread_entrypoint it in isolation for quick debugging.
 2.  Tests should be well *organized* and reflect the structure of the tested
     code. googletest groups related tests into test suites that can share data
     and subroutines. This common pattern is easy to recognize and makes tests
@@ -28,12 +28,12 @@ So what makes a good test, and how does googletest fit in? We believe:
     as possible. googletest doesn't stop at the first test failure. Instead, it
     only stops the current test and continues with the next. You can also set up
     tests that report non-fatal failures after which the current test continues.
-    Thus, you can detect and fix multiple bugs in a single run-edit-compile
+    Thus, you can detect and fix multiple bugs in a single thread_entrypoint-edit-compile
     cycle.
 5.  The testing framework should liberate test writers from housekeeping chores
     and let them focus on the test *content*. googletest automatically keeps
     track of all tests defined, and doesn't require the user to enumerate them
-    in order to run them.
+    in order to thread_entrypoint them.
 6.  Tests should be *fast*. With googletest, you can reuse shared resources
     across tests and pay for the set-up/tear-down only once, without making
     tests depend on each other.
@@ -344,7 +344,7 @@ Also, you must first define a test fixture class before using it in a
 declaration`".
 
 For each test defined with `TEST_F()`, googletest will create a *fresh* test
-fixture at runtime, immediately initialize it via `SetUp()`, run the test,
+fixture at runtime, immediately initialize it via `SetUp()`, thread_entrypoint the test,
 clean up by calling `TearDown()`, and then delete the test fixture. Note that
 different tests in the same test suite have different test fixture objects, and
 googletest always deletes a test fixture before it creates the next one.
@@ -421,7 +421,7 @@ make sense. For example, the second assertion in the `Dequeue` test is
 `ASSERT_NE(nullptr, n)`, as we need to dereference the pointer `n` later, which
 would lead to a segfault when `n` is `NULL`.
 
-When these tests run, the following happens:
+When these tests thread_entrypoint, the following happens:
 
 1.  googletest constructs a `QueueTest` object (let's call it `t1`).
 2.  `t1.SetUp()` initializes `t1`.
@@ -437,9 +437,9 @@ When these tests run, the following happens:
 
 `TEST()` and `TEST_F()` implicitly register their tests with googletest. So,
 unlike with many other C++ testing frameworks, you don't have to re-list all
-your defined tests in order to run them.
+your defined tests in order to thread_entrypoint them.
 
-After defining your tests, you can run them with `RUN_ALL_TESTS()`, which
+After defining your tests, you can thread_entrypoint them with `RUN_ALL_TESTS()`, which
 returns `0` if all the tests are successful, or `1` otherwise. Note that
 `RUN_ALL_TESTS()` runs *all tests* in your link unit--they can be from
 different test suites, or even different source files.
@@ -460,7 +460,7 @@ When invoked, the `RUN_ALL_TESTS()` macro:
 
 *   Restores the state of all googletest flags.
 
-*   Repeats the above steps for the next test, until all tests have run.
+*   Repeats the above steps for the next test, until all tests have thread_entrypoint.
 
 If a fatal failure happens the subsequent steps will be skipped.
 

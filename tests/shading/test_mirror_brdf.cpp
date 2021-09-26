@@ -35,33 +35,33 @@ namespace Tests {
 
       TEST(Transform, GetVectorInPDF2) {
 
-         Vector incoming(1, -1, 0);
-         Normal normal(0, 1, 0);
-         Vector expected(1, 1, 0);
+         vector incoming(1, -1, 0);
+         normal normal(0, 1, 0);
+         vector expected(1, 1, 0);
 
-         incoming.Normalize();
-         normal.Normalize();
-         expected.Normalize();
+         incoming.normalize();
+         normal.normalize();
+         expected.normalize();
 
          ReflectanceSpectrum refl;
          poly::MirrorBRDF brdf = poly::MirrorBRDF(refl);
          
          float pdf = 0.0;
 
-         Vector actual = brdf.sample(incoming, 0, 0, refl, pdf);
+         vector actual = brdf.sample(incoming, 0, 0, refl, pdf);
 
          EXPECT_EQ(expected, actual);
       }
 
       TEST(Transform, GetVectorInPDF3) {
 
-         Vector incoming(2, -1, 0);
-         Normal normal(0, 1, 0);
-         Vector expected(2, 1, 0);
+         vector incoming(2, -1, 0);
+         normal normal(0, 1, 0);
+         vector expected(2, 1, 0);
 
-         incoming.Normalize();
-         normal.Normalize();
-         expected.Normalize();
+         incoming.normalize();
+         normal.normalize();
+         expected.normalize();
 
          ReflectanceSpectrum refl;
          poly::MirrorBRDF brdf = poly::MirrorBRDF(refl);
@@ -69,7 +69,7 @@ namespace Tests {
          
          float pdf = 0.0;
 
-         Vector actual = brdf.sample(incoming, 0, 0, refl, pdf);
+         vector actual = brdf.sample(incoming, 0, 0, refl, pdf);
 
 
          EXPECT_EQ(expected, actual);
@@ -77,20 +77,20 @@ namespace Tests {
 
       TEST(Transform, GetVectorInPDF4) {
 
-         Vector incoming(0, -1, 0);
-         Normal normal(0, 1, 0);
-         Vector expected(0, 1, 0);
+         vector incoming(0, -1, 0);
+         normal normal(0, 1, 0);
+         vector expected(0, 1, 0);
 
-         incoming.Normalize();
-         normal.Normalize();
-         expected.Normalize();
+         incoming.normalize();
+         normal.normalize();
+         expected.normalize();
          
          ReflectanceSpectrum refl;
          poly::MirrorBRDF brdf = poly::MirrorBRDF(refl);
          
          float pdf = 0.0;
 
-         Vector actual = brdf.sample(incoming, 0, 0, refl, pdf);
+         vector actual = brdf.sample(incoming, 0, 0, refl, pdf);
 
 
          EXPECT_EQ(expected, actual);

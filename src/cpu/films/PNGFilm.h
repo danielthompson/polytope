@@ -8,22 +8,22 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "AbstractFilm.h"
+#include "abstract_film.h"
 
 namespace poly {
 
-   class PNGFilm : public AbstractFilm {
+   class PNGFilm : public abstract_film {
    public:
       const std::string Filename;
 
       PNGFilm(
-         const poly::Bounds bounds,
+         const poly::bounds bounds,
          std::string filename,
          std::unique_ptr<AbstractFilter> filter)
-         : AbstractFilm(bounds, std::move(filter)),
-            Filename(std::move(filename)) { };
+         : abstract_film(bounds, std::move(filter)),
+           Filename(std::move(filename)) { };
 
-      void AddSample(const Point2f &location, const Sample &sample) override;
+      void AddSample(const point2f &location, const Sample &sample) override;
       void Output() override;
    };
 }

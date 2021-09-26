@@ -2,12 +2,12 @@
 
 #include "../../src/cpu/structures/Vectors.h"
 #include "../../src/cpu/constants.h"
-#include "../../src/cpu/structures/Intersection.h"
+#include "../../src/cpu/structures/intersection.h"
 #include "../../src/cpu/shapes/mesh.h"
 
 namespace Tests {
    TEST(mesh_linear_ispc, intersects) {
-      std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
+      std::shared_ptr<poly::transform> identity = std::make_shared<poly::transform>();
       std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>(); 
       poly::Mesh tm(identity, identity, nullptr, geometry);
 
@@ -55,43 +55,43 @@ namespace Tests {
       // hits, from either direction
 
       {
-         poly::Ray ray(poly::Point(0.2f, 0.2f, -10), poly::Vector(0, 0, 1));
-         poly::Intersection intersection;
+         poly::ray ray(poly::point(0.2f, 0.2f, -10), poly::vector(0, 0, 1));
+         poly::intersection intersection;
          tm.intersect(ray, intersection);
          EXPECT_TRUE(intersection.Hits);
-         EXPECT_EQ(&tm, intersection.Shape);
-         EXPECT_EQ(poly::Normal(0, 0, -1), intersection.geo_normal);
-         EXPECT_EQ(poly::Point(0.2f, 0.2f, 0), intersection.Location);
+         EXPECT_EQ(&tm, intersection.shape);
+         EXPECT_EQ(poly::normal(0, 0, -1), intersection.geo_normal);
+         EXPECT_EQ(poly::point(0.2f, 0.2f, 0), intersection.location);
       }
 
       {
-         poly::Ray ray = poly::Ray(poly::Point(0.2f, 0.2f, 10), poly::Vector(0, 0, -1));
-         poly::Intersection intersection;
+         poly::ray ray = poly::ray(poly::point(0.2f, 0.2f, 10), poly::vector(0, 0, -1));
+         poly::intersection intersection;
          tm.intersect(ray, intersection);
          EXPECT_TRUE(intersection.Hits);
-         EXPECT_EQ(&tm, intersection.Shape);
-         EXPECT_EQ(poly::Normal(0, 0, 1), intersection.geo_normal);
-         EXPECT_EQ(poly::Point(0.2f, 0.2f, 1), intersection.Location);
+         EXPECT_EQ(&tm, intersection.shape);
+         EXPECT_EQ(poly::normal(0, 0, 1), intersection.geo_normal);
+         EXPECT_EQ(poly::point(0.2f, 0.2f, 1), intersection.location);
       }
 
       {
-         poly::Ray ray = poly::Ray(poly::Point(0.2f, 0.2f, 10), poly::Vector(0, 0, 1));
-         poly::Intersection intersection;
+         poly::ray ray = poly::ray(poly::point(0.2f, 0.2f, 10), poly::vector(0, 0, 1));
+         poly::intersection intersection;
          tm.intersect(ray, intersection);
          EXPECT_FALSE(intersection.Hits);
       }
 
       {
-         poly::Ray ray = poly::Ray(poly::Point(0.2f, 0.2f, -10), poly::Vector(0, 0, -1));
-         poly::Intersection intersection;
+         poly::ray ray = poly::ray(poly::point(0.2f, 0.2f, -10), poly::vector(0, 0, -1));
+         poly::intersection intersection;
          tm.intersect(ray, intersection);
          EXPECT_FALSE(intersection.Hits);
       }
 
       // parallel
       {
-         poly::Ray ray = poly::Ray(poly::Point(0.2f, 0.2f, 0.5f), poly::Vector(0, 1, 0));
-         poly::Intersection intersection;
+         poly::ray ray = poly::ray(poly::point(0.2f, 0.2f, 0.5f), poly::vector(0, 1, 0));
+         poly::intersection intersection;
          tm.intersect(ray, intersection);
          EXPECT_FALSE(intersection.Hits);
       }

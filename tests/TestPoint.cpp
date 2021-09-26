@@ -5,14 +5,14 @@
 namespace Tests {
 
    namespace Point {
-      using poly::Normal;
-      using poly::Point;
-      using poly::Vector;
+      using poly::normal;
+      using poly::point;
+      using poly::vector;
 
       namespace Equality {
          TEST(Point, Equals) {
-            Point p1 = Point(1.0f, 1.0f, 1.0f);
-            Point p2 = Point(1.0f, 1.0f, 1.0f);
+            point p1 = point(1.0f, 1.0f, 1.0f);
+            point p2 = point(1.0f, 1.0f, 1.0f);
 
             EXPECT_EQ(p1, p1);
             EXPECT_EQ(p1, p2);
@@ -20,15 +20,15 @@ namespace Tests {
          }
 
          TEST(Point, NotEquals) {
-            Point p1 = Point(1.0f, 1.0f, 1.0f);
-            Point p2 = Point(0.0f, 1.0f, 1.0f);
+            point p1 = point(1.0f, 1.0f, 1.0f);
+            point p2 = point(0.0f, 1.0f, 1.0f);
             EXPECT_NE(p1, p2);
          }
       }
 
       namespace AtOperator {
          TEST(Point, AtOperator1) {
-            Point p = Point(1.0f, 2.0f, 3.0f);
+            point p = point(1.0f, 2.0f, 3.0f);
 
             EXPECT_EQ(1.0f, p[0]);
             EXPECT_EQ(2.0f, p[1]);
@@ -38,10 +38,10 @@ namespace Tests {
 
       namespace PlusOperator {
          TEST(Point, PlusOperator1) {
-            Point p1 = Point(1.0f, 2.0f, 3.0f);
-            Point p2 = Point(4.0f, 5.0f, 6.0f);
+            point p1 = point(1.0f, 2.0f, 3.0f);
+            point p2 = point(4.0f, 5.0f, 6.0f);
 
-            Point actual = p1 + p2;
+            point actual = p1 + p2;
 
             EXPECT_EQ(5.0f, actual.x);
             EXPECT_EQ(7.0f, actual.y);
@@ -51,8 +51,8 @@ namespace Tests {
 
       namespace PlusEqualsOperator {
          TEST(Point, PlusEqualsOperatorVector1) {
-            Point p = Point(1.0f, 2.0f, 3.0f);
-            Vector v = Vector(4.0f, 5.0f, 6.0f);
+            point p = point(1.0f, 2.0f, 3.0f);
+            vector v = vector(4.0f, 5.0f, 6.0f);
 
             p += v;
 
@@ -62,8 +62,8 @@ namespace Tests {
          }
 
          TEST(Point, PlusEqualsOperatorNormal1) {
-            Point p = Point(1.0f, 2.0f, 3.0f);
-            Normal n = Normal(4.0f, 5.0f, 6.0f);
+            point p = point(1.0f, 2.0f, 3.0f);
+            normal n = normal(4.0f, 5.0f, 6.0f);
 
             p += n;
 
@@ -75,60 +75,60 @@ namespace Tests {
 
       namespace Dot {
          TEST(Point, Dot1) {
-            Point p1 = Point(1, 2, 3);
-            Point p2 = Point(4, 5, 6);
+            point p1 = point(1, 2, 3);
+            point p2 = point(4, 5, 6);
 
-            float actual = p1.Dot(p2);
+            float actual = p1.dot(p2);
             float expected = 32.0f;
 
             EXPECT_EQ(actual, expected);
          }
 
          TEST(Point, DotVector1) {
-            Point p1 = Point(1, 2, 3);
-            Vector p2 = Vector(4, 5, 6);
+            point p1 = point(1, 2, 3);
+            vector p2 = vector(4, 5, 6);
 
-            float actual = p1.Dot(p2);
+            float actual = p1.dot(p2);
             float expected = 32.0f;
 
             EXPECT_EQ(actual, expected);
          }
 
          TEST(Point, Dot2) {
-            Point p1 = Point(-1, 2, 3);
-            Point p2 = Point(4, 5, 6);
+            point p1 = point(-1, 2, 3);
+            point p2 = point(4, 5, 6);
 
-            float actual = p1.Dot(p2);
+            float actual = p1.dot(p2);
             float expected = 24.0f;
 
             EXPECT_EQ(actual, expected);
          }
 
          TEST(Point, DotVector2) {
-            Point p1 = Point(-1, 2, 3);
-            Vector p2 = Vector(4, 5, 6);
+            point p1 = point(-1, 2, 3);
+            vector p2 = vector(4, 5, 6);
 
-            float actual = p1.Dot(p2);
+            float actual = p1.dot(p2);
             float expected = 24.0f;
 
             EXPECT_EQ(actual, expected);
          }
 
          TEST(Point, Dot3) {
-            Point p1 = Point(0, 0, 0);
-            Point p2 = Point(0, 0, 0);
+            point p1 = point(0, 0, 0);
+            point p2 = point(0, 0, 0);
 
-            float actual = p1.Dot(p2);
+            float actual = p1.dot(p2);
             float expected = 0.f;
 
             EXPECT_EQ(actual, expected);
          }
 
          TEST(Point, DotVector3) {
-            Point p1 = Point(0, 0, 0);
-            Vector p2 = Vector(0, 0, 0);
+            point p1 = point(0, 0, 0);
+            vector p2 = vector(0, 0, 0);
 
-            float actual = p1.Dot(p2);
+            float actual = p1.dot(p2);
             float expected = 0.f;
 
             EXPECT_EQ(actual, expected);

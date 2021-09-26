@@ -23,7 +23,7 @@ namespace Tests {
          ASSERT_EQ(3644, geometry->num_vertices_packed);
 
          // check a random-ish vertex for correctness
-         const poly::Point secondToLastVertex = geometry->get_vertex(3642);
+         const poly::point secondToLastVertex = geometry->get_vertex(3642);
 
          // EXPECT_FLOAT_EQ allows 4 ulps difference
          EXPECT_FLOAT_EQ(3.428125, secondToLastVertex.x);
@@ -42,7 +42,7 @@ namespace Tests {
       }
       
       TEST(OBJParser, Mesh) {
-         const std::shared_ptr<poly::Transform> identity = std::make_shared<poly::Transform>();
+         const std::shared_ptr<poly::transform> identity = std::make_shared<poly::transform>();
          auto geometry = std::make_shared<poly::mesh_geometry>();
          test_parse_obj_helper(geometry);
       }

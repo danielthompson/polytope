@@ -2,33 +2,33 @@
 // Created by Daniel Thompson on 12/23/19.
 //
 
-#include "BoundingBox.h"
+#include "bounding_box.h"
 #include "stats.h"
 
 extern thread_local poly::stats thread_stats;
 
 namespace poly {
    
-   bool BoundingBox::Hits(const poly::Ray &worldSpaceRay, const poly::Vector& inverse_direction) const {
+   bool bounding_box::hits(const poly::ray &world_space_ray, const poly::vector& inverse_direction) const {
       thread_stats.num_bb_intersections++;
-      const bool inside = worldSpaceRay.Origin.x > p0.x && worldSpaceRay.Origin.x < p1.x 
-            && worldSpaceRay.Origin.y > p0.y && worldSpaceRay.Origin.y < p1.y
-            && worldSpaceRay.Origin.z > p0.z && worldSpaceRay.Origin.z < p1.z;
+      const bool inside = world_space_ray.origin.x > p0.x && world_space_ray.origin.x < p1.x
+                          && world_space_ray.origin.y > p0.y && world_space_ray.origin.y < p1.y
+                          && world_space_ray.origin.z > p0.z && world_space_ray.origin.z < p1.z;
 
       if (inside) {
          thread_stats.num_bb_intersections_hit_inside++;
          return true;
       }
       
-      float maxBoundFarT = worldSpaceRay.MinT;
+      float maxBoundFarT = world_space_ray.min_t;
 //      float maxBoundFarT = poly::FloatMax;
       float minBoundNearT = 0;
 
       const float gammaMultiplier = 1 + 2 * poly::Gamma(3);
 
       // X
-      float tNear = (p0.x - worldSpaceRay.Origin.x) * inverse_direction.x;
-      float tFar = (p1.x - worldSpaceRay.Origin.x) * inverse_direction.x;
+      float tNear = (p0.x - world_space_ray.origin.x) * inverse_direction.x;
+      float tFar = (p1.x - world_space_ray.origin.x) * inverse_direction.x;
 
       float swap = tNear;
       tNear = tNear > tFar ? tFar : tNear;
@@ -44,8 +44,8 @@ namespace poly {
       }
 
       // Y
-      tNear = (p0.y - worldSpaceRay.Origin.y) * inverse_direction.y;
-      tFar = (p1.y - worldSpaceRay.Origin.y) * inverse_direction.y;
+      tNear = (p0.y - world_space_ray.origin.y) * inverse_direction.y;
+      tFar = (p1.y - world_space_ray.origin.y) * inverse_direction.y;
 
       swap = tNear;
       tNear = tNear > tFar ? tFar : tNear;
@@ -62,8 +62,8 @@ namespace poly {
       }
 
       // z
-      tNear = (p0.z - worldSpaceRay.Origin.z) * inverse_direction.z;
-      tFar = (p1.z - worldSpaceRay.Origin.z) * inverse_direction.z;
+      tNear = (p0.z - world_space_ray.origin.z) * inverse_direction.z;
+      tFar = (p1.z - world_space_ray.origin.z) * inverse_direction.z;
 
       swap = tNear;
       tNear = tNear > tFar ? tFar : tNear;
@@ -84,8 +84,8 @@ namespace poly {
       }
    }
 
-   BoundingBox BoundingBox::Union(const BoundingBox &b) const {
-      poly::Point min, max;
+   bounding_box bounding_box::Union(const bounding_box &b) const {
+      poly::point min, max;
       min.x = p0.x < b.p0.x ? p0.x : b.p0.x;
       min.y = p0.y < b.p0.y ? p0.y : b.p0.y;
       min.z = p0.z < b.p0.z ? p0.z : b.p0.z;
@@ -94,11 +94,11 @@ namespace poly {
       max.y = p1.y > b.p1.y ? p1.y : b.p1.y;
       max.z = p1.z > b.p1.z ? p1.z : b.p1.z;
 
-      return BoundingBox(min, max);
+      return bounding_box(min, max);
    }
 
-   BoundingBox BoundingBox::Union(const poly::Point &p) const {
-      poly::Point min = p0, max = p1;
+   bounding_box bounding_box::Union(const poly::point &p) const {
+      poly::point min = p0, max = p1;
 
       if (p.x < min.x)
          min.x = p.x;
@@ -114,10 +114,10 @@ namespace poly {
       if (p.z > max.z)
          max.z = p.z;
 
-      return BoundingBox(min, max);
+      return bounding_box(min, max);
    }
 
-   void BoundingBox::UnionInPlace(const poly::Point &p) {
+   void bounding_box::union_in_place(const poly::point &p) {
       if (p.x < p0.x)
          p0.x = p.x;
       if (p.y < p0.y)
@@ -133,7 +133,7 @@ namespace poly {
          p1.z = p.z;
    }
    
-   void BoundingBox::UnionInPlace(const poly::BoundingBox &b) {
+   void bounding_box::union_in_place(const poly::bounding_box &b) {
       p0.x = p0.x < b.p0.x ? p0.x : b.p0.x;
       p0.y = p0.y < b.p0.y ? p0.y : b.p0.y;
       p0.z = p0.z < b.p0.z ? p0.z : b.p0.z;
@@ -143,7 +143,7 @@ namespace poly {
       p1.z = p1.z > b.p1.z ? p1.z : b.p1.z;
    }
 
-   float BoundingBox::surface_area() const {
+   float bounding_box::surface_area() const {
       const float x = p1.x - p0.x;
       const float y = p1.y - p0.y;
       const float z = p1.z - p0.z;

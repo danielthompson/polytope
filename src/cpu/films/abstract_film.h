@@ -7,21 +7,21 @@
 
 #include <memory>
 #include "../structures/Sample.h"
-#include "../../common/structures/Point2.h"
+#include "../../common/structures/point2.h"
 #include "../filters/AbstractFilter.h"
 
 namespace poly {
 
-   class AbstractFilm {
+   class abstract_film {
    public:
-      const poly::Bounds Bounds;
+      const poly::bounds Bounds;
       std::unique_ptr<AbstractFilter> Filter;
 
-      AbstractFilm(const poly::Bounds bounds, std::unique_ptr<AbstractFilter> filter)
+      abstract_film(const poly::bounds bounds, std::unique_ptr<AbstractFilter> filter)
             : Bounds(bounds), Filter(std::move(filter)) { };
-      virtual ~AbstractFilm() = default;
+      virtual ~abstract_film() = default;
 
-      virtual void AddSample(const Point2f &location, const Sample &sample) = 0;
+      virtual void AddSample(const point2f &location, const Sample &sample) = 0;
       virtual void Output() = 0;
    };
 }

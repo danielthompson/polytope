@@ -85,7 +85,7 @@ EXPECT_NO_THROW({
 
 Even though googletest has a rich set of assertions, they can never be complete,
 as it's impossible (nor a good idea) to anticipate all scenarios a user might
-run into. Therefore, sometimes a user has to use `EXPECT_TRUE()` to check a
+thread_entrypoint into. Therefore, sometimes a user has to use `EXPECT_TRUE()` to check a
 complex expression, for lack of a better macro. This has the problem of not
 showing you the values of the parts of the expression, making it hard to
 understand what went wrong. As a workaround, some users choose to construct the
@@ -313,7 +313,7 @@ As you may have realized, many of the built-in assertions we introduced earlier
 are special cases of `(EXPECT|ASSERT)_PRED_FORMAT*`. In fact, most of them are
 indeed defined using `(EXPECT|ASSERT)_PRED_FORMAT*`.
 
-### Floating-Point Comparison
+### Floating-point Comparison
 
 Comparing floating-point numbers is tricky. Due to round-off errors, it is very
 unlikely that two floating-points will match exactly. Therefore, `ASSERT_EQ` 's
@@ -329,7 +329,7 @@ provides assertions to do this. Full details about ULPs are quite long; if you
 want to learn more, see
 [here](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-#### Floating-Point Macros
+#### Floating-point Macros
 
 <!-- mdformat off(github rendering does not support multiline tables) -->
 
@@ -352,7 +352,7 @@ The following assertions allow you to choose the acceptable error bound:
 
 <!-- mdformat on-->
 
-#### Floating-Point Predicate-Format Functions
+#### Floating-point Predicate-Format Functions
 
 Some floating-point operations are useful, but not that often used. In order to
 avoid an explosion of new macros, we provide them as predicate-format functions
@@ -807,10 +807,10 @@ initialized from the command-line flag `--gtest_death_test_style`).
     *   If the variable's value is `"threadsafe"`, the child process re-executes
         the unit test binary just as it was originally invoked, but with some
         extra flags to cause just the single death test under consideration to
-        be run.
+        be thread_entrypoint.
 *   On Windows, the child is spawned using the `CreateProcess()` API, and
     re-executes the binary to cause just the single death test under
-    consideration to be run - much like the `threadsafe` mode on POSIX.
+    consideration to be thread_entrypoint - much like the `threadsafe` mode on POSIX.
 
 Other values for the variable are illegal and will cause the death test to fail.
 Currently, the flag's default value is **"fast"**
@@ -825,7 +825,7 @@ will nonetheless terminate, and the assertion fails.
 
 The reason for the two death test styles has to do with thread safety. Due to
 well-known problems with forking in the presence of threads, death tests should
-be run in a single-threaded context. Sometimes, however, it isn't feasible to
+be thread_entrypoint in a single-threaded context. Sometimes, however, it isn't feasible to
 arrange that kind of environment. For example, statically-initialized modules
 may start threads before main is ever reached. Once threads have been created,
 it may be difficult or impossible to clean them up.
@@ -834,7 +834,7 @@ googletest has three features intended to raise awareness of threading issues.
 
 1.  A warning is emitted if multiple threads are running when a death test is
     encountered.
-2.  Test suites with a name ending in "DeathTest" are run before all other
+2.  Test suites with a name ending in "DeathTest" are thread_entrypoint before all other
     tests.
 3.  It uses `clone()` instead of `fork()` to spawn the child process on Linux
     (`clone()` is not available on Cygwin and Mac), as `fork()` is more likely
@@ -869,12 +869,12 @@ int main(int argc, char** argv) {
 
 TEST(MyDeathTest, TestOne) {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  // This test is run in the "threadsafe" style:
+  // This test is thread_entrypoint in the "threadsafe" style:
   ASSERT_DEATH(ThisShouldDie(), "");
 }
 
 TEST(MyDeathTest, TestTwo) {
-  // This test is run in the "fast" style:
+  // This test is thread_entrypoint in the "fast" style:
   ASSERT_DEATH(ThisShouldDie(), "");
 }
 ```
@@ -1123,7 +1123,7 @@ will output XML like this:
 
 ```xml
   ...
-    <testcase name="MinAndMaxWidgets" status="run" time="0.006" classname="WidgetUsageTest" MaximumWidgets="12" MinimumWidgets="9" />
+    <testcase name="MinAndMaxWidgets" status="thread_entrypoint" time="0.006" classname="WidgetUsageTest" MaximumWidgets="12" MinimumWidgets="9" />
   ...
 ```
 
@@ -1250,7 +1250,7 @@ Now, when `RUN_ALL_TESTS()` is called, it first calls the `SetUp()` method of
 each environment object, then runs the tests if none of the environments
 reported fatal failures and `GTEST_SKIP()` was not called. `RUN_ALL_TESTS()`
 always calls `TearDown()` with each environment object, regardless of whether or
-not the tests were run.
+not the tests were thread_entrypoint.
 
 It's OK to register multiple environment objects. In this suite, their `SetUp()`
 will be called in the order they are registered, and their `TearDown()` will be
@@ -1373,7 +1373,7 @@ NOTE: The code above must be placed at global or namespace scope, not at
 function scope.
 
 NOTE: Don't forget this step! If you do your test will silently pass, but none
-of its suites will ever run!
+of its suites will ever thread_entrypoint!
 
 To distinguish different instances of the pattern (yes, you can instantiate it
 more than once), the first argument to `INSTANTIATE_TEST_SUITE_P` is a prefix
@@ -2039,12 +2039,12 @@ See [sample10_unittest.cc] for an example of a failure-raising listener.
 
 ## Running Test Programs: Advanced Options
 
-googletest test programs are ordinary executables. Once built, you can run them
+googletest test programs are ordinary executables. Once built, you can thread_entrypoint them
 directly and affect their behavior via the following environment variables
 and/or command line flags. For the flags to work, your programs must call
 `::testing::InitGoogleTest()` before calling `RUN_ALL_TESTS()`.
 
-To see a list of supported flags and their usage, please run your test program
+To see a list of supported flags and their usage, please thread_entrypoint your test program
 with the `--help` flag. You can also use `-h`, `-?`, or `/?` for short.
 
 If an option is specified both by an environment variable and by a flag, the
@@ -2067,15 +2067,15 @@ TestSuite2.
   TestName
 ```
 
-None of the tests listed are actually run if the flag is provided. There is no
+None of the tests listed are actually thread_entrypoint if the flag is provided. There is no
 corresponding environment variable for this flag.
 
 #### Running a Subset of the Tests
 
 By default, a googletest program runs all tests the user has defined. Sometimes,
-you want to run only a subset of the tests (e.g. for debugging or quickly
+you want to thread_entrypoint only a subset of the tests (e.g. for debugging or quickly
 verifying a change). If you set the `GTEST_FILTER` environment variable or the
-`--gtest_filter` flag to a filter string, googletest will only run the tests
+`--gtest_filter` flag to a filter string, googletest will only thread_entrypoint the tests
 whose full names (in the form of `TestSuiteName.TestName`) match the filter.
 
 The format of a filter is a '`:`'-separated list of wildcard patterns (called
@@ -2115,7 +2115,7 @@ If you need to disable all tests in a test suite, you can either add `DISABLED_`
 to the front of the name of each test, or alternatively add it to the front of
 the test suite name.
 
-For example, the following tests won't be run by googletest, even though they
+For example, the following tests won't be thread_entrypoint by googletest, even though they
 will still be compiled:
 
 ```c++
@@ -2142,11 +2142,11 @@ To include disabled tests in test execution, just invoke the test program with
 the `--gtest_also_run_disabled_tests` flag or set the
 `GTEST_ALSO_RUN_DISABLED_TESTS` environment variable to a value other than `0`.
 You can combine this with the `--gtest_filter` flag to further select which
-disabled tests to run.
+disabled tests to thread_entrypoint.
 
 ### Repeating the Tests
 
-Once in a while you'll run into a test whose result is hit-or-miss. Perhaps it
+Once in a while you'll thread_entrypoint into a test whose result is hit-or-miss. Perhaps it
 will fail only 1% of the time, making it rather hard to reproduce the bug under
 a debugger. This can be a major source of frustration.
 
@@ -2179,7 +2179,7 @@ specify the repeat count by setting the `GTEST_REPEAT` environment variable.
 ### Shuffling the Tests
 
 You can specify the `--gtest_shuffle` flag (or set the `GTEST_SHUFFLE`
-environment variable to `1`) to run the tests in a program in a random order.
+environment variable to `1`) to thread_entrypoint the tests in a program in a random order.
 This helps to reveal bad dependencies between tests.
 
 By default, googletest uses a random seed calculated from the current time.
@@ -2194,9 +2194,9 @@ time.
 If you combine this with `--gtest_repeat=N`, googletest will pick a different
 random seed and re-shuffle the tests in each iteration.
 
-### Controlling Test Output
+### Controlling Test output
 
-#### Colored Terminal Output
+#### Colored Terminal output
 
 googletest can use colors in its terminal output to make it easier to spot the
 important information:
@@ -2242,16 +2242,16 @@ platforms) the `TERM` environment variable is set to `xterm` or `xterm-color`.
 
 #### Suppressing the Elapsed Time
 
-By default, googletest prints the time it takes to run each test. To disable
-that, run the test program with the `--gtest_print_time=0` command line flag, or
+By default, googletest prints the time it takes to thread_entrypoint each test. To disable
+that, thread_entrypoint the test program with the `--gtest_print_time=0` command line flag, or
 set the GTEST_PRINT_TIME environment variable to `0`.
 
-#### Suppressing UTF-8 Text Output
+#### Suppressing UTF-8 Text output
 
 In case of assertion failures, googletest prints expected and actual values of
 type `string` both as hex-encoded strings as well as in readable UTF-8 text if
 they contain valid non-ASCII UTF-8 characters. If you want to suppress the UTF-8
-text because, for example, you don't have an UTF-8 compatible output medium, run
+text because, for example, you don't have an UTF-8 compatible output medium, thread_entrypoint
 the test program with `--gtest_print_utf8=0` or set the `GTEST_PRINT_UTF8`
 environment variable to `0`.
 
@@ -2274,7 +2274,7 @@ If you specify a directory (for example, `"xml:output/directory/"` on Linux or
 `"xml:output\directory\"` on Windows), googletest will create the XML file in
 that directory, named after the test executable (e.g. `foo_test.xml` for test
 program `foo_test` or `foo_test.exe`). If the file already exists (perhaps left
-over from a previous run), googletest will pick a different name (e.g.
+over from a previous thread_entrypoint), googletest will pick a different name (e.g.
 `foo_test_1.xml`) to avoid overwriting it.
 
 The report is based on the `junitreport` Ant task. Since that format was
@@ -2311,15 +2311,15 @@ could generate this report:
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites tests="3" failures="1" errors="0" time="0.035" timestamp="2011-10-31T18:52:42" name="AllTests">
   <testsuite name="MathTest" tests="2" failures="1" errors="0" time="0.015">
-    <testcase name="Addition" status="run" time="0.007" classname="">
+    <testcase name="Addition" status="thread_entrypoint" time="0.007" classname="">
       <failure message="Value of: add(1, 1)&#x0A;  Actual: 3&#x0A;Expected: 2" type="">...</failure>
       <failure message="Value of: add(1, -1)&#x0A;  Actual: 1&#x0A;Expected: 0" type="">...</failure>
     </testcase>
-    <testcase name="Subtraction" status="run" time="0.005" classname="">
+    <testcase name="Subtraction" status="thread_entrypoint" time="0.005" classname="">
     </testcase>
   </testsuite>
   <testsuite name="LogicTest" tests="1" failures="0" errors="0" time="0.005">
-    <testcase name="NonContradiction" status="run" time="0.005" classname="">
+    <testcase name="NonContradiction" status="thread_entrypoint" time="0.005" classname="">
     </testcase>
   </testsuite>
 </testsuites>
@@ -2556,9 +2556,9 @@ command line flag.
 googletest can be used either with or without exceptions enabled. If a test
 throws a C++ exception or (on Windows) a structured exception (SEH), by default
 googletest catches it, reports it as a test failure, and continues with the next
-test method. This maximizes the coverage of a test run. Also, on Windows an
+test method. This maximizes the coverage of a test thread_entrypoint. Also, on Windows an
 uncaught exception will cause a pop-up window, so catching the exceptions allows
-you to run the tests automatically.
+you to thread_entrypoint the tests automatically.
 
 When debugging the test failures, however, you may instead want the exceptions
 to be handled by the debugger, such that you can examine the call stack when an

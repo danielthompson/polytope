@@ -8,48 +8,48 @@
 #include "Vectors.h"
 
 namespace poly {
-   void Normal::Normalize() {
+   void normal::normalize() {
       const float lengthDivisor = 1.0f / std::sqrt(x * x + y * y + z * z);
       x *= lengthDivisor;
       y *= lengthDivisor;
       z *= lengthDivisor;
    }
 
-   Normal Normal::operator*(const float t) const {
-      return Normal(x * t, y * t, z * t);
+   normal normal::operator*(const float t) const {
+      return normal(x * t, y * t, z * t);
    }
 
-   bool Normal::operator==(const Normal &rhs) const {
+   bool normal::operator==(const normal &rhs) const {
       return x == rhs.x && y == rhs.y && z == rhs.z;
    }
 
-   void Normal::Flip() {
+   void normal::flip() {
       x = -x;
       y = -y;
       z = -z;
    }
 
-   Vector::Vector(const float x, const float y, const float z) : x(x), y(y), z(z) {}
+   vector::vector(const float x, const float y, const float z) : x(x), y(y), z(z) {}
 
-   Vector::Vector(const Normal &n) : x(n.x), y(n.y), z(n.z) { }
+   vector::vector(const normal &n) : x(n.x), y(n.y), z(n.z) { }
 
-   bool Vector::operator==(const Vector &rhs) const {
+   bool vector::operator==(const vector &rhs) const {
       return x == rhs.x && y == rhs.y && z == rhs.z;
    }
 
-   bool Vector::operator!=(const Vector &rhs) const {
+   bool vector::operator!=(const vector &rhs) const {
       return x != rhs.x || y != rhs.y || z != rhs.z;
    }
 
-   float Vector::Dot(const Vector &v) const {
+   float vector::dot(const vector &v) const {
       return v.x * x + v.y * y + v.z * z;
    }
 
-   float Vector::Dot(const Normal &n) const {
+   float vector::dot(const normal &n) const {
       return n.x * x + n.y * y + n.z * z;
    }
 
-   float Vector::operator[](const int index) const {
+   float vector::operator[](const int index) const {
       assert(index >= 0);
       assert(index <= 2);
       if (index == 0)
@@ -59,76 +59,76 @@ namespace poly {
       return z;
    }
 
-   float &Point::operator[](const Axis axis) {
-      if (axis == Axis::x)
+   float &point::operator[](const axis axis) {
+      if (axis == axis::x)
          return x;
-      if (axis == Axis::y)
+      if (axis == axis::y)
          return y;
       return z;
    }
 
-   float Vector::Length() const {
+   float vector::length() const {
       return std::sqrt(x * x + y * y + z * z);
    }
 
-   float Vector::LengthSquared() const {
+   float vector::length_squared() const {
       return x * x + y * y + z * z;
    }
 
-   Vector Vector::operator*(const float t) const {
-      return Vector(x * t, y * t, z * t);
+   vector vector::operator*(const float t) const {
+      return vector(x * t, y * t, z * t);
    }
 
-   Vector Vector::operator-(const Vector &rhs) const {
-      return Vector(x - rhs.x, y - rhs.y, z - rhs.z);
+   vector vector::operator-(const vector &rhs) const {
+      return vector(x - rhs.x, y - rhs.y, z - rhs.z);
    }
 
-   Vector Vector::operator-() const {
-      return Vector(-x, -y, -z);
+   vector vector::operator-() const {
+      return vector(-x, -y, -z);
    }
 
-   Vector Vector::operator+(const Vector &rhs) const {
-      return Vector(x + rhs.x, y + rhs.y, z + rhs.z);
+   vector vector::operator+(const vector &rhs) const {
+      return vector(x + rhs.x, y + rhs.y, z + rhs.z);
    }
 
-   void Vector::Normalize() {
-      float lengthDivisor = 1.0f / Length();
+   void vector::normalize() {
+      float lengthDivisor = 1.0f / length();
       x *= lengthDivisor;
       y *= lengthDivisor;
       z *= lengthDivisor;
    }
 
-   Vector Vector::Cross(const Vector &rhs) const {
-      return Vector(y * rhs.z - z * rhs.y,
+   vector vector::cross(const vector &rhs) const {
+      return vector(y * rhs.z - z * rhs.y,
                     z * rhs.x - x * rhs.z,
                     x * rhs.y - y * rhs.x);
    }
 
-   Vector Vector::Cross(const Normal &rhs) const {
-      return Vector(y * rhs.z - z * rhs.y,
+   vector vector::cross(const normal &rhs) const {
+      return vector(y * rhs.z - z * rhs.y,
                     z * rhs.x - x * rhs.z,
                     x * rhs.y - y * rhs.x);
    }
    
-   bool Point::operator==(const Point &rhs) const {
+   bool point::operator==(const point &rhs) const {
       return x == rhs.x &&
              y == rhs.y &&
              z == rhs.z;
    }
 
-   bool Point::operator!=(const Point &rhs) const {
+   bool point::operator!=(const point &rhs) const {
       return !(rhs == *this);
    }
 
-   float Point::Dot(const Point &p) const {
+   float point::dot(const point &p) const {
       return p.x * x + p.y * y + p.z * z;
    }
 
-   float Point::Dot(const poly::Vector &v) const {
+   float point::dot(const poly::vector &v) const {
       return v.x * x + v.y * y + v.z * z;
    }
 
-   float& Point::operator[](const int index) {
+   float& point::operator[](const int index) {
       assert(index >= 0);
       assert(index <= 2);
       if (index == 0)
@@ -138,33 +138,33 @@ namespace poly {
       return z;
    }
 
-   Point Point::operator+(const Point &rhs) const {
-      return Point(x + rhs.x, y + rhs.y, z + rhs.z);
+   point point::operator+(const point &rhs) const {
+      return point(x + rhs.x, y + rhs.y, z + rhs.z);
    }
 
-   poly::Vector Point::operator-(const Point &rhs) const {
-      return poly::Vector(x - rhs.x, y - rhs.y, z - rhs.z);
+   poly::vector point::operator-(const point &rhs) const {
+      return poly::vector(x - rhs.x, y - rhs.y, z - rhs.z);
    }
 
-   Point Point::operator+(const poly::Vector &rhs) const {
-      return Point(x + rhs.x, y + rhs.y, z + rhs.z);
+   point point::operator+(const poly::vector &rhs) const {
+      return point(x + rhs.x, y + rhs.y, z + rhs.z);
    }
 
-   Point &Point::operator+=(const Vector &rhs) {
+   point &point::operator+=(const vector &rhs) {
       x += rhs.x;
       y += rhs.y;
       z += rhs.z;
       return *this;
    }
 
-   Point &Point::operator+=(const Normal &rhs) {
+   point &point::operator+=(const normal &rhs) {
       x += rhs.x;
       y += rhs.y;
       z += rhs.z;
       return *this;
    }
 
-   bool Point::operator<(const Point &rhs) const {
+   bool point::operator<(const point &rhs) const {
       if (x == rhs.x) {
          if (y == rhs.y) {
             return z < rhs.z;

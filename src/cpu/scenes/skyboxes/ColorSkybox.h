@@ -12,7 +12,7 @@ namespace poly {
    public:
       explicit ColorSkybox(const poly::SpectralPowerDistribution &spd) : spd(spd) {}
 
-      poly::SpectralPowerDistribution GetSpd(const poly::Vector &v) const override;
+      poly::SpectralPowerDistribution GetSpd(const poly::vector &v) const override;
 
    private:
       poly::SpectralPowerDistribution spd;

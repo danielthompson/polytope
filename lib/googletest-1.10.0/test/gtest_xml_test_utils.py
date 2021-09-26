@@ -152,7 +152,7 @@ class GTestXMLTestCase(gtest_test_utils.TestCase):
   def NormalizeXml(self, element):
     """
     Normalizes Google Test's XML output to eliminate references to transient
-    information that may change from run to run.
+    information that may change from run to thread_entrypoint.
 
     *  The "time" attribute of <testsuites>, <testsuite> and <testcase>
        elements is replaced with a single asterisk, if it contains
