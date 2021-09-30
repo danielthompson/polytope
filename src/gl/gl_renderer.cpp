@@ -134,6 +134,11 @@ namespace poly {
       currentYpos = ypos;
    }
 
+   void do_it(poly::PathTraceIntegrator* ptr, poly::ray camera_ray, poly::point2f pixel) {
+      poly::Sample sample3 = ptr->get_sample(camera_ray, 0, (int)(pixel.x), (int)(pixel.y));
+      Log.debug("Found " + std::to_string(sample3.intersections.size()) + " intersections");
+   }
+   
    void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
    {
       auto renderer = static_cast<poly::gl_renderer *>(glfwGetWindowUserPointer(window));
@@ -144,24 +149,25 @@ namespace poly {
             
             // get first intersection at clicked pixel
             poly::point2f pixel = {currentXpos / (float)viewport_width, currentYpos / (float)viewport_height};
-            Log.info("renderer->runner.use_count() == %i", renderer->runner.use_count());
-            Log.info("renderer->runner->Scene.use_count() == %i", renderer->runner->Scene.use_count());
+            //Log.info("renderer->runner.use_count() == %i", renderer->runner.use_count());
+            //Log.info("renderer->runner->Scene.use_count() == %i", renderer->runner->Scene.use_count());
             poly::ray camera_ray = renderer->runner->Scene->Camera->get_ray_for_ndc(pixel);
 
-            Log.info("renderer->runner->integrator.use_count() == %i", renderer->runner->integrator.use_count());
+            //Log.info("renderer->runner->integrator.use_count() == %i", renderer->runner->integrator.use_count());
 
             auto integrator = renderer->runner->integrator;
-            Log.info("renderer->runner->integrator.use_count() == %i", renderer->runner->integrator.use_count());
+            //Log.info("renderer->runner->integrator.use_count() == %i", renderer->runner->integrator.use_count());
 
             poly::PathTraceIntegrator* ptr = (poly::PathTraceIntegrator*)(integrator.get());
 
-            Log.debug("PathTraceIntegrator::this: %p", ptr);
+            //Log.debug("PathTraceIntegrator::this: %p", ptr);
+
+            do_it(ptr, camera_ray, pixel);
             
-            poly::Sample sample = ptr->get_sample(camera_ray, 0, pixel.x, pixel.y);
+            //poly::Sample sample3 = ptr->get_sample(camera_ray, 0, (int)(pixel.x), (int)(pixel.y));
             
-            Log.debug("Found " + std::to_string(sample.intersections.size()) + " intersections");
-            
-            
+            //Log.debug("Found " + std::to_string(sample3.intersections.size()) + " intersections");
+                        
             // draw cursor
             
             break;

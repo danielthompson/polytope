@@ -8,6 +8,11 @@
 #include <memory>
 #include "../shading/spectrum.h"
 
+#ifdef POLYTOPEGL
+#include <vector>
+#include "intersection.h"
+#endif
+
 namespace poly {
 
    class Sample {
@@ -30,8 +35,6 @@ namespace poly {
       poly::SpectralPowerDistribution SpectralPowerDistribution;
 
 #ifdef POLYTOPEGL
-#include <vector>
-#include "intersection.h"
       std::vector<poly::intersection> intersections;
 #endif
    };

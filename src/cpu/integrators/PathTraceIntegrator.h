@@ -16,7 +16,7 @@ namespace poly {
       explicit PathTraceIntegrator(int max_depth)
          : abstract_integrator(max_depth) { }
 
-      virtual ~PathTraceIntegrator() {
+      ~PathTraceIntegrator() override {
          int i = 0;
       }
 
