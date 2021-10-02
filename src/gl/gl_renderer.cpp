@@ -5,6 +5,8 @@
 #include "../common/utilities/Common.h"
 #include "bb_vao.h"
 #include "mesh_vao.h"
+#include "line/line.h"
+#include "gl_recorder.h"
 
 #define GLFW_INCLUDE_NONE
 #include <glbinding/gl/gl.h>
@@ -20,6 +22,8 @@
 #include <queue>
 
 namespace poly {
+
+   std::unique_ptr<poly::gl_recorder> recorder;
    
    static void error_callback(int error, const char* description)
    {
@@ -32,6 +36,8 @@ namespace poly {
    gl::GLsizei viewport_width;
    gl::GLsizei viewport_height;
 
+   bool spin = false;
+   
    static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
    {
       viewport_width = width;
@@ -42,10 +48,18 @@ namespace poly {
    static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
    {
 
-      auto renderer = static_cast<gl_renderer *>(glfwGetWindowUserPointer(window)); 
+      auto renderer = static_cast<gl_renderer *>(glfwGetWindowUserPointer(window));
       
       if (action == GLFW_PRESS) {
          switch (key) {
+            case GLFW_KEY_A: {
+               recorder->start();
+               break;
+            }
+            case GLFW_KEY_Z: {
+               recorder->stop();
+               break;
+            }
             case GLFW_KEY_ESCAPE: {
                glfwSetWindowShouldClose(window, GLFW_TRUE);
                break;
@@ -64,30 +78,36 @@ namespace poly {
 //               }
                break;
             }
-            case GLFW_KEY_Z: {
+            case GLFW_KEY_J: {
                if (currentNode && currentNode->low) {
                   currentNode = currentNode->low;
-                  Log.debug("Moving down to low node (left).");
+                  LOG_DEBUG("Moving down to low node (left).");
                   renderer->bb.select_node(currentNode);
                }
                break;
             }
-            case GLFW_KEY_X: {
+            case GLFW_KEY_K: {
                if (currentNode && currentNode->high) {
                   currentNode = currentNode->high;
-                  Log.debug("Moving down to high node (right).");
+                  LOG_DEBUG("Moving down to high node (right).");
                   renderer->bb.select_node(currentNode);
                }
                break;
             }
-            case GLFW_KEY_R: {
+            case GLFW_KEY_U: {
                if (rootNode) {
                   currentNode = rootNode;
-                  Log.debug("Resetting to root node.");
+                  LOG_DEBUG("Resetting to root node.");
                   renderer->bb.select_node(currentNode);
                }
                break;
             }
+
+            case GLFW_KEY_Q: {
+               spin = !spin;
+               break;
+            }
+            
             default: {
                // do nothing
             }
@@ -104,20 +124,14 @@ namespace poly {
    glm::mat4 viewMatrix;
    glm::mat4 projectionMatrix;
 
+   poly::Sample most_recent_sample;
+   
+   std::vector<poly::line> lines = { };
+   
    bool rightPressed = false;
 
-   void cursor_position_callback(GLFWwindow* window, const double xpos, const double ypos)
-   {
-      if (!rightPressed) {
-         currentXpos = xpos;
-         currentYpos = ypos;
-         return;
-      }
-
+   void update_orientation(const float dtheta, const float dphi) {
       const float distance = glm::distance(eye, lookAt);
-
-      const float dtheta = (currentXpos - (float)xpos) * .25f;
-      const float dphi = ((float)ypos - currentYpos) * .25f;
 
       glm::vec3 dir = glm::normalize(eye - lookAt);
       glm::vec3 thetaDir = glm::rotate(dir, -glm::radians(dtheta), up);
@@ -129,16 +143,27 @@ namespace poly {
       eye = lookAt + distance * phiDir;
 
       up = glm::cross(right, phiDir);
+   }
+   
+   void cursor_position_callback(GLFWwindow* window, const double xpos, const double ypos)
+   {
+      if (!rightPressed) {
+         currentXpos = xpos;
+         currentYpos = ypos;
+         return;
+      }
+
+      
+      const float dtheta = (currentXpos - (float)xpos) * .25f;
+      const float dphi = ((float)ypos - currentYpos) * .25f;
+
+      update_orientation(dtheta, dphi);
 
       currentXpos = xpos;
       currentYpos = ypos;
    }
 
-   void do_it(poly::PathTraceIntegrator* ptr, poly::ray camera_ray, poly::point2f pixel) {
-      poly::Sample sample3 = ptr->get_sample(camera_ray, 0, (int)(pixel.x), (int)(pixel.y));
-      Log.debug("Found " + std::to_string(sample3.intersections.size()) + " intersections");
-   }
-   
+
    void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
    {
       auto renderer = static_cast<poly::gl_renderer *>(glfwGetWindowUserPointer(window));
@@ -149,43 +174,54 @@ namespace poly {
             
             // get first intersection at clicked pixel
             poly::point2f pixel = {currentXpos / (float)viewport_width, currentYpos / (float)viewport_height};
-            //Log.info("renderer->runner.use_count() == %i", renderer->runner.use_count());
-            //Log.info("renderer->runner->Scene.use_count() == %i", renderer->runner->Scene.use_count());
+
             poly::ray camera_ray = renderer->runner->Scene->Camera->get_ray_for_ndc(pixel);
+            LOG_DEBUG("camera ray: " << camera_ray);
 
-            //Log.info("renderer->runner->integrator.use_count() == %i", renderer->runner->integrator.use_count());
-
-            auto integrator = renderer->runner->integrator;
-            //Log.info("renderer->runner->integrator.use_count() == %i", renderer->runner->integrator.use_count());
-
-            poly::PathTraceIntegrator* ptr = (poly::PathTraceIntegrator*)(integrator.get());
-
-            //Log.debug("PathTraceIntegrator::this: %p", ptr);
-
-            do_it(ptr, camera_ray, pixel);
+            lines.clear();
             
-            //poly::Sample sample3 = ptr->get_sample(camera_ray, 0, (int)(pixel.x), (int)(pixel.y));
+            poly::point prev_location = {camera_ray.origin};
+            poly::vector prev_dir = {camera_ray.direction};
             
-            //Log.debug("Found " + std::to_string(sample3.intersections.size()) + " intersections");
-                        
-            // draw cursor
+            most_recent_sample = renderer->runner->integrator->get_sample(camera_ray, 0, currentXpos, currentYpos);
+
+            for (int i = 0; i < most_recent_sample.intersections.size(); i++) {
+               auto& element = most_recent_sample.intersections[i];
+               
+               if (element.Hits) {
+                  glm::vec4 white = {1.f, 1.f, 1.f, 1.f};
+                  lines.emplace_back(prev_location, element.location, white );
+                  LOG_DEBUG("Bounce " << i << ": hit");
+                  LOG_DEBUG("  location " << i << ": " << element.location);
+                  LOG_DEBUG("  outgoing " << i << ": " << element.outgoing);
+                  LOG_DEBUG("  mesh_index " << element.mesh_index);
+                  LOG_DEBUG("  face_index " << element.face_index);
+                  prev_location = element.location;
+                  prev_dir = element.outgoing;
+               }
+               else {
+                  glm::vec4 reddish = {1.f, 0.5f, 0.5f, 1.f};
+                  poly::point endpoint = prev_location + (prev_dir * 10); 
+                  lines.emplace_back(prev_location, endpoint, reddish );
+                  LOG_DEBUG("Bounce " << i << ": miss");
+               }
+               
+               
+            }
             
             break;
          }
          case GLFW_MOUSE_BUTTON_MIDDLE: {
-            std::ostringstream str;
             if (action == GLFW_PRESS) {
                rightPressed = true;
-               str << "Right mouse press @ " << currentXpos << ", " << currentYpos;
+               LOG_DEBUG("Right mouse press @ " << currentXpos << ", " << currentYpos);
             } else if (action == GLFW_RELEASE) {
                rightPressed = false;
-               str << "Right mouse release @ " << currentXpos << ", " << currentYpos;
+               LOG_DEBUG("Right mouse release @ " << currentXpos << ", " << currentYpos);
             }
-            Log.debug(str.str());
             break;
          }
       }
-
    }
 
    void scroll_callback(GLFWwindow* window, const double xoffset, const double yoffset)
@@ -200,8 +236,8 @@ namespace poly {
    }
 
    gl_renderer::gl_renderer(std::shared_ptr<poly::runner> runner) : runner(runner) {
-      viewport_width = 1600;
-      viewport_height = 1000;
+      viewport_width = runner->Bounds.x;
+      viewport_height = runner->Bounds.y;
    
       glfwSetErrorCallback(error_callback);
 
@@ -238,6 +274,8 @@ namespace poly {
       
       // Ensure we can capture the escape key being pressed below
       glfwSetInputMode(window, GLFW_STICKY_KEYS, (int)gl::GL_TRUE);
+      
+      recorder = std::make_unique<poly::gl_recorder>(viewport_width, viewport_height);
    }
    
    void gl_renderer::render()
@@ -254,12 +292,11 @@ namespace poly {
          mesh_vaos.emplace_back();
          mesh_vaos[mesh_index].init(runner->Scene->Shapes[mesh_index]);
       }
-
+      
       // projection matrix - 45deg fov, 4:3 ratio, display range - 0.1 <-> 100 units
       fov = runner->Scene->Camera->settings.field_of_view;
       projectionMatrix = glm::perspective(glm::radians(fov), (float)viewport_width / (float)viewport_height, 0.1f, 100.0f);
       
-
       eye = glm::vec3(runner->Scene->Camera->eye.x, runner->Scene->Camera->eye.y, runner->Scene->Camera->eye.z);
       lookAt = glm::vec3(runner->Scene->Camera->lookAt.x, runner->Scene->Camera->lookAt.y, -runner->Scene->Camera->lookAt.z);
       up = glm::vec3(runner->Scene->Camera->up.x, runner->Scene->Camera->up.y, runner->Scene->Camera->up.z);
@@ -284,31 +321,44 @@ namespace poly {
       gl::glClearColor(0.15f, 0.15f, 0.15f, 0.0f);
       gl::glEnable(gl::GL_BLEND);
       glm::vec4 x_scale = {-1, 1, 1, 1};
+
       do {
          // clear the screen
          gl::glClear(gl::GL_COLOR_BUFFER_BIT | gl::GL_DEPTH_BUFFER_BIT);
 
+         if (spin) {
+            update_orientation(0.5f, 0.f);
+         }
+         
          // calculate new mvp
          projectionMatrix = glm::perspective(glm::radians(fov), (float)viewport_width / (float)viewport_height, 0.1f, 100.0f);
          projectionMatrix *= x_scale;
 
          viewMatrix = glm::lookAt(eye, lookAt, up);
          glm::mat4 mvp = projectionMatrix * viewMatrix * model;
-         bb.draw_all(mvp);
+        // bb.draw_all(mvp);
          
          for (auto & mesh_vao : mesh_vaos) {
             mesh_vao.draw(mvp);
          }
 
-         bb.draw_all(mvp);
-         bb.draw_selected(mvp);
+//         bb.draw_all(mvp);
+//         bb.draw_selected(mvp);
 
+         for (const auto& element : lines) {
+            element.draw(mvp);   
+         }
+
+         recorder->capture_frame();
+         
          // swap bufffers
          glfwSwapBuffers(window);
          glfwPollEvents();
 
       } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
 
+      recorder->stop();
+      
       glfwDestroyWindow(window);
 
       glfwTerminate();

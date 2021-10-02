@@ -15,23 +15,23 @@
 
 poly::Logger Log;
 
-void segfaultHandler(int signalNumber) {
-   ERROR("Segfault (signal %i). Stacktrace to be implemented...", signalNumber);
+void segfault_handler(int signal_number) {
+   ERROR("Segfault (signal " << signal_number << "). Stacktrace to be implemented...");
 }
 
-void signalHandler(int signalNumber) {
-   ERROR("Interrupt (signal %i). Stacktrace to be implemented...", signalNumber);
+void signal_handler(int signal_number) {
+   ERROR("Interrupt (signal " << signal_number << "). Stacktrace to be implemented...");
 }
 
 bool hasAbortedOnce = false;
 
 void userAbortHandler(int signalNumber) {
    if (hasAbortedOnce) {
-      Log.info("Aborting at user request.");
+      LOG_INFO("Aborting at user request.");
       exit(signalNumber);
    }
    else {
-      Log.info("Detected Ctrl-C keypress. Ignoring since it's the first time. Press Ctrl-C again to really quit.");
+      LOG_INFO("Detected Ctrl-C keypress. Ignoring since it's the first time. Press Ctrl-C again to really quit.");
       hasAbortedOnce = true;
    }
 }
@@ -79,15 +79,15 @@ Other:
             runner = parser.parse_file(options.input_filename);
             const auto parse_end = std::chrono::system_clock::now();
             const std::chrono::duration<double> parse_duration = parse_end - parse_start;
-            Log.debug("Parsed scene description in " + std::to_string(parse_duration.count()) + "s.");
+            LOG_DEBUG("Parsed scene description in " << parse_duration.count() << "s.");
             
             // override parsed with options here
             if (options.samplesSpecified) {
                runner->sample_count = options.samples;
             }
          } else {
-            Log.debug("No input file specified, quitting.");
-            exit(0);
+            LOG_ERROR("No input file specified; exiting.");
+            exit(EXIT_FAILURE);
          }
 
          const auto bound_start = std::chrono::system_clock::now();
@@ -95,24 +95,24 @@ Other:
          unsigned int num_nodes = runner->Scene->bvh_root.bound(runner->Scene->Shapes);
          const auto bound_end = std::chrono::system_clock::now();
          const std::chrono::duration<double> bound_duration = bound_end - bound_start;
-         Log.debug("Created BVH with " + std::to_string(num_nodes) + " nodes in " + std::to_string(bound_duration.count()) + "s.");
-         Log.debug("Number of leaves with multiple triangles with the same centroid: " + std::to_string(thread_stats.num_bvh_bound_leaf_same_centroid));
+         LOG_DEBUG("Created BVH with " << num_nodes << " nodes in " << bound_duration.count() << "s.");
+         LOG_DEBUG("Number of leaves with multiple triangles with the same centroid: " << thread_stats.num_bvh_bound_leaf_same_centroid);
          
          const auto compact_start = std::chrono::system_clock::now();
          runner->Scene->bvh_root.compact();
          const auto compact_end = std::chrono::system_clock::now();
          const std::chrono::duration<double> compact_duration = compact_end - compact_start;
-         Log.debug("Compacted BVH in " + std::to_string(compact_duration.count()) + "s.");
+         LOG_DEBUG("Compacted BVH in " << compact_duration.count() << "s.");
          
          runner->Scene->bvh_root.metrics();
 
-         Log.debug("Rasterizing with OpenGL...");
+         LOG_DEBUG("Rasterizing with OpenGL...");
          poly::gl_renderer renderer(runner);
          renderer.render();
          
       }
 
-      Log.info("Exiting Polytope.");
+      LOG_INFO("Exiting Polytope.");
    }
    catch (const std::exception&) {
       return EXIT_FAILURE;

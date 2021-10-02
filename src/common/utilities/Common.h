@@ -10,7 +10,7 @@
 
 extern poly::Logger Log;
 
-#define ERROR(fmt, ...) do { Log.error(fmt, ##__VA_ARGS__); exit(1); } while (0)
+#define ERROR(fmt, ...) do { LOG_ERROR(fmt, ##__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 
 std::string GetCurrentWorkingDirectory();
 

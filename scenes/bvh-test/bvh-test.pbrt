@@ -1,10 +1,10 @@
-Integrator "path" "integer maxdepth" [ 1 ] 
-LookAt 0 -1 4 # eye
+Integrator "path" "integer maxdepth" [ 50 ] 
+LookAt 0 -1 8 # eye
        0 -1 0 # look at point
        0 1 0 # up
-Sampler "halton" "integer pixelsamples" [ 1 ]
+Sampler "halton" "integer pixelsamples" [ 100 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
-Film "image" "integer xresolution" [ 320 ] "integer yresolution" [ 240 ] "string filename" [ "bvh-test.png" ]
+Film "image" "integer xresolution" [ 1920 ] "integer yresolution" [ 1080 ] "string filename" [ "bvh-test.png" ]
 Camera "perspective" "float fov" [ 20 ]
 WorldBegin
     # Scale .5 .5 .5
@@ -22,22 +22,22 @@ WorldBegin
 #        Shape "plymesh" "string filename" [ "bvh-test.ply" ]
 #    AttributeEnd
 
-    AttributeBegin
-        Material "mirror" "rgb Kr" [ 1  .5  .5 ]
-        Shape "plymesh" "string filename" [ "bvh-test.ply" ]
-    AttributeEnd
+#    AttributeBegin
+#        Material "mirror" "rgb Kr" [ 1  .5  .5 ]
+#        Shape "plymesh" "string filename" [ "bvh-test.ply" ]
+#    AttributeEnd
     
     AttributeBegin
         Translate 0 -1 0
         Rotate 45 1 1 0
         Material "mirror" "rgb Kr" [ .5  1  .5 ]
-        Shape "plymesh" "string filename" [ "bvh-test.ply" ]
+        Shape "plymesh" "string filename" [ "other.ply" ]
     AttributeEnd
     
     AttributeBegin
         Translate 0 -2 0
         Rotate -45 1 1 0
         Material "mirror" "rgb Kr" [ .9  .9  .9 ]
-        Shape "plymesh" "string filename" [ "bvh-test.ply" ]
+        Shape "plymesh" "string filename" [ "other.ply" ]
     AttributeEnd
 WorldEnd

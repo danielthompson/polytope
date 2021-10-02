@@ -216,50 +216,50 @@ namespace poly {
       }
 
       void LogOther(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
-         Log.warning(directive->identifier + ": " + error);
+         LOG_WARNING(directive->identifier << ": " << error);
       }
 
       void log_illegal_directive(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
-         Log.error(directive->identifier + ": " + error);
+         LOG_ERROR(directive->identifier << ": " << error);
       }
 
       void log_illegal_identifier(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
-         Log.error(directive->identifier + ": \"" + directive->type + "\": " + error);
+         LOG_ERROR(directive->identifier << ": \"" << directive->type << "\": " << error);
       }
 
       void LogMissingArgument(const std::unique_ptr<pbrt_directive>& directive, const std::string& argument) {
-         Log.warning("Directive [" + directive->identifier + "] w/ identifier [" + directive->type + "] is missing argument [" + argument + "]");
+         LOG_WARNING("Directive [" << directive->identifier << "] w/ identifier [" << directive->type << "] is missing argument [" << argument << "]");
       }
 
       void LogMissingDirective(const std::string& name, std::string& defaultOption) {
-         Log.warning("Directive [" + name + "] is missing, defaulting to " + defaultOption + ".");
+         LOG_WARNING("Directive [" << name << "] is missing, defaulting to " << defaultOption << ".");
       }
 
       void LogUnknownDirective(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->identifier + "] found, but is unknown. Ignoring.");
+         LOG_WARNING("Directive [" << directive->identifier << "] found, but is unknown. Ignoring.");
       }
 
       void LogUnknownIdentifier(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->identifier + "] has unknown identifier [" + directive->type + "].");
+         LOG_WARNING("Directive [" << directive->identifier << "] has unknown identifier [" << directive->type << "].");
       }
 
       void LogUnimplementedIdentifier(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->identifier + "] has known but unimplemented identifier [" + directive->type + "].");
+         LOG_WARNING("Directive [" << directive->identifier << "] has known but unimplemented identifier [" << directive->type << "].");
       }
 
       void LogUnknownArgument(const pbrt_argument &argument) {
-         
-         Log.warning("Unknown argument type/name combination: [" +
-                     pbrt_argument::get_argument_type_string(argument.Type) + "] / [" + argument.Name + "].");
+
+         LOG_WARNING("Unknown argument type/name combination: [" <<
+                     pbrt_argument::get_argument_type_string(argument.Type) << "] / [" << argument.Name << "].");
       }
 
       void LogWrongArgumentType(const std::unique_ptr<pbrt_directive> &directive, const pbrt_argument &argument) {
-         Log.warning("Directive [" + directive->identifier + "] w/ identifier [" + directive->type + "] found has argument [" + argument.Name + "] with wrong type [" +
-                     pbrt_argument::get_argument_type_string(argument.Type) + "].");
+         LOG_WARNING("Directive [" << directive->identifier << "] w/ identifier [" << directive->type << "] found has argument [" << argument.Name << "] with wrong type [" <<
+                     pbrt_argument::get_argument_type_string(argument.Type) << "].");
       }
 
       void LogUnimplementedDirective(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->identifier + "] w/ identifier [" + directive->type + "] found, but is not yet implemented. Ignoring.");
+         LOG_WARNING("Directive [" << directive->identifier << "] w/ identifier [" << directive->type << "] found, but is not yet implemented. Ignoring.");
       }
 
       unsigned int stoui(const std::string& text) {
@@ -388,7 +388,7 @@ namespace poly {
          sourceLineNumber++;
       } // end line
       
-      Log.debug("Scan complete.");
+      LOG_DEBUG("Scan complete.");
       return tokens;
    }
 
@@ -432,11 +432,11 @@ namespace poly {
       std::unique_ptr<poly::pbrt_directive> directive = std::make_unique<pbrt_directive>();
 
       if (line.empty()) {
-         Log.warning("lex(): empty line. Hmm...");
+         LOG_WARNING("lex(): empty line. Hmm...");
          return directive;
       }
       
-      Log.debug("lex(): processing line starting with [" + line[0] + "].");
+      LOG_DEBUG("lex(): processing line starting with [" << line[0] << "].");
       
       bool debug = false;
       if (line[0] == "Texture")
@@ -445,7 +445,7 @@ namespace poly {
       directive->identifier = line[0];
       
       if (line.size() == 1) {
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
 
@@ -458,7 +458,7 @@ namespace poly {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          LexFloatArrayArgument(line, 9, false, &(directive->arguments[0]));
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
       
@@ -466,7 +466,7 @@ namespace poly {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          LexFloatArrayArgument(line, 4, false, &(directive->arguments[0]));
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
 
@@ -474,7 +474,7 @@ namespace poly {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          LexFloatArrayArgument(line, 3, false, &(directive->arguments[0]));
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
 
@@ -503,14 +503,14 @@ namespace poly {
          // regular arguments
          argument_start_index = 4;
          
-         Log.debug("lex(): directive [" + directive->identifier + "] started OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] started OK");
       }
 
       else if (directive->identifier == str::Transform) {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          LexFloatArrayArgument(line,  16, true, &(directive->arguments[0]));
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
       
@@ -518,7 +518,7 @@ namespace poly {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          LexFloatArrayArgument(line, 3, false, &(directive->arguments[0]));
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
       
@@ -533,7 +533,7 @@ namespace poly {
 
 
       if (line.size() == 2) {
-         Log.debug("Lexed directive [" + directive->identifier + "]");
+         LOG_DEBUG("Lexed directive [" << directive->identifier << "]");
          return directive;
       }
       
@@ -653,14 +653,14 @@ namespace poly {
             i++;
             continue;
          }
-         ERROR("lex(): current line has invalid token [" + line[i] + "] :(");
+         ERROR("lex(): current line has invalid token [" << line[i] << "] :/");
       }
 
 //      if (inValue) {
 //         directive->Arguments.push_back(argument);
 //      }
 
-      Log.debug("lex(): directive [" + directive->identifier + "] OK");
+      LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
 
       return directive;
    }
@@ -731,7 +731,7 @@ namespace poly {
    static std::unique_ptr<poly::texture> texture_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
       std::unique_ptr<poly::texture> texture = std::make_unique<poly::texture>();
       if (directive->name.empty()) {
-         Log.warning("Texture has an empty name value, so it can't be referenced by a material");
+         LOG_WARNING("Texture has an empty name value, so it can't be referenced by a material");
       }
       texture->name = directive->name;
       LodePNGColorType color_type;
@@ -744,11 +744,11 @@ namespace poly {
          texture->data_format = texture::format::GREY;
       }
       else {
-         ERROR("Unknown/unimplemented texture type [%s]", directive->type.c_str());
+         ERROR("Unknown/unimplemented texture type [" << directive->type << "]");
       }
       
       if (directive->class_name != "imagemap") {
-         ERROR("Unknown/unimplemented texture class [%s]", directive->class_name.c_str());
+         ERROR("Unknown/unimplemented texture class [" << directive->class_name << "]");
       }
       
       if (directive->arguments.empty()) {
@@ -760,14 +760,15 @@ namespace poly {
             
             std::string texture_file_path = _basePathFromCWD + '/' + *arg.string_value;
             
-            Log.debug("Trying to open texture at [%s]...", texture_file_path.c_str());
+            LOG_DEBUG("Trying to open texture at [" << texture_file_path << "]...");
             
             // load filename
             unsigned error = lodepng::decode(texture->data, texture->width, texture->height, texture_file_path, color_type);
             if (error) 
-               ERROR("Failed to read/decode png file [" +  *arg.string_value + "] with error " + std::to_string(error) + ": " + lodepng_error_text(error));
-            
-            Log.debug("Read texture with size [%i] x [%i] and decoded to [%s].", texture->width, texture->height, texture->data_format == texture::format::RGBA ? "RGBA" : "greyscale");
+               ERROR("Failed to read/decode png file [" <<  *arg.string_value << "] with error " << error << ": " << lodepng_error_text(error));
+
+            LOG_DEBUG("Read texture with size [" << texture->width << "] x [" << texture->height << "] and decoded to ["
+                      << (texture->data_format == texture::format::RGBA ? "RGBA" : "greyscale") << "]");
             
             return texture;
          }
@@ -866,7 +867,7 @@ namespace poly {
                         }
                         case pbrt_argument::pbrt_texture: {
                            if (texture_map.count(*argument.string_value) == 0) {
-                              ERROR("Material references a texture [%s] that hasn't been defined yet", argument.string_value->c_str());
+                              ERROR("Material references a texture [" << *argument.string_value << "] that hasn't been defined yet");
                            }
                            
                            std::shared_ptr<poly::texture> texture = texture_map.at(*argument.string_value);
@@ -966,7 +967,7 @@ namespace poly {
          sampler = std::make_unique<HaltonSampler>();
       }
 
-      Log.debug("Made sampler.");
+      LOG_DEBUG("Made sampler.");
 
       // film
 
@@ -1032,7 +1033,7 @@ namespace poly {
          film = std::make_unique<PNGFilm>(bounds, filename, std::move(filter));
       }
 
-      Log.debug("Made film.");
+      LOG_DEBUG("Made film.");
 
       // filter
 
@@ -1074,7 +1075,7 @@ namespace poly {
          film->Filter = std::move(filter);
       }
 
-      Log.debug("Made filter.");
+      LOG_DEBUG("Made filter.");
 
       // camera
 
@@ -1094,7 +1095,7 @@ namespace poly {
                identifier = SceneDirectiveMap.at(directive->identifier);
             }
             catch (...) {
-               ERROR("Indentifier [%s] is not valid in the scene block");
+               ERROR("Identifier [" << directive->identifier << "] is not valid in the scene block");
             }
             switch (identifier) {
                case DirectiveIdentifier::LookAt: {
@@ -1119,7 +1120,7 @@ namespace poly {
                   poly::transform t = transform::look_at(eye, lookAt, up, false);
                   current_transform *= t;
 
-                  Log.debug("Found LookAt.");
+                  LOG_DEBUG("Found LookAt.");
                   break;
                }
                case DirectiveIdentifier::Rotate: {
@@ -1670,7 +1671,7 @@ namespace poly {
             case DirectiveIdentifier::Texture: {
                
                if (texture_map.count(directive->name) > 0) {
-                  ERROR("Texture name [%s] has already previously been defined.");
+                  ERROR("Texture name [" << directive->name << "] has already previously been defined.");
                }
                
                std::shared_ptr<poly::texture> texture = std::move(texture_directive(directive));
@@ -1723,5 +1724,3 @@ namespace poly {
       );
    }
 }
-
-#pragma clang diagnostic pop

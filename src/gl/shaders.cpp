@@ -29,7 +29,7 @@ poly::shader::shader(const poly::shader_info &info) {
    std::ifstream stream;
    stream.open(total_path, std::ifstream::in);
    if (stream.fail()) {
-      Log.error("Failed to open shader file at [%s]", total_path.c_str());
+      Log.error() << "Failed to open shader file at [" << total_path << "].";
       exit(EXIT_FAILURE);
    }
 
@@ -48,7 +48,7 @@ poly::shader::shader(const poly::shader_info &info) {
          break;
       }
       default: {
-         Log.error("Unknown shader type [%s]", info.type);
+         Log.error() << "Unknown shader type [" << info.type << "].";
          exit(EXIT_FAILURE);
       }
    }
@@ -62,8 +62,8 @@ poly::shader::shader(const poly::shader_info &info) {
    gl::glGetShaderiv(handle, gl::GL_COMPILE_STATUS, &success);
    if (!success) {
       gl::glGetShaderInfoLog(handle, 512, nullptr, log_buffer);
-      Log.error("Failed to compile shader [" + total_path + "]:");
-      Log.error(log_buffer);
+      Log.error() << "Failed to compile shader [" + total_path + "]:";
+      Log.error() << log_buffer;
       exit(EXIT_FAILURE);
    }
 }
@@ -89,7 +89,7 @@ poly::shader_program::shader_program(const poly::shader_program_info &info) {
             break;
          }
          default: {
-            Log.error("Unknown shader type :/");
+            Log.error() << "Unknown shader type [" << shader_info.type << "].";
             exit(EXIT_FAILURE);
          }
       }
@@ -109,25 +109,25 @@ poly::shader_program::shader_program(const poly::shader_program_info &info) {
    gl::glGetProgramiv(handle, gl::GL_LINK_STATUS, &success);
    if (!success) {
       gl::glGetProgramInfoLog(handle, 512, nullptr, log_buffer);
-      Log.error("Failed to link program:");
-      Log.error(log_buffer);
+      Log.error() << "Failed to link program:";
+      Log.error() << log_buffer;
       exit(EXIT_FAILURE);
    }
 
-   Log.debug("Program linked.");
+   LOG_DEBUG("Program linked.");
    
    delete vert_shader;
    delete frag_shader;
    
    if (info.uniform_names.empty()) {
-      Log.debug("Program has no uniforms.");
+      LOG_DEBUG("Program has no uniforms.");
       return;
    }
    
    for (const auto & uniform_name : info.uniform_names) {
       gl::GLint location = gl::glGetUniformLocation(handle, uniform_name.c_str());
       if (location < 0) {
-         Log.error("Program doesn't have a location for uniform [%s]", uniform_name.c_str());
+         LOG_ERROR("Program doesn't have a location for uniform [" << uniform_name << "].");
          exit(EXIT_FAILURE);
       }
       
@@ -136,7 +136,9 @@ poly::shader_program::shader_program(const poly::shader_program_info &info) {
 }
 
 poly::shader_program::~shader_program() {
-   gl::glDeleteProgram(handle);
+   if (gl::glIsProgram(handle)) {
+      gl::glDeleteProgram(handle);
+   }
 }
 
 void poly::shader_program::use() const {
@@ -175,11 +177,11 @@ std::shared_ptr<poly::shader_program> poly::shader_cache::get_program(const poly
    std::string key = program_info.shader_infos[0].filepath + "|" + program_info.shader_infos[1].filepath;
 
    if (map.count(key) > 0) {
-      Log.debug("Shader cache hit on [%s]", key.c_str());
+      LOG_DEBUG("Shader cache hit on [" << key << "].");
       return map[key];
    }
 
-   Log.debug("Shader cache miss on [%s]", key.c_str());
+   LOG_DEBUG("Shader cache miss on [" << key << "].");
 
    std::shared_ptr<poly::shader_program> program = std::make_shared<poly::shader_program>(program_info);
    map[key] = program;

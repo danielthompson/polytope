@@ -638,16 +638,16 @@ namespace poly {
       
       faces_per_leaf_avg = (float)total_faces / (float)num_leaf_nodes;
       
-      Log.debug("height: %i", tree_height);
-      Log.debug("leaves: %i", num_leaf_nodes);
-      Log.debug("good interior: %i", num_interior_nodes);
-      Log.debug("high interior: %i", num_single_high_child_nodes);
-      Log.debug("low interior : %i", num_single_low_child_nodes);
-      Log.debug("total faces : %i", total_faces);
-      Log.debug("faces per leaf (avg): %f", faces_per_leaf_avg);
-      Log.debug("faces per leaf (min): %i", faces_per_leaf_min);
-      Log.debug("faces per leaf (max): %i", faces_per_leaf_max);
-      Log.debug("bb : tri SA ratio (avg): %f", leaf_ratio_avg);
+      LOG_DEBUG("height: " << tree_height);
+      LOG_DEBUG("leaves: " << num_leaf_nodes);
+      LOG_DEBUG("good interior: " << num_interior_nodes);
+      LOG_DEBUG("high interior: " << num_single_high_child_nodes);
+      LOG_DEBUG("low interior : " << num_single_low_child_nodes);
+      LOG_DEBUG("total faces : " << total_faces);
+      LOG_DEBUG("faces per leaf (avg): " << faces_per_leaf_avg);
+      LOG_DEBUG("faces per leaf (min): " << faces_per_leaf_min);
+      LOG_DEBUG("faces per leaf (max): " << faces_per_leaf_max);
+      LOG_DEBUG("bb : tri SA ratio (avg): " << leaf_ratio_avg);
       
       const float bucket_index_width = (leaf_counts.size()) / 500.0f;
       

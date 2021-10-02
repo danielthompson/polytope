@@ -145,8 +145,10 @@ add_executable(polytope-gl
     src/gl/gl_renderer.h
     src/gl/bb_vao.h
     src/gl/mesh_vao.h
+    src/gl/quad_sphere/quad_sphere_vao.h
+    src/gl/line/line.h
     src/gl/shaders.h
-    src/gl/shaders.cpp)
+    src/gl/shaders.cpp src/gl/gl_recorder.h)
 
 target_compile_definitions(polytope-gl PUBLIC POLYTOPEGL)
 
@@ -172,7 +174,6 @@ set_target_properties(
     polytope_cuda
     PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON)
-
 
 # Key idea: SEPARATE OUT your main() function into its own file so it can be its
 # own executable. Separating out main() means you can add this library to be

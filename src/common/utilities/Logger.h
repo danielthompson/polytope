@@ -13,39 +13,57 @@
 
 #define LOG_LEVEL LOG_LEVEL_DEBUG 
 
+
+#include "../../cpu/structures/Vectors.h"
+#include "../../cpu/structures/ray.h"
 #include <string>
+#include <iostream>
 
 namespace poly {
-
    class Logger {
    public:
-      
-      Logger() = default;
-
-      void debug(const char* format, ...);
-      void info(const char* format, ...);
-      void warning(const char* format, ...);
-      void error(const char* format, ...);
-
-      void debug(const std::string& text);
-      void info(const std::string& text);
-      void warning(const std::string& text);
-      void error(const std::string& text);
-      
-//      void logThread(const std::string& text) const;
-
-   private:
-      
-      enum log_level {
-         LOG_DEBUG,
-         LOG_INFO,
-         LOG_WARNING,
-         LOG_ERROR,
-      };
-      void log(Logger::log_level level, const char *format, va_list args);
-      void log(log_level level, const std::string& text);
+      static std::ostream &debug();
+      static std::ostream &info();
+      static std::ostream &warning();
+      static std::ostream &error();
    };
 }
+
+inline std::ostream& operator << (std::ostream &os, const poly::point &p) {
+   return (os << "(" << p.x << ", " << p.y << ", " << p.z << ")");
+}
+
+inline std::ostream& operator << (std::ostream &os, const poly::vector &v) {
+   return (os << "(" << v.x << ", " << v.y << ", " << v.z << ")");
+}
+
+inline std::ostream& operator << (std::ostream &os, const poly::ray &r) {
+   return (os << "o: " << r.origin << ", d: " << r.direction);
+}
+
+#if LOG_LEVEL <= LOG_LEVEL_DEBUG
+#define LOG_DEBUG(...) do { Log.debug() << __VA_ARGS__ ; } while (0)
+#else
+#define LOG_DEBUG(...) do { ; } while (0)
+#endif
+
+#if LOG_LEVEL <= LOG_LEVEL_INFO
+#define LOG_INFO(...) do { Log.info() << __VA_ARGS__ ; } while (0)
+#else
+#define LOG_INFO(...) do { ; } while (0)
+#endif
+
+#if LOG_LEVEL <= LOG_LEVEL_WARNING
+#define LOG_WARNING(...) do { Log.warning() << __VA_ARGS__ ; } while (0)
+#else
+#define LOG_WARNING(...) do { ; } while (0)
+#endif
+
+#if LOG_LEVEL <= LOG_LEVEL_ERROR
+#define LOG_ERROR(...) do { Log.error() << __VA_ARGS__ ; } while (0)
+#else
+#define LOG_ERROR(...) do { ; } while (0)
+#endif
 
 
 #endif //POLY_LOGGER_H

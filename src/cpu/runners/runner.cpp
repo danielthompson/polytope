@@ -79,6 +79,6 @@ namespace poly {
    }
 
    runner::~runner() {
-      Log.info("runner destructing");
+      LOG_DEBUG("runner destructing");
    }
 }

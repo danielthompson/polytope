@@ -105,11 +105,11 @@ namespace poly {
          std::string word;
          std::istringstream iss(line, std::istringstream::in);
          if (!(iss >> word) || word != "ply") {
-            ERROR("%s:%i Missing PLY header", filepath.c_str(), line_number);
+            ERROR(filepath << ":" << line_number << " Missing PLY header");
          }
       }
       else {
-         ERROR("%s:%i Read error when trying to read PLY header", filepath.c_str(), line_number);
+         ERROR(filepath << ":" << line_number << " Read error when trying to read PLY header");
       }
 
       // format
@@ -119,10 +119,10 @@ namespace poly {
          std::istringstream iss(line, std::istringstream::in);
 
          if (!(iss >> word) || word != "format") {
-            ERROR("%s:%i Missing \"format\" header", filepath.c_str(), line_number);
+            ERROR(filepath << ":" << line_number << "Missing \"format\" header");
          }
          if (!(iss >> word)) {
-            ERROR("%s:%i Read error when reading format type", filepath.c_str(), line_number);
+            ERROR(filepath << ":" << line_number << "Read error when reading format type");
          }
          if (word == "ascii") {
             state.data_format = ply_format::ascii;
@@ -134,18 +134,18 @@ namespace poly {
             state.data_format = ply_format::binary_be;
          }
          else {
-            ERROR("%s:%i Unsupported format [%s]", filepath.c_str(), line_number, word.c_str());
+            ERROR(filepath << ":" << line_number << "Unsupported format [" << word << "]");
          }
          
          if (!(iss >> word)) {
-            ERROR("%s:%i Read error when reading format version", filepath.c_str(), line_number);
+            ERROR(filepath << ":" << line_number << "Read error when reading format version");
          }
          if (word != "1.0") {
-            ERROR("%s:%i Unsupported format version [%s]", filepath.c_str(), line_number, word.c_str());
+            ERROR(filepath << ":" << line_number << "Unsupported format version [" << word << "]");
          }
       }
       else {
-         ERROR("%s:%i Read error when reading format line", filepath.c_str(), line_number);
+         ERROR(filepath << ":" << line_number << "Read error when reading format line");
       }
 
       // rest of header
@@ -166,7 +166,7 @@ namespace poly {
             // element name
             iss >> element_name;
             if (element_name.empty()) {
-               ERROR("%s:%i Element name may not be empty", filepath.c_str(), line_number, element_name.c_str());
+               ERROR(filepath << ":" << line_number << "Element name may not be empty");
             }
             if (element_name == "vertex") {
                element.type = ply_element_type::vertex;
@@ -175,7 +175,7 @@ namespace poly {
                element.type = ply_element_type::face;
             }
             else {
-               Log.warning("%s:%i Element name [%s] not recognized; will ignore data for it...", filepath.c_str(), line_number, element_name.c_str());
+               LOG_WARNING(filepath << ":" << line_number << "Element name [" << element_name << "] not recognized; will ignore data for it...");
             }
             
             // number of instances
@@ -184,13 +184,13 @@ namespace poly {
                element.num_instances = stoi(word);
             }
             catch (...) {
-               ERROR("%s:%i Failed to parse [%s] as an int", filepath.c_str(), line_number, word.c_str());
+               ERROR(filepath << ":" << line_number << "Failed to parse [" << word << "] as an int");
             }
             if (element.num_instances == 0) {
-               Log.warning("%s:%i Element [%s] declares 0 instances", filepath.c_str(), line_number, element_name.c_str());
+               LOG_WARNING(filepath << ":" << line_number << "Element [" << element_name << "] declares 0 instances");
             }
             else if (element.num_instances < 0) {
-               ERROR("%s:%i Element [%s] must declare a non-negative number of instances, but found [%i]", filepath.c_str(), line_number, element_name.c_str(), element.num_instances);
+               ERROR(filepath << ":" << line_number << "Element [" << element_name << "] must declare a non-negative number of instances, but found [" << element.num_instances << "]");
             }
 
             state.elements.push_back(element);
@@ -198,7 +198,7 @@ namespace poly {
          }
          else if (word == "property") {
             if (state.elements.empty()) {
-               ERROR("%s:%i Found property with no valid preceding element", filepath.c_str(), line_number);
+               ERROR(filepath << ":" << line_number << "Found property with no valid preceding element");
             }
 
             ply_element& current_element = state.elements[state.elements.size() - 1];
@@ -208,7 +208,7 @@ namespace poly {
             iss >> word;
             current_property.type = get_type_for_token(word);
             if (current_property.type == ply_unknown) {
-               ERROR("%s:%i Unrecognized property type [%s]", filepath.c_str(), line_number, word.c_str());
+               ERROR(filepath << ":" << line_number << "Unrecognized property type [" << word << "]");
             }
             
             switch (current_element.type) {
@@ -255,36 +255,36 @@ namespace poly {
                      break;
                   }
                   else {
-                     Log.warning("%s:%i Ignoring unknown property name [%s] for vertex element", filepath.c_str(), line_number, word.c_str());
+                     LOG_WARNING(filepath << ":" << line_number << "Ignoring unknown property name [" << word << "] for vertex element");
                      current_property.name = ply_property_name::unknown;
                   }
                   break;
                }
                case ply_element_type::face: {
                   if (current_property.type != ply_property_type::ply_list) {
-                     ERROR("%s:%i Face property must have type list (for now) but found type [%s]", filepath.c_str(), line_number, word.c_str());
+                     ERROR(filepath << ":" << line_number << "Face property must have type list (for now) but found type [" << word << "]");
                   }
 
                   iss >> word;
                   current_property.list_prefix_type = get_type_for_token(word);
                   if (current_property.list_prefix_type == ply_property_type::ply_unknown) {
-                     ERROR("%s:%i Face property list has unknown prefix type [%s]", filepath.c_str(), line_number, word.c_str());
+                     ERROR(filepath << ":" << line_number << "Face property list has unknown prefix type [" << word << "]");
                   }
 
                   iss >> word;
                   current_property.list_elements_type = get_type_for_token(word);
                   if (current_property.list_elements_type == ply_property_type::ply_unknown) {
-                     ERROR("%s:%i Face property list has unknown elements type [%s]", filepath.c_str(), line_number, word.c_str());
+                     ERROR(filepath << ":" << line_number << "Face property list has unknown elements type [" << word << "]");
                   }
 
                   iss >> word;
                   if (word != "vertex_indices" && word != "vertex_index" && word != "vertices" && word != "vertex") {
-                     ERROR("%s:%i Face property list has unknown name [%s], expecting [vertex_indices]", filepath.c_str(), line_number, word.c_str());
+                     ERROR(filepath << ":" << line_number << "Face property list has unknown name [" << word << "], expecting [vertex_indices]");
                   }
                   break;
                }
                default: {
-                  ERROR("%s:%i Property outside of element", filepath.c_str(), line_number);
+                  ERROR(filepath << ":" << line_number << "Property outside of element");
                }
             }
             
@@ -292,20 +292,20 @@ namespace poly {
          }
          else if (word == "end_header") {
             if (!has_x) {
-               ERROR("%s:%i Header missing element vertex x property", filepath.c_str(), line_number);
+               ERROR(filepath << ":" << line_number << "Header missing element vertex x property");
             }
             if (!has_y) {
-               ERROR("%s:%i Header missing element vertex y property", filepath.c_str(), line_number);
+               ERROR(filepath << ":" << line_number << "Header missing element vertex y property");
             }
             if (!has_z) {
-               ERROR("%s:%i Header missing element vertex z property", filepath.c_str(), line_number);
+               ERROR(filepath << ":" << line_number << "Header missing element vertex z property");
             }
             
             int num_normals = has_nx + has_ny + has_nz;
             
             // must have all 3 vertex normals or none
             if (num_normals != 3 && num_normals != 0) {
-               ERROR("%s:%i Header has %i normal directions per vertex; must have all (3) or none (0)", filepath.c_str(), line_number, num_normals);
+               ERROR(filepath << ":" << line_number << "Header has " << num_normals << " normal directions per vertex; must have all (3) or none (0)");
             }
             
             state.has_vertex_normals = num_normals;
@@ -314,7 +314,7 @@ namespace poly {
             
             // must have both u and v, or neither
             if (num_uv != 0 && num_uv != 2) {
-               ERROR("%s:%i Header has %i uv per vertex; must have all (2) or none (0)", filepath.c_str(), line_number, num_uv);
+               ERROR(filepath << ":" << line_number << "Header has " << num_uv << " uv per vertex; must have all (2) or none (0)");
             }
             
             state.has_vertex_uv = true;
@@ -351,7 +351,7 @@ namespace poly {
                   float u, v;
                   for (int i = 0; i < element.num_instances; i++) {
                      if (!getline(*state.stream, line)) {
-                        ERROR("%s:%i Error reading vertex %i", filepath.c_str(), state.line_number, i);
+                        ERROR(filepath << ":" << state.line_number << "Error reading vertex " << i);
                      }
                      word.clear();
                      std::istringstream iss(line, std::istringstream::in);
@@ -480,7 +480,7 @@ namespace poly {
                   }
                }
 
-               Log.debug("Parsed " + add_commas(mesh->num_vertices_packed) + " vertices.");
+               LOG_DEBUG("Parsed" << add_commas(mesh->num_vertices_packed) << " vertices.");
                
                continue;
             }
@@ -494,7 +494,7 @@ namespace poly {
                      // TODO respect declared list member types
                      unsigned int v0, v1, v2;
                      if (!getline(*state.stream, line)) {
-                        ERROR("%s:%i Failed to read face line", filepath.c_str(), state.line_number);
+                        ERROR(filepath << ":" << state.line_number << "Failed to read face line");
                      }
                      std::string word;
                      std::istringstream iss(line, std::istringstream::in);
@@ -504,7 +504,7 @@ namespace poly {
                      iss >> word;
                      int num_vertex_indices = stoi(word);
                      if (num_vertex_indices != 3) {
-                        ERROR("%s:%i Face instance has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), state.line_number, num_vertex_indices);
+                        ERROR(filepath << ":" << state.line_number << "Face instance has wrong number of vertex indices (expected 3, found " << num_vertex_indices << ")");
                      }
 
                      iss >> word;
@@ -522,7 +522,7 @@ namespace poly {
                      unsigned int v0, v1, v2;
                      const unsigned char num_vertex_indices = read_uchar(state.stream);
                      if (num_vertex_indices != 3) {
-                        ERROR("%s:%i Face has wrong number of vertex indices (expected 3, found %i)", filepath.c_str(), state.line_number, num_vertex_indices);
+                        ERROR(filepath << ":" << state.line_number << "Face has wrong number of vertex indices (expected 3, found " << num_vertex_indices << ")");
                      }
                      v0 = read_int(state.stream, state.data_format);
                      v1 = read_int(state.stream, state.data_format);
@@ -531,12 +531,12 @@ namespace poly {
                   }
                }
 
-               Log.debug("Parsed " + add_commas(mesh->num_faces) + " faces.");
+               LOG_DEBUG("Parsed " << add_commas(mesh->num_faces) << " faces.");
                
                continue;
             }
             default: {
-               ERROR("%s:%i Unknown element type", filepath.c_str(), state.line_number);
+               ERROR(filepath << ":" << state.line_number << "Unknown element type");
             }
          }
       }
@@ -588,7 +588,7 @@ namespace poly {
                   continue;
                }
                default: {
-                  Log.warning("OBJ Parser: Ignoring line with unimplemented first char [%s]", firstChar);
+                  LOG_WARNING("OBJ Parser: Ignoring line with unimplemented first char [" << firstChar << "]");
                }
             }
          }

@@ -21,7 +21,7 @@ namespace poly {
       size_t bytes_copied = 0;
       
       if (scene->Camera == nullptr) {
-         Log.warning("Warning: scene has no camera, using identity matrix with FOV = 50.");
+         LOG_WARNING("Warning: scene has no camera, using identity matrix with FOV = 50.");
          poly::transform identity;
          memcpy(camera_to_world_matrix, identity.matrix.mat, 16 * sizeof(float));
          camera_fov = 50;

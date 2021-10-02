@@ -933,7 +933,7 @@ namespace poly {
    
          if (error != cudaSuccess)
          {
-            Log.error("Kernel init_curand_states_kernel failed (error: %s)!\n", cudaGetErrorString(error));
+            LOG_ERROR("Kernel init_curand_states_kernel failed with error: " << cudaGetErrorString(error));
             exit(EXIT_FAILURE);
          }
       }
@@ -1016,7 +1016,7 @@ namespace poly {
       error = cudaGetLastError();
 
       if (error != cudaSuccess) {
-         Log.error("Kernel reduce_samples_kernel failed (error: %s)!\n", cudaGetErrorString(error));
+         LOG_ERROR("Kernel reduce_samples_kernel failed with error: " << cudaGetErrorString(error));
          exit(EXIT_FAILURE);
       }
       

@@ -55,7 +55,7 @@ namespace poly {
    class compact_bvh {
    public:
       compact_bvh(unsigned int num_nodes) : num_nodes(num_nodes){
-         Log.debug("sizeof compact_bvh_node: %i", sizeof(compact_bvh_node));
+         LOG_DEBUG("sizeof compact_bvh_node: " << sizeof(compact_bvh_node));
 //         nodes = static_cast<compact_bvh_node *>(malloc(sizeof(compact_bvh_node) * num_nodes));
          
          size_t size = sizeof(compact_bvh_node) * num_nodes;

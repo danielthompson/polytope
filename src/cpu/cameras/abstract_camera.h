@@ -22,8 +22,8 @@ namespace poly {
       virtual poly::ray get_ray_for_pixel(poly::point2f pixel) = 0;
       virtual poly::ray get_ray_for_ndc(poly::point2f pixel) = 0;
 
-      const poly::camera_settings settings;
-      const poly::transform camera_to_world;
+      poly::camera_settings settings;
+      poly::transform camera_to_world;
 
       poly::point eye;
       poly::point lookAt;

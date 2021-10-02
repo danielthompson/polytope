@@ -45,7 +45,7 @@ namespace poly {
       }
 
       std::string cwd = GetCurrentWorkingDirectory();
-      Log.info("Outputting to file " + cwd + "/" + Filename + "...");
+      LOG_INFO("Outputting to file " << cwd << "/" << Filename << "...");
 
       unsigned error = lodepng::encode(Filename, Data, Bounds.x, Bounds.y);
 

@@ -47,6 +47,10 @@ namespace poly {
       float u, v, w;
       float u_tex_lerp, v_tex_lerp;
       int x, y;
+
+#ifdef POLYTOPEGL
+      poly::vector outgoing;  
+#endif
    };
 }
 
