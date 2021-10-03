@@ -473,16 +473,12 @@ namespace poly {
       return false;
    }
    
-   void bvh::intersect_compact(poly::ray& ray, poly::intersection& intersection) const {
+   poly::intersection bvh::intersect_compact(poly::ray &ray, const int x, const int y) const {
       const poly::vector inverse_direction = {
             1.f / ray.direction.x,
             1.f / ray.direction.y,
             1.f / ray.direction.z
       };
-      
-      bool debug = false;
-      if (intersection.x == 50 && intersection.y == 150)
-         bool debug = true;
       
       bool neg_dir[3] = { inverse_direction.x < 0, inverse_direction.y < 0, inverse_direction.z < 0 };
       
@@ -490,23 +486,22 @@ namespace poly {
       std::stack<const compact_bvh_node *> stack;
       stack.push(compact_root->nodes);
 
+      // first, find the closest mesh/face (lowest t)
+      
+      poly::intersection closest;
+      
       while (!stack.empty()) {
          const compact_bvh_node* node = stack.top();
          stack.pop();
 
          if (node->bb.hits(ray, inverse_direction)) {
             // if leaf node
-            intersection.num_bb_hits++;
             if (node->is_leaf()) {
                // intersect faces
                for (unsigned int i = 0; i < node->num_faces; i++) {
                   std::pair<unsigned int, unsigned int> indices = compact_root->leaf_ordered_indices[node->face_index_offset + i];
                   poly::Mesh* mesh = meshes[indices.first];
-                  bool already_hit = intersection.Hits;
-                  mesh->intersect(ray, intersection, &indices.second, 1);
-                  if (already_hit != intersection.Hits)
-                     intersection.mesh_index = indices.first;
-                  intersection.num_triangle_isects++;
+                  mesh->intersect(ray, closest, &indices.second, indices.first, 1);
                }
                // otherwise, keep traversing               
                continue;
@@ -523,10 +518,13 @@ namespace poly {
                stack.push(node + 1);
             }
          }
-         else {
-            intersection.num_bb_misses++;
-         }
       }
+      
+      if (closest.Hits) {
+         meshes[closest.mesh_index]->compute_intersection_for_face(closest, ray);
+      }
+      
+      return closest;
    }
    
    void bvh::intersect(poly::ray& ray, poly::intersection& intersection) const {
@@ -552,7 +550,7 @@ namespace poly {
                   const unsigned int mesh_index = index.first;
                   poly::Mesh* mesh = meshes[mesh_index];
                   const unsigned int face_index = index.second;
-                  mesh->intersect(ray, intersection, &face_index, 1);
+                  mesh->intersect(ray, intersection, &face_index, mesh_index, 1);
                }
             }
 

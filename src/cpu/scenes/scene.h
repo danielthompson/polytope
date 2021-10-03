@@ -28,11 +28,8 @@ namespace poly {
       }
 
       poly::intersection intersect(poly::ray &ray, int x, int y) {
-         poly::intersection bvh_intersection;
-         bvh_intersection.x = x;
-         bvh_intersection.y = y;
-         bvh_root.intersect_compact(ray, bvh_intersection);
-         return bvh_intersection;
+         poly::intersection intersection = bvh_root.intersect_compact(ray, x, y);
+         return intersection;
       }
       
       std::unique_ptr<poly::abstract_camera> Camera { };

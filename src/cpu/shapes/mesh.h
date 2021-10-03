@@ -90,7 +90,8 @@ namespace poly {
       bool hits(const poly::ray& world_ray, const unsigned int* face_indices, unsigned int num_face_indices) const;
       void intersect(poly::ray& worldSpaceRay, poly::intersection& intersection);
       void intersect(poly::ray& world_ray, poly::intersection& intersection, const std::vector<unsigned int>& face_indices);
-      void intersect(poly::ray& world_ray, poly::intersection& intersection, const unsigned int* face_indices, unsigned int num_face_indices) const;
+      void intersect(poly::ray& world_ray, poly::intersection& intersection, const unsigned int* face_indices, 
+                     unsigned int mesh_index, unsigned int num_face_indices) const;
 
       float surface_area(unsigned int face_index) const;
       
@@ -110,6 +111,8 @@ namespace poly {
       std::shared_ptr<poly::mesh_geometry> mesh_geometry;
       
       poly::bounding_box world_bb;
+
+      void compute_intersection_for_face(poly::intersection& intersection, const poly::ray &world_ray);
    };
 }
 

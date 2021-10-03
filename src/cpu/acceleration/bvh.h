@@ -95,7 +95,7 @@ namespace poly {
       bool hits(const poly::ray &ray) const;
       bool hits_compact(const poly::ray &ray) const;
       void intersect(poly::ray &ray, poly::intersection& intersection) const;
-      void intersect_compact(poly::ray &ray, poly::intersection& intersection) const;
+      poly::intersection intersect_compact(poly::ray &ray, int x, int y) const;
       bvh_node* root;
       compact_bvh* compact_root;
       std::vector<poly::Mesh*> meshes;

@@ -163,7 +163,6 @@ namespace poly {
       currentYpos = ypos;
    }
 
-
    void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
    {
       auto renderer = static_cast<poly::gl_renderer *>(glfwGetWindowUserPointer(window));
@@ -205,8 +204,6 @@ namespace poly {
                   lines.emplace_back(prev_location, endpoint, reddish );
                   LOG_DEBUG("Bounce " << i << ": miss");
                }
-               
-               
             }
             
             break;
@@ -342,8 +339,8 @@ namespace poly {
             mesh_vao.draw(mvp);
          }
 
-//         bb.draw_all(mvp);
-//         bb.draw_selected(mvp);
+         bb.draw_all(mvp);
+         bb.draw_selected(mvp);
 
          for (const auto& element : lines) {
             element.draw(mvp);   

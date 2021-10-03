@@ -140,8 +140,6 @@ namespace poly {
       }
    }
    
-
-   
    poly::vector abs(const poly::vector& v) {
       return {std::abs(v.x), std::abs(v.y), std::abs(v.z)};
    }
@@ -162,6 +160,7 @@ namespace poly {
          poly::ray &world_ray,
          poly::intersection &intersection,
          const unsigned int *face_indices,
+         const unsigned int mesh_index,
          const unsigned int num_face_indices) const {
 
       thread_stats.num_triangle_intersections++;
@@ -188,10 +187,6 @@ namespace poly {
 
          // wald watertight intersection
          // http://jcgt.org/published/0002/01/05/paper.pdf
-
-         if (intersection.x == 128 && intersection.y == 128 && std::isnan(world_ray.direction.x)) {
-            continue;
-         }
          
          float dx_abs = fabsf(world_ray.direction.x);
          float dy_abs = fabsf(world_ray.direction.y);
@@ -331,6 +326,7 @@ namespace poly {
          world_ray.min_t = computed_t; 
          intersection.Hits = true;
          intersection.face_index = face_index;
+         intersection.mesh_index = mesh_index;
          intersection.shape = this;
          intersection.location = point(std::fmaf(v0.x, u, sum_of_products(v1.x, v, v2.x, w)),
                                        std::fmaf(v0.y, u, sum_of_products(v1.y, v, v2.y, w)),
@@ -353,53 +349,31 @@ namespace poly {
             intersection.v_tex_lerp = p0_v * u + p1_v * v + p2_v * w;
          }
       }
+   }
 
-      if (!intersection.Hits) {
-         return;
-      }
+   void Mesh::compute_intersection_for_face(poly::intersection& intersection, const poly::ray &world_ray) {
 
-//      if (intersection.x == 128 && intersection.y == 128)
-//         Log.debug("Hits with t %f", world_ray.MinT);
-      
       thread_stats.num_triangle_intersections_hit++;
-
-      intersection.Hits = true;
 
       // TODO refactor this to do it only once after all faces/bvh nodes are intersected
       const unsigned int v1_index = intersection.face_index + mesh_geometry->num_faces;
       const unsigned int v2_index = intersection.face_index + mesh_geometry->num_faces * 2;
-      
+
       point v0 = {mesh_geometry->x[intersection.face_index], mesh_geometry->y[intersection.face_index], mesh_geometry->z[intersection.face_index]};
       point v1 = {mesh_geometry->x[v1_index], mesh_geometry->y[v1_index], mesh_geometry->z[v1_index]};
       point v2 = {mesh_geometry->x[v2_index], mesh_geometry->y[v2_index], mesh_geometry->z[v2_index]};
-
-      if (intersection.x == 50 && intersection.y == 200) {
-         printf("v0: %f %f %f\n", v0.x, v0.y, v0.z);
-         printf("v1: %f %f %f\n", v1.x, v1.y, v1.z);
-         printf("v2: %f %f %f\n\n", v2.x, v2.y, v2.z);
-         //printf("n: %f %f %f\n\n", n.x, n.y, n.z);
-
-      }
 
       object_to_world->apply_in_place(v0);
       object_to_world->apply_in_place(v1);
       object_to_world->apply_in_place(v2);
 
-      if (intersection.x == 50 && intersection.y == 200) {
-         printf("v0: %f %f %f\n", v0.x, v0.y, v0.z);
-         printf("v1: %f %f %f\n", v1.x, v1.y, v1.z);
-         printf("v2: %f %f %f\n", v2.x, v2.y, v2.z);
-         //printf("n: %f %f %f\n\n", n.x, n.y, n.z);
-
-      }
-      
       // edge functions
       const vector e0 = v1 - v0;
       const vector e1 = v2 - v1;
       const vector e2 = v0 - v2;
-      
+
       normal n;
-      
+
       if (mesh_geometry->has_vertex_normals) {
          normal v0n = {mesh_geometry->nx[intersection.face_index],
                        mesh_geometry->ny[intersection.face_index],
@@ -414,7 +388,7 @@ namespace poly {
          object_to_world->apply_in_place(v0n);
          object_to_world->apply_in_place(v1n);
          object_to_world->apply_in_place(v2n);
-         
+
          n = {v0n.x * intersection.u + v1n.x * intersection.v + v2n.x * intersection.w,
               v0n.y * intersection.u + v1n.y * intersection.v + v2n.y * intersection.w,
               v0n.z * intersection.u + v1n.z * intersection.v + v2n.z * intersection.w
@@ -424,23 +398,16 @@ namespace poly {
          const vector v = e0.cross(e1);
          n = {v.x, v.y, v.z};
       }
-      
 
-      
+
+
       const float ray_dot_normal = world_ray.direction.dot(n);
       const float flip_factor = ray_dot_normal > 0 ? -1 : 1;
       n = n * flip_factor;
       n.normalize();
       intersection.bent_normal = n;
       intersection.geo_normal = n;
-      if (intersection.x == 50 && intersection.y == 200) {
-//         printf("e0: %f %f %f\n", e0.x, e0.y, e0.z);
-//         printf("e1: %f %f %f\n", e1.x, e1.y, e1.z);
-//         printf("e2: %f %f %f\n", e2.x, e2.y, e2.z);
-         printf("n: %f %f %f\n\n", n.x, n.y, n.z);
 
-      }
-      
       // offset ray origin along normal
       // http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#RobustSpawnedRayOrigins
       poly::vector abs_normal = {std::abs(n.x), std::abs(n.y), std::abs(n.z) };
@@ -452,14 +419,14 @@ namespace poly {
       for (int i = 0; i < 3; i++) {
          if (offset[i] > 0) {
             new_p[i] = std::nextafter(new_p[i], poly::Infinity);
-         } 
+         }
          else if (offset[i] < 0) {
             new_p[i] = std::nextafter(new_p[i], -poly::Infinity);
          }
       }
-      
+
       intersection.location = new_p;
-      
+
       const float edge0dot = fabsf(e0.dot(e1));
       const float edge1dot = fabsf(e1.dot(e2));
       const float edge2dot = fabsf(e2.dot(e0));
@@ -473,22 +440,14 @@ namespace poly {
       }
 
       intersection.tangent_2 = intersection.tangent_1.cross(n);
-      bool debug = false;
-      if (intersection.x == 128 && intersection.y == 128) {
-         debug = true;   
-      }
 
       intersection.tangent_1.normalize();
       intersection.tangent_2.normalize();
-      if (intersection.x == 128 && intersection.y == 128 && std::isnan(intersection.tangent_2.x)) {
-         debug = true;
-      }
-      
    }
-
+   
    void Mesh::intersect(poly::ray &world_ray, poly::intersection &intersection,
                         const std::vector<unsigned int> &face_indices) {
-      intersect(world_ray, intersection, &face_indices[0], face_indices.size());
+      intersect(world_ray, intersection, &face_indices[0], 0, face_indices.size());
    }
 
    void Mesh::intersect(poly::ray &worldSpaceRay, poly::intersection &intersection) {

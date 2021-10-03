@@ -14,7 +14,7 @@ namespace poly {
    class intersection {
    public:
 
-      intersection() : location(point(0, 0, 0)), num_bb_hits(0), num_bb_misses(0), num_triangle_isects(0) { }
+      intersection() : location(point(0, 0, 0)) { }
       
       poly::vector world_to_local(const poly::vector &world) const {
          vector local = vector(world.dot(tangent_1), world.dot(bent_normal), world.dot(tangent_2));
@@ -41,9 +41,6 @@ namespace poly {
       unsigned int face_index;
       unsigned int mesh_index;
       bool Hits = false;
-      unsigned int num_bb_hits;
-      unsigned int num_bb_misses;
-      unsigned int num_triangle_isects;
       float u, v, w;
       float u_tex_lerp, v_tex_lerp;
       int x, y;
