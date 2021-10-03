@@ -11,7 +11,7 @@
 #define LOG_LEVEL_ERROR 3
 #define LOG_LEVEL_NONE 4
 
-#define LOG_LEVEL LOG_LEVEL_ERROR 
+#define LOG_LEVEL LOG_LEVEL_INFO 
 
 
 #include "../../cpu/structures/Vectors.h"

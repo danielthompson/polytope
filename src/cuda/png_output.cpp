@@ -55,7 +55,7 @@ namespace poly {
          data[4 * i + 3] = 255;
       }
 
-      Log.debug("Writing output file...");
+      LOG_DEBUG("Writing output file...");
       unsigned lodepng_error = lodepng::encode(filename.c_str(), data, render_context->width, render_context->height);
       if (lodepng_error) {
          ERROR("LodePNG encoding error (code %i): %s ", lodepng_error, lodepng_error_text(lodepng_error));
@@ -63,7 +63,7 @@ namespace poly {
       
       char* cwd = get_current_dir_name();
       
-      Log.info("output successful to %s/%s", cwd, filename.c_str());
+      LOG_INFO("Output successful to " << cwd << "/" << filename.c_str());
       
       free(cwd);
    }
