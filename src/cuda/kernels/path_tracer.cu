@@ -855,7 +855,7 @@ namespace poly {
       
       const float aspect = width_f / height;
 
-      float offset_factor = -1;
+      float offset_factor = 0;
       if (device_index == 1)
          offset_factor = 1;
       

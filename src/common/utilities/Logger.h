@@ -42,25 +42,25 @@ inline std::ostream& operator << (std::ostream &os, const poly::ray &r) {
 }
 
 #if LOG_LEVEL <= LOG_LEVEL_DEBUG
-#define LOG_DEBUG(...) do { Log.debug() << __VA_ARGS__ ; } while (0)
+#define LOG_DEBUG(...) do { Log.debug() << __VA_ARGS__ << std::endl; } while (0)
 #else
 #define LOG_DEBUG(...) do { ; } while (0)
 #endif
 
 #if LOG_LEVEL <= LOG_LEVEL_INFO
-#define LOG_INFO(...) do { Log.info() << __VA_ARGS__ ; } while (0)
+#define LOG_INFO(...) do { Log.info() << __VA_ARGS__ << std::endl; } while (0)
 #else
 #define LOG_INFO(...) do { ; } while (0)
 #endif
 
 #if LOG_LEVEL <= LOG_LEVEL_WARNING
-#define LOG_WARNING(...) do { Log.warning() << __VA_ARGS__ ; } while (0)
+#define LOG_WARNING(...) do { Log.warning() << __VA_ARGS__ << std::endl;} while (0)
 #else
 #define LOG_WARNING(...) do { ; } while (0)
 #endif
 
 #if LOG_LEVEL <= LOG_LEVEL_ERROR
-#define LOG_ERROR(...) do { Log.error() << __VA_ARGS__ ; } while (0)
+#define LOG_ERROR(...) do { Log.error() << __VA_ARGS__ << std::endl; } while (0)
 #else
 #define LOG_ERROR(...) do { ; } while (0)
 #endif

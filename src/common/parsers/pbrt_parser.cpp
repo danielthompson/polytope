@@ -527,7 +527,7 @@ namespace poly {
             directive->type = line[1].substr(1, line[1].length() - 2);
          }
          else {
-            ERROR("lex(): second token (identifier) %s isn't quoted, but should be", line[0].c_str());
+            ERROR("lex(): second token (identifier) [" << line[0] << "] isn't quoted, but should be");
          }
       } 
 

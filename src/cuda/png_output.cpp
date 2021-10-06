@@ -58,7 +58,7 @@ namespace poly {
       LOG_DEBUG("Writing output file...");
       unsigned lodepng_error = lodepng::encode(filename.c_str(), data, render_context->width, render_context->height);
       if (lodepng_error) {
-         ERROR("LodePNG encoding error (code %i): %s ", lodepng_error, lodepng_error_text(lodepng_error));
+         ERROR("LodePNG encoding error (code " << lodepng_error << "): " << lodepng_error_text(lodepng_error));
       }
       
       char* cwd = get_current_dir_name();

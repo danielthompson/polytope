@@ -64,7 +64,6 @@ namespace poly {
    }
 
    std::ostream &Logger::debug() {
-      std::cout << std::endl;
       log_time(std::cout);
       logger_set_yellow();
       std::cout << "[D] ";
@@ -72,13 +71,11 @@ namespace poly {
    }
 
    std::ostream &Logger::info() {
-      std::cout << std::endl;
       log_time(std::cout);
       return std::cout;
    }
 
    std::ostream &Logger::error() {
-      std::cout << std::endl;
       log_time(std::cout);
       logger_set_red();
       std::cout << "[E] ";
@@ -86,7 +83,6 @@ namespace poly {
    }
 
    std::ostream &Logger::warning() {
-      std::cout << std::endl;
       log_time(std::cout);
       logger_set_red();
       std::cout << "[W] ";
