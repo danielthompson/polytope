@@ -11,7 +11,11 @@
 #define LOG_LEVEL_ERROR 3
 #define LOG_LEVEL_NONE 4
 
-#define LOG_LEVEL LOG_LEVEL_INFO 
+#ifdef POLYTOPEGL
+#define LOG_LEVEL LOG_LEVEL_DEBUG
+#else
+#define LOG_LEVEL LOG_LEVEL_INFO
+#endif 
 
 
 #include "../../cpu/structures/Vectors.h"
@@ -35,6 +39,10 @@ inline std::ostream& operator << (std::ostream &os, const poly::point &p) {
 
 inline std::ostream& operator << (std::ostream &os, const poly::vector &v) {
    return (os << "(" << v.x << ", " << v.y << ", " << v.z << ")");
+}
+
+inline std::ostream& operator << (std::ostream &os, const poly::normal &n) {
+   return (os << "(" << n.x << ", " << n.y << ", " << n.z << ")");
 }
 
 inline std::ostream& operator << (std::ostream &os, const poly::ray &r) {

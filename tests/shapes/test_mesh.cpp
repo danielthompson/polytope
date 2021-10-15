@@ -44,7 +44,7 @@ namespace Tests {
       unsigned int face_index = 0;
       poly::Mesh mesh(identity, identity, nullptr, geometry);
 
-      mesh.intersect(ray, intersection, &face_index, geometry->num_faces);
+      mesh.intersect(ray, intersection, &face_index, 0, geometry->num_faces);
       EXPECT_TRUE(intersection.Hits);
       EXPECT_EQ(&mesh, intersection.shape);
       
@@ -99,7 +99,7 @@ namespace Tests {
                unsigned int face_index = 0;
                poly::Mesh mesh(identity, identity, nullptr, geometry);
 
-               mesh.intersect(ray, intersection, &face_index, geometry->num_faces);
+               mesh.intersect(ray, intersection, &face_index, 0, geometry->num_faces);
                ASSERT_TRUE(intersection.Hits);
                ASSERT_EQ(&mesh, intersection.shape);
 

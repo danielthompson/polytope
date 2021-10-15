@@ -47,6 +47,7 @@ namespace poly {
 
 #ifdef POLYTOPEGL
       poly::vector outgoing;  
+      float t;
 #endif
    };
 }

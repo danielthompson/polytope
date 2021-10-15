@@ -22,6 +22,7 @@ namespace poly {
          poly::intersection intersection = Scene->intersect(current_ray, x, y);
 
 #ifdef POLYTOPEGL
+         intersection.t = current_ray.min_t;
          sample.intersections.push_back(intersection);
 #endif
          

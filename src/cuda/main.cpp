@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
       for (int i = 0; i < num_cuda_devices; i++) {
          cudaDeviceProp cuda_device_prop{};
          cuda_check_error(cudaGetDeviceProperties(&cuda_device_prop, i));
-         LOG_INFO("(" << i << ") " << cuda_device_prop.name << " - " << cuda_device_prop.totalGlobalMem / (1000000000ul));
+         LOG_INFO("(" << i << ") " << cuda_device_prop.name << " - " << cuda_device_prop.totalGlobalMem / (1000000000ul) << "GB");
       }
       
       render_context.device_count = num_cuda_devices;
@@ -148,7 +148,7 @@ Other:
             thread_pool.enqueue([&, device_index] {
                cuda_check_error(cudaSetDevice(device_index));
                render_context.device_contexts.emplace_back(render_context.width / render_context.device_count, render_context.height, device_index);
-               LOG_DEBUG("[%i] - Copying data to GPU", device_index);
+               LOG_DEBUG("(" << device_index << ") Copying data to GPU" << device_index);
                const auto copy_start_time = std::chrono::system_clock::now();
                size_t bytes_copied = render_context.device_contexts[device_index].malloc_scene(runner->Scene);
                const auto copy_end_time = std::chrono::system_clock::now();
@@ -157,17 +157,17 @@ Other:
                float effective_bandwidth = ((float) bytes_copied) / (float) copy_duration.count();
                std::string bandwidth_string = convertSize((size_t) effective_bandwidth);
                std::string comma_string = add_commas(bytes_copied);
-               LOG_DEBUG("(" << device_index << ") - Copied " << add_commas(bytes_copied) << " bytes in " <<
+               LOG_DEBUG("(" << device_index << ") Copied " << add_commas(bytes_copied) << " bytes in " <<
                          copy_duration.count() << " (" << bandwidth_string << ").");
 
-               LOG_INFO("(" << device_index << ") - Rendering with " << runner->sample_count << "spp...");
+               LOG_INFO("(" << device_index << ") Rendering with " << runner->sample_count << "spp...");
 
                poly::path_tracer path_tracer_kernel(&render_context.device_contexts[device_index]);
                const auto render_start_time = std::chrono::system_clock::now();
                path_tracer_kernel.Trace(runner->sample_count);
                const auto render_end_time = std::chrono::system_clock::now();
                const std::chrono::duration<double> render_duration = render_end_time - render_start_time;
-               LOG_INFO("(" << device_index << ") - Sampling complete in " << render_duration.count() << "s.");
+               LOG_INFO("(" << device_index << ") Sampling complete in " << render_duration.count() << "s.");
             });
          }
          

@@ -82,7 +82,7 @@ namespace poly {
          bool has_vertex_normals;
          bool has_vertex_uv;
       };
-   
+      
       struct parser_state parse_header(const std::string &filepath) const;
    
       static float read_float(const std::unique_ptr<std::ifstream> &stream, ply_format format) ;
@@ -92,6 +92,14 @@ namespace poly {
       static unsigned char read_uchar(const std::unique_ptr<std::ifstream> &stream);
       
       static ply_property_type get_type_for_token(const std::string& token);
+
+      void parse_binary_body(parser_state &state,
+                            const std::shared_ptr<mesh_geometry>& mesh,
+                            const std::string &filepath) const;
+
+      void parse_ascii_body(parser_state &state, 
+                            const std::shared_ptr<mesh_geometry>& mesh, 
+                            const std::string &filepath) const;
    };
 }
 

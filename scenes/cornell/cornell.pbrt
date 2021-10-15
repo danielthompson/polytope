@@ -3,9 +3,9 @@ Integrator "path"
 Transform [ 1 -0 -0 -0 -0 1 -0 -0 -0 -0 -1 -0 -0 -1 6.80000019 1  ]
 Sampler "sobol" 
         "integer pixelsamples" [ 64 ] 
-PixelFilter "triangle" 
-        "float xwidth" [ 1 ] 
-        "float ywidth" [ 1 ] 
+# PixelFilter "triangle" 
+#         "float xwidth" [ 1 ] 
+#         "float ywidth" [ 1 ] 
 Film "image" 
         "integer xresolution" [ 1024 ] 
         "integer yresolution" [ 1024 ] 

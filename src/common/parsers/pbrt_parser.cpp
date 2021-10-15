@@ -35,6 +35,7 @@ namespace poly {
          const std::string AreaLightSource = "AreaLightSource";
          const std::string AttributeBegin = "AttributeBegin";
          const std::string AttributeEnd = "AttributeEnd";
+         const std::string box = "box";
          const std::string Camera = "Camera";
          const std::string filename = "filename";
          const std::string Film = "Film";
@@ -71,6 +72,7 @@ namespace poly {
          const std::string TransformBegin = "TransformBegin";
          const std::string TransformEnd = "TransformEnd";
          const std::string Translate = "Translate";
+         const std::string triangle = "triangle";
          const std::string WorldBegin = "WorldBegin";
          const std::string WorldEnd = "WorldEnd";
       }
@@ -412,9 +414,10 @@ namespace poly {
       argument->Type = pbrt_argument::pbrt_float;
       argument->float_values = std::make_unique<std::vector<float>>();
       
-      const int starting_index = in_brackets ? 2 : 1;
+      const int start_index = in_brackets ? 2 : 1;
+      const int end_index = start_index + expected_num_elements;
       
-      for (int i = starting_index; i <= expected_num_elements; i++) {
+      for (int i = start_index; i < end_index; i++) {
          std::string current_arg = line[i];
          
          float value;
@@ -904,6 +907,8 @@ namespace poly {
             return nullptr;
          }
       }
+      
+      return nullptr;
    }
 
    std::shared_ptr<poly::runner> pbrt_parser::parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
@@ -933,12 +938,13 @@ namespace poly {
       for (const std::unique_ptr<pbrt_directive> &directive : scene_directives) {
          if (directive->identifier == str::Sampler) {
             missingSampler = false;
-            if (directive->type == str::halton) {
-               sampler = std::make_unique<HaltonSampler>();
-            } else {
-               LogUnknownIdentifier(directive);
-               sampler = std::make_unique<CenterSampler>();
-            }
+//            if (directive->type == str::halton) {
+//               sampler = std::make_unique<HaltonSampler>();
+//            } else {
+//               LogUnknownIdentifier(directive);
+//               sampler = std::make_unique<CenterSampler>();
+//            }
+            sampler = std::make_unique<HaltonSampler>();
 
             for (const pbrt_argument& arg : directive->arguments) {
                if (arg.Type == pbrt_argument::pbrt_int) {
@@ -986,6 +992,7 @@ namespace poly {
                else
                   filename = _inputFilename.substr(0, dotIndex) + ".png";
 
+               LOG_DEBUG("Parsed filename [" << filename << "]");               
                bool foundX = false;
                bool foundY = false;
 

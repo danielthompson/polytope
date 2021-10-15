@@ -333,206 +333,174 @@ namespace poly {
       return state;
    }
 
+   float rotate_to_0_1(const float value) {
+      
+//      
+      float v;
+      return std::abs(std::modf(value, &v));
+//      
+//      if (value > 1.f) {
+//         int x = (int)value;
+//         return value - (float)x;
+//      }
+//      
+//      if (value < 0.f) {
+//         int x = (int)value;
+//         return std::abs(value - (float)x);
+//      }
+//      
+//      return value;
+//      
+//      if (value >= 0 && value <= 1) {
+//         return value;
+//      }
+//
+//      
+//      
+//      int a = -(int)value;
+//      if (value < 0) {
+//         return (float)(a + 1) + value;
+//      }
+//      else {
+//         return value + (float)a;
+//      }
+   }
+   
    void ply_parser::parse_file(std::shared_ptr<poly::mesh_geometry> mesh, const std::string &filepath) const {
       struct parser_state state = parse_header(filepath);
       
       mesh->has_vertex_normals = state.has_vertex_normals;
       mesh->has_vertex_uvs = state.has_vertex_uv;
       
+      switch (state.data_format) {
+         case ply_format::ascii:
+            parse_ascii_body(state, mesh, filepath);
+            break;
+         case ply_format::binary_be:
+         case ply_format::binary_le:
+            parse_binary_body(state, mesh, filepath);
+            break;
+         default:
+            ERROR("Unknown ply format " << state.data_format << " :/");
+      }
+
+      mesh->unpack_faces();
+   }
+
+   void ply_parser::parse_ascii_body(struct parser_state& state, 
+         const std::shared_ptr<poly::mesh_geometry>& mesh, 
+         const std::string &filepath) const {
       for (const auto& element : state.elements) {
          switch (element.type) {
             case ply_element_type::vertex: {
                std::string line;
-               
-               if (state.data_format == ply_format::ascii) {
-                  std::string word;
-                  poly::point p;
-                  normal n;
-                  float u, v;
-                  for (int i = 0; i < element.num_instances; i++) {
-                     if (!getline(*state.stream, line)) {
-                        ERROR(filepath << ":" << state.line_number << "Error reading vertex " << i);
-                     }
-                     word.clear();
-                     std::istringstream iss(line, std::istringstream::in);
-                     for (const auto& property : element.properties) {
-                        iss >> word;
-                        // TODO investigate whether we need to ever parse this as anything other than float
-                        float parsed_value = stof(word);
-                        switch (property.name) {
-                           case ply_property_name::x: {
-                              p.x = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::y: {
-                              p.y = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::z: {
-                              p.z = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::nx: {
-                              n.x = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::ny: {
-                              n.y = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::nz: {
-                              n.z = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::u: {
-                              u = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::v: {
-                              v = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::unknown: {
-                              // do nothing, since we already warned about this above
-                              break;
-                           }
+               std::string word;
+
+               poly::point p;
+               normal n;
+               float u, v;
+               for (int i = 0; i < element.num_instances; i++) {
+                  if (!getline(*state.stream, line)) {
+                     ERROR(filepath << ":" << state.line_number << "Error reading vertex " << i);
+                  }
+                  word.clear();
+                  std::istringstream iss(line, std::istringstream::in);
+                  for (const auto& property : element.properties) {
+                     iss >> word;
+                     // TODO investigate whether we need to ever parse this as anything other than float
+                     float parsed_value = stof(word);
+                     switch (property.name) {
+                        case ply_property_name::x: {
+                           p.x = parsed_value;
+                           break;
                         }
-                     }
-                     if (state.has_vertex_normals) {
-                        if (state.has_vertex_uv) {
-                           mesh->add_vertex(p, n, u, v);
+                        case ply_property_name::y: {
+                           p.y = parsed_value;
+                           break;
                         }
-                        else {
-                           mesh->add_vertex(p, n);
+                        case ply_property_name::z: {
+                           p.z = parsed_value;
+                           break;
                         }
-                     }
-                     else {
-                        if (state.has_vertex_uv) {
-                           mesh->add_vertex(p, u, v);
+                        case ply_property_name::nx: {
+                           n.x = parsed_value;
+                           break;
                         }
-                        else {
-                           mesh->add_vertex(p);   
+                        case ply_property_name::ny: {
+                           n.y = parsed_value;
+                           break;
+                        }
+                        case ply_property_name::nz: {
+                           n.z = parsed_value;
+                           break;
+                        }
+                        case ply_property_name::u: {
+                           u = rotate_to_0_1(parsed_value);
+                           break;
+                        }
+                        case ply_property_name::v: {
+                           v = rotate_to_0_1(parsed_value);
+                           break;
+                        }
+                        case ply_property_name::unknown: {
+                           // do nothing, since we already warned about this above
+                           break;
                         }
                      }
                   }
-               }
-               else {
-                  for (int i = 0; i < element.num_instances; i++) {
-                     point p;
-                     normal n;
-                     float u, v;
-                     for (const auto& property : element.properties) {
-                        float parsed_value = read_float(state.stream, state.data_format);
-                        switch (property.name) {
-                           case ply_property_name::x: {
-                              p.x = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::y: {
-                              p.y = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::z: {
-                              p.z = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::nx: {
-                              n.x = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::ny: {
-                              n.y = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::nz: {
-                              n.z = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::u: {
-                              u = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::v: {
-                              v = parsed_value;
-                              break;
-                           }
-                           case ply_property_name::unknown: {
-                              // do nothing, since we already warned about this above
-                              break;
-                           }
-                        }
-                     }
-
-                     if (state.has_vertex_normals) {
-                        if (state.has_vertex_uv) {
-                           mesh->add_vertex(p, n, u, v);
-                        }
-                        else {
-                           mesh->add_vertex(p, n);
-                        }
+                  if (state.has_vertex_normals) {
+                     if (state.has_vertex_uv) {
+                        mesh->add_vertex(p, n, u, v);
                      }
                      else {
-                        if (state.has_vertex_uv) {
-                           mesh->add_vertex(p, u, v);
-                        }
+                        mesh->add_vertex(p, n);
+                     }
+                  }
+                  else {
+                     if (state.has_vertex_uv) {
+                        mesh->add_vertex(p, u, v);
+                     }
+                     else {
                         mesh->add_vertex(p);
                      }
                   }
                }
 
                LOG_DEBUG("Parsed" << add_commas(mesh->num_vertices_packed) << " vertices.");
-               
+
                continue;
             }
             case ply_element_type::face: {
-
-               // data - faces
-
-               if (state.data_format == ascii) {
-                  std::string line;
-                  for (int i = 0; i < element.num_instances; i++) {
-                     // TODO respect declared list member types
-                     unsigned int v0, v1, v2;
-                     if (!getline(*state.stream, line)) {
-                        ERROR(filepath << ":" << state.line_number << "Failed to read face line");
-                     }
-                     std::string word;
-                     std::istringstream iss(line, std::istringstream::in);
-
-                     // parse vertex indices
-
-                     iss >> word;
-                     int num_vertex_indices = stoi(word);
-                     if (num_vertex_indices != 3) {
-                        ERROR(filepath << ":" << state.line_number << "Face instance has wrong number of vertex indices (expected 3, found " << num_vertex_indices << ")");
-                     }
-
-                     iss >> word;
-                     // TODO error handling for non-existent face
-                     v0 = abstract_file_parser::stoui(word);
-                     iss >> word;
-                     v1 = abstract_file_parser::stoui(word);
-                     iss >> word;
-                     v2 = abstract_file_parser::stoui(word);
-                     mesh->add_packed_face(v0, v1, v2);
+               std::string line;
+               for (int i = 0; i < element.num_instances; i++) {
+                  // TODO respect declared list member types
+                  unsigned int v0, v1, v2;
+                  if (!getline(*state.stream, line)) {
+                     ERROR(filepath << ":" << state.line_number << "Failed to read face line");
                   }
-               }
-               else {
-                  for (int i = 0; i < element.num_instances; i++) {
-                     unsigned int v0, v1, v2;
-                     const unsigned char num_vertex_indices = read_uchar(state.stream);
-                     if (num_vertex_indices != 3) {
-                        ERROR(filepath << ":" << state.line_number << "Face has wrong number of vertex indices (expected 3, found " << num_vertex_indices << ")");
-                     }
-                     v0 = read_int(state.stream, state.data_format);
-                     v1 = read_int(state.stream, state.data_format);
-                     v2 = read_int(state.stream, state.data_format);
-                     mesh->add_packed_face(v0, v1, v2);
+                  std::string word;
+                  std::istringstream iss(line, std::istringstream::in);
+
+                  // parse vertex indices
+
+                  iss >> word;
+                  int num_vertex_indices = stoi(word);
+                  if (num_vertex_indices != 3) {
+                     ERROR(filepath << ":" << state.line_number << "Face instance has wrong number of vertex indices (expected 3, found " << num_vertex_indices << ")");
                   }
+
+                  iss >> word;
+                  // TODO error handling for non-existent face
+                  v0 = abstract_file_parser::stoui(word);
+                  iss >> word;
+                  v1 = abstract_file_parser::stoui(word);
+                  iss >> word;
+                  v2 = abstract_file_parser::stoui(word);
+                  mesh->add_packed_face(v0, v1, v2);
                }
 
                LOG_DEBUG("Parsed " << add_commas(mesh->num_faces) << " faces.");
-               
+
                continue;
             }
             default: {
@@ -540,10 +508,105 @@ namespace poly {
             }
          }
       }
-
-      mesh->unpack_faces();
    }
 
+   void ply_parser::parse_binary_body(struct parser_state& state, 
+         const std::shared_ptr<poly::mesh_geometry>& mesh,
+         const std::string &filepath) const {
+      for (const auto& element : state.elements) {
+         switch (element.type) {
+            case ply_element_type::vertex: {
+               for (int i = 0; i < element.num_instances; i++) {
+                  point p;
+                  normal n;
+                  float u, v;
+                  for (const auto& property : element.properties) {
+                     float parsed_value = read_float(state.stream, state.data_format);
+                     switch (property.name) {
+                        case ply_property_name::x: {
+                           p.x = parsed_value;
+                           break;
+                        }
+                        case ply_property_name::y: {
+                           p.y = parsed_value;
+                           break;
+                        }
+                        case ply_property_name::z: {
+                           p.z = parsed_value;
+                           break;
+                        }
+                        case ply_property_name::nx: {
+                           n.x = parsed_value;
+                           break;
+                        }
+                        case ply_property_name::ny: {
+                           n.y = parsed_value;
+                           break;
+                        }
+                        case ply_property_name::nz: {
+                           n.z = parsed_value;
+                           break;
+                        }
+                        case ply_property_name::u: {
+                           u = rotate_to_0_1(parsed_value);
+                           break;
+                        }
+                        case ply_property_name::v: {
+                           v = rotate_to_0_1(parsed_value);
+                           break;
+                        }
+                        case ply_property_name::unknown: {
+                           // do nothing, since we already warned about this above
+                           break;
+                        }
+                     }
+                  }
+
+                  if (state.has_vertex_normals) {
+                     if (state.has_vertex_uv) {
+                        mesh->add_vertex(p, n, u, v);
+                     }
+                     else {
+                        mesh->add_vertex(p, n);
+                     }
+                  }
+                  else {
+                     if (state.has_vertex_uv) {
+                        mesh->add_vertex(p, u, v);
+                     }
+                     mesh->add_vertex(p);
+                  }
+               }
+
+               LOG_DEBUG("Parsed" << add_commas(mesh->num_vertices_packed) << " vertices.");
+
+               continue;
+            }
+            case ply_element_type::face: {
+
+               for (int i = 0; i < element.num_instances; i++) {
+                  unsigned int v0, v1, v2;
+                  const unsigned char num_vertex_indices = read_uchar(state.stream);
+                  if (num_vertex_indices != 3) {
+                     ERROR(filepath << ":" << state.line_number << "Face has wrong number of vertex indices (expected 3, found " << num_vertex_indices << ")");
+                  }
+                  v0 = read_int(state.stream, state.data_format);
+                  v1 = read_int(state.stream, state.data_format);
+                  v2 = read_int(state.stream, state.data_format);
+                  mesh->add_packed_face(v0, v1, v2);
+               }
+
+               LOG_DEBUG("Parsed " << add_commas(mesh->num_faces) << " faces.");
+
+               continue;
+            }
+            default: {
+               ERROR(filepath << ":" << state.line_number << "Unknown element type");
+            }
+         }
+      }
+   }
+   
    void obj_parser::parse_file(std::shared_ptr<poly::mesh_geometry> mesh, const std::string &filepath) const {
 
       std::unique_ptr<std::istream> stream = abstract_file_parser::open_ascii_stream(filepath);

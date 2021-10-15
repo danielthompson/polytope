@@ -191,7 +191,10 @@ namespace poly {
                   glm::vec4 white = {1.f, 1.f, 1.f, 1.f};
                   lines.emplace_back(prev_location, element.location, white );
                   LOG_DEBUG("Bounce " << i << ": hit");
+                  LOG_DEBUG("  t        " << i << ": " << element.t);
                   LOG_DEBUG("  location " << i << ": " << element.location);
+                  LOG_DEBUG("  b normal " << i << ": " << element.bent_normal);
+                  LOG_DEBUG("  g normal " << i << ": " << element.geo_normal);
                   LOG_DEBUG("  outgoing " << i << ": " << element.outgoing);
                   LOG_DEBUG("  mesh_index " << element.mesh_index);
                   LOG_DEBUG("  face_index " << element.face_index);

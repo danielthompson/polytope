@@ -107,9 +107,13 @@ namespace poly {
    }
 
    void transform::apply_in_place(poly::vector &vector) const {
-      vector.x = vector.x * matrix.mat[0][0] + vector.y * matrix.mat[0][1] + vector.z * matrix.mat[0][2];
-      vector.y = vector.x * matrix.mat[1][0] + vector.y * matrix.mat[1][1] + vector.z * matrix.mat[1][2];
-      vector.z = vector.x * matrix.mat[2][0] + vector.y * matrix.mat[2][1] + vector.z * matrix.mat[2][2];
+      float new_x = vector.x * matrix.mat[0][0] + vector.y * matrix.mat[0][1] + vector.z * matrix.mat[0][2];
+      float new_y = vector.x * matrix.mat[1][0] + vector.y * matrix.mat[1][1] + vector.z * matrix.mat[1][2];
+      float new_z = vector.x * matrix.mat[2][0] + vector.y * matrix.mat[2][1] + vector.z * matrix.mat[2][2];
+      
+      vector.x = new_x;
+      vector.y = new_y;
+      vector.z = new_z;
    }
 
    poly::vector transform::apply(const poly::vector &vector) const {
@@ -121,9 +125,13 @@ namespace poly {
    }
 
    void transform::apply_in_place(normal &normal) const {
-      normal.x = normal.x * inverse.mat[0][0] + normal.y * inverse.mat[1][0] + normal.z * inverse.mat[2][0];
-      normal.y = normal.x * inverse.mat[0][1] + normal.y * inverse.mat[1][1] + normal.z * inverse.mat[2][1];
-      normal.z = normal.x * inverse.mat[0][2] + normal.y * inverse.mat[1][2] + normal.z * inverse.mat[2][2];
+      float new_x = normal.x * inverse.mat[0][0] + normal.y * inverse.mat[1][0] + normal.z * inverse.mat[2][0];
+      float new_y = normal.x * inverse.mat[0][1] + normal.y * inverse.mat[1][1] + normal.z * inverse.mat[2][1];
+      float new_z = normal.x * inverse.mat[0][2] + normal.y * inverse.mat[1][2] + normal.z * inverse.mat[2][2];
+      
+      normal.x = new_x;
+      normal.y = new_y;
+      normal.z = new_z;
    }
 
    poly::normal transform::Apply(const poly::normal &n) const {

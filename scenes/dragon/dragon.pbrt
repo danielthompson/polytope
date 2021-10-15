@@ -14,11 +14,12 @@ WorldBegin
         Shape "plymesh" "string filename" [ "dragon_vrip-normals-cleaned.ply" ]
     ObjectEnd
 
+    # floor
     AttributeBegin
         Translate 0 -0.0722704977 0
         Material "matte" "rgb Kd" [ 1  1  1 ]
         # Material "mirror" "rgb Kr" [ .5  .5  .5 ]
-        Shape "plymesh" "string filename" [ "triangle-one.ply" ]
+        # Shape "plymesh" "string filename" [ "triangle-one.ply" ]
     AttributeEnd
 
     AttributeBegin

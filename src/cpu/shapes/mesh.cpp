@@ -347,6 +347,13 @@ namespace poly {
             
             intersection.u_tex_lerp = p0_u * u + p1_u * v + p2_u * w;
             intersection.v_tex_lerp = p0_v * u + p1_v * v + p2_v * w;
+            
+            if (intersection.u_tex_lerp < 0) {
+               LOG_DEBUG("whoops");
+            }
+            else {
+               LOG_DEBUG("OK");
+            }
          }
       }
    }
@@ -375,15 +382,15 @@ namespace poly {
       normal n;
 
       if (mesh_geometry->has_vertex_normals) {
-         normal v0n = {mesh_geometry->nx[intersection.face_index],
-                       mesh_geometry->ny[intersection.face_index],
-                       mesh_geometry->nz[intersection.face_index]};
-         normal v1n = {mesh_geometry->nx[v1_index],
-                       mesh_geometry->ny[v1_index],
-                       mesh_geometry->nz[v1_index]};
-         normal v2n = {mesh_geometry->nx[v2_index],
-                       mesh_geometry->ny[v2_index],
-                       mesh_geometry->nz[v2_index]};
+         normal v0n = {mesh_geometry->nx_packed[this->mesh_geometry->fv0[intersection.face_index]],
+                       mesh_geometry->ny_packed[this->mesh_geometry->fv0[intersection.face_index]],
+                       mesh_geometry->nz_packed[this->mesh_geometry->fv0[intersection.face_index]]};
+         normal v1n = {mesh_geometry->nx_packed[this->mesh_geometry->fv1[intersection.face_index]],
+                       mesh_geometry->ny_packed[this->mesh_geometry->fv1[intersection.face_index]],
+                       mesh_geometry->nz_packed[this->mesh_geometry->fv1[intersection.face_index]]};
+         normal v2n = {mesh_geometry->nx_packed[this->mesh_geometry->fv2[intersection.face_index]],
+                       mesh_geometry->ny_packed[this->mesh_geometry->fv2[intersection.face_index]],
+                       mesh_geometry->nz_packed[this->mesh_geometry->fv2[intersection.face_index]]};
 
          object_to_world->apply_in_place(v0n);
          object_to_world->apply_in_place(v1n);
@@ -398,8 +405,6 @@ namespace poly {
          const vector v = e0.cross(e1);
          n = {v.x, v.y, v.z};
       }
-
-
 
       const float ray_dot_normal = world_ray.direction.dot(n);
       const float flip_factor = ray_dot_normal > 0 ? -1 : 1;

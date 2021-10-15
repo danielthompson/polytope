@@ -56,7 +56,7 @@ namespace poly {
       }
 
       LOG_DEBUG("Writing output file...");
-      unsigned lodepng_error = lodepng::encode(filename.c_str(), data, render_context->width, render_context->height);
+      unsigned lodepng_error = lodepng::encode(filename, data, render_context->width, render_context->height);
       if (lodepng_error) {
          ERROR("LodePNG encoding error (code " << lodepng_error << "): " << lodepng_error_text(lodepng_error));
       }

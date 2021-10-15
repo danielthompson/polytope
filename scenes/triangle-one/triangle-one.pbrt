@@ -1,6 +1,6 @@
 Integrator "path" "integer maxdepth" [ 7 ] 
-LookAt 0 0 0 # eye
-       0 0 -1 # look at point
+LookAt 0 0 5 # eye
+       0 0 0 # look at point
        0 1 0 # up	   
 Sampler "halton" "integer pixelsamples" [ 1 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
@@ -9,10 +9,8 @@ Camera "perspective" "float fov" [ 50 ]
 WorldBegin
     LightSource "infinite" "rgb L" [1 1 1]
     Material "mirror" "rgb Kr" [ 0 .3 .6 ]
-    # Material "matte" "rgb Kd" [ 0 .3 .6 ]
-    TransformBegin
-        Translate 0 0 -5
-        # Rotate 180 0 1 0
-        Shape "plymesh" "string filename" [ "one-triangle.ply" ]
-    TransformEnd
+
+    Rotate 45 0 1 0 
+    Scale 0.5 0.5 0.5
+    Shape "plymesh" "string filename" [ "one-triangle.ply" ]
 WorldEnd
