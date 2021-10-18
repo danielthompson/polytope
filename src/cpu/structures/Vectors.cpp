@@ -29,9 +29,7 @@ namespace poly {
       z = -z;
    }
 
-   vector::vector(const float x, const float y, const float z) : x(x), y(y), z(z) {}
 
-   vector::vector(const normal &n) : x(n.x), y(n.y), z(n.z) { }
 
    bool vector::operator==(const vector &rhs) const {
       return x == rhs.x && y == rhs.y && z == rhs.z;

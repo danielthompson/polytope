@@ -9,106 +9,6 @@
 
 namespace poly {
 
-   matrix::matrix() : mat {0} {
-      mat[0][0] = 1;
-      //Matrix[0][1] = 0;
-      //Matrix[0][2] = 0;
-      //Matrix[0][3] = 0;
-
-      //Matrix[1][0] = 0;
-      mat[1][1] = 1;
-      //Matrix[1][2] = 0;
-      //Matrix[1][3] = 0;
-
-      //Matrix[2][0] = 0;
-      //Matrix[2][1] = 0;
-      mat[2][2] = 1;
-      //Matrix[2][3] = 0;
-
-      //Matrix[3][0] = 0;
-      //Matrix[3][1] = 0;
-      //Matrix[3][2] = 0;
-      mat[3][3] = 1;
-   }
-
-   matrix::matrix(const float m[4][4]) {
-      mat[0][0] = m[0][0];
-      mat[0][1] = m[0][1];
-      mat[0][2] = m[0][2];
-      mat[0][3] = m[0][3];
-
-      mat[1][0] = m[1][0];
-      mat[1][1] = m[1][1];
-      mat[1][2] = m[1][2];
-      mat[1][3] = m[1][3];
-
-      mat[2][0] = m[2][0];
-      mat[2][1] = m[2][1];
-      mat[2][2] = m[2][2];
-      mat[2][3] = m[2][3];
-
-      mat[3][0] = m[3][0];
-      mat[3][1] = m[3][1];
-      mat[3][2] = m[3][2];
-      mat[3][3] = m[3][3];
-   }
-
-   matrix::matrix(float t00, float t01, float t02, float t03,
-                  float t10, float t11, float t12, float t13,
-                  float t20, float t21, float t22, float t23,
-                  float t30, float t31, float t32, float t33) {
-
-      mat[0][0] = t00;
-      mat[0][1] = t01;
-      mat[0][2] = t02;
-      mat[0][3] = t03;
-
-      mat[1][0] = t10;
-      mat[1][1] = t11;
-      mat[1][2] = t12;
-      mat[1][3] = t13;
-
-      mat[2][0] = t20;
-      mat[2][1] = t21;
-      mat[2][2] = t22;
-      mat[2][3] = t23;
-
-      mat[3][0] = t30;
-      mat[3][1] = t31;
-      mat[3][2] = t32;
-      mat[3][3] = t33;
-   }
-
-   matrix::matrix(const matrix &other) {
-      mat[0][0] = other.mat[0][0];
-      mat[0][1] = other.mat[0][1];
-      mat[0][2] = other.mat[0][2];
-      mat[0][3] = other.mat[0][3];
-
-      mat[1][0] = other.mat[1][0];
-      mat[1][1] = other.mat[1][1];
-      mat[1][2] = other.mat[1][2];
-      mat[1][3] = other.mat[1][3];
-
-      mat[2][0] = other.mat[2][0];
-      mat[2][1] = other.mat[2][1];
-      mat[2][2] = other.mat[2][2];
-      mat[2][3] = other.mat[2][3];
-
-      mat[3][0] = other.mat[3][0];
-      mat[3][1] = other.mat[3][1];
-      mat[3][2] = other.mat[3][2];
-      mat[3][3] = other.mat[3][3];
-   }
-
-   matrix matrix::transpose() {
-      return matrix(
-            mat[0][0], mat[1][0], mat[2][0], mat[3][0],
-            mat[0][1], mat[1][1], mat[2][1], mat[3][1],
-            mat[0][2], mat[1][2], mat[2][2], mat[3][2],
-            mat[0][3], mat[1][3], mat[2][3], mat[3][3]);
-   }
-
    matrix matrix::inverse() {
       int indxc[4] = {0, 0, 0, 0};
       int indxr[4] = {0, 0, 0, 0};
@@ -169,7 +69,6 @@ namespace poly {
       return matrix(minv);
    }
 
-
    matrix matrix::operator*(const matrix &rhs) const {
       matrix ret = matrix();
 
@@ -212,92 +111,47 @@ namespace poly {
       return ret;
    }
 
-   bool matrix::operator==(const matrix &rhs) const {
-
-      return (
-            mat[0][0] == rhs.mat[0][0] &&
-            mat[0][1] == rhs.mat[0][1] &&
-            mat[0][2] == rhs.mat[0][2] &&
-            mat[0][3] == rhs.mat[0][3] &&
-
-            mat[1][0] == rhs.mat[1][0] &&
-            mat[1][1] == rhs.mat[1][1] &&
-            mat[1][2] == rhs.mat[1][2] &&
-            mat[1][3] == rhs.mat[1][3] &&
-
-            mat[2][0] == rhs.mat[2][0] &&
-            mat[2][1] == rhs.mat[2][1] &&
-            mat[2][2] == rhs.mat[2][2] &&
-            mat[2][3] == rhs.mat[2][3] &&
-
-            mat[3][0] == rhs.mat[3][0] &&
-            mat[3][1] == rhs.mat[3][1] &&
-            mat[3][2] == rhs.mat[3][2] &&
-            mat[3][3] == rhs.mat[3][3]
-      );
-   }
-
-   bool matrix::operator!=(const matrix &rhs) const {
-      return !(rhs == *this);
-   }
-
    matrix &matrix::operator*=(const matrix &rhs) {
       
-      const float m00 = mat[0][0] * rhs.mat[0][0] + mat[0][1] * rhs.mat[1][0] + mat[0][2] * rhs.mat[2][0] +
+      float m[16];
+      
+      m[0] = mat[0][0] * rhs.mat[0][0] + mat[0][1] * rhs.mat[1][0] + mat[0][2] * rhs.mat[2][0] +
                         mat[0][3] * rhs.mat[3][0];
-      const float m01 = mat[0][0] * rhs.mat[0][1] + mat[0][1] * rhs.mat[1][1] + mat[0][2] * rhs.mat[2][1] +
+      m[1] = mat[0][0] * rhs.mat[0][1] + mat[0][1] * rhs.mat[1][1] + mat[0][2] * rhs.mat[2][1] +
                         mat[0][3] * rhs.mat[3][1];
-      const float m02 = mat[0][0] * rhs.mat[0][2] + mat[0][1] * rhs.mat[1][2] + mat[0][2] * rhs.mat[2][2] +
+      m[2] = mat[0][0] * rhs.mat[0][2] + mat[0][1] * rhs.mat[1][2] + mat[0][2] * rhs.mat[2][2] +
                         mat[0][3] * rhs.mat[3][2];
-      const float m03 = mat[0][0] * rhs.mat[0][3] + mat[0][1] * rhs.mat[1][3] + mat[0][2] * rhs.mat[2][3] +
+      m[3] = mat[0][0] * rhs.mat[0][3] + mat[0][1] * rhs.mat[1][3] + mat[0][2] * rhs.mat[2][3] +
                         mat[0][3] * rhs.mat[3][3];
 
-      const float m10 = mat[1][0] * rhs.mat[0][0] + mat[1][1] * rhs.mat[1][0] + mat[1][2] * rhs.mat[2][0] +
+      m[4] = mat[1][0] * rhs.mat[0][0] + mat[1][1] * rhs.mat[1][0] + mat[1][2] * rhs.mat[2][0] +
                         mat[1][3] * rhs.mat[3][0];
-      const float m11 = mat[1][0] * rhs.mat[0][1] + mat[1][1] * rhs.mat[1][1] + mat[1][2] * rhs.mat[2][1] +
+      m[5] = mat[1][0] * rhs.mat[0][1] + mat[1][1] * rhs.mat[1][1] + mat[1][2] * rhs.mat[2][1] +
                         mat[1][3] * rhs.mat[3][1];
-      const float m12 = mat[1][0] * rhs.mat[0][2] + mat[1][1] * rhs.mat[1][2] + mat[1][2] * rhs.mat[2][2] +
+      m[6] = mat[1][0] * rhs.mat[0][2] + mat[1][1] * rhs.mat[1][2] + mat[1][2] * rhs.mat[2][2] +
                         mat[1][3] * rhs.mat[3][2];
-      const float m13 = mat[1][0] * rhs.mat[0][3] + mat[1][1] * rhs.mat[1][3] + mat[1][2] * rhs.mat[2][3] +
+      m[7] = mat[1][0] * rhs.mat[0][3] + mat[1][1] * rhs.mat[1][3] + mat[1][2] * rhs.mat[2][3] +
                         mat[1][3] * rhs.mat[3][3];
 
-      const float m20 = mat[2][0] * rhs.mat[0][0] + mat[2][1] * rhs.mat[1][0] + mat[2][2] * rhs.mat[2][0] +
+      m[8] = mat[2][0] * rhs.mat[0][0] + mat[2][1] * rhs.mat[1][0] + mat[2][2] * rhs.mat[2][0] +
                         mat[2][3] * rhs.mat[3][0];
-      const float m21 = mat[2][0] * rhs.mat[0][1] + mat[2][1] * rhs.mat[1][1] + mat[2][2] * rhs.mat[2][1] +
+      m[9] = mat[2][0] * rhs.mat[0][1] + mat[2][1] * rhs.mat[1][1] + mat[2][2] * rhs.mat[2][1] +
                         mat[2][3] * rhs.mat[3][1];
-      const float m22 = mat[2][0] * rhs.mat[0][2] + mat[2][1] * rhs.mat[1][2] + mat[2][2] * rhs.mat[2][2] +
+      m[10] = mat[2][0] * rhs.mat[0][2] + mat[2][1] * rhs.mat[1][2] + mat[2][2] * rhs.mat[2][2] +
                         mat[2][3] * rhs.mat[3][2];
-      const float m23 = mat[2][0] * rhs.mat[0][3] + mat[2][1] * rhs.mat[1][3] + mat[2][2] * rhs.mat[2][3] +
+      m[11] = mat[2][0] * rhs.mat[0][3] + mat[2][1] * rhs.mat[1][3] + mat[2][2] * rhs.mat[2][3] +
                         mat[2][3] * rhs.mat[3][3];
 
-      const float m30 = mat[3][0] * rhs.mat[0][0] + mat[3][1] * rhs.mat[1][0] + mat[3][2] * rhs.mat[2][0] +
+      m[12] = mat[3][0] * rhs.mat[0][0] + mat[3][1] * rhs.mat[1][0] + mat[3][2] * rhs.mat[2][0] +
                         mat[3][3] * rhs.mat[3][0];
-      const float m31 = mat[3][0] * rhs.mat[0][1] + mat[3][1] * rhs.mat[1][1] + mat[3][2] * rhs.mat[2][1] +
+      m[13] = mat[3][0] * rhs.mat[0][1] + mat[3][1] * rhs.mat[1][1] + mat[3][2] * rhs.mat[2][1] +
                         mat[3][3] * rhs.mat[3][1];
-      const float m32 = mat[3][0] * rhs.mat[0][2] + mat[3][1] * rhs.mat[1][2] + mat[3][2] * rhs.mat[2][2] +
+      m[14] = mat[3][0] * rhs.mat[0][2] + mat[3][1] * rhs.mat[1][2] + mat[3][2] * rhs.mat[2][2] +
                         mat[3][3] * rhs.mat[3][2];
-      const float m33 = mat[3][0] * rhs.mat[0][3] + mat[3][1] * rhs.mat[1][3] + mat[3][2] * rhs.mat[2][3] +
+      m[15] = mat[3][0] * rhs.mat[0][3] + mat[3][1] * rhs.mat[1][3] + mat[3][2] * rhs.mat[2][3] +
                         mat[3][3] * rhs.mat[3][3];
 
-      mat[0][0] = m00;
-      mat[0][1] = m01;
-      mat[0][2] = m02;
-      mat[0][3] = m03;
-
-      mat[1][0] = m10;
-      mat[1][1] = m11;
-      mat[1][2] = m12;
-      mat[1][3] = m13;
-
-      mat[2][0] = m20;
-      mat[2][1] = m21;
-      mat[2][2] = m22;
-      mat[2][3] = m23;
-
-      mat[3][0] = m30;
-      mat[3][1] = m31;
-      mat[3][2] = m32;
-      mat[3][3] = m33;
+      std::memcpy(mat, m, sizeof(float) * 16);
       
       return *this;
    }

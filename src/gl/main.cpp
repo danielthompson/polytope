@@ -9,7 +9,7 @@
 #include "../common/utilities/Common.h"
 #include "../cpu/integrators/PathTraceIntegrator.h"
 #include "../cpu/samplers/samplers.h"
-#include "../cpu/filters/BoxFilter.h"
+#include "../cpu/filters/box_filter.h"
 #include "../common/parsers/pbrt_parser.h"
 #include "gl_renderer.h"
 

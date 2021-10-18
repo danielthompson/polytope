@@ -1,16 +1,13 @@
 Sampler "random" 
-        "integer pixelsamples" [ 1 ] 
+        "integer pixelsamples" [ 128 ] 
 PixelFilter "box" 
 Film "image" 
         "integer xresolution" [ 1920 ] 
         "integer yresolution" [ 1080 ] 
         "string filename" [ "book.png" ] 
-Scale 1 1 1
-# LookAt 0 2.10879993 13.5740004
-#         0 2.10879993 12.5740004
-#         0 1 0
- LookAt 0 0 7
-        0 0 6
+Scale -1 1 1
+LookAt 0 2.10879993 13.5740004
+        0 2.10879993 12.5740004
         0 1 0
 
 Camera "perspective" 
@@ -19,7 +16,7 @@ Camera "perspective"
 
 #############################################
 WorldBegin
-    LightSource "infinite" "rgb L" [1 1 1]
+    LightSource "infinite" "rgb L" [1.5 1.5 1.5]
 
 
 # AttributeBegin
@@ -43,13 +40,13 @@ AttributeBegin
     # Material "mirror" "rgb Kr" [ .2 .2 1 ] 
     Material "matte" "rgb Kd" [ .8 .8 .8 ]
     Scale 0.213 0.213 0.213
-    # Shape "plymesh" "string filename" "geometry/mesh_00001.ply" 
+    Shape "plymesh" "string filename" "geometry/mesh_00001.ply" 
 AttributeEnd
 
 Texture "book_cover" "color" "imagemap" 
         "string filename" [ "texture/book_pbrt.png" ] 
 Texture "book_pages" "color" "imagemap" 
-        "string filename" [ "texture/rainbow-page.png" ] 
+        "string filename" [ "texture/book_pages.png" ] 
 # Texture "uneven_bump_raw" "float" "imagemap" 
 #        "float uscale" [ 1.5 ] 
 #        "float vscale" [ 1.5 ] 
@@ -62,13 +59,14 @@ Texture "book_pages" "color" "imagemap"
 
 # PAGES
 AttributeBegin
-    # Material "matte" "texture Kd" [ "book_pages" ]
+    Material "matte" "texture Kd" [ "book_pages" ]
     
     # Material "matte" "rgb Kd" [ 0.6 0.3 0.3 ]  
-    Rotate 270 0 1 0
+    Translate 0 2.20000005 0
+    Rotate 77.3424988 0.403387994 -0.75483799 -0.51720202
     Scale 0.5 0.5 0.5
 
-        Material "mirror" "rgb Kr" [ 0.7 0.8 0.9 ]
+        # Material "mirror" "rgb Kr" [ 0.7 0.8 0.9 ]
         # Material "matte" "rgb Kd" [ 0.3 0.5 0.6 ]
         Shape "plymesh" "string filename" "geometry/pages-uv-fixed.ply" 
     
@@ -91,7 +89,7 @@ AttributeBegin
     AttributeBegin
 #         Material "matte" "rgb Kd" [ 0.4 0.039999999 0.039999999 ]
         # Material "mirror" "rgb Kr" [ 0.4 0.039999999 0.039999999 ]
-    #   Shape "plymesh" "string filename" "geometry/mesh_00003.ply" 
+       Shape "plymesh" "string filename" "geometry/mesh_00003.ply" 
     AttributeEnd
 AttributeEnd
 WorldEnd

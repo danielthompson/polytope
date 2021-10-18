@@ -8,7 +8,7 @@
 #include "../../../src/cpu/samplers/samplers.h"
 #include "../../../src/common/utilities/Logger.h"
 #include "../../../src/cpu/films/PNGFilm.h"
-#include "../../../src/cpu/filters/BoxFilter.h"
+#include "../../../src/cpu/filters/box_filter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
 #include "../../../src/cpu/scenes/scene.h"
 #include "../../../src/cpu/cameras/perspective_camera.h"
@@ -46,8 +46,8 @@ namespace Tests {
          ASSERT_NE(nullptr, runner->Film);
 
          // filter
-         std::unique_ptr<poly::AbstractFilter> filter = std::move(runner->Film->Filter);
-         poly::BoxFilter *actualFilter = dynamic_cast<poly::BoxFilter *>(filter.get());
+         std::unique_ptr<poly::abstract_filter> filter = std::move(runner->Film->Filter);
+         poly::box_filter *actualFilter = dynamic_cast<poly::box_filter *>(filter.get());
          ASSERT_NE(nullptr, actualFilter);
 
          // film
@@ -125,8 +125,8 @@ namespace Tests {
          ASSERT_NE(nullptr, actualSampler);
 
          // filter
-         std::unique_ptr<poly::AbstractFilter> filter = std::move(runner->Film->Filter);
-         poly::BoxFilter *actualFilter = dynamic_cast<poly::BoxFilter *>(filter.get());
+         std::unique_ptr<poly::abstract_filter> filter = std::move(runner->Film->Filter);
+         poly::box_filter *actualFilter = dynamic_cast<poly::box_filter *>(filter.get());
          ASSERT_NE(nullptr, actualFilter);
 
          // film

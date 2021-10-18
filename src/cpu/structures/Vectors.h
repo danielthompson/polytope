@@ -33,10 +33,10 @@ namespace poly {
    public:
       float x, y, z;
 
-      vector() : x(0), y(0), z(0) { };
-      vector(const float x, const float y, const float z);
-      vector(const vector &v) = default;
-      explicit vector(const poly::normal &n);
+      constexpr vector() : x(0), y(0), z(0) { };
+      constexpr vector(const float x, const float y, const float z) : x(x), y(y), z(z) { };
+      constexpr vector(const vector &v) = default;
+      constexpr explicit vector(const poly::normal &n) : x(n.x), y(n.y), z(n.z) { };
 
       bool operator==(const vector &rhs) const;
       bool operator!=(const vector &rhs) const;

@@ -15,7 +15,7 @@
 #include "../../cpu/cameras/perspective_camera.h"
 #include "../../cpu/samplers/samplers.h"
 #include "../../cpu/films/PNGFilm.h"
-#include "../../cpu/filters/BoxFilter.h"
+#include "../../cpu/filters/box_filter.h"
 #include "../../cpu/scenes/scene.h"
 #include "../utilities/Common.h"
 #include "../../cpu/scenes/skyboxes/ColorSkybox.h"
@@ -26,6 +26,7 @@
 #include "../../cpu/shapes/tesselators.h"
 #include "../../cpu/shading/brdf/glossy_brdf.h"
 #include "../../../lib/lodepng.h"
+#include "../../cpu/filters/triangle_filter.h"
 
 namespace poly {
 
@@ -41,6 +42,7 @@ namespace poly {
          const std::string Film = "Film";
          const std::string halton = "halton";
          const std::string image = "image";
+         const std::string indices = "indices";
          const std::string Integrator = "Integrator";
          const std::string Kd = "Kd";
          const std::string Kr = "Kr";
@@ -51,12 +53,14 @@ namespace poly {
          const std::string Material = "Material";
          const std::string matte = "matte";
          const std::string mirror = "mirror";
+         const std::string N = "N";
          const std::string name = "name";
          const std::string NamedMaterial = "NamedMaterial";
          const std::string ObjectBegin = "ObjectBegin";
          const std::string ObjectEnd = "ObjectEnd";
          const std::string ObjectInstance = "ObjectInstance";
          const std::string objmesh = "objmesh";
+         const std::string P = "P";
          const std::string PixelFilter = "PixelFilter";
          const std::string pixelsamples = "pixelsamples";
          const std::string plastic = "plastic";
@@ -72,7 +76,9 @@ namespace poly {
          const std::string TransformBegin = "TransformBegin";
          const std::string TransformEnd = "TransformEnd";
          const std::string Translate = "Translate";
-         const std::string triangle = "triangle";
+         const std::string trianglemesh = "trianglemesh";
+         const std::string type = "type";
+         const std::string uv = "uv";
          const std::string WorldBegin = "WorldBegin";
          const std::string WorldEnd = "WorldEnd";
       }
@@ -150,13 +156,15 @@ namespace poly {
       enum ShapeIdentifier {
          objmesh,
          plymesh,
-         sphere
+         sphere,
+         trianglemesh
       };
 
       const std::unordered_map<std::string, ShapeIdentifier> ShapeIdentifierMap {
             {str::objmesh, objmesh},
             {str::plymesh,    plymesh},
             {str::sphere,     sphere},
+            {str::trianglemesh,     trianglemesh},
       };
 
       enum MaterialIdentifier {
@@ -187,22 +195,28 @@ namespace poly {
             {str::roughness, Roughness}
       };
       
-      enum OBJMeshArgument {
+      enum MeshArgument {
          Filename
       };
 
-      const std::unordered_map<std::string, OBJMeshArgument> OBJMeshArgumentMap {
+      const std::unordered_map<std::string, MeshArgument> MeshArgumentMap {
             {str::filename, Filename}
       };
-
-      enum class PLYMeshArgument {
-         Filename
+      
+      enum TriangleMeshArgument {
+         indices,
+         N,
+         P,
+         uv
       };
-
-      const std::unordered_map<std::string, PLYMeshArgument> PLYMeshArgumentMap {
-            {str::filename, PLYMeshArgument::Filename}
+      
+      const std::unordered_map<std::string, TriangleMeshArgument> TriangleMeshArgumentMap {
+            {str::indices, indices},
+            {str::N, N},
+            {str::P, P},
+            {str::uv, uv}            
       };
-
+      
       // TODO get rid of this junk in favor of using WorldDirectiveMap
 
       bool is_quoted(const std::string &token) {
@@ -431,6 +445,43 @@ namespace poly {
       }
    }
    
+   template<class T>
+   void parse_point(
+         std::vector<std::string> line, 
+         int& i, 
+         std::unique_ptr<std::vector<T>>& v) {
+
+      if (v == nullptr) {
+         v = std::make_unique<std::vector<T>>();
+      }
+      
+      T p = { 0, 0, 0 };
+      try {
+         p.x = std::stof(line[i]);
+      }
+      catch (const std::invalid_argument &) {
+         throw std::invalid_argument(line[0] + ": failed to parse [" + line[i] + "] as an int");
+      }
+      i++;
+
+      try {
+         p.y = std::stof(line[i]);
+      }
+      catch (const std::invalid_argument &) {
+         throw std::invalid_argument(line[0] + ": failed to parse [" + line[i] + "] as an int");
+      }
+
+      i++;
+      try {
+         p.z = std::stof(line[i]);
+      }
+      catch (const std::invalid_argument &) {
+         throw std::invalid_argument(line[0] + ": failed to parse [" + line[i] + "] as an int");
+      }
+
+      v->push_back(p);
+   }
+   
    std::unique_ptr<poly::pbrt_directive> pbrt_parser::lex(std::vector<std::string> line) {
       std::unique_ptr<poly::pbrt_directive> directive = std::make_unique<pbrt_directive>();
 
@@ -608,8 +659,12 @@ namespace poly {
                switch (current_arg->Type) {
                   case pbrt_argument::pbrt_rgb:
                   case pbrt_argument::pbrt_float: {
+                     assert(current_arg->bool_value == nullptr);
+                     //assert(current_arg->float_values == nullptr);
                      assert(current_arg->string_value == nullptr);
                      assert(current_arg->int_values == nullptr);
+                     assert(current_arg->point_values == nullptr);
+                     assert(current_arg->normal_values == nullptr);
                      
                      float value;
                      try {
@@ -631,8 +686,12 @@ namespace poly {
                      break;
                   }
                   case pbrt_argument::pbrt_int: {
-                     assert(current_arg->string_value == nullptr);
+                     assert(current_arg->bool_value == nullptr);
                      assert(current_arg->float_values == nullptr);
+                     assert(current_arg->string_value == nullptr);
+                     //assert(current_arg->int_values == nullptr);
+                     assert(current_arg->point_values == nullptr);
+                     assert(current_arg->normal_values == nullptr);
                      int value;
                      try {
                         value = std::stoi(line[i]);
@@ -646,6 +705,36 @@ namespace poly {
                      }
                      
                      current_arg->int_values->push_back(value);
+                     break;
+                  }
+                  case pbrt_argument::pbrt_point3: {
+                     assert(current_arg->bool_value == nullptr);
+                     assert(current_arg->float_values == nullptr);
+                     assert(current_arg->string_value == nullptr);
+                     assert(current_arg->int_values == nullptr);
+                     //assert(current_arg->point_values == nullptr);
+                     assert(current_arg->normal_values == nullptr);
+
+                     parse_point<poly::point>(
+                           line,
+                           i,
+                           current_arg->point_values);
+
+                     break;
+                  }
+                  case pbrt_argument::pbrt_normal: {
+                     assert(current_arg->bool_value == nullptr);
+                     assert(current_arg->float_values == nullptr);
+                     assert(current_arg->string_value == nullptr);
+                     assert(current_arg->int_values == nullptr);
+                     assert(current_arg->point_values == nullptr);
+                     //assert(current_arg->normal_values == nullptr);
+
+                     parse_point<poly::normal>(
+                           line,
+                           i,
+                           current_arg->normal_values);
+
                      break;
                   }
                   default: {
@@ -782,16 +871,39 @@ namespace poly {
    
    static std::shared_ptr<poly::Material> material_directive(
          const std::unique_ptr<poly::pbrt_directive>& directive,
-         const std::unordered_map<std::string, std::shared_ptr<poly::texture>> &texture_map
+         const std::unordered_map<std::string, std::shared_ptr<poly::texture>> &texture_map,
+         bool named = false
          ) {
+
+      std::string material_type;
+
+
+      // if the material is named, the identifier is the name, and we shouldn't try to parse it.
+      // instead, the type of the material is the value of the argument with name "type".
+      if (named) {
+         for (const auto& argument : directive->arguments) {
+            if (argument.Type == pbrt_argument::pbrt_string
+                && argument.Name == str::type) {
+               material_type = *argument.string_value;
+            }
+         }
+      }
+      // otherwise, the type of the material is the directive's type field. 
+      else {
+         material_type = directive->type;
+      }
+      
       MaterialIdentifier identifier;
+      
       try {
-         identifier = MaterialIdentifierMap.at(directive->type);
+         identifier = MaterialIdentifierMap.at(material_type);
       }
       catch (...) {
          LogUnknownIdentifier(directive);
          return nullptr;
       }
+      
+
       switch (identifier) {
          case MaterialIdentifier::Plastic: {
             // diffuse reflectivity
@@ -847,6 +959,9 @@ namespace poly {
          }
          case MaterialIdentifier::Matte: {
             for (const pbrt_argument& argument : directive->arguments) {
+               if (named && argument.Name == str::type) {
+                  continue;
+               }
                MaterialArgumentName param;
                try {
                   param = MaterialMatteArgumentMap.at(argument.Name);
@@ -944,7 +1059,7 @@ namespace poly {
 //               LogUnknownIdentifier(directive);
 //               sampler = std::make_unique<CenterSampler>();
 //            }
-            sampler = std::make_unique<HaltonSampler>();
+            sampler = std::make_unique<poly::HaltonSampler>();
 
             for (const pbrt_argument& arg : directive->arguments) {
                if (arg.Type == pbrt_argument::pbrt_int) {
@@ -1078,7 +1193,8 @@ namespace poly {
       }
 
       if (filter == nullptr) {
-         filter = std::make_unique<BoxFilter>(bounds);
+         filter = std::make_unique<poly::triangle_filter>(bounds, numSamples);
+//         filter = std::make_unique<poly::box_filter>(bounds);
          film->Filter = std::move(filter);
       }
 
@@ -1359,32 +1475,13 @@ namespace poly {
                break;
             }
             case DirectiveIdentifier::MakeNamedMaterial: {
-               const std::string materialName = directive->type;
-               std::shared_ptr<AbstractBRDF> brdf;
-               poly::ReflectanceSpectrum reflectanceSpectrum;
-               for (const pbrt_argument &argument : directive->arguments) {
-                  if (argument.Type == pbrt_argument::pbrt_string) {
-                     if (argument.Name == "type" && *(argument.string_value) == str::matte) {
-                        // TODO instead of using default, parse values
-                        ReflectanceSpectrum refl(0.5f, 0.5f, 0.5f);
-                        brdf = std::make_unique<poly::LambertBRDF>(refl);
-                     }
-                  }
-                  if (argument.Type == pbrt_argument::pbrt_rgb) {
-                     if (argument.Name == str::Kd) {
-                        reflectanceSpectrum.r = argument.float_values->at(0);
-                        reflectanceSpectrum.g = argument.float_values->at(1);
-                        reflectanceSpectrum.b = argument.float_values->at(2);
-                     }
-                  }
-               }
-
-               // TODO use hash table instead
-               namedMaterials.push_back(std::make_shared<poly::Material>(std::move(brdf), reflectanceSpectrum, materialName));
+               auto material = material_directive(directive, texture_map, true);
+               material->Name = directive->type;
+               namedMaterials.push_back(material);
                break;
             }
             case DirectiveIdentifier::Material: {
-               auto material = material_directive(directive, texture_map);
+               auto material = material_directive(directive, texture_map, false);
                activeMaterial = material;
                break;
             }
@@ -1482,11 +1579,13 @@ namespace poly {
                break;
             }
             case DirectiveIdentifier::Rotate: {
-               *activeTransform *= *rotate_directive(directive);
+               auto new_transform = rotate_directive(directive);
+               activeTransform = std::make_shared<poly::transform>(*activeTransform * *new_transform);
                break;
             }
             case DirectiveIdentifier::Scale: {
-               *activeTransform *= *scale_directive(directive);
+               auto new_transform = scale_directive(directive);
+               activeTransform = std::make_shared<poly::transform>(*activeTransform * *new_transform);
                break;
             }
             case DirectiveIdentifier::Shape: {
@@ -1502,134 +1601,77 @@ namespace poly {
                std::shared_ptr<poly::transform> activeInverse = std::make_shared<poly::transform>(
                      activeTransform->invert());
                
+               auto add_mesh = [&] (const poly::abstract_mesh_parser* parser) {
+                  // make sure it has a filename argument
+                  bool filenameMissing = true;
+                  std::string mesh_filename;
+                  for (const pbrt_argument &argument : directive->arguments) {
+                     MeshArgument arg;
+                     try {
+                        arg = MeshArgumentMap.at(argument.Name);
+                     }
+                     catch (...) {
+                        LogUnknownArgument(argument);
+                        continue;
+                     }
+                     switch (arg) {
+                        case Filename: {
+                           filenameMissing = false;
+                           mesh_filename = *argument.string_value;
+                           if (argument.Type != pbrt_argument::pbrt_string) {
+                              LogWrongArgumentType(directive, argument);
+                           }
+                           break;
+                        }
+                        default:
+                           LogUnknownArgument(argument);
+                           continue;
+                     }
+                  }
+                  if (filenameMissing) {
+                     LogMissingArgument(directive, str::filename);
+                     return;
+                  }
+
+                  
+                  std::shared_ptr<poly::mesh_geometry> geometry;
+                  if (in_object_begin) {
+                     geometry = current_geometry;
+                  }
+                  else {
+                     geometry = std::make_shared<poly::mesh_geometry>();
+                  }
+                  scene->mesh_geometry_count++;
+                  const std::string absolute_path = _basePathFromCWD + mesh_filename;
+                  parser->parse_file(geometry, absolute_path);
+
+                  if (in_object_begin) {
+                     // maybe not necessary
+                     current_geometry = geometry;
+                  }
+                  else {
+                     poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
+
+                     if (activeLight != nullptr) {
+                        // TODO
+                        mesh->spd = activeLight;
+                        scene->Lights.push_back(mesh);
+                     } else {
+                        mesh->material = activeMaterial;
+                     }
+                     scene->Shapes.push_back(mesh);
+                  }
+               };
+               
                switch (identifier) {
                   case ShapeIdentifier::objmesh: {
-                     // make sure it has a filename argument
-                     bool filenameMissing = true;
-                     std::string mesh_filename;
-                     for (const pbrt_argument &argument : directive->arguments) {
-                        OBJMeshArgument arg;
-                        try {
-                           arg = OBJMeshArgumentMap.at(argument.Name);
-                        }
-                        catch (...) {
-                           LogUnknownArgument(argument);
-                           continue;
-                        }
-                        switch (arg) {
-                           case Filename: {
-                              filenameMissing = false;
-                              mesh_filename = *argument.string_value;
-                              if (argument.Type != pbrt_argument::pbrt_string) {
-                                 LogWrongArgumentType(directive, argument);
-                              }
-                              break;
-                           }
-                           default:
-                              LogUnknownArgument(argument);
-                              continue;
-                        }
-                     }
-                     if (filenameMissing) {
-                        LogMissingArgument(directive, str::filename);
-                        break;
-                     }
-
-                     const obj_parser parser;
-                     std::shared_ptr<poly::mesh_geometry> geometry;
-                     if (in_object_begin) {
-                        geometry = current_geometry;
-                     }
-                     else {
-                        geometry = std::make_shared<poly::mesh_geometry>();
-                     }
-                     scene->mesh_geometry_count++;
-                     const std::string absolute_path = _basePathFromCWD + mesh_filename;
-                     parser.parse_file(geometry, absolute_path);
-
-                     if (in_object_begin) {
-                        // maybe not necessary
-                        current_geometry = geometry;
-                     }
-                     else {
-                        poly::Mesh *mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
-
-                        if (activeLight != nullptr) {
-                           // TODO
-                           mesh->spd = activeLight;
-                           scene->Lights.push_back(mesh);
-                        } else {
-                           mesh->material = activeMaterial;
-                        }
-                        scene->Shapes.push_back(mesh);
-                     }
+                     const poly::obj_parser parser; 
+                     add_mesh(&parser);
                      break;
-                  
                   }
                   case ShapeIdentifier::plymesh: {
-                     // make sure it has a filename argument
-                     bool filenameMissing = true;
-                     std::string mesh_filename;
-                     for (const pbrt_argument& argument : directive->arguments) {
-                        PLYMeshArgument arg;
-                        try {
-                           arg = PLYMeshArgumentMap.at(argument.Name);
-                        }
-                        catch (...) {
-                           LogUnknownArgument(argument);
-                           continue;
-                        }
-                        switch (arg) {
-                           case PLYMeshArgument::Filename: {
-                              filenameMissing = false;
-                              mesh_filename = *argument.string_value;
-                              if (argument.Type != pbrt_argument::pbrt_string) {
-                                 LogWrongArgumentType(directive, argument);
-                              }
-                              break;
-                           }
-                           default:
-                              LogUnknownArgument(argument);
-                              continue;
-                        }
-                     }
-                     if (filenameMissing) {
-                        LogMissingArgument(directive, str::filename);
-                        break;
-                     }
-
-                     const ply_parser parser;
-                     std::shared_ptr<poly::mesh_geometry> geometry;
-                     if (in_object_begin) {
-                        geometry = current_geometry;
-                     }
-                     else {
-                        geometry = std::make_shared<poly::mesh_geometry>();
-                     }
-                     scene->mesh_geometry_count++;
-                     
-                     const std::string absolute_path = _basePathFromCWD + mesh_filename;
-                     parser.parse_file(geometry, absolute_path);
-
-                     if (in_object_begin) {
-                        // maybe not necessary
-                        current_geometry = geometry;
-                     }
-                     else {
-                        poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
-                        //mesh->Bound();
-                        //mesh->CalculateVertexNormals();
-
-                        if (activeLight != nullptr) {
-                           // TODO
-                           mesh->spd = activeLight;
-                           scene->Lights.push_back(mesh);
-                        }
-                        else {
-                           mesh->material = activeMaterial;
-                        }
-                        scene->Shapes.push_back(mesh);
-                     }
+                     const poly::ply_parser parser;
+                     add_mesh(&parser);
                      break;
                   }
                   case ShapeIdentifier::sphere: {
@@ -1668,6 +1710,79 @@ namespace poly {
                      }
                      break;
                   }
+                  case ShapeIdentifier::trianglemesh: {
+                     std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
+                     for (const auto& current_arg : directive->arguments) {
+                        TriangleMeshArgument arg;
+                        try {
+                           arg = TriangleMeshArgumentMap.at(current_arg.Name);
+                        }
+                        catch (...) {
+                           LogUnknownArgument(current_arg);
+                           continue;
+                        }
+                        switch (arg) {
+                           case TriangleMeshArgument::indices: {
+                              for (int value_index = 0; value_index < current_arg.int_values->size(); ) {
+                                 geometry->fv0.push_back((*current_arg.int_values)[value_index]);
+                                 value_index++;
+                                 geometry->fv1.push_back((*current_arg.int_values)[value_index]);
+                                 value_index++;
+                                 geometry->fv2.push_back((*current_arg.int_values)[value_index]);
+                                 value_index++;
+                              }
+                              geometry->num_faces = current_arg.int_values->size() / 3;
+                              break;
+                           }
+                           case TriangleMeshArgument::P:
+                              for (int value_index = 0; value_index < current_arg.point_values->size(); value_index++) {
+                                 geometry->x_packed.push_back((*current_arg.point_values)[value_index].x);
+                                 geometry->y_packed.push_back((*current_arg.point_values)[value_index].y);
+                                 geometry->z_packed.push_back((*current_arg.point_values)[value_index].z);
+                              }
+                              geometry->num_vertices_packed = current_arg.point_values->size();
+                              break;
+                           case TriangleMeshArgument::N:
+                              for (int value_index = 0; value_index < current_arg.normal_values->size(); value_index++) {
+                                 geometry->nx_packed.push_back((*current_arg.normal_values)[value_index].x);
+                                 geometry->ny_packed.push_back((*current_arg.normal_values)[value_index].y);
+                                 geometry->nz_packed.push_back((*current_arg.normal_values)[value_index].z);
+                              }
+                              geometry->has_vertex_normals = true;
+                              
+                              break;
+                           case TriangleMeshArgument::uv:
+                              for (int value_index = 0; value_index < current_arg.float_values->size(); ) {
+                                 geometry->u_packed.push_back((*current_arg.float_values)[value_index]);
+                                 value_index++;
+                                 geometry->v_packed.push_back((*current_arg.float_values)[value_index]);
+                                 value_index++;
+                              }
+                              geometry->has_vertex_uvs = true;
+                              break;
+                           default:
+                              LogUnknownArgument(current_arg);
+                              break;
+                        }
+                     }
+
+                     geometry->unpack_faces();
+                     
+                     scene->mesh_geometry_count++;
+                     poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
+
+                     
+                     
+                     if (activeLight != nullptr) {
+                        // TODO
+                        mesh->spd = activeLight;
+                        scene->Lights.push_back(mesh);
+                     } else {
+                        mesh->material = activeMaterial;
+                     }
+                     scene->Shapes.push_back(mesh);
+                     break;
+                  }
                   default: {
                      LogUnimplementedDirective(directive);
                      break;
@@ -1687,7 +1802,8 @@ namespace poly {
                break;
             }
             case DirectiveIdentifier::Transform: {
-               *activeTransform *= *transform_directive(directive);
+               auto new_transform = transform_directive(directive);
+               activeTransform = std::make_shared<poly::transform>(*activeTransform * *new_transform);
                break;
             }
             case DirectiveIdentifier::TransformBegin: {
@@ -1708,7 +1824,8 @@ namespace poly {
                break;
             }
             case DirectiveIdentifier::Translate: {
-               *activeTransform *= *translate_directive(directive);
+               auto new_transform = translate_directive(directive);
+               activeTransform = std::make_shared<poly::transform>(*activeTransform * *new_transform);
                break;
             }
             // TODO - other transform directives

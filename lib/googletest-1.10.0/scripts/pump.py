@@ -823,7 +823,7 @@ def BeautifyCode(string):
 def ConvertFromPumpSource(src_text):
   """Return the text generated from the given Pump source text."""
   ast = ParseToAST(StripMetaComments(src_text))
-  output = Output()
+  output = output()
   RunCode(Env(), ast, output)
   return BeautifyCode(output.string)
 

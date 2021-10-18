@@ -9,10 +9,10 @@
 
 namespace poly {
 
-   const poly::vector transform::x_dir = vector(1, 0, 0);
-   const poly::vector transform::y_dir = vector(0, 1, 0);
-   const poly::vector transform::z_dir = vector(0, 0, 1);
-
+   constexpr poly::vector poly::transform::x_dir;
+   constexpr poly::vector poly::transform::y_dir;
+   constexpr poly::vector poly::transform::z_dir;
+   
    transform::transform() : matrix(poly::matrix()), inverse(poly::matrix()) { }
 
    transform::transform(const float values[4][4]) : matrix(values) {
@@ -62,10 +62,10 @@ namespace poly {
       return *this;
    }
 
-   void transform::apply_in_place(poly::point &point) const {
-      float x = point.x;
-      float y = point.y;
-      float z = point.z;
+   void transform::apply_in_place(poly::point &p) const {
+      float x = p.x;
+      float y = p.y;
+      float z = p.z;
 
       float newX = sum_of_products(x, matrix.mat[0][0], y, matrix.mat[0][1]) + std::fmaf(z, matrix.mat[0][2], matrix.mat[0][3]);
       float newY = sum_of_products(x, matrix.mat[1][0], y, matrix.mat[1][1]) + std::fmaf(z, matrix.mat[1][2], matrix.mat[1][3]);
@@ -74,22 +74,22 @@ namespace poly {
       float w = sum_of_products(x, matrix.mat[3][0], y, matrix.mat[3][1]) + std::fmaf(z, matrix.mat[3][2], matrix.mat[3][3]);
 
       if (w == 1) {
-         point.x = newX;
-         point.y = newY;
-         point.z = newZ;
+         p.x = newX;
+         p.y = newY;
+         p.z = newZ;
       }
       else {
          float divisor = 1.f / w;
-         point.x = newX * divisor;
-         point.y = newY * divisor;
-         point.z = newZ * divisor;
+         p.x = newX * divisor;
+         p.y = newY * divisor;
+         p.z = newZ * divisor;
       }
    }
 
-   poly::point transform::apply(const poly::point &point) const {
-      float x = point.x;
-      float y = point.y;
-      float z = point.z;
+   poly::point transform::apply(const poly::point &p) const {
+      float x = p.x;
+      float y = p.y;
+      float z = p.z;
 
       float newX = x * matrix.mat[0][0] + y * matrix.mat[0][1] + z * matrix.mat[0][2] + matrix.mat[0][3];
       float newY = x * matrix.mat[1][0] + y * matrix.mat[1][1] + z * matrix.mat[1][2] + matrix.mat[1][3];
@@ -106,32 +106,32 @@ namespace poly {
       }
    }
 
-   void transform::apply_in_place(poly::vector &vector) const {
-      float new_x = vector.x * matrix.mat[0][0] + vector.y * matrix.mat[0][1] + vector.z * matrix.mat[0][2];
-      float new_y = vector.x * matrix.mat[1][0] + vector.y * matrix.mat[1][1] + vector.z * matrix.mat[1][2];
-      float new_z = vector.x * matrix.mat[2][0] + vector.y * matrix.mat[2][1] + vector.z * matrix.mat[2][2];
-      
-      vector.x = new_x;
-      vector.y = new_y;
-      vector.z = new_z;
+   void transform::apply_in_place(poly::vector &v) const {
+      float new_x = v.x * matrix.mat[0][0] + v.y * matrix.mat[0][1] + v.z * matrix.mat[0][2];
+      float new_y = v.x * matrix.mat[1][0] + v.y * matrix.mat[1][1] + v.z * matrix.mat[1][2];
+      float new_z = v.x * matrix.mat[2][0] + v.y * matrix.mat[2][1] + v.z * matrix.mat[2][2];
+
+      v.x = new_x;
+      v.y = new_y;
+      v.z = new_z;
    }
 
-   poly::vector transform::apply(const poly::vector &vector) const {
+   poly::vector transform::apply(const poly::vector &v) const {
       return {
-            vector.x * matrix.mat[0][0] + vector.y * matrix.mat[0][1] + vector.z * matrix.mat[0][2],
-            vector.x * matrix.mat[1][0] + vector.y * matrix.mat[1][1] + vector.z * matrix.mat[1][2],
-            vector.x * matrix.mat[2][0] + vector.y * matrix.mat[2][1] + vector.z * matrix.mat[2][2]
+            v.x * matrix.mat[0][0] + v.y * matrix.mat[0][1] + v.z * matrix.mat[0][2],
+            v.x * matrix.mat[1][0] + v.y * matrix.mat[1][1] + v.z * matrix.mat[1][2],
+            v.x * matrix.mat[2][0] + v.y * matrix.mat[2][1] + v.z * matrix.mat[2][2]
       };
    }
 
-   void transform::apply_in_place(normal &normal) const {
-      float new_x = normal.x * inverse.mat[0][0] + normal.y * inverse.mat[1][0] + normal.z * inverse.mat[2][0];
-      float new_y = normal.x * inverse.mat[0][1] + normal.y * inverse.mat[1][1] + normal.z * inverse.mat[2][1];
-      float new_z = normal.x * inverse.mat[0][2] + normal.y * inverse.mat[1][2] + normal.z * inverse.mat[2][2];
-      
-      normal.x = new_x;
-      normal.y = new_y;
-      normal.z = new_z;
+   void transform::apply_in_place(normal &n) const {
+      float new_x = n.x * inverse.mat[0][0] + n.y * inverse.mat[1][0] + n.z * inverse.mat[2][0];
+      float new_y = n.x * inverse.mat[0][1] + n.y * inverse.mat[1][1] + n.z * inverse.mat[2][1];
+      float new_z = n.x * inverse.mat[0][2] + n.y * inverse.mat[1][2] + n.z * inverse.mat[2][2];
+
+      n.x = new_x;
+      n.y = new_y;
+      n.z = new_z;
    }
 
    poly::normal transform::Apply(const poly::normal &n) const {
@@ -155,26 +155,30 @@ namespace poly {
    }
 
    void transform::ApplyInPlace(poly::bounding_box &bb) const {
-      poly::point p0 = apply(poly::point(bb.p0.x, bb.p0.y, bb.p0.z));
-      poly::point p1 = apply(poly::point(bb.p0.x, bb.p0.y, bb.p1.z));
-      poly::point p2 = apply(poly::point(bb.p0.x, bb.p1.y, bb.p0.z));
-      poly::point p3 = apply(poly::point(bb.p0.x, bb.p1.y, bb.p1.z));
-      poly::point p4 = apply(poly::point(bb.p1.x, bb.p0.y, bb.p0.z));
-      poly::point p5 = apply(poly::point(bb.p1.x, bb.p0.y, bb.p1.z));
-      poly::point p6 = apply(poly::point(bb.p1.x, bb.p1.y, bb.p0.z));
-      poly::point p7 = apply(poly::point(bb.p1.x, bb.p1.y, bb.p1.z));
+      
+      const std::vector<poly::point> v = {
+         apply(poly::point(bb.p0.x, bb.p0.y, bb.p0.z)),
+         apply(poly::point(bb.p0.x, bb.p0.y, bb.p1.z)),
+         apply(poly::point(bb.p0.x, bb.p1.y, bb.p0.z)),
+         apply(poly::point(bb.p0.x, bb.p1.y, bb.p1.z)),
+         apply(poly::point(bb.p1.x, bb.p0.y, bb.p0.z)),
+         apply(poly::point(bb.p1.x, bb.p0.y, bb.p1.z)),
+         apply(poly::point(bb.p1.x, bb.p1.y, bb.p0.z)),
+         apply(poly::point(bb.p1.x, bb.p1.y, bb.p1.z)),
+      };
+      
+      bb.p0 = { poly::FloatMax, poly::FloatMax, poly::FloatMax };
+      bb.p1 = { -poly::FloatMax, -poly::FloatMax, -poly::FloatMax };
+      
+      for (int i = 0; i < 8; i++) {
+         bb.p0.x = std::min(v[i].x, bb.p0.x);
+         bb.p0.y = std::min(v[i].y, bb.p0.y);
+         bb.p0.z = std::min(v[i].z, bb.p0.z);
 
-      bb.p0 = p0;
-      bb.p1 = p1;
-
-//      bb.UnionInPlace(p0);
-//      bb.UnionInPlace(p1);
-      bb.union_in_place(p2);
-      bb.union_in_place(p3);
-      bb.union_in_place(p4);
-      bb.union_in_place(p5);
-      bb.union_in_place(p6);
-      bb.union_in_place(p7);
+         bb.p1.x = std::max(v[i].x, bb.p1.x);
+         bb.p1.y = std::max(v[i].y, bb.p1.y);
+         bb.p1.z = std::max(v[i].z, bb.p1.z);
+      }
    }
 
    poly::bounding_box transform::Apply(const poly::bounding_box &bb) const {
@@ -206,19 +210,14 @@ namespace poly {
    }
 
    poly::transform transform::translate(const poly::vector &delta) {
-      poly::matrix matrix(
-            1, 0, 0, delta.x,
-            0, 1, 0, delta.y,
-            0, 0, 1, delta.z,
-            0, 0, 0, 1);
-
-      poly::matrix inverse(
-            1, 0, 0, -delta.x,
-            0, 1, 0, -delta.y,
-            0, 0, 1, -delta.z,
-            0, 0, 0, 1);
-
-      return { matrix, inverse };
+      return {{ 1, 0, 0, delta.x,
+                0, 1, 0, delta.y,
+                0, 0, 1, delta.z,
+                0, 0, 0, 1},
+              {1, 0, 0, -delta.x,
+               0, 1, 0, -delta.y,
+               0, 0, 1, -delta.z,
+               0, 0, 0, 1} };
    }
 
    poly::transform transform::translate(const float x, const float y, const float z)  {

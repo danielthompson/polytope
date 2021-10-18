@@ -65,9 +65,11 @@ set(POLYTOPE_LIB_SOURCES
     src/cpu/films/abstract_film.h
     src/cpu/films/PNGFilm.cpp
     src/cpu/films/PNGFilm.h
-    src/cpu/filters/AbstractFilter.h
-    src/cpu/filters/BoxFilter.cpp
-    src/cpu/filters/BoxFilter.h
+    src/cpu/filters/abstract_filter.h
+    src/cpu/filters/box_filter.cpp
+    src/cpu/filters/box_filter.h
+    src/cpu/filters/triangle_filter.cpp
+    src/cpu/filters/triangle_filter.h
     src/cpu/integrators/abstract_integrator.h
     src/cpu/integrators/abstract_integrator.h
     src/cpu/integrators/DebugIntegrator.cpp
@@ -279,7 +281,8 @@ add_executable(runUnitTests
     tests/shapes/TestTesselators.cpp
     tests/cuda/test_bvh_traversal.cpp
     tests/thread_pool_tests.cpp
-    tests/parsers/pbrt/test_instancing.cpp)
+    tests/parsers/pbrt/test_instancing.cpp
+    tests/triangle_filter_tests.cpp)
 
 target_include_directories(
     runUnitTests

@@ -49,6 +49,15 @@ namespace poly {
       void GetSamples(point2f points[], unsigned int number, int x, int y) const override;
    };
    
+   class random_sampler : public abstract_sampler {
+   public:
+      point2f GetSample(int x, int y) const override;
+
+      ~random_sampler() override = default;
+
+      void GetSamples(point2f points[], unsigned int number, int x, int y) const override;
+   };
+   
 }
 
 

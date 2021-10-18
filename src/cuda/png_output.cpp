@@ -63,7 +63,7 @@ namespace poly {
       
       char* cwd = get_current_dir_name();
       
-      LOG_INFO("Output successful to " << cwd << "/" << filename.c_str());
+      LOG_INFO("output successful to " << cwd << "/" << filename.c_str());
       
       free(cwd);
    }

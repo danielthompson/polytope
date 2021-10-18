@@ -179,7 +179,7 @@ Other:
          poly::output_png::output(&render_context, options.output_filename);
          const auto output_end_time = std::chrono::system_clock::now();
          const std::chrono::duration<double> output_duration = output_end_time - output_start_time;
-         LOG_INFO("Output complete in " << output_duration.count() << "s.");
+         LOG_INFO("output complete in " << output_duration.count() << "s.");
       }
 
       const auto totalRunTimeEnd = std::chrono::system_clock::now();

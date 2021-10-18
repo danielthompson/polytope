@@ -10,7 +10,7 @@
 #include "../common/utilities/Common.h"
 #include "integrators/PathTraceIntegrator.h"
 #include "samplers/samplers.h"
-#include "filters/BoxFilter.h"
+#include "filters/box_filter.h"
 #include "films/PNGFilm.h"
 #include "../common/parsers/pbrt_parser.h"
 #include "shapes/mesh.h"

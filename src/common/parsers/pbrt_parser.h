@@ -60,6 +60,8 @@ namespace poly {
       std::unique_ptr<std::vector<float>> float_values;
       std::unique_ptr<std::string> string_value;
       std::unique_ptr<std::vector<int>> int_values;
+      std::unique_ptr<std::vector<poly::point>> point_values;
+      std::unique_ptr<std::vector<poly::normal>> normal_values;
       
 //      union {
 //         std::vector<float> float_values;
@@ -206,7 +208,7 @@ namespace poly {
       std::shared_ptr<poly::scene> scene = nullptr;
       std::shared_ptr<poly::abstract_integrator> integrator;
       std::unique_ptr<poly::abstract_film> film;
-      std::unique_ptr<poly::AbstractFilter> filter;
+      std::unique_ptr<poly::abstract_filter> filter;
       poly::bounds bounds;
    
    private:

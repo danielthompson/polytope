@@ -39,13 +39,13 @@ namespace poly {
 
       poly::transform invert() const;
 
-      void apply_in_place(poly::point &point) const;
-      poly::point apply(const poly::point &point) const;
+      void apply_in_place(poly::point &p) const;
+      poly::point apply(const poly::point &p) const;
       
-      void apply_in_place(poly::vector &vector) const;
-      poly::vector apply(const poly::vector &vector) const;
+      void apply_in_place(poly::vector &v) const;
+      poly::vector apply(const poly::vector &v) const;
 
-      void apply_in_place(poly::normal &normal) const;
+      void apply_in_place(poly::normal &n) const;
       poly::normal Apply(const poly::normal &normal) const;
 
       void apply_in_place(poly::ray &ray) const;
@@ -74,7 +74,9 @@ namespace poly {
       poly::matrix matrix;
       poly::matrix inverse;
 
-      static const poly::vector x_dir, y_dir, z_dir;
+      static constexpr poly::vector x_dir = { 1, 0, 0 };
+      static constexpr poly::vector y_dir = { 0, 1, 0 };
+      static constexpr poly::vector z_dir = { 0, 0, 1 };
    };
 }
 

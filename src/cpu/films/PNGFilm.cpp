@@ -14,7 +14,7 @@
 namespace poly {
 
    void PNGFilm::AddSample(const point2f &location, const Sample &sample) {
-      Filter->AddSample(location, sample);
+      Filter->add_sample(location, sample);
    }
 
    void PNGFilm::Output() {
@@ -24,11 +24,13 @@ namespace poly {
       const unsigned int width = Bounds.x;
       const unsigned int height = Bounds.y;
 
+      Filter->pre_output();
+      
       for (int x = 0; x < width; x++) {
          for (int y = 0; y < height; y++) {
 
             const int index = 4 * (y * width + x);
-            const SpectralPowerDistribution spd = Filter->Output(point2i(x, y));
+            const SpectralPowerDistribution spd = Filter->output(point2i(x, y));
 
             const auto r = static_cast<unsigned char>(spd.r > 255 ? 255 : spd.r);
             const auto g = static_cast<unsigned char>(spd.g > 255 ? 255 : spd.g);

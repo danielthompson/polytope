@@ -19,7 +19,7 @@ namespace poly {
       PNGFilm(
          const poly::bounds bounds,
          std::string filename,
-         std::unique_ptr<AbstractFilter> filter)
+         std::unique_ptr<abstract_filter> filter)
          : abstract_film(bounds, std::move(filter)),
            Filename(std::move(filename)) { };
 

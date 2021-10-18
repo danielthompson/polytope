@@ -1,8 +1,17 @@
 Integrator "path" 
-        "integer maxdepth" [ 65 ] 
-Transform [ 1 -0 -0 -0 -0 1 -0 -0 -0 -0 -1 -0 -0 -1 6.80000019 1  ]
-Sampler "sobol" 
-        "integer pixelsamples" [ 64 ] 
+        "integer maxdepth" [ 5 ] 
+# Transform [ 
+#    1  -0 -0 -0 
+#    -0  1 -0 -0 
+#    -0 -0 -1 -0 
+#    -0 -1 6.8 1  ]
+
+LookAt 0 1 3.1
+        0 1 1
+        0 1 0
+
+Sampler "random" 
+        "integer pixelsamples" [ 1024 ] 
 # PixelFilter "triangle" 
 #         "float xwidth" [ 1 ] 
 #         "float ywidth" [ 1 ] 
@@ -11,10 +20,13 @@ Film "image"
         "integer yresolution" [ 1024 ] 
         "string filename" [ "cornell-box.png" ] 
 Camera "perspective" 
-        "float fov" [ 19.5 ] 
+        # "float fov" [ 19.5 ] 
+        "float fov" [ 50 ]
 
 
 WorldBegin
+
+    # LightSource "infinite" "rgb L" [.25 .25 .25]
 
 MakeNamedMaterial "LeftWall" 
         "string type" [ "matte" ] 
@@ -42,20 +54,33 @@ MakeNamedMaterial "Light"
         "rgb Kd" [ 0 0 0 ] 
 NamedMaterial "Floor"
 Shape "trianglemesh" 
-        "integer indices" [ 0 1 2 0 2 3 ] 
-        "float uv" [ 0 0 1 0 1 1 0 1 ] 
-        "point P" [ -1 1.74845994e-07 -1 -1 1.74845994e-07 1 1 -1.74845994e-07 1 
-        1 -1.74845994e-07 -1 ] 
-        "normal N" [ 4.37113989e-08 1 1.91068991e-15 4.37113989e-08 1 1.91068991e-15 
-        4.37113989e-08 1 1.91068991e-15 4.37113989e-08 1 1.91068991e-15 ] 
+        "integer indices" [ 
+            0 1 2 
+            0 2 3 ] 
+        "float uv" [ 
+            0 0 
+            1 0 
+            1 1 
+            0 1 ] 
+        "point P" [ 
+            -1 1.74845994e-07 -1 
+            -1 1.74845994e-07 1 
+            1 -1.74845994e-07 1 
+            1 -1.74845994e-07 -1 ] 
+        "normal N" [ 
+            4.37113989e-08 1 1.91068991e-15 
+            4.37113989e-08 1 1.91068991e-15 
+            4.37113989e-08 1 1.91068991e-15 
+            4.37113989e-08 1 1.91068991e-15 ] 
 NamedMaterial "Ceiling"
 Shape "trianglemesh" 
-        "integer indices" [ 0 1 2 0 2 3 ] 
-        "float uv" [ 0 0 1 0 1 1 0 1 ] 
-        "point P" [ 1 2 1 -1 2 1 -1 2 -1 1 2 -1 ] 
-        "normal N" [ -8.74227979e-08 -1 -4.37113989e-08 -8.74227979e-08 -1 -4.37113989e-08 
-        -8.74227979e-08 -1 -4.37113989e-08 -8.74227979e-08 -1 -4.37113989e-08 ] 
-NamedMaterial "BackWall"
+         "integer indices" [ 0 1 2 0 2 3 ] 
+         "float uv" [ 0 0 1 0 1 1 0 1 ] 
+         "point P" [ 1 2 1 -1 2 1 -1 2 -1 1 2 -1 ] 
+         "normal N" [ -8.74227979e-08 -1 -4.37113989e-08 -8.74227979e-08 -1 -4.37113989e-08 
+         -8.74227979e-08 -1 -4.37113989e-08 -8.74227979e-08 -1 -4.37113989e-08 ] 
+
+NamedMaterial "BackWall"    
 Shape "trianglemesh" 
         "integer indices" [ 0 1 2 0 2 3 ] 
         "float uv" [ 0 0 1 0 1 1 0 1 ] 
@@ -77,6 +102,7 @@ Shape "trianglemesh"
         "normal N" [ -1 -4.37113989e-08 -4.37113989e-08 -1 -4.37113989e-08 -4.37113989e-08 
         -1 -4.37113989e-08 -4.37113989e-08 -1 -4.37113989e-08 -4.37113989e-08 ] 
 NamedMaterial "ShortBox"
+
 Shape "trianglemesh" 
         "integer indices" [ 0 2 1 0 3 2 4 6 5 4 7 6 8 10 9 8 11 10 12 14 13 12 15 
         14 16 18 17 16 19 18 20 22 21 20 23 22 ] 
@@ -104,7 +130,8 @@ Shape "trianglemesh"
         0.286356986 1.25171002e-08 -0.958123028 0.286356986 1.25171002e-08 -0.958123028 
         0.286356986 1.25171002e-08 -0.958123028 ] 
 NamedMaterial "TallBox"
-Shape "trianglemesh" 
+    
+    Shape "trianglemesh" 
         "integer indices" [ 0 2 1 0 3 2 4 6 5 4 7 6 8 10 9 8 11 10 12 14 13 12 15 
         14 16 18 17 16 19 18 20 22 21 20 23 22 ] 
         "float uv" [ 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 
@@ -130,15 +157,20 @@ Shape "trianglemesh"
         0.944445014 -1.43666004e-08 -0.328669012 0.944445014 -1.43666004e-08 -0.328669012 
         0.944445014 -1.43666004e-08 -0.328669012 ] 
 
+    
 AttributeBegin
     AreaLightSource "diffuse" 
-            "rgb L" [ 17 12 4 ] 
+            "rgb L" [ 34 24 8 ] 
     NamedMaterial "Light"
     Shape "trianglemesh" 
             "integer indices" [ 0 1 2 0 2 3 ] 
             "float uv" [ 0 0 1 0 1 1 0 1 ] 
-            "point P" [ -0.239999995 1.98000002 -0.219999999 0.230000004 1.98000002 -0.219999999 
-            0.230000004 1.98000002 0.159999996 -0.239999995 1.98000002 0.159999996 ] 
+            "point P" [ 
+                -0.3 1.98 -0.3 
+                0.3  1.98 -0.3 
+                0.3  1.98 0.16 
+                -0.3 1.98 0.16 
+            ] 
             "normal N" [ -8.74227979e-08 -1 1.86006005e-07 -8.74227979e-08 -1 1.86006005e-07 
             -8.74227979e-08 -1 1.86006005e-07 -8.74227979e-08 -1 1.86006005e-07 ] 
 AttributeEnd

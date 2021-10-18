@@ -2,6 +2,7 @@
 // Created by Daniel Thompson on 2/21/18.
 //
 
+#include <cstdlib>
 #include "samplers.h"
 
 namespace poly {
@@ -22,8 +23,8 @@ namespace poly {
    }
 
    void HaltonSampler::GetSamples(point2f points[], const unsigned int number, const int x, const int y) const {
-      const int base0 = 2;
-      const int base1 = 3;
+      constexpr int base0 = 2;
+      constexpr int base1 = 3;
 
       for (int i = 1; i <= number; i++) {
 
@@ -145,6 +146,20 @@ namespace poly {
       for (int i = 0; i < number; i++) {
          points[i].x += x;
          points[i].y += y;
+      }
+   }
+
+   point2f random_sampler::GetSample(int x, int y) const {
+      double r0 = (double)std::rand() / (double)RAND_MAX;
+      double r1 = (double)std::rand() / (double)RAND_MAX;
+      return {(float)x + (float)r0, (float)y + (float)r1};
+   }
+
+   void random_sampler::GetSamples(point2f *points, unsigned int number, int x, int y) const {
+      for (int i = 0; i < number; i++) {
+         double r0 = (double)std::rand() / (double)RAND_MAX;
+         double r1 = (double)std::rand() / (double)RAND_MAX;
+         points[i] = {(float)x + (float)r0, (float)y + (float)r1 };
       }
    }
 }

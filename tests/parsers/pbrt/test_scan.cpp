@@ -8,7 +8,7 @@
 #include "../../../src/cpu/samplers/samplers.h"
 #include "../../../src/common/utilities/Logger.h"
 #include "../../../src/cpu/films/PNGFilm.h"
-#include "../../../src/cpu/filters/BoxFilter.h"
+#include "../../../src/cpu/filters/box_filter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
 #include "../../../src/cpu/scenes/scene.h"
 #include "../../../src/cpu/cameras/perspective_camera.h"

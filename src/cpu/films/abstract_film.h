@@ -8,16 +8,16 @@
 #include <memory>
 #include "../structures/Sample.h"
 #include "../../common/structures/point2.h"
-#include "../filters/AbstractFilter.h"
+#include "../filters/abstract_filter.h"
 
 namespace poly {
 
    class abstract_film {
    public:
       const poly::bounds Bounds;
-      std::unique_ptr<AbstractFilter> Filter;
+      std::unique_ptr<abstract_filter> Filter;
 
-      abstract_film(const poly::bounds bounds, std::unique_ptr<AbstractFilter> filter)
+      abstract_film(const poly::bounds bounds, std::unique_ptr<abstract_filter> filter)
             : Bounds(bounds), Filter(std::move(filter)) { };
       virtual ~abstract_film() = default;
 

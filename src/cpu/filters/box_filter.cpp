@@ -3,21 +3,17 @@
 //
 
 #include <sstream>
-#include "BoxFilter.h"
+#include "box_filter.h"
 #include "../../common/structures/point2.h"
 #include "../../common/utilities/Common.h"
 
 namespace poly {
 
-   //std::mutex BoxFilter::_mutex;
-
-   void BoxFilter::AddSample(const point2f &location, const Sample &sample) {
+   void box_filter::add_sample(const poly::point2f &location, const poly::Sample &sample) {
       const int x = static_cast<int>(location.x);
       const int y = static_cast<int>(location.y);
 
       const int index = y * Bounds.x + x;
-
-      // std::lock_guard<std::mutex> lock(_mutex);
 
       const auto vectorSize = _data.size();
 
@@ -25,14 +21,10 @@ namespace poly {
          LOG_DEBUG("Attempting to write a sample for (" << x << ", " << y << ") to index " <<  index << " but size is " << vectorSize << "... :/");
       }
 
-      Sample clamped = sample;
-      if (clamped.SpectralPowerDistribution.r > 255)  clamped.SpectralPowerDistribution.r = 255;
-      if (clamped.SpectralPowerDistribution.g > 255)  clamped.SpectralPowerDistribution.g = 255;
-      if (clamped.SpectralPowerDistribution.b > 255)  clamped.SpectralPowerDistribution.b = 255;
-      _data[index].push_back(clamped);
+      _data[index].push_back(sample);
    }
 
-   void BoxFilter::AddSamples(const point2f &location, const std::vector<Sample> &samples) {
+   void box_filter::add_samples(const poly::point2f &location, const std::vector<poly::Sample> &samples) {
       const int x = static_cast<int>(location.x);
       const int y = static_cast<int>(location.y);
 
@@ -49,31 +41,22 @@ namespace poly {
       }
    }
 
-   SpectralPowerDistribution BoxFilter::Output(const point2i &pixel) const {
+   poly::SpectralPowerDistribution box_filter::output(const poly::point2i &pixel) const {
       const unsigned int index = pixel.y * Bounds.x + pixel.x;
 
       const unsigned long numSamples = _data[index].size();
 
-      SpectralPowerDistribution accum;
+      poly::SpectralPowerDistribution accum;
 
       for (unsigned long i = 0; i < numSamples; i++) {
          accum += _data[index][i].SpectralPowerDistribution;
       }
 
-      const float divisor = 1.0f / numSamples;
+      const float divisor = 1.0f / (float)numSamples;
 
       accum *= divisor;
 
       // fix to return SPD not Sample
       return accum;
-   }
-
-   void BoxFilter::SetSamples(const unsigned int samples) {
-      for (int x = 0; x < Bounds.x; x++) {
-         for (int y = 0; y < Bounds.y; y++) {
-            const unsigned int index = y * Bounds.x + x;
-            _data[index].reserve(samples);
-         }
-      }
    }
 }
