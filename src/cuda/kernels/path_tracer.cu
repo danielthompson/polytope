@@ -53,6 +53,7 @@ namespace poly {
       float3 hit_point;
       float3 tangent1;
       float3 tangent2;
+      float3 error;
       bool hits;
       float u, v, w, new_t;
    };
@@ -252,6 +253,39 @@ namespace poly {
          n *= flip_factor;
          normalize(n);
          intersection->normal = n;
+
+         // offset ray origin along normal
+         // http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#RobustSpawnedRayOrigins
+         float3 abs_normal = make_float3(std::abs(n.x), std::abs(n.y), std::abs(n.z));
+         float d = dot(intersection->error, abs_normal);
+         float3 offset = make_float3(n.x, n.y, n.z) * d;
+         if (dot(direction, n) > 0)
+            offset = offset * -1;
+         float3 new_p = intersection->hit_point + offset;
+
+         if (offset.x > 0) {
+            new_p.x = std::nextafter(new_p.x, poly::Infinity);
+         }
+         else if (offset.x < 0) {
+            new_p.x = std::nextafter(new_p.x, -poly::Infinity);
+         }
+
+         if (offset.y > 0) {
+            new_p.y = std::nextafter(new_p.y, poly::Infinity);
+         }
+         else if (offset.y < 0) {
+            new_p.y = std::nextafter(new_p.y, -poly::Infinity);
+         }
+
+         if (offset.z > 0) {
+            new_p.z = std::nextafter(new_p.z, poly::Infinity);
+         }
+         else if (offset.z < 0) {
+            new_p.z = std::nextafter(new_p.z, -poly::Infinity);
+         }
+
+         intersection->hit_point = new_p;
+         
          const float edge0dot = fabs(dot(e0, e1));
          const float edge1dot = fabs(dot(e1, e2));
          const float edge2dot = fabs(dot(e2, e0));
@@ -474,6 +508,29 @@ namespace poly {
                   float u = U * rcpDet;
                   float v = V * rcpDet;
                   float w = W * rcpDet;
+
+                  const float computed_t = T * rcpDet;
+                  
+                  const float maxZt = max(abs(A.z), max(abs(B.z), abs(C.z)));
+                  const float deltaZ = poly::Gamma3 * maxZt;
+
+                  const float maxXt = max(abs(A.x), max(abs(B.x), abs(C.x)));
+                  const float maxYt = max(abs(A.y), max(abs(B.y), abs(C.y)));
+                  const float deltaX = poly::Gamma5 * (maxXt + maxZt);
+                  const float deltaY = poly::Gamma5 * (maxYt + maxZt);
+                  const float deltaE = 2 * (poly::Gamma2 * maxXt * maxYt + deltaY * maxXt + deltaX * maxYt);
+                  const float maxE = max(abs(U), max(abs(V), abs(W)));
+                  float deltaT = 3 * (poly::Gamma3 * maxE * maxZt + deltaE * maxZt + deltaZ * maxE) * abs(rcpDet);
+                  if (computed_t <= deltaT)
+                     continue;
+
+                  // http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#x4-ParametricEvaluation:Triangles
+                  float x_error_sum = std::abs(u * v0.x) + std::abs(v * v1.x) + std::abs(w * v2.x);
+                  float y_error_sum = std::abs(u * v0.y) + std::abs(v * v1.y) + std::abs(w * v2.y);
+                  float z_error_sum = std::abs(u * v0.z) + std::abs(v * v1.z) + std::abs(w * v2.z);
+                  intersection->error = make_float3(x_error_sum, y_error_sum, z_error_sum) * poly::Gamma7;
+                  
+                  
                   intersection->t = T * rcpDet;
                   intersection->hits = true;
                   intersection->face_index = face_index;
@@ -665,7 +722,6 @@ namespace poly {
          num_bounces++;
       }
       
-      //src *= 255.f;
       const_device_pointers.device_samples->r[pixel_index] += src.x;
       const_device_pointers.device_samples->g[pixel_index] += src.y;
       const_device_pointers.device_samples->b[pixel_index] += src.z;
@@ -895,8 +951,7 @@ namespace poly {
    __global__ void init_curand_states_kernel(curandState_t* states, const unsigned int num_elements) {
       const unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
       if (index < num_elements)
-         curand_init(index, 0, 0, &states[index]);
-      
+         curand_init(index, index, 0, &states[index]);
    }
    
    __global__ void reduce_samples_kernel(const float inv_num_samples, const unsigned int num_elements) {
