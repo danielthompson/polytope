@@ -1429,7 +1429,9 @@ namespace poly {
             }
             case DirectiveIdentifier::AttributeEnd: {
                // pop material stack
-               if (!materialStack.empty()) {
+               if (materialStack.empty()) {
+                  activeMaterial = nullptr;
+               } else {
                   std::shared_ptr<poly::Material> stackValue = materialStack.top();
                   materialStack.pop();
                   activeMaterial = stackValue;
@@ -1770,8 +1772,6 @@ namespace poly {
                      
                      scene->mesh_geometry_count++;
                      poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
-
-                     
                      
                      if (activeLight != nullptr) {
                         // TODO
