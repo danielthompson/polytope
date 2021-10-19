@@ -13,7 +13,10 @@ namespace poly {
 
    
 //#define DEBUG_PIXEL_INDEX 164160 /* 320, 320 */
-#define DEBUG_PIXEL_INDEX 98496  /* 192, 192 */
+#define DEBUG_PIXEL_X 512
+#define DEBUG_PIXEL_Y 175
+
+#define DEBUG_PIXEL_INDEX DEBUG_PIXEL_Y * 1024 + DEBUG_PIXEL_X  /* 192, 192 */
 #define DEBUG_PRINT 0
    
    constexpr unsigned int threads_per_block = 32;
@@ -437,10 +440,11 @@ namespace poly {
                   // Perform edge tests. Moving this test before and at the end of the previous
                   // conditional gives higher performance.
                   // backface culling:
-                  if (U < 0.0f || V < 0.0f || W < 0.0f)
-                     continue;
+//                  if (U < 0.0f || V < 0.0f || W < 0.0f)
+//                     continue;
                   // no backface culling:
-                  //if ((U<0.0f || V<0.0f || W<0.0f) &&(U>0.0f || V>0.0f || W>0.0f)) return;
+                  if ((U < 0.0f || V < 0.0f || W < 0.0f) && (U > 0.0f || V > 0.0f || W > 0.0f))
+                     continue;
                   
                   // calculate determinant
                   float det = U + V + W;
@@ -454,11 +458,16 @@ namespace poly {
                   const float T = U * Az + V * Bz + W * Cz;
                   
                   // backface culling
-                  if (T < 0.0f || T > intersection->t * det)
-                     continue;
-                  
+//                  if (T < 0.0f || T > intersection->t * det)
+//                     continue;
+
                   // no backface culling
-                  // int det_sign = sign_mask(det);if (xorf(T,det_sign) < 0.0f) ||xorf(T,det_sign) > hit.t*xorf(det, det_sign))return;
+                  if (det < 0.f && (T >= 0 || T < intersection->t * det)) {
+                     continue;
+                  }
+                  if (det > 0.f && (T <= 0 || T > intersection->t * det)) {
+                     continue;
+                  }
                   
                   // normalize
                   const float rcpDet = 1.0f / det;
@@ -581,10 +590,6 @@ namespace poly {
                cuda_debug_printf(debug, "Hit mesh %i face %i with t %f ray o: (%f %f %f) d: (%f %f %f)\n", 
                                  intersection.mesh_index, intersection.face_index, intersection.t, o.x, o.y, o.z, d.x, d.y, d.z);
                
-               // todo hit light
-
-               // TODO put this into a lambert_brdf function
-//                const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
                float3 local_incoming = normalize(
                      make_float3(dot(d, intersection.tangent1), 
                                  dot(d, intersection.normal),
@@ -609,12 +614,16 @@ namespace poly {
                      break;
                   }
                   default:
-                     //printf("mesh %i missing brdf :/\n", intersection.mesh_index);
-                     local_outgoing = {0.0f / 0.0f, 0.0f / 0.0f, 0.0f / 0.0f};
-                     src = {0.0f / 0.0f, 0.0f / 0.0f, 0.0f / 0.0f};
+                     // light
+                     src = src * make_float3(mesh_hit.brdf_params[7],mesh_hit.brdf_params[8],mesh_hit.brdf_params[9]); 
+                     active = false;
                      break;
                }
 
+               if (!active) {
+                  break;
+               }
+               
                cuda_debug_printf(debug, "  Intersection t1 (%f %f %f) t2 (%f %f %f)\n",
                                  intersection.tangent1.x, intersection.tangent1.y, intersection.tangent1.z,
                                  intersection.tangent2.x, intersection.tangent2.y, intersection.tangent2.z);
@@ -643,7 +652,9 @@ namespace poly {
             } 
             else {
                cuda_debug_printf(debug, " no hit, becoming inactive\n");
+               src = { 0.0f, 0.0f, 0.0f };
                active = false;
+               break;
             }
          }
          else {
@@ -654,7 +665,7 @@ namespace poly {
          num_bounces++;
       }
       
-      src *= 255.f;
+      //src *= 255.f;
       const_device_pointers.device_samples->r[pixel_index] += src.x;
       const_device_pointers.device_samples->g[pixel_index] += src.y;
       const_device_pointers.device_samples->b[pixel_index] += src.z;

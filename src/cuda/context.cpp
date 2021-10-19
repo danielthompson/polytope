@@ -176,6 +176,16 @@ namespace poly {
          }
          else {
             host_mesh_temp.brdf_type = BRDF_TYPE::None;
+            if (host_mesh->is_light()) {
+               host_mesh_temp.brdf_params[7] = host_mesh->spd->r;
+               host_mesh_temp.brdf_params[8] = host_mesh->spd->g;
+               host_mesh_temp.brdf_params[9] = host_mesh->spd->b;
+            }
+            else {
+               host_mesh_temp.brdf_params[7] = 0;
+               host_mesh_temp.brdf_params[8] = 0;
+               host_mesh_temp.brdf_params[9] = 0;
+            }
          }
          
          host_mesh_temp.world_bb[0] = host_mesh->world_bb.p0.x;
