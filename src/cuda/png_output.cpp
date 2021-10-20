@@ -41,6 +41,10 @@ namespace poly {
             memcpy(h_samples_g + dest_offset, temp_g + src_offset, tile_row_byte_count);
             memcpy(h_samples_b + dest_offset, temp_b + src_offset, tile_row_byte_count);
          }
+         
+         free(temp_r);
+         free(temp_g);
+         free(temp_b);
       }
       
       // write them to file
@@ -66,5 +70,8 @@ namespace poly {
       LOG_INFO("output successful to " << cwd << "/" << filename.c_str());
       
       free(cwd);
+      free(h_samples_r);
+      free(h_samples_g);
+      free(h_samples_b);
    }
 }
