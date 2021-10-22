@@ -48,11 +48,26 @@ SET(COVERAGE OFF CACHE BOOL "Coverage")
 # Normal Libraries & Executables
 ################################
 
+##### Libraries
+
+## PCG
+
+add_library(pcg_lib SHARED
+    lib/pcg/pcg_extras.hpp
+    lib/pcg/pcg_random.hpp
+    lib/pcg/pcg_uint128.hpp)
+
+set_target_properties(pcg_lib PROPERTIES LINKER_LANGUAGE CXX)
+
+## ISPC intersect
+
 add_custom_command(
     OUTPUT ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.o
     COMMAND ispc ${ispc_options} -h ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.h -o ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.o ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.ispc
     MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.ispc
     BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/cpu/shapes/mesh_intersect.h)
+
+## polytope sources
 
 set(POLYTOPE_LIB_SOURCES
     lib/lodepng.cpp
@@ -66,9 +81,7 @@ set(POLYTOPE_LIB_SOURCES
     src/cpu/films/png_film.cpp
     src/cpu/films/png_film.h
     src/cpu/filters/abstract_filter.h
-    src/cpu/filters/box_filter.cpp
     src/cpu/filters/box_filter.h
-    src/cpu/filters/triangle_filter.cpp
     src/cpu/filters/triangle_filter.h
     src/cpu/integrators/abstract_integrator.h
     src/cpu/integrators/abstract_integrator.h
@@ -133,13 +146,46 @@ set(POLYTOPE_LIB_SOURCES
     src/cpu/shading/texture.h
     )
 
-add_executable(${PROJECT_NAME} src/cpu/main.cpp
-    )
+## polytope_lib
+
+add_library(polytope_lib SHARED ${POLYTOPE_LIB_SOURCES})
+if (ENABLE_COVERAGE)
+  target_compile_options(polytope_lib PRIVATE --coverage)
+  target_link_libraries(polytope_lib PRIVATE --coverage)
+endif ()
+
+## polytope_gl_lib
 
 add_library(polytope_gl_lib SHARED ${POLYTOPE_LIB_SOURCES})
-add_library(polytope_lib SHARED ${POLYTOPE_LIB_SOURCES})
-
 target_compile_definitions(polytope_gl_lib PUBLIC POLYTOPEGL)
+
+## polytope_cuda_lib
+
+
+if (NOT APPLE)
+  add_library(polytope_cuda_lib
+    src/cuda/check_error.h
+    src/cuda/context.cpp
+    src/cuda/context.h
+    src/cuda/kernels/common_device_functions.cuh
+    src/cuda/kernels/path_tracer.cu
+    src/cuda/kernels/path_tracer.cuh
+    src/cuda/png_output.cpp
+    src/cuda/png_output.h
+    src/cuda/mesh/cuda_pinned_allocator.h
+    src/cuda/mesh/cuda_mesh_soa.cpp
+    src/cuda/mesh/cuda_mesh_soa.h
+    )
+endif ()
+
+##### Executables
+
+## polytope
+
+add_executable(${PROJECT_NAME} src/cpu/main.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC polytope_lib pcg_lib)
+
+## polytope-gl
 
 add_executable(polytope-gl
     src/gl/main.cpp
@@ -153,37 +199,48 @@ add_executable(polytope-gl
     src/gl/shaders.cpp src/gl/gl_recorder.h)
 
 target_compile_definitions(polytope-gl PUBLIC POLYTOPEGL)
+target_link_libraries(polytope-gl PUBLIC pcg_lib)
 
-add_library(polytope_cuda_lib
-    src/cuda/check_error.h
-    src/cuda/context.cpp
-    src/cuda/context.h
-    src/cuda/kernels/common_device_functions.cuh
-    src/cuda/kernels/path_tracer.cu
-    src/cuda/kernels/path_tracer.cuh
-    src/cuda/png_output.cpp
-    src/cuda/png_output.h
-    src/cuda/mesh/cuda_pinned_allocator.h
-    src/cuda/mesh/cuda_mesh_soa.cpp
-    src/cuda/mesh/cuda_mesh_soa.h
-    )
+## polytope_cuda
 
-add_executable(polytope_cuda
-    src/cuda/main.cpp
-    )
+if (NOT APPLE)
+  add_executable(polytope_cuda src/cuda/main.cpp)
+  target_link_libraries(polytope_cuda PUBLIC pcg_lib)  
 
-set_target_properties(
-    polytope_cuda
-    PROPERTIES
-    CUDA_SEPARABLE_COMPILATION ON)
+  set_target_properties(
+      polytope_cuda
+      PROPERTIES
+      CUDA_SEPARABLE_COMPILATION ON)
 
-# Key idea: SEPARATE OUT your main() function into its own file so it can be its
-# own executable. Separating out main() means you can add this library to be
-# used elsewhere.
+  target_include_directories(
+      polytope_cuda
+      PRIVATE
+      ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+  )
 
-if (COVERAGE)
-  target_compile_options(polytope_lib PRIVATE --coverage)
-  target_link_libraries(polytope_lib PRIVATE --coverage)
+  target_link_libraries(
+      polytope_cuda
+      PRIVATE
+      ${CUDART_LIBRARY}
+  )
+
+  target_include_directories(
+      polytope_cuda_lib
+      PRIVATE
+      ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+  )
+
+  target_link_libraries(
+      polytope_cuda_lib
+      PRIVATE
+      ${CUDART_LIBRARY}
+  )
+
+  target_link_libraries(polytope_cuda PUBLIC polytope_lib)
+  target_link_libraries(polytope_cuda PUBLIC polytope_cuda_lib)
+
+  set_property(TARGET polytope_cuda PROPERTY CUDA_ARCHITECTURES 61)
+  set_property(TARGET polytope_cuda_lib PROPERTY CUDA_ARCHITECTURES 61)
 endif ()
 
 # link in pthreads on linux
@@ -203,41 +260,11 @@ if (UNIX)
   find_package(glbinding PATHS /usr/share/glbinding/ REQUIRED)
   target_link_libraries(polytope-gl PRIVATE glbinding::glbinding)
 
-  # find_package(glm REQUIRED)
-  # target_link_libraries(polytope PRIVATE glm)
-
-  target_include_directories(
-      polytope_cuda
-      PRIVATE
-      ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-  )
-
-  target_link_libraries(
-      polytope_cuda
-      PRIVATE
-      ${CUDART_LIBRARY}
-  )
-
-  target_include_directories(
-      polytope_cuda_lib
-      PRIVATE
-      ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-  )
-
-  target_link_libraries(
-      polytope_cuda_lib
-      PRIVATE
-      ${CUDART_LIBRARY}
-  )
 endif ()
 
-target_link_libraries(${PROJECT_NAME} PUBLIC polytope_lib)
-target_link_libraries(polytope-gl PUBLIC polytope_gl_lib)
-target_link_libraries(polytope_cuda PUBLIC polytope_lib)
-target_link_libraries(polytope_cuda PUBLIC polytope_cuda_lib)
 
-set_property(TARGET polytope_cuda PROPERTY CUDA_ARCHITECTURES 61)
-set_property(TARGET polytope_cuda_lib PROPERTY CUDA_ARCHITECTURES 61)
+target_link_libraries(polytope-gl PUBLIC polytope_gl_lib)
+
 
 ################################
 # Testing
@@ -284,29 +311,14 @@ add_executable(runUnitTests
     tests/parsers/pbrt/test_instancing.cpp
     tests/triangle_filter_tests.cpp)
 
-target_include_directories(
-    runUnitTests
-    PRIVATE
-    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-)
+if (NOT APPLE)
+  target_include_directories(
+      runUnitTests
+      PRIVATE
+      ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+  )
 
-# generate coverage data, see http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/
-# if (COVERAGE)
-#    target_compile_options(runUnitTests PRIVATE --coverage)
-#    target_link_libraries(runUnitTests PRIVATE --coverage)
-# endif()
+  target_link_libraries(runUnitTests PRIVATE polytope_cuda_lib)
+endif ()
 
-# Standard linking to gtest stuff.
-target_link_libraries(runUnitTests PRIVATE gtest gtest_main)
-
-# Extra linking for the project.
-target_link_libraries(runUnitTests PRIVATE polytope_lib polytope_cuda_lib)
-
-# This is so you can do 'make tests' to see all your tests run, instead of
-# manually running the executable runUnitTests to see those specific tests.
-add_test(NAME that-test-I-made COMMAND runUnitTests)
-
-# You can also omit NAME and COMMAND. The second argument could be some other
-# tests executable.
-add_test(that-other-test-I-made runUnitTests)
-# endif()
+target_link_libraries(runUnitTests PRIVATE gtest gtest_main polytope_lib pcg)

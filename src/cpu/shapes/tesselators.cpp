@@ -7,7 +7,7 @@
 
 namespace poly {
 
-   void SphereTesselator::Create(unsigned int meridians, unsigned int parallels, std::shared_ptr<poly::mesh_geometry> mesh) {
+   void SphereTesselator::Create(unsigned int meridians, unsigned int parallels, const std::shared_ptr<poly::mesh_geometry>& mesh) {
 
       std::vector<unsigned int> parallelStartIndices;
 
@@ -83,7 +83,7 @@ namespace poly {
       mesh->unpack_faces();
    }
 
-   void DiskTesselator::Create(unsigned int meridians, std::shared_ptr<poly::mesh_geometry> mesh) {
+   void DiskTesselator::Create(unsigned int meridians, const std::shared_ptr<poly::mesh_geometry>& mesh) {
       // center
       mesh->add_vertex(0, 0, 0);
 
@@ -102,7 +102,7 @@ namespace poly {
       mesh->add_packed_face(0, meridians, 1);
    }
 
-   void ConeTesselator::Create(unsigned int meridians, std::shared_ptr<poly::mesh_geometry> mesh) {
+   void ConeTesselator::Create(unsigned int meridians, const std::shared_ptr<poly::mesh_geometry>& mesh) {
       // center
       mesh->add_vertex(0, 1, 0);
 
