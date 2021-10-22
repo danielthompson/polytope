@@ -27,6 +27,10 @@ namespace poly {
 #endif
          
          if (!intersection.Hits) {
+            if (num_bounces == 0) {
+               bool debug = true;
+            }
+            
             poly::SpectralPowerDistribution spd;
             if (Scene->Skybox != nullptr) {
                spd = Scene->Skybox->GetSpd(ray.direction) * src;

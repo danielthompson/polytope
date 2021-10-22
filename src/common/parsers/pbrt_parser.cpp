@@ -38,8 +38,10 @@ namespace poly {
          const std::string AttributeEnd = "AttributeEnd";
          const std::string box = "box";
          const std::string Camera = "Camera";
+         const std::string center = "center";
          const std::string filename = "filename";
          const std::string Film = "Film";
+         const std::string grid = "grid";
          const std::string halton = "halton";
          const std::string image = "image";
          const std::string indices = "indices";
@@ -65,6 +67,7 @@ namespace poly {
          const std::string pixelsamples = "pixelsamples";
          const std::string plastic = "plastic";
          const std::string plymesh = "plymesh";
+         const std::string random = "random";
          const std::string Rotate = "Rotate";
          const std::string roughness = "roughness";
          const std::string Sampler = "Sampler";
@@ -76,11 +79,14 @@ namespace poly {
          const std::string TransformBegin = "TransformBegin";
          const std::string TransformEnd = "TransformEnd";
          const std::string Translate = "Translate";
+         const std::string triangle = "triangle";
          const std::string trianglemesh = "trianglemesh";
          const std::string type = "type";
          const std::string uv = "uv";
          const std::string WorldBegin = "WorldBegin";
          const std::string WorldEnd = "WorldEnd";
+         const std::string xwidth = "xwidth";
+         const std::string ywidth = "ywidth";
       }
       
       std::string _inputFilename;
@@ -1046,20 +1052,10 @@ namespace poly {
 
       // sampler
 
-      bool missingSampler = true;
-
       unsigned int numSamples = DefaultSamples;
 
       for (const std::unique_ptr<pbrt_directive> &directive : scene_directives) {
          if (directive->identifier == str::Sampler) {
-            missingSampler = false;
-//            if (directive->type == str::halton) {
-//               sampler = std::make_unique<HaltonSampler>();
-//            } else {
-//               LogUnknownIdentifier(directive);
-//               sampler = std::make_unique<CenterSampler>();
-//            }
-            sampler = std::make_unique<poly::HaltonSampler>();
 
             for (const pbrt_argument& arg : directive->arguments) {
                if (arg.Type == pbrt_argument::pbrt_int) {
@@ -1075,13 +1071,32 @@ namespace poly {
                   // TODO log bad argument type
                }
             }
+            
+            if (directive->type == str::halton) {
+               sampler = std::make_unique<poly::HaltonSampler>();
+            } 
+            else if (directive->type == str::random) {
+               sampler = std::make_unique<poly::random_sampler>();
+            }
+            else if (directive->type == str::center) {
+               sampler = std::make_unique<poly::CenterSampler>();
+            }
+            else if (directive->type == str::grid) {
+               sampler = std::make_unique<poly::GridSampler>();
+               // TODO: use popcnt
+               // if the samples are not a power of two, round up to next highest
+               if (!(numSamples != 0 && (numSamples & (numSamples - 1)) == 0)) {
+                  numSamples = 1 << (32 - __builtin_clz (numSamples - 1));
+               }
+               
+            }
+            else {
+               LogUnknownIdentifier(directive);
+            }
+
+            
             break;
          }
-      }
-
-      if (missingSampler) {
-         std::string defaultOption = "Halton";
-         LogMissingDirective(str::Sampler, defaultOption);
       }
 
       if (sampler == nullptr) {
@@ -1164,23 +1179,29 @@ namespace poly {
       for (const std::unique_ptr<pbrt_directive>& directive : scene_directives) {
          if (directive->identifier == str::PixelFilter) {
             missingFilter = false;
-            if (directive->type == "box") {
-               unsigned int xWidth = 0;
-               unsigned int yWidth = 0;
 
-               for (const pbrt_argument& arg : directive->arguments) {
-                  if (arg.Type == pbrt_argument::pbrt_int) {
-                     if (arg.Name == "xwidth") {
-                        xWidth = arg.int_values->at(0);
-                     } else if (arg.Name == "ywidth") {
-                        yWidth = arg.int_values->at(0);
-                     } else {
-                        LogUnknownArgument(arg);
-                     }
-                     break;
+            float x_width = 1.0;
+            float y_width = 1.0;
+            
+            for (const pbrt_argument& arg : directive->arguments) {
+               if (arg.Type == pbrt_argument::pbrt_float) {
+                  if (arg.Name == str::xwidth) {
+                     x_width = arg.float_values->at(0);
+                  } else if (arg.Name == str::ywidth) {
+                     y_width = arg.float_values->at(0);
+                  } else {
+                     LogUnknownArgument(arg);
                   }
+                  break;
                }
-            } else {
+            }
+            if (directive->type == str::box) {
+               filter = std::make_unique<poly::box_filter>(bounds, x_width, y_width);
+            } 
+            else if (directive->type == str::triangle) {
+               filter = std::make_unique<poly::triangle_filter>(bounds, x_width, y_width);
+            }
+            else {
                LogUnknownIdentifier(directive);
             }
             break;
@@ -1193,10 +1214,10 @@ namespace poly {
       }
 
       if (filter == nullptr) {
-         filter = std::make_unique<poly::triangle_filter>(bounds, numSamples);
-//         filter = std::make_unique<poly::box_filter>(bounds);
-         film->Filter = std::move(filter);
+         filter = std::make_unique<poly::box_filter>(bounds, 1, 1);
       }
+
+      film->Filter = std::move(filter);
 
       LOG_DEBUG("Made filter.");
 

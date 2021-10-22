@@ -15,15 +15,14 @@ namespace poly {
    class box_filter : public abstract_filter {
    public:
 
-      explicit box_filter(const poly::bounds &bounds)
-            : abstract_filter(bounds), _data(bounds.x * bounds.y, std::vector<Sample>()) { }
+      explicit box_filter(
+            const poly::bounds &bounds,
+            const float x_width,
+            const float y_width)
+            : abstract_filter(bounds, x_width, y_width) { }
 
-      SpectralPowerDistribution output(const point2i &pixel) const override;
-      void add_sample(const point2f &location, const Sample &sample) override;
-      void add_samples(const point2f &location, const std::vector<Sample> &samples) override;
-
-   private:
-      std::vector<std::vector<Sample>> _data;
+   protected:
+      float evaluate(const point2i& pixel, const point2f& location) const override;
    };
 }
 

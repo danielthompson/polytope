@@ -65,6 +65,8 @@ namespace poly {
 
    void runner::trace(const int x, const int y) const {
 
+      poly::point2i pixel = {x, y};
+      
       poly::point2f points[sample_count];
 
       Sampler->GetSamples(points, sample_count, x, y);
@@ -74,7 +76,7 @@ namespace poly {
          poly::point2f sampleLocation = points[i];
          poly::ray ray = Scene->Camera->get_ray_for_pixel(sampleLocation);
          poly::Sample sample = integrator->get_sample(ray, 0, x, y);
-         Film->AddSample(sampleLocation, sample);
+         Film->AddSample(pixel, sampleLocation, sample);
       }
    }
 

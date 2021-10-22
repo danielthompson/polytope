@@ -19,15 +19,37 @@ namespace poly {
    public:
       const poly::bounds Bounds;
 
-      explicit abstract_filter(const poly::bounds &bounds) : Bounds(bounds) { }
+      explicit abstract_filter(
+            const poly::bounds &bounds, 
+            const float x_width,
+            const float y_width) 
+            : Bounds(bounds),
+              x_width(x_width),
+              y_width(y_width),
+              _output(std::vector<std::pair<poly::SpectralPowerDistribution, float>>(bounds.x * bounds.y))
+              { }
+
       virtual ~abstract_filter() = default;
 
-      virtual void add_sample(const point2f &location, const Sample &sample) = 0;
-      virtual void add_samples(const point2f &location, const std::vector<Sample> &samples) = 0;
+      virtual void add_sample(const point2i& pixel, const point2f &location, const Sample &sample) {
+         const float weight = evaluate(pixel, location);
+         const int index = pixel.y * Bounds.x + pixel.x;
+         _output[index].first += (sample.SpectralPowerDistribution * weight);
+         _output[index].second += weight;
+      };
+      
+      virtual SpectralPowerDistribution output(const point2i &pixel) const {
+         const unsigned int index = pixel.y * Bounds.x + pixel.x;
+         return _output[index].first * (1.f / _output[index].second);
+      };
 
-      virtual SpectralPowerDistribution output(const point2i &pixel) const = 0;
       virtual void pre_output() { };
-
+      
+   protected:
+      virtual float evaluate(const point2i& pixel, const point2f& location) const = 0;
+      std::vector<std::pair<poly::SpectralPowerDistribution, float>> _output;
+      const float x_width;
+      const float y_width;
    };
 
 }

@@ -132,7 +132,7 @@ namespace poly {
             points[3].y = 0.3f;
 
             points[4].x = 0.9f;
-            points[5].y = 0.7f;
+            points[4].y = 0.7f;
             break;
          }
          default: {

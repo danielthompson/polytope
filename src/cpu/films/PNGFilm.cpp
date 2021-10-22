@@ -13,8 +13,8 @@
 
 namespace poly {
 
-   void PNGFilm::AddSample(const point2f &location, const Sample &sample) {
-      Filter->add_sample(location, sample);
+   void PNGFilm::AddSample(const point2i& pixel, const point2f &location, const Sample &sample) {
+      Filter->add_sample(pixel, location, sample);
    }
 
    void PNGFilm::Output() {

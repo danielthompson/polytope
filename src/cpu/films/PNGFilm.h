@@ -23,7 +23,7 @@ namespace poly {
          : abstract_film(bounds, std::move(filter)),
            Filename(std::move(filename)) { };
 
-      void AddSample(const point2f &location, const Sample &sample) override;
+      void AddSample(const point2i& pixel, const point2f& location, const Sample& sample) override;
       void Output() override;
    };
 }

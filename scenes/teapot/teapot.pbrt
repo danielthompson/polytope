@@ -2,9 +2,9 @@ Integrator "path" "integer maxdepth" [ 15 ]
 LookAt 0 35 35 # eye
        0 0 -1 # look at point
        0 1 0 # up
-Sampler "halton" "integer pixelsamples" [ 1024 ]
-PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
-Film "image" "integer xresolution" [ 1024 ] "integer yresolution" [ 512 ] "string filename" [ "teapot.png" ]
+Sampler "halton" "integer pixelsamples" [ 4 ]
+PixelFilter "triangle" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
+Film "image" "integer xresolution" [ 128 ] "integer yresolution" [ 64 ] "string filename" [ "teapot.png" ]
 Camera "perspective" "float fov" [ 7.5 ]
 WorldBegin
     LightSource "infinite" "rgb L" [1 1 1]
@@ -14,7 +14,7 @@ WorldBegin
         Rotate 45 0 1 0
         Translate -10 0 -10
         Scale 20 1 20
-        # Material "matte" "rgb Kd" [ .5  .5  .8 ]
+        # Material "matte" "rgb Kd" [ 1  1  1 ]
         # Material "mirror" "rgb Kr" [ .5  .5  .8 ]
         # Shape "plymesh" "string filename" [ "../common/floor.ply" ]
     AttributeEnd
@@ -24,12 +24,13 @@ WorldBegin
         Material "mirror" "rgb Kr" [ .5  .8  .5 ]
         # Shape "objmesh" "string filename" [ "teapot.obj" ]
         # Shape "plymesh" "string filename" [ "teapot.ply" ]
-        #  Shape "plymesh" "string filename" [ "teapot-normals.ply" ]
+        Shape "plymesh" "string filename" [ "teapot-normals.ply" ]
     AttributeEnd
     TransformBegin
         Translate 3 0 0
         Rotate -90 0 1 0
         # Rotate 45 0 0 1
+        Material "mirror" "rgb Kr" [ .8  .5  .5 ]
         # Shape "objmesh" "string filename" [ "teapot.obj" ]
         Shape "plymesh" "string filename" [ "teapot-normals.ply" ]
     TransformEnd

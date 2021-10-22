@@ -21,7 +21,7 @@ namespace poly {
             : Bounds(bounds), Filter(std::move(filter)) { };
       virtual ~abstract_film() = default;
 
-      virtual void AddSample(const point2f &location, const Sample &sample) = 0;
+      virtual void AddSample(const point2i& pixel, const point2f &location, const Sample &sample) = 0;
       virtual void Output() = 0;
    };
 }

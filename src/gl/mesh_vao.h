@@ -48,18 +48,28 @@ namespace poly {
 
          for (unsigned int i = 0; i < mesh->mesh_geometry->num_faces; i++) {
 
-            // fix this garbage
-            auto brdf = dynamic_cast<poly::LambertBRDF*>(mesh->material->BRDF.get());
-            if (brdf != nullptr) {
-               color = {brdf->refl.r, brdf->refl.g, brdf->refl.b, 1.0f};
+            if (mesh->material == nullptr) {
+               if (mesh->is_light()) {
+                  color = { mesh->spd->r, mesh->spd->g, mesh->spd->b, 1.0f }; 
+               }
+               else {
+                  color = { 0.f, 0.f, 0.f, 1.f };
+               }
             }
             else {
-               auto brdf = dynamic_cast<poly::MirrorBRDF*>(mesh->material->BRDF.get());
+               // fix this garbage
+               auto brdf = dynamic_cast<poly::LambertBRDF*>(mesh->material->BRDF.get());
                if (brdf != nullptr) {
                   color = {brdf->refl.r, brdf->refl.g, brdf->refl.b, 1.0f};
                }
+               else {
+                  auto brdf = dynamic_cast<poly::MirrorBRDF*>(mesh->material->BRDF.get());
+                  if (brdf != nullptr) {
+                     color = {brdf->refl.r, brdf->refl.g, brdf->refl.b, 1.0f};
+                  }
+               }
             }
-            
+
             std::shared_ptr<poly::mesh_geometry> geometry = mesh->mesh_geometry;
 
             poly::point p = {geometry->x_packed[geometry->fv0[i]],
