@@ -76,7 +76,7 @@ namespace poly {
          poly::point2f sampleLocation = points[i];
          poly::ray ray = Scene->Camera->get_ray_for_pixel(sampleLocation);
          poly::Sample sample = integrator->get_sample(ray, 0, x, y);
-         Film->AddSample(pixel, sampleLocation, sample);
+         Film->add_sample(pixel, sampleLocation, sample);
       }
    }
 

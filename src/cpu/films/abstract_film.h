@@ -15,14 +15,14 @@ namespace poly {
    class abstract_film {
    public:
       const poly::bounds Bounds;
-      std::unique_ptr<abstract_filter> Filter;
+      std::unique_ptr<poly::abstract_filter> filter;
 
-      abstract_film(const poly::bounds bounds, std::unique_ptr<abstract_filter> filter)
-            : Bounds(bounds), Filter(std::move(filter)) { };
+      abstract_film(const poly::bounds bounds, std::unique_ptr<poly::abstract_filter> filter)
+            : Bounds(bounds), filter(std::move(filter)) { };
       virtual ~abstract_film() = default;
 
-      virtual void AddSample(const point2i& pixel, const point2f &location, const Sample &sample) = 0;
-      virtual void Output() = 0;
+      virtual void add_sample(const poly::point2i& pixel, const poly::point2f &location, const poly::Sample &sample) = 0;
+      virtual void output() = 0;
    };
 }
 

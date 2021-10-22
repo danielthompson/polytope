@@ -7,7 +7,7 @@
 #include "../../../src/common/parsers/pbrt_parser.h"
 #include "../../../src/cpu/samplers/samplers.h"
 #include "../../../src/common/utilities/Logger.h"
-#include "../../../src/cpu/films/PNGFilm.h"
+#include "../../../src/cpu/films/png_film.h"
 #include "../../../src/cpu/filters/box_filter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
 #include "../../../src/cpu/scenes/scene.h"

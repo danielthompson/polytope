@@ -12,19 +12,19 @@
 
 namespace poly {
 
-   class PNGFilm : public abstract_film {
+   class png_film : public abstract_film {
    public:
       const std::string Filename;
 
-      PNGFilm(
+      png_film(
          const poly::bounds bounds,
          std::string filename,
-         std::unique_ptr<abstract_filter> filter)
+         std::unique_ptr<poly::abstract_filter> filter)
          : abstract_film(bounds, std::move(filter)),
            Filename(std::move(filename)) { };
 
-      void AddSample(const point2i& pixel, const point2f& location, const Sample& sample) override;
-      void Output() override;
+      void add_sample(const poly::point2i& pixel, const poly::point2f& location, const poly::Sample& sample) override;
+      void output() override;
    };
 }
 

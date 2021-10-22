@@ -63,8 +63,8 @@ set(POLYTOPE_LIB_SOURCES
     src/cpu/cameras/perspective_camera.cpp
     src/cpu/cameras/perspective_camera.h
     src/cpu/films/abstract_film.h
-    src/cpu/films/PNGFilm.cpp
-    src/cpu/films/PNGFilm.h
+    src/cpu/films/png_film.cpp
+    src/cpu/films/png_film.h
     src/cpu/filters/abstract_filter.h
     src/cpu/filters/box_filter.cpp
     src/cpu/filters/box_filter.h

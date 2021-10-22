@@ -14,7 +14,7 @@
 #include "../../cpu/integrators/DebugIntegrator.h"
 #include "../../cpu/cameras/perspective_camera.h"
 #include "../../cpu/samplers/samplers.h"
-#include "../../cpu/films/PNGFilm.h"
+#include "../../cpu/films/png_film.h"
 #include "../../cpu/filters/box_filter.h"
 #include "../../cpu/scenes/scene.h"
 #include "../utilities/Common.h"
@@ -1152,7 +1152,7 @@ namespace poly {
 
                missingFilm = false;
 
-               film = std::make_unique<PNGFilm>(bounds, filename, std::move(filter));
+               film = std::make_unique<png_film>(bounds, filename, std::move(filter));
             }
             break;
          }
@@ -1167,7 +1167,7 @@ namespace poly {
          std::string filename = "polytope.png";
          bounds.x = DefaultBoundsX;
          bounds.y = DefaultBoundsY;
-         film = std::make_unique<PNGFilm>(bounds, filename, std::move(filter));
+         film = std::make_unique<png_film>(bounds, filename, std::move(filter));
       }
 
       LOG_DEBUG("Made film.");
@@ -1217,7 +1217,7 @@ namespace poly {
          filter = std::make_unique<poly::box_filter>(bounds, 1, 1);
       }
 
-      film->Filter = std::move(filter);
+      film->filter = std::move(filter);
 
       LOG_DEBUG("Made filter.");
 

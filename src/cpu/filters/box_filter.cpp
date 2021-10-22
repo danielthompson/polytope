@@ -9,7 +9,7 @@
 
 namespace poly {
 
-   float box_filter::evaluate(const point2i& pixel, const point2f& location) const {
+   float box_filter::evaluate(const poly::point2i& pixel, const poly::point2f& location) const {
       return 1;
    }
 }

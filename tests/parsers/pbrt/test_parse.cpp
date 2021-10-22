@@ -7,7 +7,7 @@
 #include "../../../src/common/parsers/pbrt_parser.h"
 #include "../../../src/cpu/samplers/samplers.h"
 #include "../../../src/common/utilities/Logger.h"
-#include "../../../src/cpu/films/PNGFilm.h"
+#include "../../../src/cpu/films/png_film.h"
 #include "../../../src/cpu/filters/box_filter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
 #include "../../../src/cpu/scenes/scene.h"
@@ -31,7 +31,7 @@ namespace Tests {
          ASSERT_NE(nullptr, runner);
          ASSERT_NE(nullptr, runner->Sampler);
          ASSERT_NE(nullptr, runner->Film);
-         ASSERT_NE(nullptr, runner->Film->Filter);
+         ASSERT_NE(nullptr, runner->Film->filter);
          ASSERT_NE(nullptr, runner->integrator);
          ASSERT_NE(nullptr, runner->integrator->Scene);
          ASSERT_NE(nullptr, runner->integrator->Scene->Camera);
@@ -46,13 +46,13 @@ namespace Tests {
          ASSERT_NE(nullptr, runner->Film);
 
          // filter
-         std::unique_ptr<poly::abstract_filter> filter = std::move(runner->Film->Filter);
+         std::unique_ptr<poly::abstract_filter> filter = std::move(runner->Film->filter);
          poly::box_filter *actualFilter = dynamic_cast<poly::box_filter *>(filter.get());
          ASSERT_NE(nullptr, actualFilter);
 
          // film
          std::unique_ptr<poly::abstract_film> film = std::move(runner->Film);
-         poly::PNGFilm *actualFilm = dynamic_cast<poly::PNGFilm *>(film.get());
+         poly::png_film *actualFilm = dynamic_cast<poly::png_film *>(film.get());
          ASSERT_NE(nullptr, actualFilm);
          EXPECT_EQ("minimum.png", actualFilm->Filename);
          EXPECT_EQ(640, actualFilm->Bounds.x);
@@ -113,7 +113,7 @@ namespace Tests {
          ASSERT_NE(nullptr, runner);
          ASSERT_NE(nullptr, runner->Sampler);
          ASSERT_NE(nullptr, runner->Film);
-         ASSERT_NE(nullptr, runner->Film->Filter);
+         ASSERT_NE(nullptr, runner->Film->filter);
          ASSERT_NE(nullptr, runner->integrator);
          ASSERT_NE(nullptr, runner->integrator->Scene);
          ASSERT_NE(nullptr, runner->integrator->Scene->Camera);
@@ -125,13 +125,13 @@ namespace Tests {
          ASSERT_NE(nullptr, actualSampler);
 
          // filter
-         std::unique_ptr<poly::abstract_filter> filter = std::move(runner->Film->Filter);
+         std::unique_ptr<poly::abstract_filter> filter = std::move(runner->Film->filter);
          poly::box_filter *actualFilter = dynamic_cast<poly::box_filter *>(filter.get());
          ASSERT_NE(nullptr, actualFilter);
 
          // film
          std::unique_ptr<poly::abstract_film> film = std::move(runner->Film);
-         poly::PNGFilm *actualFilm = dynamic_cast<poly::PNGFilm *>(film.get());
+         poly::png_film *actualFilm = dynamic_cast<poly::png_film *>(film.get());
          ASSERT_NE(nullptr, actualFilm);
          EXPECT_EQ("minimum.png", actualFilm->Filename);
          EXPECT_EQ(640, actualFilm->Bounds.x);

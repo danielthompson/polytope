@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <sstream>
-#include "PNGFilm.h"
+#include "png_film.h"
 #include "../../../lib/lodepng.h"
 #include "../../common/utilities/Common.h"
 #include "../../common/utilities/GlobalDefines.h"
@@ -13,31 +13,29 @@
 
 namespace poly {
 
-   void PNGFilm::AddSample(const point2i& pixel, const point2f &location, const Sample &sample) {
-      Filter->add_sample(pixel, location, sample);
+   void png_film::add_sample(const poly::point2i& pixel, const poly::point2f &location, const poly::Sample &sample) {
+      filter->add_sample(pixel, location, sample);
    }
 
-   void PNGFilm::Output() {
+   void png_film::output() {
 
       std::vector<unsigned char> Data(size_t(Bounds.x * Bounds.y * 4));
 
       const unsigned int width = Bounds.x;
       const unsigned int height = Bounds.y;
 
-      Filter->pre_output();
+      filter->pre_output();
       
       for (int x = 0; x < width; x++) {
          for (int y = 0; y < height; y++) {
 
             const int index = 4 * (y * width + x);
-            const SpectralPowerDistribution spd = Filter->output(point2i(x, y));
+            const poly::SpectralPowerDistribution spd = filter->output(point2i(x, y));
 
             const auto r = static_cast<unsigned char>(spd.r > 255 ? 255 : spd.r);
             const auto g = static_cast<unsigned char>(spd.g > 255 ? 255 : spd.g);
             const auto b = static_cast<unsigned char>(spd.b > 255 ? 255 : spd.b);
-            const auto a = static_cast<unsigned char>(255);
-
-            //std::cout << "writing index [" << index << "] for x [" << x << "], y [" << y << "]...";
+            constexpr auto a = static_cast<unsigned char>(255);
 
             Data[index + 0] = r;
             Data[index + 1] = g;

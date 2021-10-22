@@ -28,7 +28,7 @@ namespace poly {
       void thread_entrypoint(int threadId) const;
       void trace(const int x, const int y) const;
       void output() const {
-         Film->Output();
+         Film->output();
       };
       std::thread spawn_thread(const int id) {
          return std::thread(&runner::thread_entrypoint, this, id);

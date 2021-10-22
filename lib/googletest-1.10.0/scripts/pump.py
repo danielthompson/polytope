@@ -656,7 +656,7 @@ class Output:
 def RunAtomicCode(env, node, output):
   if isinstance(node, VarNode):
     identifier = node.identifier.value.strip()
-    result = Output()
+    result = output()
     RunAtomicCode(env.Clone(), node.atomic_code, result)
     value = result.string
     env.PushVariable(identifier, value)

@@ -11,7 +11,7 @@
 #include "integrators/PathTraceIntegrator.h"
 #include "samplers/samplers.h"
 #include "filters/box_filter.h"
-#include "films/PNGFilm.h"
+#include "films/png_film.h"
 #include "../common/parsers/pbrt_parser.h"
 #include "shapes/mesh.h"
 #include "structures/stats.h"

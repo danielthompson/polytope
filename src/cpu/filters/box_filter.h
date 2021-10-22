@@ -22,7 +22,7 @@ namespace poly {
             : abstract_filter(bounds, x_width, y_width) { }
 
    protected:
-      float evaluate(const point2i& pixel, const point2f& location) const override;
+      float evaluate(const poly::point2i& pixel, const poly::point2f& location) const override;
    };
 }
 

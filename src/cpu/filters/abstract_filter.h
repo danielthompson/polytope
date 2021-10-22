@@ -31,14 +31,14 @@ namespace poly {
 
       virtual ~abstract_filter() = default;
 
-      virtual void add_sample(const point2i& pixel, const point2f &location, const Sample &sample) {
+      virtual void add_sample(const poly::point2i& pixel, const poly::point2f &location, const poly::Sample &sample) {
          const float weight = evaluate(pixel, location);
          const int index = pixel.y * Bounds.x + pixel.x;
          _output[index].first += (sample.SpectralPowerDistribution * weight);
          _output[index].second += weight;
       };
       
-      virtual SpectralPowerDistribution output(const point2i &pixel) const {
+      virtual SpectralPowerDistribution output(const poly::point2i &pixel) const {
          const unsigned int index = pixel.y * Bounds.x + pixel.x;
          return _output[index].first * (1.f / _output[index].second);
       };
@@ -46,7 +46,7 @@ namespace poly {
       virtual void pre_output() { };
       
    protected:
-      virtual float evaluate(const point2i& pixel, const point2f& location) const = 0;
+      virtual float evaluate(const poly::point2i& pixel, const poly::point2f& location) const = 0;
       std::vector<std::pair<poly::SpectralPowerDistribution, float>> _output;
       const float x_width;
       const float y_width;
