@@ -40,7 +40,7 @@ namespace Tests {
 
          // sampler
          std::unique_ptr<poly::abstract_sampler> sampler = std::move(runner->Sampler);
-         poly::HaltonSampler *actualSampler = dynamic_cast<poly::HaltonSampler *>(sampler.get());
+         poly::halton_sampler *actualSampler = dynamic_cast<poly::halton_sampler *>(sampler.get());
          ASSERT_NE(nullptr, actualSampler);
 
          ASSERT_NE(nullptr, runner->Film);
@@ -121,7 +121,7 @@ namespace Tests {
 
          // sampler
          std::unique_ptr<poly::abstract_sampler> sampler = std::move(runner->Sampler);
-         poly::HaltonSampler *actualSampler = dynamic_cast<poly::HaltonSampler *>(sampler.get());
+         poly::halton_sampler *actualSampler = dynamic_cast<poly::halton_sampler *>(sampler.get());
          ASSERT_NE(nullptr, actualSampler);
 
          // filter

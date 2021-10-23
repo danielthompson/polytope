@@ -8,8 +8,8 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(PROJECT_NAME polytope)
 project(${PROJECT_NAME} LANGUAGES CXX CUDA)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CUDA_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CUDA_STANDARD 17)
 
 # https://stackoverflow.com/questions/51756562/obtaining-the-cuda-include-dir-in-c-targets-with-native-cuda-support-cmake
 find_library(CUDART_LIBRARY cudart ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
@@ -144,6 +144,8 @@ set(POLYTOPE_LIB_SOURCES
     src/common/utilities/thread_pool.h
     src/common/utilities/thread_pool.cpp
     src/cpu/shading/texture.h
+    src/cpu/samplers/random_number_generator.h
+    src/cpu/samplers/random_number_generator.cpp
     )
 
 ## polytope_lib
@@ -239,8 +241,8 @@ if (NOT APPLE)
   target_link_libraries(polytope_cuda PUBLIC polytope_lib)
   target_link_libraries(polytope_cuda PUBLIC polytope_cuda_lib)
 
-  set_property(TARGET polytope_cuda PROPERTY CUDA_ARCHITECTURES 61)
-  set_property(TARGET polytope_cuda_lib PROPERTY CUDA_ARCHITECTURES 61)
+  set_property(TARGET polytope_cuda PROPERTY CUDA_ARCHITECTURES 86)
+  set_property(TARGET polytope_cuda_lib PROPERTY CUDA_ARCHITECTURES 86)
 endif ()
 
 # link in pthreads on linux
@@ -309,7 +311,8 @@ add_executable(runUnitTests
     tests/cuda/test_bvh_traversal.cpp
     tests/thread_pool_tests.cpp
     tests/parsers/pbrt/test_instancing.cpp
-    tests/triangle_filter_tests.cpp)
+    tests/triangle_filter_tests.cpp
+    tests/random_number_generator_tests.cpp)
 
 if (NOT APPLE)
   target_include_directories(
@@ -321,4 +324,4 @@ if (NOT APPLE)
   target_link_libraries(runUnitTests PRIVATE polytope_cuda_lib)
 endif ()
 
-target_link_libraries(runUnitTests PRIVATE gtest gtest_main polytope_lib pcg)
+target_link_libraries(runUnitTests PRIVATE gtest gtest_main polytope_lib pcg_lib)

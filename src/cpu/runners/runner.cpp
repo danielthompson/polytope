@@ -69,7 +69,7 @@ namespace poly {
       
       poly::point2f points[sample_count];
 
-      Sampler->GetSamples(points, sample_count, x, y);
+      Sampler->get_samples(points, sample_count, x, y);
 
       for (unsigned int i = 0; i < sample_count; i++) {
 

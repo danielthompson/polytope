@@ -1,28 +1,22 @@
 //
 // Created by Daniel Thompson on 2/21/18.
 //
-
+   
+#include <random>
 #include <cstdlib>
 #include "samplers.h"
+#include "../../../lib/pcg/pcg_random.hpp"
 
 namespace poly {
 
-   point2f CenterSampler::GetSample(const int x, const int y) const {
-      return point2f(x + 0.5f, y + 0.5f);
-   }
-
-   void CenterSampler::GetSamples(point2f points[], const unsigned int number, const int x, const int y) const {
+   void center_sampler::get_samples(poly::point2f points[], unsigned int number, int x, int y) const {
       for (int i = 0; i < number; i++) {
-         points[i].x = x + 0.5f;
-         points[i].y = y + 0.5f;
+         points[i].x = (float)x + 0.5f;
+         points[i].y = (float)y + 0.5f;
       }
    }
 
-   point2f HaltonSampler::GetSample(const int x, const int y) const {
-      return point2f(x + 0.5f, y + 0.5f);
-   }
-
-   void HaltonSampler::GetSamples(point2f points[], const unsigned int number, const int x, const int y) const {
+   void halton_sampler::get_samples(poly::point2f points[], unsigned int number, int x, int y) const {
       constexpr int base0 = 2;
       constexpr int base1 = 3;
 
@@ -39,7 +33,7 @@ namespace poly {
          while (index > 0) {
             f0 = f0 / base0;
 
-            r0 = r0 + f0 * (index % base0);
+            r0 = r0 + f0 * (float)(index % base0);
 
             index = index / base0;
 
@@ -50,22 +44,18 @@ namespace poly {
          while (index > 0) {
             f1 = f1 / base1;
 
-            r1 = r1 + f1 * (index % base1);
+            r1 = r1 + f1 * (float)(index % base1);
 
             index = index  / base1;
          }
 
-         points[i - 1].x = x + r0;
-         points[i - 1].y = y + r1;
+         points[i - 1].x = (float)x + r0;
+         points[i - 1].y = (float)y + r1;
 
       }
    }
 
-   point2f GridSampler::GetSample(const int x, const int y) const {
-      return point2f(x + 0.5f, y + 0.5f);
-   }
-
-   void GridSampler::GetSamples(point2f points[], const unsigned int number, const int x, const int y) const {
+   void grid_sampler::get_samples(poly::point2f points[], unsigned int number, const int x, const int y) const {
       switch (number) {
          case 1: {
             points[0].x = 0.5f;
@@ -144,22 +134,26 @@ namespace poly {
       }
 
       for (int i = 0; i < number; i++) {
-         points[i].x += x;
-         points[i].y += y;
+         points[i].x += (float)x;
+         points[i].y += (float)y;
       }
    }
 
-   point2f random_sampler::GetSample(int x, int y) const {
-      double r0 = (double)std::rand() / (double)RAND_MAX;
-      double r1 = (double)std::rand() / (double)RAND_MAX;
-      return {(float)x + (float)r0, (float)y + (float)r1};
+   random_sampler::random_sampler() {
+      pcg_extras::seed_seq_from<std::random_device> seed_source;
+      pcg32 rng(seed_source);
+      std::uniform_real_distribution<float> real_dist(0, 1);
+      std::uniform_int_distribution<int> uniform_dist(1, 6);
+      int mean = uniform_dist(rng);
    }
-
-   void random_sampler::GetSamples(point2f *points, unsigned int number, int x, int y) const {
+   
+   void random_sampler::get_samples(poly::point2f points[], unsigned int number, const int x, const int y) const {
       for (int i = 0; i < number; i++) {
          double r0 = (double)std::rand() / (double)RAND_MAX;
          double r1 = (double)std::rand() / (double)RAND_MAX;
          points[i] = {(float)x + (float)r0, (float)y + (float)r1 };
       }
    }
+
+
 }

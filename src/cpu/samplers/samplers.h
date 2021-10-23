@@ -11,53 +11,30 @@ namespace poly {
 
    class abstract_sampler {
    public:
-
-      // methods
-      virtual point2f GetSample(int x, int y) const = 0;
-
-      virtual void GetSamples(point2f points[], unsigned int number, int x, int y) const = 0;
-
-      // destructors
-
+      virtual void get_samples(poly::point2f points[], unsigned int number, int x, int y) const = 0;
       virtual ~abstract_sampler() = default;
-
    };
 
-   class CenterSampler : public abstract_sampler {
+   class center_sampler : public abstract_sampler {
    public:
-      point2f GetSample(int x, int y) const override;
-
-      void GetSamples(point2f points[], unsigned int number, int x, int y) const override;
-
-      ~CenterSampler() override = default;
+      void get_samples(poly::point2f points[], unsigned int number, int x, int y) const override;
    };
 
-   class HaltonSampler : public abstract_sampler {
+   class halton_sampler : public abstract_sampler {
    public:
-      point2f GetSample(int x, int y) const override;
-
-      void GetSamples(point2f points[], unsigned int number, int x, int y) const override;
-
+      void get_samples(poly::point2f points[], unsigned int number, int x, int y) const override;
    };
 
-   class GridSampler : public abstract_sampler {
+   class grid_sampler : public abstract_sampler {
    public:
-      point2f GetSample(int x, int y) const override;
-
-      ~GridSampler() override = default;
-
-      void GetSamples(point2f points[], unsigned int number, int x, int y) const override;
+      void get_samples(poly::point2f points[], unsigned int number, int x, int y) const override;
    };
    
    class random_sampler : public abstract_sampler {
    public:
-      point2f GetSample(int x, int y) const override;
-
-      ~random_sampler() override = default;
-
-      void GetSamples(point2f points[], unsigned int number, int x, int y) const override;
+      random_sampler();
+      void get_samples(poly::point2f points[], unsigned int number, int x, int y) const override;
    };
-   
 }
 
 

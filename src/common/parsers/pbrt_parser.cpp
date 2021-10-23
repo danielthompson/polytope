@@ -1073,16 +1073,16 @@ namespace poly {
             }
             
             if (directive->type == str::halton) {
-               sampler = std::make_unique<poly::HaltonSampler>();
+               sampler = std::make_unique<poly::halton_sampler>();
             } 
             else if (directive->type == str::random) {
                sampler = std::make_unique<poly::random_sampler>();
             }
             else if (directive->type == str::center) {
-               sampler = std::make_unique<poly::CenterSampler>();
+               sampler = std::make_unique<poly::center_sampler>();
             }
             else if (directive->type == str::grid) {
-               sampler = std::make_unique<poly::GridSampler>();
+               sampler = std::make_unique<poly::grid_sampler>();
                // TODO: use popcnt
                // if the samples are not a power of two, round up to next highest
                if (!(numSamples != 0 && (numSamples & (numSamples - 1)) == 0)) {
@@ -1100,7 +1100,7 @@ namespace poly {
       }
 
       if (sampler == nullptr) {
-         sampler = std::make_unique<HaltonSampler>();
+         sampler = std::make_unique<halton_sampler>();
       }
 
       LOG_DEBUG("Made sampler.");
