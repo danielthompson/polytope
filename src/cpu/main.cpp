@@ -40,6 +40,7 @@ void userAbortHandler(int signalNumber) {
 
 struct poly::stats main_stats;
 thread_local struct poly::stats thread_stats;
+thread_local poly::random_number_generator rng;
 
 //std::vector<std::thread> threads;
 

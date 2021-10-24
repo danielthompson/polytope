@@ -9,6 +9,7 @@
 
 extern struct poly::stats main_stats;
 extern thread_local struct poly::stats thread_stats;
+extern thread_local poly::random_number_generator rng;
 
 namespace poly {
 
@@ -43,6 +44,10 @@ namespace poly {
    
    void runner::thread_entrypoint(int threadId) const {
 
+      const unsigned long stream_index = threadId;
+      
+      rng.increment_stream(stream_index);
+      
       while (1) {
          
          int tile_index = _tiles_current_index++;
@@ -60,6 +65,7 @@ namespace poly {
       
       // do stats
       std::lock_guard<std::mutex> lock(_mutex);
+      LOG_DEBUG("Thread " << threadId << " set stream_index to " << stream_index << " and found stream_index at " << rng.stream_index);
       main_stats.add(thread_stats);
    }
 

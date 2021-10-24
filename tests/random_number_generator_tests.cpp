@@ -2,87 +2,61 @@
 // Created by daniel on 10/23/21.
 //
 
-#include <chrono>
 #include "gtest/gtest.h"
 #include "../src/cpu/samplers/random_number_generator.h"
 
 namespace Tests {
-   TEST(rng, test1) {
+   
+   TEST(rng, hist_uint) {
       poly::random_number_generator g;
-      float f = g.next_float();
-      std::cout << sizeof(g) << " " << f;
-      ASSERT_TRUE(f >= 0.f);
-      ASSERT_TRUE(f <= 1.f);
-   }
+      std::cout << "generator state size in bytes: " << sizeof(poly::random_number_generator) << std::endl;
+      
+      constexpr int bits = 32;
+      constexpr int bucket_count = bits;
+      
+      std::vector<unsigned long> buckets(bucket_count, 0);
 
-   TEST(rng, test3) {
-      poly::random_number_generator g;
-      std::cout << sizeof(g) << std::endl;
-      for (int i = 0; i < 10; i++) {
-         float f = (float)((double)std::rand() / (double)RAND_MAX);
-         std::cout << " " << f;
-         ASSERT_TRUE(f >= 0.f);
-         ASSERT_TRUE(f <= 1.f);
+      constexpr unsigned long trials = 1000000;
+      constexpr unsigned long trial_increment = trials / 100;
+
+      for (unsigned long i = 0; i < trials; i++) {
+         unsigned int f = g.next_uint();
+         for (int i = 0; i < 32; i++) {
+            unsigned char bit = 0x1 & f;
+            buckets[i] += bit;
+            f >>= 1;
+         }
       }
-   }
-
-   TEST(rng, test4) {
-      poly::random_number_generator g;
-      std::cout << sizeof(g) << std::endl;
-      for (int i = 0; i < 10; i++) {
-         float f = g.next_float_ld();
-         std::cout << " " << f;
-         ASSERT_TRUE(f >= 0.f);
-         ASSERT_TRUE(f <= 1.f);
-      }
-   }
-
-   TEST(rng, test5) {
-      poly::random_number_generator g;
-      std::cout << sizeof(g) << std::endl;
-      for (int j = 0; j < 10; j++) {
-         for (int i = 0; i < 10; i++) {
-            float f = g.next_float_twiddle();
-            std::cout << "\t" << f;
-            ASSERT_TRUE(f >= 0.f);
-            ASSERT_TRUE(f <= 1.f);
+      for (int i = 0; i < bucket_count; i++) {
+         std::cout << i << ":\t";
+         for (unsigned long j = 0; j < buckets[i]; j += trial_increment) {
+            std::cout << "x";
          }
          std::cout << std::endl;
       }
    }
-
-   TEST(rng, speed) {
+   
+   TEST(rng, hist_float) {
       poly::random_number_generator g;
-      
-      // warm up
-      float f;
-      for (int i = 0; i < 100000; i++) {
-         f = g.next_float();
+      std::cout << "generator state size in bytes: " << sizeof(poly::random_number_generator) << std::endl;
+      std::vector<unsigned long> buckets = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+      constexpr unsigned long trials = 1000000;
+
+      for (unsigned long i = 0; i < trials; i++) {
+         float f = g.next_float();
+         int bucket_index = (int)(f * 10);
+         buckets[bucket_index]++;
+         //std::cout << f << std::endl;
+         ASSERT_TRUE(f >= 0.f);
+         ASSERT_TRUE(f <= 1.f);
       }
-      
-      std::vector<double> durations;
-      
-      for (int trial_index = 0; trial_index < 10; trial_index++) {
-         const auto bound_start = std::chrono::system_clock::now();
-         for (int i = 0; i < 1000000; i++) {
-            f = g.next_float();
-//            f = (float)((double)std::rand() / (double)RAND_MAX);
-            
+      for (int i = 0; i < 10; i++) {
+         std::cout << i << ": ";
+         for (unsigned long j = 0; j < buckets[i]; j += (trials / 100)) {
+            std::cout << "x";
          }
-
-         const auto bound_end = std::chrono::system_clock::now();
-         const std::chrono::duration<double> bound_duration = bound_end - bound_start;
-         durations.push_back(bound_duration.count());
+         std::cout << std::endl;
       }
-      
-      // calculate average
-      double sum = 0.f;
-      for (int trial_index = 0; trial_index < 10; trial_index++) {
-         sum += durations[trial_index];
-      }
-      
-      double average = sum / 10;
-
-      std::cout << "Speed: " << average << "s.";
    }
 }

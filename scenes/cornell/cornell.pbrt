@@ -11,18 +11,18 @@ LookAt 0 1 3.1
         0 1 0
 
 Sampler "random" 
-        "integer pixelsamples" [ 1024 ] 
+
+        "integer pixelsamples" [ 4 ] 
 # PixelFilter "triangle" 
 #         "float xwidth" [ 1 ] 
 #         "float ywidth" [ 1 ] 
 Film "image" 
-        "integer xresolution" [ 1024 ] 
-        "integer yresolution" [ 1024 ] 
+        "integer xresolution" [ 512 ] 
+        "integer yresolution" [ 512 ] 
         "string filename" [ "cornell-box.png" ] 
 Camera "perspective" 
         # "float fov" [ 19.5 ] 
         "float fov" [ 50 ]
-
 
 WorldBegin
 
@@ -52,8 +52,11 @@ MakeNamedMaterial "TallBox"
 MakeNamedMaterial "Light" 
         "string type" [ "matte" ] 
         "rgb Kd" [ 0 0 0 ] 
-NamedMaterial "Floor"
-Shape "trianglemesh" 
+        
+## MESH 0
+AttributeBegin
+    NamedMaterial "Floor"
+    Shape "trianglemesh" 
         "integer indices" [ 
             0 1 2 
             0 2 3 ] 
@@ -72,38 +75,56 @@ Shape "trianglemesh"
             4.37113989e-08 1 1.91068991e-15 
             4.37113989e-08 1 1.91068991e-15 
             4.37113989e-08 1 1.91068991e-15 ] 
-NamedMaterial "Ceiling"
-Shape "trianglemesh" 
+AttributeEnd
+            
+## MESH 1
+AttributeBegin
+    NamedMaterial "Ceiling"
+    Shape "trianglemesh" 
          "integer indices" [ 0 1 2 0 2 3 ] 
          "float uv" [ 0 0 1 0 1 1 0 1 ] 
          "point P" [ 1 2 1 -1 2 1 -1 2 -1 1 2 -1 ] 
          "normal N" [ -8.74227979e-08 -1 -4.37113989e-08 -8.74227979e-08 -1 -4.37113989e-08 
          -8.74227979e-08 -1 -4.37113989e-08 -8.74227979e-08 -1 -4.37113989e-08 ] 
+AttributeEnd
 
-NamedMaterial "BackWall"    
-Shape "trianglemesh" 
+## MESH 2
+AttributeBegin
+    NamedMaterial "BackWall"    
+    Shape "trianglemesh" 
         "integer indices" [ 0 1 2 0 2 3 ] 
         "float uv" [ 0 0 1 0 1 1 0 1 ] 
         "point P" [ -1 0 -1 -1 2 -1 1 2 -1 1 0 -1 ] 
         "normal N" [ 8.74227979e-08 -4.37113989e-08 -1 8.74227979e-08 -4.37113989e-08 -1 
         8.74227979e-08 -4.37113989e-08 -1 8.74227979e-08 -4.37113989e-08 -1 ] 
-NamedMaterial "RightWall"
-Shape "trianglemesh" 
+AttributeEnd
+        
+## MESH 3
+AttributeBegin
+    NamedMaterial "RightWall"
+    Shape "trianglemesh" 
         "integer indices" [ 0 1 2 0 2 3 ] 
         "float uv" [ 0 0 1 0 1 1 0 1 ] 
         "point P" [ 1 0 -1 1 2 -1 1 2 1 1 0 1 ] 
         "normal N" [ 1 -4.37113989e-08 1.31134001e-07 1 -4.37113989e-08 1.31134001e-07 
         1 -4.37113989e-08 1.31134001e-07 1 -4.37113989e-08 1.31134001e-07 ] 
-NamedMaterial "LeftWall"
-Shape "trianglemesh" 
+AttributeEnd
+
+## MESH 4
+AttributeBegin
+    NamedMaterial "LeftWall"
+    Shape "trianglemesh" 
         "integer indices" [ 0 1 2 0 2 3 ] 
         "float uv" [ 0 0 1 0 1 1 0 1 ] 
         "point P" [ -1 0 1 -1 2 1 -1 2 -1 -1 0 -1 ] 
         "normal N" [ -1 -4.37113989e-08 -4.37113989e-08 -1 -4.37113989e-08 -4.37113989e-08 
         -1 -4.37113989e-08 -4.37113989e-08 -1 -4.37113989e-08 -4.37113989e-08 ] 
-NamedMaterial "ShortBox"
+AttributeEnd
 
-Shape "trianglemesh" 
+## MESH 5
+AttributeBegin
+    NamedMaterial "ShortBox"
+    Shape "trianglemesh" 
         "integer indices" [ 0 2 1 0 3 2 4 6 5 4 7 6 8 10 9 8 11 10 12 14 13 12 15 
         14 16 18 17 16 19 18 20 22 21 20 23 22 ] 
         "float uv" [ 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 
@@ -128,9 +149,12 @@ Shape "trianglemesh"
         -0.286356986 -1.25171002e-08 0.958123028 -0.286356986 -1.25171002e-08 0.958123028 
         -0.286356986 -1.25171002e-08 0.958123028 0.286356986 1.25171002e-08 -0.958123028 
         0.286356986 1.25171002e-08 -0.958123028 0.286356986 1.25171002e-08 -0.958123028 
-        0.286356986 1.25171002e-08 -0.958123028 ] 
-NamedMaterial "TallBox"
-    
+        0.286356986 1.25171002e-08 -0.958123028 ]
+AttributeEnd        
+## MESH 6
+
+AttributeBegin
+    NamedMaterial "TallBox"
     Shape "trianglemesh" 
         "integer indices" [ 0 2 1 0 3 2 4 6 5 4 7 6 8 10 9 8 11 10 12 14 13 12 15 
         14 16 18 17 16 19 18 20 22 21 20 23 22 ] 
@@ -156,12 +180,13 @@ NamedMaterial "TallBox"
         -0.944445014 1.43666004e-08 0.328669012 0.944445014 -1.43666004e-08 -0.328669012 
         0.944445014 -1.43666004e-08 -0.328669012 0.944445014 -1.43666004e-08 -0.328669012 
         0.944445014 -1.43666004e-08 -0.328669012 ] 
+AttributeEnd
 
-    
+## MESH 7
 AttributeBegin
     AreaLightSource "diffuse" 
             "rgb L" [ 34 24 8 ] 
-    NamedMaterial "Light"
+    # NamedMaterial "Light"
     Shape "trianglemesh" 
             "integer indices" [ 0 1 2 0 2 3 ] 
             "float uv" [ 0 0 1 0 1 1 0 1 ] 

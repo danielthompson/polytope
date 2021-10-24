@@ -79,7 +79,11 @@ namespace poly {
       return cosine_sample_hemisphere(u0, u1);
    }
    
-   __device__ bool aabb_hits(const float* aabb, const float3 origin, const float3 inverse_direction, float* const mint) {
+   __device__ bool aabb_hits(
+         const float* aabb, 
+         const float3 origin, 
+         const float3 inverse_direction, 
+         float* const mint) {
 
       // TODO take ray's current t as a param and use for maxBoundFarT
       float maxBoundFarT = poly::Infinity;
@@ -593,9 +597,9 @@ namespace poly {
    }
    
    __global__ void path_trace_kernel(
-         float3* const origins,
-         float3* const directions,
-         float3* const directions_inverse,
+         const float3* const origins,
+         const float3* const directions,
+         const float3* const directions_inverse,
          curandState_t* const rng_states 
                ) {
       // loop over pixels

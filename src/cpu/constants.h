@@ -7,10 +7,10 @@
 
 #include <cmath>
 #include <limits>
-#include <random>
 
 #include "structures/Vectors.h"
 #include "structures/Vectors.h"
+#include "samplers/random_number_generator.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -23,6 +23,8 @@
 #ifndef M_SQRT3
 #define M_SQRT3 1.73205080757
 #endif
+
+extern thread_local poly::random_number_generator rng;
 
 namespace poly {
 
@@ -83,24 +85,12 @@ namespace poly {
       return float(std::abs(acos(v.dot(n))));
    }
 
-   static thread_local std::random_device random_device;
-
-   static thread_local std::mt19937 Generator(random_device());
-
-   inline int RandomUniformBetween(const int floor, const int ceiling) {
-      std::uniform_int_distribution<int> distribution(floor, ceiling);
-      return distribution(Generator);
-   }
-
    inline unsigned int RandomUniformBetween(const unsigned int floor, const unsigned int ceiling) {
-      std::uniform_int_distribution<unsigned int> distribution(floor, ceiling);
-      return distribution(Generator);
+      return rng.next_uint(floor, ceiling);
    }
    
-   inline float NormalizedUniformRandom() {
-      //static thread_local std::mt19937 Generator;
-      std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
-      return distribution(Generator);
+   inline float normalized_uniform_random() {
+      return rng.next_float();
    }
 
    inline vector CosineSampleHemisphere(float u0, float u1) {

@@ -2,21 +2,19 @@
 // Created by Daniel Thompson on 2/21/18.
 //
    
-#include <random>
-#include <cstdlib>
 #include "samplers.h"
-#include "../../../lib/pcg/pcg_random.hpp"
+#include "../constants.h"
 
 namespace poly {
 
-   void center_sampler::get_samples(poly::point2f points[], unsigned int number, int x, int y) const {
+   void center_sampler::get_samples(poly::point2f points[], unsigned int number, int x, int y) {
       for (int i = 0; i < number; i++) {
          points[i].x = (float)x + 0.5f;
          points[i].y = (float)y + 0.5f;
       }
    }
 
-   void halton_sampler::get_samples(poly::point2f points[], unsigned int number, int x, int y) const {
+   void halton_sampler::get_samples(poly::point2f points[], unsigned int number, int x, int y) {
       constexpr int base0 = 2;
       constexpr int base1 = 3;
 
@@ -55,7 +53,7 @@ namespace poly {
       }
    }
 
-   void grid_sampler::get_samples(poly::point2f points[], unsigned int number, const int x, const int y) const {
+   void grid_sampler::get_samples(poly::point2f points[], unsigned int number, const int x, const int y) {
       switch (number) {
          case 1: {
             points[0].x = 0.5f;
@@ -139,21 +137,9 @@ namespace poly {
       }
    }
 
-   random_sampler::random_sampler() {
-      pcg_extras::seed_seq_from<std::random_device> seed_source;
-      pcg32 rng(seed_source);
-      std::uniform_real_distribution<float> real_dist(0, 1);
-      std::uniform_int_distribution<int> uniform_dist(1, 6);
-      int mean = uniform_dist(rng);
-   }
-   
-   void random_sampler::get_samples(poly::point2f points[], unsigned int number, const int x, const int y) const {
+   void random_sampler::get_samples(poly::point2f points[], unsigned int number, const int x, const int y) {
       for (int i = 0; i < number; i++) {
-         double r0 = (double)std::rand() / (double)RAND_MAX;
-         double r1 = (double)std::rand() / (double)RAND_MAX;
-         points[i] = {(float)x + (float)r0, (float)y + (float)r1 };
+         points[i] = {x + normalized_uniform_random(), y + normalized_uniform_random() };
       }
    }
-
-
 }

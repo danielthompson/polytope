@@ -2,7 +2,7 @@ Integrator "path" "integer maxdepth" [ 10 ]
 LookAt 0.125 3 5 # eye
        0 0 0 # look at point
        0 1 0 # up
-Sampler "halton" "integer pixelsamples" [ 16 ]
+Sampler "halton" "integer pixelsamples" [ 1 ]
 PixelFilter "box" "float xwidth" [ 1.000000 ] "float ywidth" [ 1.000000 ]
 Film "image" "integer xresolution" [ 1920 ] "integer yresolution" [ 1080 ] "string filename" [ "dragon.png" ]
 Camera "perspective" "float fov" [ 3 ]

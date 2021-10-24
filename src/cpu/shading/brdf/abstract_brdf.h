@@ -34,8 +34,8 @@ namespace poly {
        * @return A vector randomly samplb
        */
       virtual vector sample(const vector &incoming, const float u, const float v, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const {
-         const float u0 = NormalizedUniformRandom();
-         const float u1 = NormalizedUniformRandom();
+         const float u0 = normalized_uniform_random();
+         const float u1 = normalized_uniform_random();
 
          const vector hemi = CosineSampleHemisphere(u0, u1);
 

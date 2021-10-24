@@ -69,7 +69,7 @@ namespace poly {
       return matrix(minv);
    }
 
-   matrix matrix::operator*(const matrix &rhs) const {
+   matrix matrix::operator*(matrix rhs) const {
       matrix ret = matrix();
 
       ret.mat[0][0] = mat[0][0] * rhs.mat[0][0] + mat[0][1] * rhs.mat[1][0] + mat[0][2] * rhs.mat[2][0] +

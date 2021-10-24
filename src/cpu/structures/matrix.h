@@ -55,7 +55,7 @@ namespace poly {
          return !(rhs == *this);
       }
       
-      matrix operator*(const matrix &rhs) const;
+      matrix operator*(matrix rhs) const;
       matrix &operator*=(const matrix &rhs);
 
       constexpr matrix transpose() {

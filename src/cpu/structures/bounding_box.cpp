@@ -24,7 +24,7 @@ namespace poly {
 //      float maxBoundFarT = poly::FloatMax;
       float minBoundNearT = 0;
 
-      const float gammaMultiplier = 1 + 2 * poly::Gamma(3);
+      constexpr float gammaMultiplier = 1 + 2 * poly::Gamma(3);
 
       // X
       float tNear = (p0.x - world_space_ray.origin.x) * inverse_direction.x;

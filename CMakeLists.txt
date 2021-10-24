@@ -117,7 +117,6 @@ set(POLYTOPE_LIB_SOURCES
     src/cpu/structures/transform.cpp
     src/cpu/structures/transform.h
     src/common/utilities/Common.h
-    src/common/utilities/GeometryCalculations.h
     src/common/utilities/GlobalDefines.h
     src/common/utilities/Logger.cpp
     src/common/utilities/Logger.h
@@ -155,6 +154,8 @@ if (ENABLE_COVERAGE)
   target_compile_options(polytope_lib PRIVATE --coverage)
   target_link_libraries(polytope_lib PRIVATE --coverage)
 endif ()
+
+set_target_properties(polytope_lib PROPERTIES COMPILE_FLAGS "-save-temps -masm=intel")
 
 ## polytope_gl_lib
 

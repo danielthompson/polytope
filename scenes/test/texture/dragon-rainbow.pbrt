@@ -1,5 +1,5 @@
 Sampler "sobol" 
-    "integer pixelsamples" [ 16 ] 
+    "integer pixelsamples" [ 1 ] 
 PixelFilter "box" 
 Film "image" 
     "integer xresolution" [ 1920 ] 
@@ -32,7 +32,7 @@ AttributeBegin
     Translate 0 0 0
     Material "matte" "rgb Kd" [ 1  1  1 ]
     # Material "mirror" "rgb Kr" [ .5  .5  .5 ]
-    Shape "plymesh" "string filename" [ "floor.ply" ]
+    # Shape "plymesh" "string filename" [ "floor.ply" ]
 AttributeEnd
 
 
