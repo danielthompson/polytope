@@ -1,29 +1,22 @@
 //
 // Created by Daniel Thompson on 2/21/18.
 //
-
+   
 #include "samplers.h"
+#include "../constants.h"
 
 namespace poly {
 
-   Point2f CenterSampler::GetSample(const int x, const int y) const {
-      return Point2f(x + 0.5f, y + 0.5f);
-   }
-
-   void CenterSampler::GetSamples(Point2f points[], const unsigned int number, const int x, const int y) const {
+   void center_sampler::get_samples(poly::point2f points[], unsigned int number, int x, int y) {
       for (int i = 0; i < number; i++) {
-         points[i].x = x + 0.5f;
-         points[i].y = y + 0.5f;
+         points[i].x = (float)x + 0.5f;
+         points[i].y = (float)y + 0.5f;
       }
    }
 
-   Point2f HaltonSampler::GetSample(const int x, const int y) const {
-      return Point2f(x + 0.5f, y + 0.5f);
-   }
-
-   void HaltonSampler::GetSamples(Point2f points[], const unsigned int number, const int x, const int y) const {
-      const int base0 = 2;
-      const int base1 = 3;
+   void halton_sampler::get_samples(poly::point2f points[], unsigned int number, int x, int y) {
+      constexpr int base0 = 2;
+      constexpr int base1 = 3;
 
       for (int i = 1; i <= number; i++) {
 
@@ -38,7 +31,7 @@ namespace poly {
          while (index > 0) {
             f0 = f0 / base0;
 
-            r0 = r0 + f0 * (index % base0);
+            r0 = r0 + f0 * (float)(index % base0);
 
             index = index / base0;
 
@@ -49,22 +42,18 @@ namespace poly {
          while (index > 0) {
             f1 = f1 / base1;
 
-            r1 = r1 + f1 * (index % base1);
+            r1 = r1 + f1 * (float)(index % base1);
 
             index = index  / base1;
          }
 
-         points[i - 1].x = x + r0;
-         points[i - 1].y = y + r1;
+         points[i - 1].x = (float)x + r0;
+         points[i - 1].y = (float)y + r1;
 
       }
    }
 
-   Point2f GridSampler::GetSample(const int x, const int y) const {
-      return Point2f(x + 0.5f, y + 0.5f);
-   }
-
-   void GridSampler::GetSamples(Point2f points[], const unsigned int number, const int x, const int y) const {
+   void grid_sampler::get_samples(poly::point2f points[], unsigned int number, const int x, const int y) {
       switch (number) {
          case 1: {
             points[0].x = 0.5f;
@@ -131,7 +120,7 @@ namespace poly {
             points[3].y = 0.3f;
 
             points[4].x = 0.9f;
-            points[5].y = 0.7f;
+            points[4].y = 0.7f;
             break;
          }
          default: {
@@ -143,8 +132,14 @@ namespace poly {
       }
 
       for (int i = 0; i < number; i++) {
-         points[i].x += x;
-         points[i].y += y;
+         points[i].x += (float)x;
+         points[i].y += (float)y;
+      }
+   }
+
+   void random_sampler::get_samples(poly::point2f points[], unsigned int number, const int x, const int y) {
+      for (int i = 0; i < number; i++) {
+         points[i] = {x + normalized_uniform_random(), y + normalized_uniform_random() };
       }
    }
 }

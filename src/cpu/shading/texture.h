@@ -5,6 +5,7 @@
 #ifndef POLYTOPE_TEXTURE_H
 #define POLYTOPE_TEXTURE_H
 
+#include <string>
 #include "spectrum.h"
 
 namespace poly {

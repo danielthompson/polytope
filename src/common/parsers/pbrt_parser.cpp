@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cert-err58-cpp"
 //
 // Created by Daniel on 07-Apr-18.
 //
@@ -10,12 +12,11 @@
 #include "mesh_parsers.h"
 #include "../../cpu/integrators/PathTraceIntegrator.h"
 #include "../../cpu/integrators/DebugIntegrator.h"
-#include "../../cpu/cameras/PerspectiveCamera.h"
+#include "../../cpu/cameras/perspective_camera.h"
 #include "../../cpu/samplers/samplers.h"
-#include "../../cpu/runners/TileRunner.h"
-#include "../../cpu/films/PNGFilm.h"
-#include "../../cpu/filters/BoxFilter.h"
-#include "../../cpu/scenes/Scene.h"
+#include "../../cpu/films/png_film.h"
+#include "../../cpu/filters/box_filter.h"
+#include "../../cpu/scenes/scene.h"
 #include "../utilities/Common.h"
 #include "../../cpu/scenes/skyboxes/ColorSkybox.h"
 #include "../../cpu/structures/Vectors.h"
@@ -25,6 +26,7 @@
 #include "../../cpu/shapes/tesselators.h"
 #include "../../cpu/shading/brdf/glossy_brdf.h"
 #include "../../../lib/lodepng.h"
+#include "../../cpu/filters/triangle_filter.h"
 
 namespace poly {
 
@@ -34,11 +36,15 @@ namespace poly {
          const std::string AreaLightSource = "AreaLightSource";
          const std::string AttributeBegin = "AttributeBegin";
          const std::string AttributeEnd = "AttributeEnd";
+         const std::string box = "box";
          const std::string Camera = "Camera";
+         const std::string center = "center";
          const std::string filename = "filename";
          const std::string Film = "Film";
+         const std::string grid = "grid";
          const std::string halton = "halton";
          const std::string image = "image";
+         const std::string indices = "indices";
          const std::string Integrator = "Integrator";
          const std::string Kd = "Kd";
          const std::string Kr = "Kr";
@@ -49,16 +55,19 @@ namespace poly {
          const std::string Material = "Material";
          const std::string matte = "matte";
          const std::string mirror = "mirror";
+         const std::string N = "N";
          const std::string name = "name";
          const std::string NamedMaterial = "NamedMaterial";
          const std::string ObjectBegin = "ObjectBegin";
          const std::string ObjectEnd = "ObjectEnd";
          const std::string ObjectInstance = "ObjectInstance";
          const std::string objmesh = "objmesh";
+         const std::string P = "P";
          const std::string PixelFilter = "PixelFilter";
          const std::string pixelsamples = "pixelsamples";
          const std::string plastic = "plastic";
          const std::string plymesh = "plymesh";
+         const std::string random = "random";
          const std::string Rotate = "Rotate";
          const std::string roughness = "roughness";
          const std::string Sampler = "Sampler";
@@ -70,12 +79,18 @@ namespace poly {
          const std::string TransformBegin = "TransformBegin";
          const std::string TransformEnd = "TransformEnd";
          const std::string Translate = "Translate";
+         const std::string triangle = "triangle";
+         const std::string trianglemesh = "trianglemesh";
+         const std::string type = "type";
+         const std::string uv = "uv";
          const std::string WorldBegin = "WorldBegin";
          const std::string WorldEnd = "WorldEnd";
+         const std::string xwidth = "xwidth";
+         const std::string ywidth = "ywidth";
       }
       
-      std::string _inputFilename = "";
-      std::string _basePathFromCWD = "";
+      std::string _inputFilename;
+      std::string _basePathFromCWD;
 
       // strings
 
@@ -109,16 +124,16 @@ namespace poly {
       };
 
       const std::unordered_map<std::string, DirectiveIdentifier> SceneDirectiveMap {
-            {str::Camera, Camera},
-            {str::Film, Film},
-            {str::Integrator, Integrator},
-            {str::LookAt, LookAt},
+            {str::Camera,      Camera},
+            {str::Film,        Film},
+            {str::Integrator,  Integrator},
+            {str::LookAt,      LookAt},
             {str::PixelFilter, PixelFilter},
-            {str::Rotate, Rotate},
-            {str::Sampler, Sampler},
-            {str::Scale, Scale},
-            {str::Transform, Transform},
-            {str::Translate, Translate},
+            {str::Rotate,      Rotate},
+            {str::Sampler,     Sampler},
+            {str::Scale,       Scale},
+            {str::Transform,   Transform},
+            {str::Translate,   Translate},
       };
 
       const std::unordered_map<std::string, DirectiveIdentifier> WorldDirectiveMap {
@@ -127,33 +142,35 @@ namespace poly {
             {str::AttributeEnd, AttributeEnd},
             {str::LightSource, LightSource},
             {str::MakeNamedMaterial, MakeNamedMaterial},
-            {str::Material, Material},
-            {str::NamedMaterial, NamedMaterial},
-            {str::ObjectBegin, ObjectBegin},
-            {str::ObjectEnd, ObjectEnd},
-            {str::ObjectInstance, ObjectInstance},
-            {str::Rotate, Rotate},
-            {str::Scale, Scale},
-            {str::Shape, Shape},
-            {str::Texture, Texture},
-            {str::Transform, Transform},
-            {str::TransformBegin, TransformBegin},
-            {str::TransformEnd, TransformEnd},
-            {str::Translate, Translate},
-            {str::WorldBegin, WorldBegin},
-            {str::WorldEnd, WorldEnd},
+            {str::Material,          Material},
+            {str::NamedMaterial,     NamedMaterial},
+            {str::ObjectBegin,       ObjectBegin},
+            {str::ObjectEnd,         ObjectEnd},
+            {str::ObjectInstance,    ObjectInstance},
+            {str::Rotate,            Rotate},
+            {str::Scale,             Scale},
+            {str::Shape,             Shape},
+            {str::Texture,           Texture},
+            {str::Transform,         Transform},
+            {str::TransformBegin,    TransformBegin},
+            {str::TransformEnd,      TransformEnd},
+            {str::Translate,         Translate},
+            {str::WorldBegin,        WorldBegin},
+            {str::WorldEnd,          WorldEnd},
       };
 
       enum ShapeIdentifier {
          objmesh,
          plymesh,
-         sphere
+         sphere,
+         trianglemesh
       };
 
       const std::unordered_map<std::string, ShapeIdentifier> ShapeIdentifierMap {
             {str::objmesh, objmesh},
             {str::plymesh,    plymesh},
             {str::sphere,     sphere},
+            {str::trianglemesh,     trianglemesh},
       };
 
       enum MaterialIdentifier {
@@ -184,22 +201,28 @@ namespace poly {
             {str::roughness, Roughness}
       };
       
-      enum OBJMeshArgument {
+      enum MeshArgument {
          Filename
       };
 
-      const std::unordered_map<std::string, OBJMeshArgument> OBJMeshArgumentMap {
+      const std::unordered_map<std::string, MeshArgument> MeshArgumentMap {
             {str::filename, Filename}
       };
-
-      enum class PLYMeshArgument {
-         Filename
+      
+      enum TriangleMeshArgument {
+         indices,
+         N,
+         P,
+         uv
       };
-
-      const std::unordered_map<std::string, PLYMeshArgument> PLYMeshArgumentMap {
-            {str::filename, PLYMeshArgument::Filename}
+      
+      const std::unordered_map<std::string, TriangleMeshArgument> TriangleMeshArgumentMap {
+            {str::indices, indices},
+            {str::N, N},
+            {str::P, P},
+            {str::uv, uv}            
       };
-
+      
       // TODO get rid of this junk in favor of using WorldDirectiveMap
 
       bool is_quoted(const std::string &token) {
@@ -215,50 +238,50 @@ namespace poly {
       }
 
       void LogOther(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
-         Log.warning(directive->identifier + ": " + error);
+         LOG_WARNING(directive->identifier << ": " << error);
       }
 
       void log_illegal_directive(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
-         Log.error(directive->identifier + ": " + error);
+         LOG_ERROR(directive->identifier << ": " << error);
       }
 
       void log_illegal_identifier(const std::unique_ptr<pbrt_directive> &directive, const std::string &error) {
-         Log.error(directive->identifier + ": \"" + directive->type + "\": " + error);
+         LOG_ERROR(directive->identifier << ": \"" << directive->type << "\": " << error);
       }
 
       void LogMissingArgument(const std::unique_ptr<pbrt_directive>& directive, const std::string& argument) {
-         Log.warning("Directive [" + directive->identifier + "] w/ identifier [" + directive->type + "] is missing argument [" + argument + "]");
+         LOG_WARNING("Directive [" << directive->identifier << "] w/ identifier [" << directive->type << "] is missing argument [" << argument << "]");
       }
 
       void LogMissingDirective(const std::string& name, std::string& defaultOption) {
-         Log.warning("Directive [" + name + "] is missing, defaulting to " + defaultOption + ".");
+         LOG_WARNING("Directive [" << name << "] is missing, defaulting to " << defaultOption << ".");
       }
 
       void LogUnknownDirective(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->identifier + "] found, but is unknown. Ignoring.");
+         LOG_WARNING("Directive [" << directive->identifier << "] found, but is unknown. Ignoring.");
       }
 
       void LogUnknownIdentifier(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->identifier + "] has unknown identifier [" + directive->type + "].");
+         LOG_WARNING("Directive [" << directive->identifier << "] has unknown identifier [" << directive->type << "].");
       }
 
       void LogUnimplementedIdentifier(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->identifier + "] has known but unimplemented identifier [" + directive->type + "].");
+         LOG_WARNING("Directive [" << directive->identifier << "] has known but unimplemented identifier [" << directive->type << "].");
       }
 
       void LogUnknownArgument(const pbrt_argument &argument) {
-         
-         Log.warning("Unknown argument type/name combination: [" +
-                     pbrt_argument::get_argument_type_string(argument.Type) + "] / [" + argument.Name + "].");
+
+         LOG_WARNING("Unknown argument type/name combination: [" <<
+                     pbrt_argument::get_argument_type_string(argument.Type) << "] / [" << argument.Name << "].");
       }
 
       void LogWrongArgumentType(const std::unique_ptr<pbrt_directive> &directive, const pbrt_argument &argument) {
-         Log.warning("Directive [" + directive->identifier + "] w/ identifier [" + directive->type + "] found has argument [" + argument.Name + "] with wrong type [" +
-                     pbrt_argument::get_argument_type_string(argument.Type) + "].");
+         LOG_WARNING("Directive [" << directive->identifier << "] w/ identifier [" << directive->type << "] found has argument [" << argument.Name << "] with wrong type [" <<
+                     pbrt_argument::get_argument_type_string(argument.Type) << "].");
       }
 
       void LogUnimplementedDirective(const std::unique_ptr<pbrt_directive> &directive) {
-         Log.warning("Directive [" + directive->identifier + "] w/ identifier [" + directive->type + "] found, but is not yet implemented. Ignoring.");
+         LOG_WARNING("Directive [" << directive->identifier << "] w/ identifier [" << directive->type << "] found, but is not yet implemented. Ignoring.");
       }
 
       unsigned int stoui(const std::string& text) {
@@ -272,7 +295,7 @@ namespace poly {
       constexpr unsigned int DefaultSamples = 8;
    }
 
-   std::unique_ptr<AbstractRunner> pbrt_parser::parse_file(const std::string &filepath) {
+   std::shared_ptr<poly::runner> pbrt_parser::parse_file(const std::string &filepath) {
 
       std::unique_ptr<std::vector<std::vector<std::string>>> tokens = scan(open_ascii_stream(filepath));
 
@@ -291,7 +314,7 @@ namespace poly {
       return parse(std::move(tokens));
    }
 
-   std::unique_ptr<AbstractRunner> pbrt_parser::parse_string(const std::string &text) {
+   std::shared_ptr<poly::runner> pbrt_parser::parse_string(const std::string &text) {
       auto tokens = scan(std::make_unique<std::istringstream>(text));
       return parse(std::move(tokens));
    }
@@ -387,7 +410,7 @@ namespace poly {
          sourceLineNumber++;
       } // end line
       
-      Log.debug("Scan complete.");
+      LOG_DEBUG("Scan complete.");
       return tokens;
    }
 
@@ -411,9 +434,10 @@ namespace poly {
       argument->Type = pbrt_argument::pbrt_float;
       argument->float_values = std::make_unique<std::vector<float>>();
       
-      const int starting_index = in_brackets ? 2 : 1;
+      const int start_index = in_brackets ? 2 : 1;
+      const int end_index = start_index + expected_num_elements;
       
-      for (int i = starting_index; i <= expected_num_elements; i++) {
+      for (int i = start_index; i < end_index; i++) {
          std::string current_arg = line[i];
          
          float value;
@@ -427,15 +451,52 @@ namespace poly {
       }
    }
    
+   template<class T>
+   void parse_point(
+         std::vector<std::string> line, 
+         int& i, 
+         std::unique_ptr<std::vector<T>>& v) {
+
+      if (v == nullptr) {
+         v = std::make_unique<std::vector<T>>();
+      }
+      
+      T p = { 0, 0, 0 };
+      try {
+         p.x = std::stof(line[i]);
+      }
+      catch (const std::invalid_argument &) {
+         throw std::invalid_argument(line[0] + ": failed to parse [" + line[i] + "] as an int");
+      }
+      i++;
+
+      try {
+         p.y = std::stof(line[i]);
+      }
+      catch (const std::invalid_argument &) {
+         throw std::invalid_argument(line[0] + ": failed to parse [" + line[i] + "] as an int");
+      }
+
+      i++;
+      try {
+         p.z = std::stof(line[i]);
+      }
+      catch (const std::invalid_argument &) {
+         throw std::invalid_argument(line[0] + ": failed to parse [" + line[i] + "] as an int");
+      }
+
+      v->push_back(p);
+   }
+   
    std::unique_ptr<poly::pbrt_directive> pbrt_parser::lex(std::vector<std::string> line) {
       std::unique_ptr<poly::pbrt_directive> directive = std::make_unique<pbrt_directive>();
 
       if (line.empty()) {
-         Log.warning("lex(): empty line. Hmm...");
+         LOG_WARNING("lex(): empty line. Hmm...");
          return directive;
       }
       
-      Log.debug("lex(): processing line starting with [" + line[0] + "].");
+      LOG_DEBUG("lex(): processing line starting with [" << line[0] << "].");
       
       bool debug = false;
       if (line[0] == "Texture")
@@ -444,7 +505,7 @@ namespace poly {
       directive->identifier = line[0];
       
       if (line.size() == 1) {
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
 
@@ -457,7 +518,7 @@ namespace poly {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          LexFloatArrayArgument(line, 9, false, &(directive->arguments[0]));
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
       
@@ -465,7 +526,7 @@ namespace poly {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          LexFloatArrayArgument(line, 4, false, &(directive->arguments[0]));
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
 
@@ -473,7 +534,7 @@ namespace poly {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          LexFloatArrayArgument(line, 3, false, &(directive->arguments[0]));
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
 
@@ -502,14 +563,14 @@ namespace poly {
          // regular arguments
          argument_start_index = 4;
          
-         Log.debug("lex(): directive [" + directive->identifier + "] started OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] started OK");
       }
 
       else if (directive->identifier == str::Transform) {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          LexFloatArrayArgument(line,  16, true, &(directive->arguments[0]));
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
       
@@ -517,7 +578,7 @@ namespace poly {
          directive->arguments = std::vector<pbrt_argument>();
          directive->arguments.emplace_back(poly::pbrt_argument::pbrt_argument_type::pbrt_float);
          LexFloatArrayArgument(line, 3, false, &(directive->arguments[0]));
-         Log.debug("lex(): directive [" + directive->identifier + "] OK");
+         LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
          return directive;
       }
       
@@ -526,13 +587,13 @@ namespace poly {
             directive->type = line[1].substr(1, line[1].length() - 2);
          }
          else {
-            ERROR("lex(): second token (identifier) %s isn't quoted, but should be", line[0].c_str());
+            ERROR("lex(): second token (identifier) [" << line[0] << "] isn't quoted, but should be");
          }
       } 
 
 
       if (line.size() == 2) {
-         Log.debug("Lexed directive [" + directive->identifier + "]");
+         LOG_DEBUG("Lexed directive [" << directive->identifier << "]");
          return directive;
       }
       
@@ -604,8 +665,12 @@ namespace poly {
                switch (current_arg->Type) {
                   case pbrt_argument::pbrt_rgb:
                   case pbrt_argument::pbrt_float: {
+                     assert(current_arg->bool_value == nullptr);
+                     //assert(current_arg->float_values == nullptr);
                      assert(current_arg->string_value == nullptr);
                      assert(current_arg->int_values == nullptr);
+                     assert(current_arg->point_values == nullptr);
+                     assert(current_arg->normal_values == nullptr);
                      
                      float value;
                      try {
@@ -627,8 +692,12 @@ namespace poly {
                      break;
                   }
                   case pbrt_argument::pbrt_int: {
-                     assert(current_arg->string_value == nullptr);
+                     assert(current_arg->bool_value == nullptr);
                      assert(current_arg->float_values == nullptr);
+                     assert(current_arg->string_value == nullptr);
+                     //assert(current_arg->int_values == nullptr);
+                     assert(current_arg->point_values == nullptr);
+                     assert(current_arg->normal_values == nullptr);
                      int value;
                      try {
                         value = std::stoi(line[i]);
@@ -644,6 +713,36 @@ namespace poly {
                      current_arg->int_values->push_back(value);
                      break;
                   }
+                  case pbrt_argument::pbrt_point3: {
+                     assert(current_arg->bool_value == nullptr);
+                     assert(current_arg->float_values == nullptr);
+                     assert(current_arg->string_value == nullptr);
+                     assert(current_arg->int_values == nullptr);
+                     //assert(current_arg->point_values == nullptr);
+                     assert(current_arg->normal_values == nullptr);
+
+                     parse_point<poly::point>(
+                           line,
+                           i,
+                           current_arg->point_values);
+
+                     break;
+                  }
+                  case pbrt_argument::pbrt_normal: {
+                     assert(current_arg->bool_value == nullptr);
+                     assert(current_arg->float_values == nullptr);
+                     assert(current_arg->string_value == nullptr);
+                     assert(current_arg->int_values == nullptr);
+                     assert(current_arg->point_values == nullptr);
+                     //assert(current_arg->normal_values == nullptr);
+
+                     parse_point<poly::normal>(
+                           line,
+                           i,
+                           current_arg->normal_values);
+
+                     break;
+                  }
                   default: {
                      // TODO
                   }
@@ -652,19 +751,19 @@ namespace poly {
             i++;
             continue;
          }
-         ERROR("lex(): current line has invalid token [" + line[i] + "] :(");
+         ERROR("lex(): current line has invalid token [" << line[i] << "] :/");
       }
 
 //      if (inValue) {
 //         directive->Arguments.push_back(argument);
 //      }
 
-      Log.debug("lex(): directive [" + directive->identifier + "] OK");
+      LOG_DEBUG("lex(): directive [" << directive->identifier << "] OK");
 
       return directive;
    }
    
-   static std::unique_ptr<poly::Transform> rotate_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+   static std::unique_ptr<poly::transform> rotate_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
       // TODO need to ensure just 1 argument with 4 values
       
       const float angle = directive->arguments[0].float_values->at(0) * PIOver180;
@@ -678,19 +777,19 @@ namespace poly {
       y *= length_inverse;
       z *= length_inverse;
       
-      return std::make_unique<poly::Transform>(Transform::Rotate(angle, x, y, z));
+      return std::make_unique<poly::transform>(transform::rotate(angle, x, y, z));
    }
    
-   static std::unique_ptr<poly::Transform> scale_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+   static std::unique_ptr<poly::transform> scale_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
       pbrt_argument* arg = &(directive->arguments[0]);
       float x = arg->float_values->at(0);
       float y = arg->float_values->at(1);
       float z = arg->float_values->at(2);
 
-      return std::make_unique<poly::Transform>(Transform::Scale(x, y, z));
+      return std::make_unique<poly::transform>(transform::scale(x, y, z));
    }
    
-   static std::unique_ptr<poly::Transform> transform_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+   static std::unique_ptr<poly::transform> transform_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
       pbrt_argument* arg = &(directive->arguments[0]);
       float m00 = arg->float_values->at(0);
       float m01 = arg->float_values->at(1);
@@ -712,25 +811,25 @@ namespace poly {
       float m32 = arg->float_values->at(14);
       float m33 = arg->float_values->at(15);
 
-      return std::make_unique<poly::Transform>(m00, m01, m02, m03,
+      return std::make_unique<poly::transform>(m00, m01, m02, m03,
                                                m10, m11, m12, m13,
                                                m20, m21, m22, m23,
                                                m30, m31, m32, m33);
    }
    
-   static std::unique_ptr<poly::Transform> translate_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
+   static std::unique_ptr<poly::transform> translate_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
       // need to ensure just one argument with 3 values
       pbrt_argument* arg = &(directive->arguments[0]);
       float x = arg->float_values->at(0);
       float y = arg->float_values->at(1);
       float z = arg->float_values->at(2);
-      return std::make_unique<poly::Transform>(Transform::Translate(x, y, z));
+      return std::make_unique<poly::transform>(transform::translate(x, y, z));
    }
    
    static std::unique_ptr<poly::texture> texture_directive(const std::unique_ptr<poly::pbrt_directive>& directive) {
       std::unique_ptr<poly::texture> texture = std::make_unique<poly::texture>();
       if (directive->name.empty()) {
-         Log.warning("Texture has an empty name value, so it can't be referenced by a material");
+         LOG_WARNING("Texture has an empty name value, so it can't be referenced by a material");
       }
       texture->name = directive->name;
       LodePNGColorType color_type;
@@ -743,11 +842,11 @@ namespace poly {
          texture->data_format = texture::format::GREY;
       }
       else {
-         ERROR("Unknown/unimplemented texture type [%s]", directive->type.c_str());
+         ERROR("Unknown/unimplemented texture type [" << directive->type << "]");
       }
       
       if (directive->class_name != "imagemap") {
-         ERROR("Unknown/unimplemented texture class [%s]", directive->class_name.c_str());
+         ERROR("Unknown/unimplemented texture class [" << directive->class_name << "]");
       }
       
       if (directive->arguments.empty()) {
@@ -759,14 +858,15 @@ namespace poly {
             
             std::string texture_file_path = _basePathFromCWD + '/' + *arg.string_value;
             
-            Log.debug("Trying to open texture at [%s]...", texture_file_path.c_str());
+            LOG_DEBUG("Trying to open texture at [" << texture_file_path << "]...");
             
             // load filename
             unsigned error = lodepng::decode(texture->data, texture->width, texture->height, texture_file_path, color_type);
             if (error) 
-               ERROR("Failed to read/decode png file [" +  *arg.string_value + "] with error " + std::to_string(error) + ": " + lodepng_error_text(error));
-            
-            Log.debug("Read texture with size [%i] x [%i] and decoded to [%s].", texture->width, texture->height, texture->data_format == texture::format::RGBA ? "RGBA" : "greyscale");
+               ERROR("Failed to read/decode png file [" <<  *arg.string_value << "] with error " << error << ": " << lodepng_error_text(error));
+
+            LOG_DEBUG("Read texture with size [" << texture->width << "] x [" << texture->height << "] and decoded to ["
+                      << (texture->data_format == texture::format::RGBA ? "RGBA" : "greyscale") << "]");
             
             return texture;
          }
@@ -777,16 +877,39 @@ namespace poly {
    
    static std::shared_ptr<poly::Material> material_directive(
          const std::unique_ptr<poly::pbrt_directive>& directive,
-         const std::unordered_map<std::string, std::shared_ptr<poly::texture>> &texture_map
+         const std::unordered_map<std::string, std::shared_ptr<poly::texture>> &texture_map,
+         bool named = false
          ) {
+
+      std::string material_type;
+
+
+      // if the material is named, the identifier is the name, and we shouldn't try to parse it.
+      // instead, the type of the material is the value of the argument with name "type".
+      if (named) {
+         for (const auto& argument : directive->arguments) {
+            if (argument.Type == pbrt_argument::pbrt_string
+                && argument.Name == str::type) {
+               material_type = *argument.string_value;
+            }
+         }
+      }
+      // otherwise, the type of the material is the directive's type field. 
+      else {
+         material_type = directive->type;
+      }
+      
       MaterialIdentifier identifier;
+      
       try {
-         identifier = MaterialIdentifierMap.at(directive->type);
+         identifier = MaterialIdentifierMap.at(material_type);
       }
       catch (...) {
          LogUnknownIdentifier(directive);
          return nullptr;
       }
+      
+
       switch (identifier) {
          case MaterialIdentifier::Plastic: {
             // diffuse reflectivity
@@ -842,6 +965,9 @@ namespace poly {
          }
          case MaterialIdentifier::Matte: {
             for (const pbrt_argument& argument : directive->arguments) {
+               if (named && argument.Name == str::type) {
+                  continue;
+               }
                MaterialArgumentName param;
                try {
                   param = MaterialMatteArgumentMap.at(argument.Name);
@@ -865,7 +991,7 @@ namespace poly {
                         }
                         case pbrt_argument::pbrt_texture: {
                            if (texture_map.count(*argument.string_value) == 0) {
-                              ERROR("Material references a texture [%s] that hasn't been defined yet", argument.string_value->c_str());
+                              ERROR("Material references a texture [" << *argument.string_value << "] that hasn't been defined yet");
                            }
                            
                            std::shared_ptr<poly::texture> texture = texture_map.at(*argument.string_value);
@@ -902,9 +1028,11 @@ namespace poly {
             return nullptr;
          }
       }
+      
+      return nullptr;
    }
-   
-   std::unique_ptr<AbstractRunner> pbrt_parser::parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
+
+   std::shared_ptr<poly::runner> pbrt_parser::parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false){
       std::vector<std::unique_ptr<pbrt_directive>> scene_directives;
       std::vector<std::unique_ptr<pbrt_directive>> world_directives;
 
@@ -924,19 +1052,10 @@ namespace poly {
 
       // sampler
 
-      bool missingSampler = true;
-
       unsigned int numSamples = DefaultSamples;
 
       for (const std::unique_ptr<pbrt_directive> &directive : scene_directives) {
          if (directive->identifier == str::Sampler) {
-            missingSampler = false;
-            if (directive->type == str::halton) {
-               sampler = std::make_unique<CenterSampler>();
-            } else {
-               LogUnknownIdentifier(directive);
-               sampler = std::make_unique<CenterSampler>();
-            }
 
             for (const pbrt_argument& arg : directive->arguments) {
                if (arg.Type == pbrt_argument::pbrt_int) {
@@ -952,20 +1071,39 @@ namespace poly {
                   // TODO log bad argument type
                }
             }
+            
+            if (directive->type == str::halton) {
+               sampler = std::make_unique<poly::halton_sampler>();
+            } 
+            else if (directive->type == str::random) {
+               sampler = std::make_unique<poly::random_sampler>();
+            }
+            else if (directive->type == str::center) {
+               sampler = std::make_unique<poly::center_sampler>();
+            }
+            else if (directive->type == str::grid) {
+               sampler = std::make_unique<poly::grid_sampler>();
+               // TODO: use popcnt
+               // if the samples are not a power of two, round up to next highest
+               if (!(numSamples != 0 && (numSamples & (numSamples - 1)) == 0)) {
+                  numSamples = 1 << (32 - __builtin_clz (numSamples - 1));
+               }
+               
+            }
+            else {
+               LogUnknownIdentifier(directive);
+            }
+
+            
             break;
          }
       }
 
-      if (missingSampler) {
-         std::string defaultOption = "Halton";
-         LogMissingDirective(str::Sampler, defaultOption);
-      }
-
       if (sampler == nullptr) {
-         sampler = std::make_unique<CenterSampler>();
+         sampler = std::make_unique<halton_sampler>();
       }
 
-      Log.debug("Made (center) sampler.");
+      LOG_DEBUG("Made sampler.");
 
       // film
 
@@ -984,6 +1122,7 @@ namespace poly {
                else
                   filename = _inputFilename.substr(0, dotIndex) + ".png";
 
+               LOG_DEBUG("Parsed filename [" << filename << "]");               
                bool foundX = false;
                bool foundY = false;
 
@@ -1013,7 +1152,7 @@ namespace poly {
 
                missingFilm = false;
 
-               film = std::make_unique<PNGFilm>(bounds, filename, std::move(filter));
+               film = std::make_unique<png_film>(bounds, filename, std::move(filter));
             }
             break;
          }
@@ -1028,10 +1167,10 @@ namespace poly {
          std::string filename = "polytope.png";
          bounds.x = DefaultBoundsX;
          bounds.y = DefaultBoundsY;
-         film = std::make_unique<PNGFilm>(bounds, filename, std::move(filter));
+         film = std::make_unique<png_film>(bounds, filename, std::move(filter));
       }
 
-      Log.debug("Made film.");
+      LOG_DEBUG("Made film.");
 
       // filter
 
@@ -1040,23 +1179,29 @@ namespace poly {
       for (const std::unique_ptr<pbrt_directive>& directive : scene_directives) {
          if (directive->identifier == str::PixelFilter) {
             missingFilter = false;
-            if (directive->type == "box") {
-               unsigned int xWidth = 0;
-               unsigned int yWidth = 0;
 
-               for (const pbrt_argument& arg : directive->arguments) {
-                  if (arg.Type == pbrt_argument::pbrt_int) {
-                     if (arg.Name == "xwidth") {
-                        xWidth = arg.int_values->at(0);
-                     } else if (arg.Name == "ywidth") {
-                        yWidth = arg.int_values->at(0);
-                     } else {
-                        LogUnknownArgument(arg);
-                     }
-                     break;
+            float x_width = 1.0;
+            float y_width = 1.0;
+            
+            for (const pbrt_argument& arg : directive->arguments) {
+               if (arg.Type == pbrt_argument::pbrt_float) {
+                  if (arg.Name == str::xwidth) {
+                     x_width = arg.float_values->at(0);
+                  } else if (arg.Name == str::ywidth) {
+                     y_width = arg.float_values->at(0);
+                  } else {
+                     LogUnknownArgument(arg);
                   }
+                  break;
                }
-            } else {
+            }
+            if (directive->type == str::box) {
+               filter = std::make_unique<poly::box_filter>(bounds, x_width, y_width);
+            } 
+            else if (directive->type == str::triangle) {
+               filter = std::make_unique<poly::triangle_filter>(bounds, x_width, y_width);
+            }
+            else {
                LogUnknownIdentifier(directive);
             }
             break;
@@ -1069,22 +1214,23 @@ namespace poly {
       }
 
       if (filter == nullptr) {
-         filter = std::make_unique<BoxFilter>(bounds);
-         film->Filter = std::move(filter);
+         filter = std::make_unique<poly::box_filter>(bounds, 1, 1);
       }
 
-      Log.debug("Made filter.");
+      film->filter = std::move(filter);
+
+      LOG_DEBUG("Made filter.");
 
       // camera
 
-      std::unique_ptr<AbstractCamera> camera;
+      std::unique_ptr<abstract_camera> camera;
 
       {
-         Point eye;
-         Point lookAt;
-         Vector up;
+         point eye;
+         point lookAt;
+         vector up;
 
-         poly::Transform current_transform;
+         poly::transform current_transform;
          
          for (const std::unique_ptr<pbrt_directive>& directive : scene_directives) {
             
@@ -1093,7 +1239,7 @@ namespace poly {
                identifier = SceneDirectiveMap.at(directive->identifier);
             }
             catch (...) {
-               ERROR("Indentifier [%s] is not valid in the scene block");
+               ERROR("Identifier [" << directive->identifier << "] is not valid in the scene block");
             }
             switch (identifier) {
                case DirectiveIdentifier::LookAt: {
@@ -1101,24 +1247,24 @@ namespace poly {
                   const float eyeY = directive->arguments[0].float_values->at(1);
                   const float eyeZ = directive->arguments[0].float_values->at(2);
 
-                  eye = Point(eyeX, eyeY, eyeZ);
+                  eye = point(eyeX, eyeY, eyeZ);
 
                   const float lookAtX = directive->arguments[0].float_values->at(3);
                   const float lookAtY = directive->arguments[0].float_values->at(4);
                   const float lookAtZ = directive->arguments[0].float_values->at(5);
 
-                  lookAt = Point(lookAtX, lookAtY, lookAtZ);
+                  lookAt = point(lookAtX, lookAtY, lookAtZ);
 
                   const float upX = directive->arguments[0].float_values->at(6);
                   const float upY = directive->arguments[0].float_values->at(7);
                   const float upZ = directive->arguments[0].float_values->at(8);
 
-                  up = Vector(upX, upY, upZ);
+                  up = vector(upX, upY, upZ);
 
-                  poly::Transform t = Transform::LookAt(eye, lookAt, up, false);
+                  poly::transform t = transform::look_at(eye, lookAt, up, false);
                   current_transform *= t;
 
-                  Log.debug("Found LookAt.");
+                  LOG_DEBUG("Found LookAt.");
                   break;
                }
                case DirectiveIdentifier::Rotate: {
@@ -1143,7 +1289,7 @@ namespace poly {
             }
          }
 
-         CameraSettings settings = CameraSettings(bounds, DefaultCameraFOV);
+         camera_settings settings = camera_settings(bounds, DefaultCameraFOV);
 
          bool foundCamera = false;
 
@@ -1165,9 +1311,9 @@ namespace poly {
                      }
                   }
 
-                  settings.FieldOfView = fov;
+                  settings.field_of_view = fov;
 
-                  camera = std::make_unique<PerspectiveCamera>(settings, current_transform, true);
+                  camera = std::make_unique<perspective_camera>(settings, current_transform, true);
                   camera->eye = eye;
                   camera->lookAt = lookAt;
                   camera->up = up;
@@ -1181,7 +1327,7 @@ namespace poly {
             stringstream << "PerspectiveCamera with FOV = " << DefaultCameraFOV;
             std::string cameraDefaultString = stringstream.str();
             LogMissingDirective(str::Camera, cameraDefaultString);
-            camera = std::make_unique<PerspectiveCamera>(settings, current_transform, true);
+            camera = std::make_unique<perspective_camera>(settings, current_transform, true);
          }
       }
 
@@ -1214,7 +1360,7 @@ namespace poly {
                   LogMissingArgument(directive, "maxdepth");
                }
                //_integrator = std::make_unique<poly::DebugIntegrator>(maxDepth);
-               integrator = std::make_unique<poly::PathTraceIntegrator>(maxDepth);
+               integrator = std::make_shared<poly::PathTraceIntegrator>(maxDepth);
             }
             else {
                LogUnimplementedDirective(directive);
@@ -1229,7 +1375,7 @@ namespace poly {
       }
 
       if (integrator == nullptr) {
-         integrator = std::make_unique<PathTraceIntegrator>(5);
+         integrator = std::make_shared<poly::PathTraceIntegrator>(5);
       }
 
       // world
@@ -1238,11 +1384,11 @@ namespace poly {
 
       std::stack<std::shared_ptr<poly::Material>> materialStack;
       std::stack<std::shared_ptr<SpectralPowerDistribution>> lightStack;
-      std::stack<std::shared_ptr<poly::Transform>> transformStack;
+      std::stack<std::shared_ptr<poly::transform>> transformStack;
 
       std::shared_ptr<poly::Material> activeMaterial;
       std::shared_ptr<SpectralPowerDistribution> activeLight;
-      std::shared_ptr<poly::Transform> activeTransform = std::make_shared<poly::Transform>();
+      std::shared_ptr<poly::transform> activeTransform = std::make_shared<poly::transform>();
       
       std::unordered_map<std::string, std::shared_ptr<poly::texture>> texture_map;
       
@@ -1252,7 +1398,7 @@ namespace poly {
       std::unordered_map<std::string, std::shared_ptr<poly::mesh_geometry>> name_mesh_map;
       std::shared_ptr<poly::mesh_geometry> current_geometry = nullptr;
 
-      scene = new Scene(std::move(camera));
+      scene = std::make_shared<poly::scene>(std::move(camera));
 
       bool in_object_begin = false;
       
@@ -1299,12 +1445,14 @@ namespace poly {
 
                // push onto transform stack
                transformStack.push(activeTransform);
-               activeTransform = std::make_shared<poly::Transform>(*(activeTransform.get()));
+               activeTransform = std::make_shared<poly::transform>(*(activeTransform.get()));
                break;
             }
             case DirectiveIdentifier::AttributeEnd: {
                // pop material stack
-               if (!materialStack.empty()) {
+               if (materialStack.empty()) {
+                  activeMaterial = nullptr;
+               } else {
                   std::shared_ptr<poly::Material> stackValue = materialStack.top();
                   materialStack.pop();
                   activeMaterial = stackValue;
@@ -1321,7 +1469,7 @@ namespace poly {
 
                // pop transform stack
                if (!transformStack.empty()) {
-                  std::shared_ptr<poly::Transform> stackValue = transformStack.top();
+                  std::shared_ptr<poly::transform> stackValue = transformStack.top();
                   transformStack.pop();
                   assert (stackValue != nullptr);
                   activeTransform = stackValue;
@@ -1350,32 +1498,13 @@ namespace poly {
                break;
             }
             case DirectiveIdentifier::MakeNamedMaterial: {
-               const std::string materialName = directive->type;
-               std::shared_ptr<AbstractBRDF> brdf;
-               poly::ReflectanceSpectrum reflectanceSpectrum;
-               for (const pbrt_argument &argument : directive->arguments) {
-                  if (argument.Type == pbrt_argument::pbrt_string) {
-                     if (argument.Name == "type" && *(argument.string_value) == str::matte) {
-                        // TODO instead of using default, parse values
-                        ReflectanceSpectrum refl(0.5f, 0.5f, 0.5f);
-                        brdf = std::make_unique<poly::LambertBRDF>(refl);
-                     }
-                  }
-                  if (argument.Type == pbrt_argument::pbrt_rgb) {
-                     if (argument.Name == str::Kd) {
-                        reflectanceSpectrum.r = argument.float_values->at(0);
-                        reflectanceSpectrum.g = argument.float_values->at(1);
-                        reflectanceSpectrum.b = argument.float_values->at(2);
-                     }
-                  }
-               }
-
-               // TODO use hash table instead
-               namedMaterials.push_back(std::make_shared<poly::Material>(std::move(brdf), reflectanceSpectrum, materialName));
+               auto material = material_directive(directive, texture_map, true);
+               material->Name = directive->type;
+               namedMaterials.push_back(material);
                break;
             }
             case DirectiveIdentifier::Material: {
-               auto material = material_directive(directive, texture_map);
+               auto material = material_directive(directive, texture_map, false);
                activeMaterial = material;
                break;
             }
@@ -1458,7 +1587,8 @@ namespace poly {
                }
                
                // create mesh with current geometry and add to scene
-               std::shared_ptr<poly::Transform> activeInverse = std::make_shared<poly::Transform>(activeTransform->Invert());
+               std::shared_ptr<poly::transform> activeInverse = std::make_shared<poly::transform>(
+                     activeTransform->invert());
                poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
                if (activeLight != nullptr) {
                   // TODO
@@ -1472,11 +1602,13 @@ namespace poly {
                break;
             }
             case DirectiveIdentifier::Rotate: {
-               *activeTransform *= *rotate_directive(directive);
+               auto new_transform = rotate_directive(directive);
+               activeTransform = std::make_shared<poly::transform>(*activeTransform * *new_transform);
                break;
             }
             case DirectiveIdentifier::Scale: {
-               *activeTransform *= *scale_directive(directive);
+               auto new_transform = scale_directive(directive);
+               activeTransform = std::make_shared<poly::transform>(*activeTransform * *new_transform);
                break;
             }
             case DirectiveIdentifier::Shape: {
@@ -1489,136 +1621,80 @@ namespace poly {
                   continue;
                }
 
-               std::shared_ptr<poly::Transform> activeInverse = std::make_shared<poly::Transform>(activeTransform->Invert());
+               std::shared_ptr<poly::transform> activeInverse = std::make_shared<poly::transform>(
+                     activeTransform->invert());
+               
+               auto add_mesh = [&] (const poly::abstract_mesh_parser* parser) {
+                  // make sure it has a filename argument
+                  bool filenameMissing = true;
+                  std::string mesh_filename;
+                  for (const pbrt_argument &argument : directive->arguments) {
+                     MeshArgument arg;
+                     try {
+                        arg = MeshArgumentMap.at(argument.Name);
+                     }
+                     catch (...) {
+                        LogUnknownArgument(argument);
+                        continue;
+                     }
+                     switch (arg) {
+                        case Filename: {
+                           filenameMissing = false;
+                           mesh_filename = *argument.string_value;
+                           if (argument.Type != pbrt_argument::pbrt_string) {
+                              LogWrongArgumentType(directive, argument);
+                           }
+                           break;
+                        }
+                        default:
+                           LogUnknownArgument(argument);
+                           continue;
+                     }
+                  }
+                  if (filenameMissing) {
+                     LogMissingArgument(directive, str::filename);
+                     return;
+                  }
+
+                  
+                  std::shared_ptr<poly::mesh_geometry> geometry;
+                  if (in_object_begin) {
+                     geometry = current_geometry;
+                  }
+                  else {
+                     geometry = std::make_shared<poly::mesh_geometry>();
+                  }
+                  scene->mesh_geometry_count++;
+                  const std::string absolute_path = _basePathFromCWD + mesh_filename;
+                  parser->parse_file(geometry, absolute_path);
+
+                  if (in_object_begin) {
+                     // maybe not necessary
+                     current_geometry = geometry;
+                  }
+                  else {
+                     poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
+
+                     if (activeLight != nullptr) {
+                        // TODO
+                        mesh->spd = activeLight;
+                        scene->Lights.push_back(mesh);
+                     } else {
+                        mesh->material = activeMaterial;
+                     }
+                     scene->Shapes.push_back(mesh);
+                  }
+               };
                
                switch (identifier) {
                   case ShapeIdentifier::objmesh: {
-                     // make sure it has a filename argument
-                     bool filenameMissing = true;
-                     std::string mesh_filename;
-                     for (const pbrt_argument &argument : directive->arguments) {
-                        OBJMeshArgument arg;
-                        try {
-                           arg = OBJMeshArgumentMap.at(argument.Name);
-                        }
-                        catch (...) {
-                           LogUnknownArgument(argument);
-                           continue;
-                        }
-                        switch (arg) {
-                           case Filename: {
-                              filenameMissing = false;
-                              mesh_filename = *argument.string_value;
-                              if (argument.Type != pbrt_argument::pbrt_string) {
-                                 LogWrongArgumentType(directive, argument);
-                              }
-                              break;
-                           }
-                           default:
-                              LogUnknownArgument(argument);
-                              continue;
-                        }
-                     }
-                     if (filenameMissing) {
-                        LogMissingArgument(directive, str::filename);
-                        break;
-                     }
-
-                     const obj_parser parser;
-                     std::shared_ptr<poly::mesh_geometry> geometry;
-                     if (in_object_begin) {
-                        geometry = current_geometry;
-                     }
-                     else {
-                        geometry = std::make_shared<poly::mesh_geometry>();
-                     }
-                     scene->num_mesh_geometries++;
-                     const std::string absolute_path = _basePathFromCWD + mesh_filename;
-                     parser.parse_file(geometry, absolute_path);
-
-                     if (in_object_begin) {
-                        // maybe not necessary
-                        current_geometry = geometry;
-                     }
-                     else {
-                        poly::Mesh *mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
-
-                        if (activeLight != nullptr) {
-                           // TODO
-                           mesh->spd = activeLight;
-                           scene->Lights.push_back(mesh);
-                        } else {
-                           mesh->material = activeMaterial;
-                        }
-                        scene->Shapes.push_back(mesh);
-                     }
+                     const poly::obj_parser parser; 
+                     add_mesh(&parser);
                      break;
-                  
                   }
                   case ShapeIdentifier::plymesh: {
-                     // make sure it has a filename argument
-                     bool filenameMissing = true;
-                     std::string mesh_filename;
-                     for (const pbrt_argument& argument : directive->arguments) {
-                        PLYMeshArgument arg;
-                        try {
-                           arg = PLYMeshArgumentMap.at(argument.Name);
-                        }
-                        catch (...) {
-                           LogUnknownArgument(argument);
-                           continue;
-                        }
-                        switch (arg) {
-                           case PLYMeshArgument::Filename: {
-                              filenameMissing = false;
-                              mesh_filename = *argument.string_value;
-                              if (argument.Type != pbrt_argument::pbrt_string) {
-                                 LogWrongArgumentType(directive, argument);
-                              }
-                              break;
-                           }
-                           default:
-                              LogUnknownArgument(argument);
-                              continue;
-                        }
-                     }
-                     if (filenameMissing) {
-                        LogMissingArgument(directive, str::filename);
-                        break;
-                     }
-
-                     const ply_parser parser;
-                     std::shared_ptr<poly::mesh_geometry> geometry;
-                     if (in_object_begin) {
-                        geometry = current_geometry;
-                     }
-                     else {
-                        geometry = std::make_shared<poly::mesh_geometry>();
-                     }
-                     scene->num_mesh_geometries++;
-                     
-                     const std::string absolute_path = _basePathFromCWD + mesh_filename;
-                     parser.parse_file(geometry, absolute_path);
-
-                     if (in_object_begin) {
-                        // maybe not necessary
-                        current_geometry = geometry;
-                     }
-                     else {
-                        poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
-                        //mesh->Bound();
-                        //mesh->CalculateVertexNormals();
-
-                        if (activeLight != nullptr) {
-                           // TODO
-                           mesh->spd = activeLight;
-                           scene->Lights.push_back(mesh);
-                        }
-                        else {
-                           mesh->material = activeMaterial;
-                        }
-                        scene->Shapes.push_back(mesh);
-                     }
+                     const poly::ply_parser parser;
+                     add_mesh(&parser);
                      break;
                   }
                   case ShapeIdentifier::sphere: {
@@ -1626,12 +1702,13 @@ namespace poly {
                         if (argument.Type == pbrt_argument::pbrt_argument_type::pbrt_float) {
                            const float radius = argument.float_values->at(0);
                            
-                           poly::Transform radius_transform = Transform::Scale(radius);
-                           std::shared_ptr<poly::Transform> temp_radius_transform = std::make_shared<poly::Transform>((*activeTransform) * radius_transform);
-                           std::shared_ptr<poly::Transform> temp_radius_inverse = std::make_shared<poly::Transform>(temp_radius_transform->Invert());
+                           poly::transform radius_transform = transform::scale(radius);
+                           std::shared_ptr<poly::transform> temp_radius_transform = std::make_shared<poly::transform>((*activeTransform) * radius_transform);
+                           std::shared_ptr<poly::transform> temp_radius_inverse = std::make_shared<poly::transform>(
+                                 temp_radius_transform->invert());
                            
                            std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
-                           scene->num_mesh_geometries++;
+                           scene->mesh_geometry_count++;
                            const int subdivisions = std::max((int)radius, 20);
                            poly::SphereTesselator::Create(subdivisions, subdivisions, geometry);
 
@@ -1656,6 +1733,77 @@ namespace poly {
                      }
                      break;
                   }
+                  case ShapeIdentifier::trianglemesh: {
+                     std::shared_ptr<poly::mesh_geometry> geometry = std::make_shared<poly::mesh_geometry>();
+                     for (const auto& current_arg : directive->arguments) {
+                        TriangleMeshArgument arg;
+                        try {
+                           arg = TriangleMeshArgumentMap.at(current_arg.Name);
+                        }
+                        catch (...) {
+                           LogUnknownArgument(current_arg);
+                           continue;
+                        }
+                        switch (arg) {
+                           case TriangleMeshArgument::indices: {
+                              for (int value_index = 0; value_index < current_arg.int_values->size(); ) {
+                                 geometry->fv0.push_back((*current_arg.int_values)[value_index]);
+                                 value_index++;
+                                 geometry->fv1.push_back((*current_arg.int_values)[value_index]);
+                                 value_index++;
+                                 geometry->fv2.push_back((*current_arg.int_values)[value_index]);
+                                 value_index++;
+                              }
+                              geometry->num_faces = current_arg.int_values->size() / 3;
+                              break;
+                           }
+                           case TriangleMeshArgument::P:
+                              for (int value_index = 0; value_index < current_arg.point_values->size(); value_index++) {
+                                 geometry->x_packed.push_back((*current_arg.point_values)[value_index].x);
+                                 geometry->y_packed.push_back((*current_arg.point_values)[value_index].y);
+                                 geometry->z_packed.push_back((*current_arg.point_values)[value_index].z);
+                              }
+                              geometry->num_vertices_packed = current_arg.point_values->size();
+                              break;
+                           case TriangleMeshArgument::N:
+                              for (int value_index = 0; value_index < current_arg.normal_values->size(); value_index++) {
+                                 geometry->nx_packed.push_back((*current_arg.normal_values)[value_index].x);
+                                 geometry->ny_packed.push_back((*current_arg.normal_values)[value_index].y);
+                                 geometry->nz_packed.push_back((*current_arg.normal_values)[value_index].z);
+                              }
+                              geometry->has_vertex_normals = true;
+                              
+                              break;
+                           case TriangleMeshArgument::uv:
+                              for (int value_index = 0; value_index < current_arg.float_values->size(); ) {
+                                 geometry->u_packed.push_back((*current_arg.float_values)[value_index]);
+                                 value_index++;
+                                 geometry->v_packed.push_back((*current_arg.float_values)[value_index]);
+                                 value_index++;
+                              }
+                              geometry->has_vertex_uvs = true;
+                              break;
+                           default:
+                              LogUnknownArgument(current_arg);
+                              break;
+                        }
+                     }
+
+                     geometry->unpack_faces();
+                     
+                     scene->mesh_geometry_count++;
+                     poly::Mesh* mesh = new Mesh(activeTransform, activeInverse, activeMaterial, geometry);
+                     
+                     if (activeLight != nullptr) {
+                        // TODO
+                        mesh->spd = activeLight;
+                        scene->Lights.push_back(mesh);
+                     } else {
+                        mesh->material = activeMaterial;
+                     }
+                     scene->Shapes.push_back(mesh);
+                     break;
+                  }
                   default: {
                      LogUnimplementedDirective(directive);
                      break;
@@ -1666,28 +1814,30 @@ namespace poly {
             case DirectiveIdentifier::Texture: {
                
                if (texture_map.count(directive->name) > 0) {
-                  ERROR("Texture name [%s] has already previously been defined.");
+                  ERROR("Texture name [" << directive->name << "] has already previously been defined.");
                }
                
                std::shared_ptr<poly::texture> texture = std::move(texture_directive(directive));
+               scene->textures.push_back(texture);
                texture_map[directive->name] = texture;
                break;
             }
             case DirectiveIdentifier::Transform: {
-               *activeTransform *= *transform_directive(directive);
+               auto new_transform = transform_directive(directive);
+               activeTransform = std::make_shared<poly::transform>(*activeTransform * *new_transform);
                break;
             }
             case DirectiveIdentifier::TransformBegin: {
                // push onto transform stack
                assert (activeTransform != nullptr);
                transformStack.push(activeTransform);
-               activeTransform = std::make_shared<poly::Transform>(*(activeTransform.get()));
+               activeTransform = std::make_shared<poly::transform>(*(activeTransform.get()));
                break;
             }
             case DirectiveIdentifier::TransformEnd: {
                // pop transform stack
                if (!transformStack.empty()) {
-                  std::shared_ptr<poly::Transform> stackValue = transformStack.top();
+                  std::shared_ptr<poly::transform> stackValue = transformStack.top();
                   transformStack.pop();
                   assert (stackValue != nullptr);
                   activeTransform = stackValue;
@@ -1695,7 +1845,8 @@ namespace poly {
                break;
             }
             case DirectiveIdentifier::Translate: {
-               *activeTransform *= *translate_directive(directive);
+               auto new_transform = translate_directive(directive);
+               activeTransform = std::make_shared<poly::transform>(*activeTransform * *new_transform);
                break;
             }
             // TODO - other transform directives
@@ -1708,14 +1859,13 @@ namespace poly {
 
       integrator->Scene = scene;
 
-      return std::make_unique<TileRunner>(
+      return std::make_shared<runner>(
             std::move(sampler),
             scene,
-            std::move(integrator),
+            integrator,
             std::move(film),
-            bounds,
-            numSamples
+            numSamples,
+            bounds            
       );
    }
-   
 }

@@ -7,13 +7,12 @@
 #include <iostream>
 #include <mutex>
 #include <stdarg.h>
+#include <fstream>
 
 #include "Logger.h"
 
 namespace poly {
-
-   std::mutex log_mutex;
-
+   
    std::string time_in_HH_MM_SS_MMM() {
       using namespace std::chrono;
 
@@ -42,6 +41,12 @@ namespace poly {
       printf("\033[0m");
    }
 
+   void log_time(std::ostream& stream) {
+      logger_reset_color();
+      const auto time = std::time(nullptr);
+      stream << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] ";
+   }
+   
    void logger_set_yellow() {
          printf("\033[0;33m");
    }
@@ -57,106 +62,30 @@ namespace poly {
    void logger_set_green() {
       printf("\033[0;33m");
    }
-   
-   void Logger::log(log_level level, const char *format, va_list args) {
-      const auto time = std::time(nullptr);
-      const std::lock_guard<std::mutex> lock(log_mutex);
-      
-      if (level == log_level::LOG_ERROR) {
-         std::cout << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] ";
-      }
-      else {
-         std::cout << "[" << std::put_time(std::localtime(&time), "%F ") << time_in_HH_MM_SS_MMM() << "] ";
-      }
-      switch (level) {
-         case log_level::LOG_DEBUG:
-            logger_set_yellow();
-            std::cout << "[D] ";
-            break;
-//         case log_level::LOG_INFO:
-//            std::cout << "[I] ";
-//            break;
-         case log_level::LOG_WARNING:
-            logger_set_red();
-            std::cout << "[W] ";
-            break;
-         case log_level::LOG_ERROR:
-            std::cerr << "[E] ";
-            break;
-      }
-      if (level == log_level::LOG_ERROR) {
-         vfprintf(stderr, format, args);
-         fprintf(stderr, "\n");
-      }
-      else {
-         vfprintf(stdout, format, args);
-         printf("\n");
-      }
-      logger_reset_color();
+
+   std::ostream &Logger::debug() {
+      log_time(std::cout);
+      logger_set_yellow();
+      std::cout << "[D] ";
+      return std::cout;
    }
 
-   void Logger::log(log_level level, const std::string& text) {
-      va_list list;
-      log(level, text.c_str(), list);
+   std::ostream &Logger::info() {
+      log_time(std::cout);
+      return std::cout;
    }
 
-   void Logger::debug(const char* format, ...) {
-      if (LOG_LEVEL <= LOG_LEVEL_DEBUG) {
-         va_list list;
-         va_start(list, format);
-         log(log_level::LOG_DEBUG, format, list);
-         va_end(list);
-      }
+   std::ostream &Logger::error() {
+      log_time(std::cout);
+      logger_set_red();
+      std::cout << "[E] ";
+      return std::cout;
    }
 
-   void Logger::info(const char* format, ...) {
-      if (LOG_LEVEL <= LOG_LEVEL_INFO) {
-         va_list list;
-         va_start(list, format);
-         log(log_level::LOG_INFO, format, list);
-         va_end(list);
-      }
-   }
-
-   void Logger::warning(const char* format, ...) {
-      if (LOG_LEVEL <= LOG_LEVEL_WARNING) {
-         va_list list;
-         va_start(list, format);
-         log(log_level::LOG_WARNING, format, list);
-         va_end(list);
-      }
-   }
-
-   void Logger::error(const char* format, ...) {
-      if (LOG_LEVEL <= LOG_LEVEL_ERROR) {
-         va_list list;
-         va_start(list, format);
-         log(log_level::LOG_ERROR, format, list);
-         va_end(list);
-      }
-   }
-
-   void Logger::debug(const std::string& text) {
-      if (LOG_LEVEL <= LOG_LEVEL_DEBUG) {
-         log(log_level::LOG_DEBUG, text);
-      }
-   }
-   
-   void Logger::info(const std::string& text) {
-      if (LOG_LEVEL <= LOG_LEVEL_INFO) {
-         log(log_level::LOG_INFO, text);
-      }
-   }
-   
-   void Logger::warning(const std::string& text) {
-      if (LOG_LEVEL <= LOG_LEVEL_WARNING) {
-         log(log_level::LOG_WARNING, text);
-      }
-   }
-   
-   void Logger::error(const std::string& text) {
-      if (LOG_LEVEL <= LOG_LEVEL_ERROR) {
-         log(log_level::LOG_ERROR, text);
-      }
+   std::ostream &Logger::warning() {
+      log_time(std::cout);
+      logger_set_red();
+      std::cout << "[W] ";
+      return std::cout;
    }
 }

@@ -11,7 +11,7 @@ namespace poly {
    class AbstractSkybox {
 
    public:
-      virtual poly::SpectralPowerDistribution GetSpd(const poly::Vector &v) const = 0;
+      virtual poly::SpectralPowerDistribution GetSpd(const poly::vector &v) const = 0;
 
       virtual ~AbstractSkybox() { }
    };

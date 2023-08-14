@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <string>
-#include "../../cpu/runners/AbstractRunner.h"
+#include "../../cpu/runners/runner.h"
 #include "abstract_file_parser.h"
 
 namespace poly {
@@ -60,6 +60,8 @@ namespace poly {
       std::unique_ptr<std::vector<float>> float_values;
       std::unique_ptr<std::string> string_value;
       std::unique_ptr<std::vector<int>> int_values;
+      std::unique_ptr<std::vector<poly::point>> point_values;
+      std::unique_ptr<std::vector<poly::normal>> normal_values;
       
 //      union {
 //         std::vector<float> float_values;
@@ -197,20 +199,20 @@ namespace poly {
       // constructors
       explicit pbrt_parser() = default;
 
-      std::unique_ptr<AbstractRunner> parse_file(const std::string &filepath) noexcept(false);
+      std::shared_ptr<poly::runner> parse_file(const std::string &filepath) noexcept(false);
       
-      std::unique_ptr<AbstractRunner> parse_string(const std::string &text) noexcept(false);
-      static std::unique_ptr<pbrt_directive> lex(std::vector<std::string> line);
+      std::shared_ptr<poly::runner> parse_string(const std::string &text) noexcept(false);
+      static std::unique_ptr<poly::pbrt_directive> lex(std::vector<std::string> line);
       static std::unique_ptr<std::vector<std::vector<std::string>>> scan(const std::unique_ptr<std::istream>& stream);
-      std::unique_ptr<AbstractSampler> sampler;
-      Scene* scene = nullptr;
-      std::unique_ptr<AbstractIntegrator> integrator;
-      std::unique_ptr<AbstractFilm> film;
-      std::unique_ptr<AbstractFilter> filter;
-      poly::Bounds bounds;
+      std::unique_ptr<poly::abstract_sampler> sampler;
+      std::shared_ptr<poly::scene> scene = nullptr;
+      std::shared_ptr<poly::abstract_integrator> integrator;
+      std::unique_ptr<poly::abstract_film> film;
+      std::unique_ptr<poly::abstract_filter> filter;
+      poly::bounds bounds;
    
    private:
-      std::unique_ptr<AbstractRunner> parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false);
+      std::shared_ptr<poly::runner> parse(std::unique_ptr<std::vector<std::vector<std::string>>> tokens) noexcept(false);
    };
 }
 #endif //POLY_FILEPARSER_H

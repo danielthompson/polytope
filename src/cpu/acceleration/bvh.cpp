@@ -17,18 +17,18 @@ namespace poly {
       /**
        * world-space bounding box
        */
-      poly::BoundingBox bb;
+      poly::bounding_box bb;
       
       /**
        * world-space centroid of the bounding box
        */
-      poly::Point bb_centroid;
+      poly::point bb_centroid;
       std::pair<unsigned int, unsigned int> index;
    };
 
    struct bucket_info {
-      poly::BoundingBox low_bb;
-      poly::BoundingBox high_bb;
+      poly::bounding_box low_bb;
+      poly::bounding_box high_bb;
       std::vector<std::pair<unsigned int, unsigned int>> indices;
       unsigned int num_indices;
    };
@@ -44,8 +44,8 @@ namespace poly {
 
       master_indices.reserve(total_faces);
 
-      Point root_min = { std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
-      Point root_max = { -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()};
+      poly::point root_min = {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
+      poly::point root_max = {-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()};
 
       std::vector<std::vector<struct triangle_info>> triangles_info;
       
@@ -58,28 +58,28 @@ namespace poly {
          triangle_info.reserve(mesh->mesh_geometry->num_faces);
          
          for (unsigned int face_index = 0; face_index < mesh->mesh_geometry->num_faces; face_index++) {
-            Point face_min, face_max;
+            poly::point face_min, face_max;
 
             // get face
-            Point v0 = {
+            poly::point v0 = {
                   mesh->mesh_geometry->x_packed[mesh->mesh_geometry->fv0[face_index]],
                   mesh->mesh_geometry->y_packed[mesh->mesh_geometry->fv0[face_index]],
                   mesh->mesh_geometry->z_packed[mesh->mesh_geometry->fv0[face_index]] };
 
-            Point v1 = {
+            poly::point v1 = {
                   mesh->mesh_geometry->x_packed[mesh->mesh_geometry->fv1[face_index]],
                   mesh->mesh_geometry->y_packed[mesh->mesh_geometry->fv1[face_index]],
                   mesh->mesh_geometry->z_packed[mesh->mesh_geometry->fv1[face_index]] };
 
-            Point v2 = {
+            poly::point v2 = {
                   mesh->mesh_geometry->x_packed[mesh->mesh_geometry->fv2[face_index]],
                   mesh->mesh_geometry->y_packed[mesh->mesh_geometry->fv2[face_index]],
                   mesh->mesh_geometry->z_packed[mesh->mesh_geometry->fv2[face_index]] };
 
             // transform into world space
-            mesh->object_to_world->ApplyInPlace(v0);
-            mesh->object_to_world->ApplyInPlace(v1);
-            mesh->object_to_world->ApplyInPlace(v2);
+            mesh->object_to_world->apply_in_place(v0);
+            mesh->object_to_world->apply_in_place(v1);
+            mesh->object_to_world->apply_in_place(v2);
             
             // calculate face's bounding box
             face_min.x = v0.x < v1.x ? v0.x : v1.x;
@@ -106,8 +106,8 @@ namespace poly {
             root_max.z = root_max.z > face_max.z ? root_max.z : face_max.z;
 
             triangle_info.push_back({
-               poly::BoundingBox { face_min, face_max },
-               poly::Point {(face_min.x + face_max.x) * .5f,
+               poly::bounding_box {face_min, face_max },
+               poly::point {(face_min.x + face_max.x) * .5f,
                              (face_min.y + face_max.y) * .5f,
                              (face_min.z + face_max.z) * .5f
                              },
@@ -161,7 +161,7 @@ namespace poly {
          for (const std::pair<unsigned int, unsigned int> &index : indices) {
             unsigned int mesh_index = index.first;
             unsigned int face_index = index.second;
-            poly::Point centroid = triangles_info[mesh_index][face_index].bb_centroid;
+            poly::point centroid = triangles_info[mesh_index][face_index].bb_centroid;
 
             x_centroid_min = x_centroid_min < centroid.x ? x_centroid_min : centroid.x;
             y_centroid_min = y_centroid_min < centroid.y ? y_centroid_min : centroid.y;
@@ -188,26 +188,26 @@ namespace poly {
             continue;
          }
 
-         poly::Axis split_axis;
+         poly::axis split_axis;
          float chosen_axis_centroid_midpoint;
          float chosen_axis_centroid_extent;
          float chosen_axis_centroid_min;
          
          // we choose to split on the axis that has the greatest extent between its centroids
          if (x_centroid_extent >= y_centroid_extent && x_centroid_extent >= z_centroid_extent) {
-            split_axis = poly::Axis::x;
+            split_axis = poly::axis::x;
             chosen_axis_centroid_midpoint = x_centroid_midpoint;
             chosen_axis_centroid_extent = x_centroid_extent;
             chosen_axis_centroid_min = x_centroid_min;
          }
          else if (y_centroid_extent >= x_centroid_extent && y_centroid_extent >= z_centroid_extent) {
-            split_axis = poly::Axis::y;
+            split_axis = poly::axis::y;
             chosen_axis_centroid_midpoint = y_centroid_midpoint;
             chosen_axis_centroid_extent = y_centroid_extent;
             chosen_axis_centroid_min = y_centroid_min;
          }
          else {
-            split_axis = poly::Axis::z;
+            split_axis = poly::axis::z;
             chosen_axis_centroid_midpoint = z_centroid_midpoint;
             chosen_axis_centroid_extent = z_centroid_extent;
             chosen_axis_centroid_min = z_centroid_min;
@@ -232,7 +232,7 @@ namespace poly {
          for (const std::pair<unsigned int, unsigned int> &index : indices) {
             unsigned int mesh_index = index.first;
             unsigned int face_index = index.second;
-            poly::Point triangle_centroid = triangles_info[mesh_index][face_index].bb_centroid;
+            poly::point triangle_centroid = triangles_info[mesh_index][face_index].bb_centroid;
             const float triangle_centroid_in_split_axis = triangle_centroid[split_axis];
             // determine which bucket this triangle goes into
             const float raw_bucket_index = (triangle_centroid_in_split_axis - chosen_axis_centroid_min) / (float)bucket_width;
@@ -253,7 +253,7 @@ namespace poly {
          bucket_forward_sah_cost.reserve(num_buckets);
          float num_low_buckets_sum = 0.f;
 
-         poly::BoundingBox low_bb;
+         poly::bounding_box low_bb;
 
          // initialize bounding box to first face in the first bucket  
          {
@@ -268,7 +268,7 @@ namespace poly {
             for (int index_pair_index = 0; index_pair_index < this_bucket.num_indices; index_pair_index++) {
                const unsigned int mesh_index = this_bucket.indices[index_pair_index].first;
                const unsigned int face_index = this_bucket.indices[index_pair_index].second;
-               low_bb.UnionInPlace(triangles_info[mesh_index][face_index].bb);
+               low_bb.union_in_place(triangles_info[mesh_index][face_index].bb);
 //               assert(node->bb.p0.x <= low_bb.p0.x);
 //               assert(node->bb.p0.y <= low_bb.p0.y);
 //               assert(node->bb.p0.z <= low_bb.p0.z);
@@ -286,7 +286,7 @@ namespace poly {
             bucket_forward_sah_cost.push_back(scan_cost == 0 ? poly::Infinity : scan_cost);
          }
          
-         poly::BoundingBox high_bb;
+         poly::bounding_box high_bb;
          {
             const unsigned int mesh_index = buckets[num_buckets - 1].indices[0].first;
             const unsigned int face_index = buckets[num_buckets - 1].indices[0].second;
@@ -303,7 +303,7 @@ namespace poly {
             for (const auto& index_pair : this_bucket.indices) {
                const unsigned int mesh_index = index_pair.first;
                const unsigned int face_index = index_pair.second;
-               high_bb.UnionInPlace(triangles_info[mesh_index][face_index].bb);
+               high_bb.union_in_place(triangles_info[mesh_index][face_index].bb);
             }
             this_bucket.high_bb = high_bb;
             num_high_indices_sum += this_bucket.indices.size();
@@ -394,18 +394,18 @@ namespace poly {
       return num_nodes;
    }
 
-   bool bvh::hits_compact(const poly::Ray &ray) const {
-      const poly::Vector inverse_direction = {
-            1.f / ray.Direction.x,
-            1.f / ray.Direction.y,
-            1.f / ray.Direction.z
+   bool bvh::hits_compact(const poly::ray &ray) const {
+      const poly::vector inverse_direction = {
+            1.f / ray.direction.x,
+            1.f / ray.direction.y,
+            1.f / ray.direction.z
       };
       std::stack<compact_bvh_node *> stack;
       stack.push(compact_root->nodes);
       while (!stack.empty()) {
          compact_bvh_node* node = stack.top();
          stack.pop();
-         if (node->bb.Hits(ray, inverse_direction)) {
+         if (node->bb.hits(ray, inverse_direction)) {
             // if leaf node
             if (node->is_leaf()) {
                // intersect faces
@@ -433,18 +433,18 @@ namespace poly {
       return false;
    }
    
-   bool bvh::hits(const poly::Ray &ray) const {
-      const poly::Vector inverse_direction = {
-            1.f / ray.Direction.x,
-            1.f / ray.Direction.y,
-            1.f / ray.Direction.z
+   bool bvh::hits(const poly::ray &ray) const {
+      const poly::vector inverse_direction = {
+            1.f / ray.direction.x,
+            1.f / ray.direction.y,
+            1.f / ray.direction.z
       }; 
       std::stack<bvh_node *> stack;
       stack.push(root);
       while (!stack.empty()) {
          bvh_node* node = stack.top();
          stack.pop();
-         if (node->bb.Hits(ray, inverse_direction)) {
+         if (node->bb.hits(ray, inverse_direction)) {
             // if leaf node
             if (node->high == nullptr && node->low == nullptr) {
                // intersect faces
@@ -472,12 +472,12 @@ namespace poly {
       // we made it all the way through the tree and nothing hit, so no hit
       return false;
    }
-
-   void bvh::intersect_compact(poly::Ray& ray, poly::Intersection& intersection) const {
-      const poly::Vector inverse_direction = {
-            1.f / ray.Direction.x,
-            1.f / ray.Direction.y,
-            1.f / ray.Direction.z
+   
+   poly::intersection bvh::intersect_compact(poly::ray &ray, const int x, const int y) const {
+      const poly::vector inverse_direction = {
+            1.f / ray.direction.x,
+            1.f / ray.direction.y,
+            1.f / ray.direction.z
       };
       
       bool neg_dir[3] = { inverse_direction.x < 0, inverse_direction.y < 0, inverse_direction.z < 0 };
@@ -486,20 +486,22 @@ namespace poly {
       std::stack<const compact_bvh_node *> stack;
       stack.push(compact_root->nodes);
 
+      // first, find the closest mesh/face (lowest t)
+      
+      poly::intersection closest;
+      
       while (!stack.empty()) {
          const compact_bvh_node* node = stack.top();
          stack.pop();
 
-         if (node->bb.Hits(ray, inverse_direction)) {
+         if (node->bb.hits(ray, inverse_direction)) {
             // if leaf node
-            intersection.num_bb_hits++;
             if (node->is_leaf()) {
                // intersect faces
                for (unsigned int i = 0; i < node->num_faces; i++) {
                   std::pair<unsigned int, unsigned int> indices = compact_root->leaf_ordered_indices[node->face_index_offset + i];
                   poly::Mesh* mesh = meshes[indices.first];
-                  mesh->intersect(ray, intersection, &indices.second, 1);
-                  intersection.num_triangle_isects++;
+                  mesh->intersect(ray, closest, &indices.second, indices.first, 1);
                }
                // otherwise, keep traversing               
                continue;
@@ -516,17 +518,20 @@ namespace poly {
                stack.push(node + 1);
             }
          }
-         else {
-            intersection.num_bb_misses++;
-         }
       }
+      
+      if (closest.Hits) {
+         meshes[closest.mesh_index]->compute_intersection_for_face(closest, ray);
+      }
+      
+      return closest;
    }
    
-   void bvh::intersect(poly::Ray& ray, poly::Intersection& intersection) const {
-      const poly::Vector inverse_direction = {
-            1.f / ray.Direction.x,
-            1.f / ray.Direction.y,
-            1.f / ray.Direction.z
+   void bvh::intersect(poly::ray& ray, poly::intersection& intersection) const {
+      const poly::vector inverse_direction = {
+            1.f / ray.direction.x,
+            1.f / ray.direction.y,
+            1.f / ray.direction.z
       };
       std::stack<bvh_node *> stack;
       stack.push(root);
@@ -536,7 +541,7 @@ namespace poly {
          stack.pop();
             
          // TODO add tmax optimization for BBox hit
-         if (node->bb.Hits(ray, inverse_direction)) {
+         if (node->bb.hits(ray, inverse_direction)) {
             // if leaf node
             if (node->high == nullptr && node->low == nullptr) {
                // intersect faces
@@ -545,7 +550,7 @@ namespace poly {
                   const unsigned int mesh_index = index.first;
                   poly::Mesh* mesh = meshes[mesh_index];
                   const unsigned int face_index = index.second;
-                  mesh->intersect(ray, intersection, &face_index, 1);
+                  mesh->intersect(ray, intersection, &face_index, mesh_index, 1);
                }
             }
 
@@ -631,16 +636,16 @@ namespace poly {
       
       faces_per_leaf_avg = (float)total_faces / (float)num_leaf_nodes;
       
-      Log.debug("height: %i\n", tree_height);
-      Log.debug("leaves: %i\n", num_leaf_nodes);
-      Log.debug("good interior: %i\n", num_interior_nodes);
-      Log.debug("high interior: %i\n", num_single_high_child_nodes);
-      Log.debug("low interior : %i\n", num_single_low_child_nodes);
-      Log.debug("total faces : %i\n", total_faces);
-      Log.debug("faces per leaf (avg): %f\n", faces_per_leaf_avg);
-      Log.debug("faces per leaf (min): %i\n", faces_per_leaf_min);
-      Log.debug("faces per leaf (max): %i\n", faces_per_leaf_max);
-      Log.debug("bb : tri SA ratio (avg): %f\n", leaf_ratio_avg);
+      LOG_DEBUG("height: " << tree_height);
+      LOG_DEBUG("leaves: " << num_leaf_nodes);
+      LOG_DEBUG("good interior: " << num_interior_nodes);
+      LOG_DEBUG("high interior: " << num_single_high_child_nodes);
+      LOG_DEBUG("low interior : " << num_single_low_child_nodes);
+      LOG_DEBUG("total faces : " << total_faces);
+      LOG_DEBUG("faces per leaf (avg): " << faces_per_leaf_avg);
+      LOG_DEBUG("faces per leaf (min): " << faces_per_leaf_min);
+      LOG_DEBUG("faces per leaf (max): " << faces_per_leaf_max);
+      LOG_DEBUG("bb : tri SA ratio (avg): " << leaf_ratio_avg);
       
       const float bucket_index_width = (leaf_counts.size()) / 500.0f;
       
@@ -710,6 +715,7 @@ namespace poly {
          }
       }
 
-      delete compact_root;
+      if (compact_root != nullptr)
+         delete compact_root;
    }
 }

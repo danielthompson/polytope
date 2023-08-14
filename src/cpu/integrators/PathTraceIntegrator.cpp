@@ -3,132 +3,73 @@
 //
 
 #include "PathTraceIntegrator.h"
-#include "../structures/Sample.h"
 
 namespace poly {
 
-   Sample PathTraceIntegrator::GetSample(Ray &ray, int depth, int x, int y) {
-      Ray current_ray = ray;
+   poly::Sample PathTraceIntegrator::get_sample(poly::ray &ray, int depth, int x, int y) {
+      poly::ray current_ray = ray;
       unsigned num_bounces = 0;
-      
-      ReflectanceSpectrum src(1.f, 1.f, 1.f);
-      SpectralPowerDistribution direct_spd;
+
+      poly::Sample sample;
+
+      poly::ReflectanceSpectrum src(1.f, 1.f, 1.f);
+      poly::SpectralPowerDistribution direct_spd;
       float back_pdf = 1;
       
-      bool debug = false;
-#ifndef NDEBUG
-
-#endif
       while (true) {
          if (src.is_zero())
-            return Sample(SpectralPowerDistribution());
-//         current_ray.x = x;
-//         current_ray.y = y;
-//         current_ray.bounce = num_bounces;
-         if (x == 128 && y == 128) {
-            debug = false;
-         }
-         Intersection intersection = Scene->intersect(current_ray, x, y);
+            return sample;
+         poly::intersection intersection = Scene->intersect(current_ray, x, y);
 
-//         SpectralPowerDistribution bb_spd;
-//         
-//         bb_spd.r = 255.f - (float)(intersection.num_bb_hits) * 2.f;
-//         bb_spd.g = 255.f - (float)(intersection.num_bb_hits)* 2.f;
-//         bb_spd.b = 255.f - (float)(intersection.num_bb_hits)* 2.f;
-//         
-//         return Sample(bb_spd);
-         
-         if (debug) {
-            printf("bounce %i: \n", num_bounces);
-            //printf("t: %f\n", ray.MinT);
-         }
+#ifdef POLYTOPEGL
+         intersection.t = current_ray.min_t;
+         sample.intersections.push_back(intersection);
+#endif
          
          if (!intersection.Hits) {
-            SpectralPowerDistribution spd;
+            if (num_bounces == 0) {
+               bool debug = true;
+            }
+            
+            poly::SpectralPowerDistribution spd;
             if (Scene->Skybox != nullptr) {
-               spd = Scene->Skybox->GetSpd(ray.Direction) * src;
+               spd = Scene->Skybox->GetSpd(ray.direction) * src;
             }
             
             spd += direct_spd;
-            return Sample(spd);
-         }
-
-         if (debug) {
-            printf("hit face index %i\n", intersection.faceIndex);
+            sample.SpectralPowerDistribution = spd;
+            return sample;
          }
          
-         if (intersection.Shape->is_light()) {
-            return Sample((*(intersection.Shape->spd) + direct_spd) * src);
+         if (intersection.shape->is_light()) {
+            sample.SpectralPowerDistribution = (*(intersection.shape->spd) + direct_spd) * src;
+            return sample;
          }
 
          // base case
          if (num_bounces >= MaxDepth) {
-            if (debug) {
-               printf("max depth\n");
-            }
-            return Sample(SpectralPowerDistribution());
+            return sample;
          } else {
             num_bounces++;
 
             float current_pdf;
-            
-            ReflectanceSpectrum refl;
-            
-            const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
-            const poly::Vector local_outgoing = intersection.Shape->material->BRDF->sample(local_incoming, intersection.u_tex_lerp, intersection.v_tex_lerp, refl,
-                                                                                               current_pdf);
-            const poly::Vector world_outgoing = intersection.LocalToWorld(local_outgoing);
 
-            bool whoops = false;
-            if (x == 128 && y == 128 && std::isnan(world_outgoing.x))
-               whoops = true;
+            poly::ReflectanceSpectrum refl;
+            
+            const poly::vector local_incoming = intersection.world_to_local(current_ray.direction);
+            const poly::vector local_outgoing = intersection.shape->material->BRDF->sample(local_incoming, intersection.u_tex_lerp, intersection.v_tex_lerp, refl,
+                                                                                           current_pdf);
+            const poly::vector world_outgoing = intersection.local_to_world(local_outgoing);
+            
+            LOG_DEBUG("bent normal dot outgoing: " << world_outgoing.dot(intersection.bent_normal));
 
-            current_ray = Ray(intersection.Location, world_outgoing);
-            
-            //current_ray.OffsetOrigin(intersection.bent_normal, poly::OffsetEpsilon);
-            if (debug) {
-               printf("n: %f %f %f\n", intersection.geo_normal.x, intersection.geo_normal.y, intersection.geo_normal.z);
-               printf("o: %f %f %f\n", current_ray.Origin.x, current_ray.Origin.y, current_ray.Origin.z);
-               printf("d: %f %f %f\n", current_ray.Direction.x, current_ray.Direction.y, current_ray.Direction.z);
+            current_ray = poly::ray(intersection.location, world_outgoing);
 
-            }
-            src = src * refl; //intersection.Shape->Material->ReflectanceSpectrum;
-
-            // add direct light 
-            // 0. TODO if brdf is delta, continue 
-            // 1. choose a light source
+#ifdef POLYTOPEGL
+            sample.intersections.back().outgoing = world_outgoing;
+#endif
             
-//            for (const auto light : Scene->Lights) {
-//               // 2. get random point on light
-//               Point light_point = light->random_surface_point();
-//               
-//               // 3. calculate reflected spd given BRDF for (intersection - light_point) -> -incoming
-//               Vector light_to_intersection_local = intersection.Location - light_point;
-//               Vector light_to_intersection_world = intersection.WorldToLocal(light_to_intersection_local);
-//               
-//               // 4. calculate BRDF for light_to_intersection -> incoming
-//               ReflectanceSpectrum light_refl;
-//               float light_pdf = 0.0f;
-//               // TODO should use brdf->f()
-//               intersection.Shape->Material->BRDF->sample(light_to_intersection_local, light_refl,light_pdf);
-//               
-//               // 5. if brdf == 0, continue
-//               if (light_refl.is_black())
-//                  continue;
-//               
-//               // 6. if light -> intersection is occluded, continue
-//               Ray light_ray(current_ray.Origin, -light_to_intersection_world);
-//               Intersection light_intersection = Scene->intersect(light_ray, x, y);
-//               if (light_intersection.Hits && light_intersection.Shape != light)
-//                  continue;
-//               
-//               direct_spd = direct_spd + ((*light->spd) * (src * light_refl));
-//            }
-            
-
-            
-            // direct_spd = direct_spd + src * [2] * light's spd
-            
+            src = src * refl;
             back_pdf *= current_pdf;
          }
       }

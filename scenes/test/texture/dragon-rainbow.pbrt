@@ -1,5 +1,5 @@
 Sampler "sobol" 
-    "integer pixelsamples" [ 4] 
+    "integer pixelsamples" [ 1 ] 
 PixelFilter "box" 
 Film "image" 
     "integer xresolution" [ 1920 ] 
@@ -20,10 +20,11 @@ Texture "rainbow" "color" "imagemap"
     "string filename" [ "rainbow-full.png" ] 
 
 AttributeBegin        
-    Translate 0 -.053 0
+    Translate 0 -.055 0
     Rotate 180 0 1 0
     Material "matte" "texture Kd" [ "rainbow" ] 
     # Material "matte" "rgb Kd" [ .2  .5  .7 ]
+    # Material "mirror" "rgb Kr" [ .2  .5  .7 ]
     Shape "plymesh" "string filename" "dragon-rainbow.ply"
 AttributeEnd
 
@@ -31,7 +32,7 @@ AttributeBegin
     Translate 0 0 0
     Material "matte" "rgb Kd" [ 1  1  1 ]
     # Material "mirror" "rgb Kr" [ .5  .5  .5 ]
-    Shape "plymesh" "string filename" [ "floor.ply" ]
+    # Shape "plymesh" "string filename" [ "floor.ply" ]
 AttributeEnd
 
 

@@ -7,10 +7,10 @@
 
 #include <cmath>
 #include <limits>
-#include <random>
 
 #include "structures/Vectors.h"
 #include "structures/Vectors.h"
+#include "samplers/random_number_generator.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -23,6 +23,8 @@
 #ifndef M_SQRT3
 #define M_SQRT3 1.73205080757
 #endif
+
+extern thread_local poly::random_number_generator rng;
 
 namespace poly {
 
@@ -79,31 +81,19 @@ namespace poly {
          return (TwoEpsilon + number >= target);
    }
 
-   inline float RadiansBetween(const Vector &v, const Normal &n) {
-      return float(std::abs(acos(v.Dot(n))));
-   }
-
-   static thread_local std::random_device random_device;
-
-   static thread_local std::mt19937 Generator(random_device());
-
-   inline int RandomUniformBetween(const int floor, const int ceiling) {
-      std::uniform_int_distribution<int> distribution(floor, ceiling);
-      return distribution(Generator);
+   inline float RadiansBetween(const vector &v, const normal &n) {
+      return float(std::abs(acos(v.dot(n))));
    }
 
    inline unsigned int RandomUniformBetween(const unsigned int floor, const unsigned int ceiling) {
-      std::uniform_int_distribution<unsigned int> distribution(floor, ceiling);
-      return distribution(Generator);
+      return rng.next_uint(floor, ceiling);
    }
    
-   inline float NormalizedUniformRandom() {
-      //static thread_local std::mt19937 Generator;
-      std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
-      return distribution(Generator);
+   inline float normalized_uniform_random() {
+      return rng.next_float();
    }
 
-   inline Vector CosineSampleHemisphere(float u0, float u1) {
+   inline vector CosineSampleHemisphere(float u0, float u1) {
       const float r = std::sqrt(u0);
       const float theta = TwoPI * u1;
 
@@ -111,11 +101,11 @@ namespace poly {
       const float y = std::sqrt(std::max(0.0f, 1.0f - u0));
       const float z = r * std::sin(theta);
 
-      return Vector(x, y, z);
+      return vector(x, y, z);
    }
 
-   inline float SignedDistanceFromPlane(const Point &pointOnPlane, const Normal &normal, const Point &p) {
-      return (p - pointOnPlane).Dot(normal);
+   inline float SignedDistanceFromPlane(const point &pointOnPlane, const normal &normal, const point &p) {
+      return (p - pointOnPlane).dot(normal);
    }
 
    inline float difference_of_products(float a, float b, float c, float d) {

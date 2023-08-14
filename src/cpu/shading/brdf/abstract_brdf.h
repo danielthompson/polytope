@@ -33,11 +33,11 @@ namespace poly {
        * @param pdf The pdf of the returned vector.
        * @return A vector randomly samplb
        */
-      virtual Vector sample(const Vector &incoming, const float u, const float v, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const {
-         const float u0 = NormalizedUniformRandom();
-         const float u1 = NormalizedUniformRandom();
+      virtual vector sample(const vector &incoming, const float u, const float v, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const {
+         const float u0 = normalized_uniform_random();
+         const float u1 = normalized_uniform_random();
 
-         const Vector hemi = CosineSampleHemisphere(u0, u1);
+         const vector hemi = CosineSampleHemisphere(u0, u1);
 
          pdf = 1;
          
@@ -54,7 +54,7 @@ namespace poly {
        * @param outgoing The direction of outgoing light.
        * @return The proportion of outgoing light that comes from the incoming direction.
        */
-      virtual float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const = 0;
+      virtual float f(const vector &incoming, const normal &normal, const vector &outgoing) const = 0;
 
       explicit AbstractBRDF(BRDF_TYPE brdf_type) : brdf_type(brdf_type) { }
       

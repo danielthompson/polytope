@@ -24,7 +24,7 @@ namespace Tests {
          ASSERT_EQ(1177, geometry->num_vertices_packed);
 
          // check a random-ish vertex for correctness
-         const poly::Point secondToLastVertex = geometry->get_vertex(1175);
+         const poly::point secondToLastVertex = geometry->get_vertex(1175);
 
          // EXPECT_FLOAT_EQ allows 4 ulps difference
 
@@ -153,19 +153,19 @@ namespace Tests {
          ASSERT_NE(nullptr, geometry);
 
          ASSERT_EQ(3, geometry->num_vertices_packed);
-         const poly::Point v0 = geometry->get_vertex(0);
+         const poly::point v0 = geometry->get_vertex(0);
 
          EXPECT_EQ(1, v0.x);
          EXPECT_EQ(2, v0.y);
          EXPECT_EQ(3, v0.z);
 
-         const poly::Point v1 = geometry->get_vertex(1);
+         const poly::point v1 = geometry->get_vertex(1);
 
          EXPECT_EQ(4, v1.x);
          EXPECT_EQ(5, v1.y);
          EXPECT_EQ(6, v1.z);
 
-         const poly::Point v2 = geometry->get_vertex(2);
+         const poly::point v2 = geometry->get_vertex(2);
 
          EXPECT_EQ(7, v2.x);
          EXPECT_EQ(8, v2.y);

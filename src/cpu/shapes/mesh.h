@@ -5,8 +5,8 @@
 #ifndef POLY_MESH_LINEAR_SOA_H
 #define POLY_MESH_LINEAR_SOA_H
 
-#include "../structures/Transform.h"
-#include "../structures/Intersection.h"
+#include "../structures/transform.h"
+#include "../structures/intersection.h"
 #include "../shading/Material.h"
 
 namespace poly {
@@ -18,16 +18,16 @@ namespace poly {
    public:
       mesh_geometry() = default;
 
-      void add_vertex(Point &v);
-      void add_vertex(Point &v, Normal &n);
+      void add_vertex(point &v);
+      void add_vertex(point &v, normal &n);
       void add_vertex(float x, float y, float z);
-      void add_vertex(Point &p, const float u, const float v);
-      void add_vertex(Point &p, Normal &n, const float u, const float v);
+      void add_vertex(point &p, const float u, const float v);
+      void add_vertex(point &p, normal &n, const float u, const float v);
       void add_packed_face(unsigned int v0_index, unsigned int v1_index, unsigned int v2_index);
       void unpack_faces();
-      Point get_vertex(unsigned int i) const;
+      point get_vertex(unsigned int i) const;
       Point3ui get_vertex_indices_for_face(unsigned int i) const;
-      void get_vertices_for_face(unsigned int i, poly::Point vertices[3]) const;
+      void get_vertices_for_face(unsigned int i, poly::point vertices[3]) const;
       
       // vertex locations
       std::vector<float> x;
@@ -76,8 +76,8 @@ namespace poly {
     */
    class Mesh {
    public:
-      Mesh(const std::shared_ptr<poly::Transform> &objectToWorld,
-           const std::shared_ptr<poly::Transform> &worldToObject,
+      Mesh(const std::shared_ptr<poly::transform> &objectToWorld,
+           const std::shared_ptr<poly::transform> &worldToObject,
            const std::shared_ptr<poly::Material> &material,
            const std::shared_ptr<poly::mesh_geometry> &parent) 
            : object_to_world(objectToWorld), world_to_object(worldToObject), material(material), mesh_geometry(parent) { 
@@ -86,15 +86,16 @@ namespace poly {
            
       ~Mesh();
       
-      bool hits(const poly::Ray& world_ray, const std::vector<unsigned int>& face_indices);
-      bool hits(const poly::Ray& world_ray, const unsigned int* face_indices, unsigned int num_face_indices) const;
-      void intersect(poly::Ray& worldSpaceRay, poly::Intersection& intersection);
-      void intersect(poly::Ray& world_ray, poly::Intersection& intersection, const std::vector<unsigned int>& face_indices);
-      void intersect(poly::Ray& world_ray, poly::Intersection& intersection, const unsigned int* face_indices, unsigned int num_face_indices) const;
+      bool hits(const poly::ray& world_ray, const std::vector<unsigned int>& face_indices);
+      bool hits(const poly::ray& world_ray, const unsigned int* face_indices, unsigned int num_face_indices) const;
+      void intersect(poly::ray& worldSpaceRay, poly::intersection& intersection);
+      void intersect(poly::ray& world_ray, poly::intersection& intersection, const std::vector<unsigned int>& face_indices);
+      void intersect(poly::ray& world_ray, poly::intersection& intersection, const unsigned int* face_indices, 
+                     unsigned int mesh_index, unsigned int num_face_indices) const;
 
       float surface_area(unsigned int face_index) const;
       
-      Point random_surface_point() const;
+      point random_surface_point() const;
 
       bool is_light() const {
          return (spd != nullptr);
@@ -102,14 +103,16 @@ namespace poly {
 
       void recalculate_bounding_box();
       
-      std::shared_ptr<poly::Transform> object_to_world;
-      std::shared_ptr<poly::Transform> world_to_object;
+      std::shared_ptr<poly::transform> object_to_world;
+      std::shared_ptr<poly::transform> world_to_object;
       std::shared_ptr<poly::Material> material;
-      std::shared_ptr<poly::BoundingBox> bounding_box;
+      std::shared_ptr<poly::bounding_box> bounding_box;
       std::shared_ptr<poly::SpectralPowerDistribution> spd;
       std::shared_ptr<poly::mesh_geometry> mesh_geometry;
       
-      poly::BoundingBox world_bb;
+      poly::bounding_box world_bb;
+
+      void compute_intersection_for_face(poly::intersection& intersection, const poly::ray &world_ray);
    };
 }
 

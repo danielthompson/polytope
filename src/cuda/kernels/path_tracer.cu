@@ -13,7 +13,10 @@ namespace poly {
 
    
 //#define DEBUG_PIXEL_INDEX 164160 /* 320, 320 */
-#define DEBUG_PIXEL_INDEX 98496  /* 192, 192 */
+#define DEBUG_PIXEL_X 512
+#define DEBUG_PIXEL_Y 175
+
+#define DEBUG_PIXEL_INDEX DEBUG_PIXEL_Y * 1024 + DEBUG_PIXEL_X  /* 192, 192 */
 #define DEBUG_PRINT 0
    
    constexpr unsigned int threads_per_block = 32;
@@ -25,12 +28,12 @@ namespace poly {
    __constant__ float camera_to_world_matrix[16];
    
    struct device_pointers {
-      struct DeviceMesh* device_meshes;
+      struct poly::device_mesh* device_meshes;
       unsigned int num_meshes;
 
-      struct device_mesh_geometry* device_mesh_geometry;
+      struct poly::device_mesh_geometry* device_mesh_geometry;
       
-      struct Samples* device_samples;
+      struct poly::Samples* device_samples;
       
       poly::device_bvh_node* device_bvh_node;
       unsigned int num_bvh_nodes;
@@ -39,7 +42,7 @@ namespace poly {
       unsigned int num_index_pairs;
    };
 
-   __constant__ struct device_pointers const_device_pointers;
+   __constant__ struct poly::device_pointers const_device_pointers;
    __constant__ poly::device_bvh_node root_node; 
 
    struct device_intersection {
@@ -50,6 +53,7 @@ namespace poly {
       float3 hit_point;
       float3 tangent1;
       float3 tangent2;
+      float3 error;
       bool hits;
       float u, v, w, new_t;
    };
@@ -75,7 +79,11 @@ namespace poly {
       return cosine_sample_hemisphere(u0, u1);
    }
    
-   __device__ bool aabb_hits(const float* aabb, const float3 origin, const float3 inverse_direction, float* const mint) {
+   __device__ bool aabb_hits(
+         const float* aabb, 
+         const float3 origin, 
+         const float3 inverse_direction, 
+         float* const mint) {
 
       // TODO take ray's current t as a param and use for maxBoundFarT
       float maxBoundFarT = poly::Infinity;
@@ -146,13 +154,13 @@ namespace poly {
          *result = aabb_hits(aabb, o, id, &t) ? 1 : 0;
    }
    
-   bool PathTracerKernel::unit_test_hit_ray_against_bounding_box(const poly::Ray &ray, const float* const device_aabb) {
+   bool path_tracer::unit_test_hit_ray_against_bounding_box(const poly::ray &ray, const float* const device_aabb) {
       
       int* device_result;
       cuda_check_error( cudaMalloc((void**)&device_result, sizeof(int)) );
       
-      float3 o = make_float3(ray.Origin.x, ray.Origin.y, ray.Origin.z);
-      float3 id = {1.0f / ray.Direction.x, 1.0f / ray.Direction.y, 1.0f / ray.Direction.z};
+      float3 o = make_float3(ray.origin.x, ray.origin.y, ray.origin.z);
+      float3 id = {1.0f / ray.direction.x, 1.0f / ray.direction.y, 1.0f / ray.direction.z};
 
       // invoke kernel that calls aabb_hits()
       unit_test_ray_against_aabb_kernel<<<1, 1>>>(device_aabb, o, id, device_result);
@@ -171,7 +179,7 @@ namespace poly {
    
    __device__ void consolidate_sample_intersections(
          
-         struct device_intersection* intersection,
+         struct poly::device_intersection* intersection,
          const float3 origin,
          const float3 direction
          ) {
@@ -186,7 +194,7 @@ namespace poly {
 
          // calculate normal at hit point
          // TOOD precalculate face normals
-         const DeviceMesh mesh_hit = const_device_pointers.device_meshes[intersection->mesh_index];
+         const device_mesh mesh_hit = const_device_pointers.device_meshes[intersection->mesh_index];
          const device_mesh_geometry geometry = const_device_pointers.device_mesh_geometry[mesh_hit.device_mesh_geometry_offset];
          
          const unsigned int v1_index = intersection->face_index + geometry.num_faces;
@@ -249,6 +257,39 @@ namespace poly {
          n *= flip_factor;
          normalize(n);
          intersection->normal = n;
+
+         // offset ray origin along normal
+         // http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#RobustSpawnedRayOrigins
+         float3 abs_normal = make_float3(std::abs(n.x), std::abs(n.y), std::abs(n.z));
+         float d = dot(intersection->error, abs_normal);
+         float3 offset = make_float3(n.x, n.y, n.z) * d;
+         if (dot(direction, n) > 0)
+            offset = offset * -1;
+         float3 new_p = intersection->hit_point + offset;
+
+         if (offset.x > 0) {
+            new_p.x = std::nextafter(new_p.x, poly::Infinity);
+         }
+         else if (offset.x < 0) {
+            new_p.x = std::nextafter(new_p.x, -poly::Infinity);
+         }
+
+         if (offset.y > 0) {
+            new_p.y = std::nextafter(new_p.y, poly::Infinity);
+         }
+         else if (offset.y < 0) {
+            new_p.y = std::nextafter(new_p.y, -poly::Infinity);
+         }
+
+         if (offset.z > 0) {
+            new_p.z = std::nextafter(new_p.z, poly::Infinity);
+         }
+         else if (offset.z < 0) {
+            new_p.z = std::nextafter(new_p.z, -poly::Infinity);
+         }
+
+         intersection->hit_point = new_p;
+         
          const float edge0dot = fabs(dot(e0, e1));
          const float edge1dot = fabs(dot(e1, e2));
          const float edge2dot = fabs(dot(e2, e0));
@@ -266,11 +307,10 @@ namespace poly {
          normalize(intersection->tangent1);
          normalize(intersection->tangent2);
       }
-      
    }
    
    __device__ void bvh_intersect(
-         struct device_intersection* intersection,
+         struct poly::device_intersection* intersection,
          const float3 origin,
          const float3 direction,
          const float3 direction_inverse,
@@ -351,11 +391,11 @@ namespace poly {
                cuda_debug_printf(debug, "  Node %i is leaf, intersecting faces\n", current_node_index);
                for (int i = 0; i < node.num_faces; i++) {
 
-                  device_index_pair indices = const_device_pointers.device_index_pair[node.offset + i];
+                  poly::device_index_pair indices = const_device_pointers.device_index_pair[node.offset + i];
                   const unsigned int mesh_index = indices.mesh_index;
                   const unsigned int face_index = indices.face_index;
                   cuda_debug_printf(debug, "    Testing face_index %i\n", indices.face_index);
-                  const DeviceMesh mesh = const_device_pointers.device_meshes[mesh_index];
+                  const poly::device_mesh mesh = const_device_pointers.device_meshes[mesh_index];
                   cuda_debug_printf(debug, "      Loaded mesh_index %i\n", mesh_index);
                   cuda_debug_printf(debug, "      obj_to_world: \t%f\t%f\t%f\t%f\n", mesh.obj_to_world[0], mesh.obj_to_world[1], mesh.obj_to_world[2], mesh.obj_to_world[3]);
                   cuda_debug_printf(debug, "                    \t%f\t%f\t%f\t%f\n", mesh.obj_to_world[4], mesh.obj_to_world[5], mesh.obj_to_world[6], mesh.obj_to_world[7]);
@@ -368,8 +408,8 @@ namespace poly {
                   cuda_debug_printf(debug, "                    \t%f\t%f\t%f\t%f\n", mesh.world_to_object[12], mesh.world_to_object[13], mesh.world_to_object[14], mesh.world_to_object[15]);
 
 
-                  const device_mesh_geometry geometry = const_device_pointers.device_mesh_geometry[mesh.device_mesh_geometry_offset];
-                  cuda_debug_printf(debug, "      Loaded geometry %i\n", mesh.device_mesh_geometry_offset);
+                  const poly::device_mesh_geometry geometry = const_device_pointers.device_mesh_geometry[mesh.device_mesh_geometry_offset];
+                  cuda_debug_printf(debug, "      Loaded geometry %zu\n", mesh.device_mesh_geometry_offset);
                   
                   const unsigned int v1_index = face_index + (geometry.num_faces);
                   const unsigned int v2_index = face_index + (geometry.num_faces * 2);
@@ -438,10 +478,11 @@ namespace poly {
                   // Perform edge tests. Moving this test before and at the end of the previous
                   // conditional gives higher performance.
                   // backface culling:
-                  if (U < 0.0f || V < 0.0f || W < 0.0f)
-                     continue;
+//                  if (U < 0.0f || V < 0.0f || W < 0.0f)
+//                     continue;
                   // no backface culling:
-                  //if ((U<0.0f || V<0.0f || W<0.0f) &&(U>0.0f || V>0.0f || W>0.0f)) return;
+                  if ((U < 0.0f || V < 0.0f || W < 0.0f) && (U > 0.0f || V > 0.0f || W > 0.0f))
+                     continue;
                   
                   // calculate determinant
                   float det = U + V + W;
@@ -455,17 +496,45 @@ namespace poly {
                   const float T = U * Az + V * Bz + W * Cz;
                   
                   // backface culling
-                  if (T < 0.0f || T > intersection->t * det)
-                     continue;
-                  
+//                  if (T < 0.0f || T > intersection->t * det)
+//                     continue;
+
                   // no backface culling
-                  // int det_sign = sign_mask(det);if (xorf(T,det_sign) < 0.0f) ||xorf(T,det_sign) > hit.t*xorf(det, det_sign))return;
+                  if (det < 0.f && (T >= 0 || T < intersection->t * det)) {
+                     continue;
+                  }
+                  if (det > 0.f && (T <= 0 || T > intersection->t * det)) {
+                     continue;
+                  }
                   
                   // normalize
                   const float rcpDet = 1.0f / det;
                   float u = U * rcpDet;
                   float v = V * rcpDet;
                   float w = W * rcpDet;
+
+                  const float computed_t = T * rcpDet;
+                  
+                  const float maxZt = max(abs(A.z), max(abs(B.z), abs(C.z)));
+                  const float deltaZ = poly::Gamma3 * maxZt;
+
+                  const float maxXt = max(abs(A.x), max(abs(B.x), abs(C.x)));
+                  const float maxYt = max(abs(A.y), max(abs(B.y), abs(C.y)));
+                  const float deltaX = poly::Gamma5 * (maxXt + maxZt);
+                  const float deltaY = poly::Gamma5 * (maxYt + maxZt);
+                  const float deltaE = 2 * (poly::Gamma2 * maxXt * maxYt + deltaY * maxXt + deltaX * maxYt);
+                  const float maxE = max(abs(U), max(abs(V), abs(W)));
+                  float deltaT = 3 * (poly::Gamma3 * maxE * maxZt + deltaE * maxZt + deltaZ * maxE) * abs(rcpDet);
+                  if (computed_t <= deltaT)
+                     continue;
+
+                  // http://www.pbr-book.org/3ed-2018/Shapes/Managing_Rounding_Error.html#x4-ParametricEvaluation:Triangles
+                  float x_error_sum = std::abs(u * v0.x) + std::abs(v * v1.x) + std::abs(w * v2.x);
+                  float y_error_sum = std::abs(u * v0.y) + std::abs(v * v1.y) + std::abs(w * v2.y);
+                  float z_error_sum = std::abs(u * v0.z) + std::abs(v * v1.z) + std::abs(w * v2.z);
+                  intersection->error = make_float3(x_error_sum, y_error_sum, z_error_sum) * poly::Gamma7;
+                  
+                  
                   intersection->t = T * rcpDet;
                   intersection->hits = true;
                   intersection->face_index = face_index;
@@ -528,9 +597,9 @@ namespace poly {
    }
    
    __global__ void path_trace_kernel(
-         float3* const origins,
-         float3* const directions,
-         float3* const directions_inverse,
+         const float3* const origins,
+         const float3* const directions,
+         const float3* const directions_inverse,
          curandState_t* const rng_states 
                ) {
       // loop over pixels
@@ -543,8 +612,8 @@ namespace poly {
       float3 src = { 1.0f, 1.0f, 1.0f};
       
       bool active = true;
-      
-      device_intersection intersection;
+
+      poly::device_intersection intersection {};
       
       float3 o = origins[pixel_index];
       float3 d = directions[pixel_index];
@@ -557,7 +626,6 @@ namespace poly {
          
          // TODO also break if all samples are inactive
          if (num_bounces > 20) {
-            
             break;
          }
          
@@ -583,16 +651,12 @@ namespace poly {
                cuda_debug_printf(debug, "Hit mesh %i face %i with t %f ray o: (%f %f %f) d: (%f %f %f)\n", 
                                  intersection.mesh_index, intersection.face_index, intersection.t, o.x, o.y, o.z, d.x, d.y, d.z);
                
-               // todo hit light
-
-               // TODO put this into a lambert_brdf function
-//                const poly::Vector local_incoming = intersection.WorldToLocal(current_ray.Direction);
                float3 local_incoming = normalize(
                      make_float3(dot(d, intersection.tangent1), 
                                  dot(d, intersection.normal),
                                  dot(d, intersection.tangent2)));
 
-               const DeviceMesh mesh_hit = const_device_pointers.device_meshes[intersection.mesh_index];
+               const poly::device_mesh mesh_hit = const_device_pointers.device_meshes[intersection.mesh_index];
 
                float3 local_outgoing;
 
@@ -611,12 +675,16 @@ namespace poly {
                      break;
                   }
                   default:
-                     //printf("mesh %i missing brdf :/\n", intersection.mesh_index);
-                     local_outgoing = {0.0f / 0.0f, 0.0f / 0.0f, 0.0f / 0.0f};
-                     src = {0.0f / 0.0f, 0.0f / 0.0f, 0.0f / 0.0f};
+                     // light
+                     src = src * make_float3(mesh_hit.brdf_params[7],mesh_hit.brdf_params[8],mesh_hit.brdf_params[9]); 
+                     active = false;
                      break;
                }
 
+               if (!active) {
+                  break;
+               }
+               
                cuda_debug_printf(debug, "  Intersection t1 (%f %f %f) t2 (%f %f %f)\n",
                                  intersection.tangent1.x, intersection.tangent1.y, intersection.tangent1.z,
                                  intersection.tangent2.x, intersection.tangent2.y, intersection.tangent2.z);
@@ -645,7 +713,9 @@ namespace poly {
             } 
             else {
                cuda_debug_printf(debug, " no hit, becoming inactive\n");
+               src = { 0.0f, 0.0f, 0.0f };
                active = false;
+               break;
             }
          }
          else {
@@ -656,7 +726,6 @@ namespace poly {
          num_bounces++;
       }
       
-      src *= 255.f;
       const_device_pointers.device_samples->r[pixel_index] += src.x;
       const_device_pointers.device_samples->g[pixel_index] += src.y;
       const_device_pointers.device_samples->b[pixel_index] += src.z;
@@ -833,16 +902,16 @@ namespace poly {
       };
    }
    
-   __global__ void generate_camera_rays_random_kernel(
-         float3* const sample_origins,
-         float3* const sample_directions,
-         float3* const sample_directions_inverse,
-         curandState_t* const rng_states,
-         const unsigned int width, 
-         const float height, 
-         const float tan_fov_half,
-         const int sample_num,
-         const int total_num_samples) {
+   __global__ void generate_camera_rays_random_kernel(float3 *const sample_origins, 
+                                                      float3 *const sample_directions,
+                                                      float3 *const sample_directions_inverse,
+                                                      curandState_t *const rng_states,
+                                                      const unsigned int width, 
+                                                      const float height,
+                                                      const float tan_fov_half,
+                                                      const int sample_num, 
+                                                      const int total_num_samples,
+                                                      int device_index) {
       const unsigned int pixel_index = blockDim.x * blockIdx.x + threadIdx.x;
       
       
@@ -852,14 +921,17 @@ namespace poly {
 
       const float num_samples_sqrt = sqrtf((float)total_num_samples);
 
-
       const float x_offset = curand_uniform(&rng_states[pixel_index]);
       const float y_offset = curand_uniform(&rng_states[pixel_index]);
       
       const float aspect = width_f / height;
 
+      float offset_factor = 0;
+      if (device_index == 1)
+         offset_factor = 1;
+      
       // non-stratified
-      const float pixel_ndc_x = (pixel_x + x_offset) / width_f;
+      const float pixel_ndc_x = (pixel_x + x_offset) / (width_f) + (0.5f * offset_factor);
       const float pixel_ndc_y = (pixel_y + y_offset) / height;
       float3 camera_direction = {
             (2 * pixel_ndc_x - 1) * aspect * tan_fov_half,
@@ -883,8 +955,7 @@ namespace poly {
    __global__ void init_curand_states_kernel(curandState_t* states, const unsigned int num_elements) {
       const unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
       if (index < num_elements)
-         curand_init(index, 0, 0, &states[index]);
-      
+         curand_init(index, index, 0, &states[index]);
    }
    
    __global__ void reduce_samples_kernel(const float inv_num_samples, const unsigned int num_elements) {
@@ -896,49 +967,49 @@ namespace poly {
       }
    }
    
-   void PathTracerKernel::Trace(unsigned int num_samples) const {
-      
-      struct device_pointers device_pointers {
-         memory_manager->meshes,
-         memory_manager->num_meshes,
-         memory_manager->mesh_geometries,
-         memory_manager->device_samples,
-         memory_manager->device_bvh,
-         memory_manager->num_bvh_nodes,
-         memory_manager->index_pair,
-         memory_manager->num_indices
+   void path_tracer::Trace(unsigned int num_samples) const {
+
+      const float tan_fov_half = std::tan(device_context->camera_fov * poly::PIOver360);
+
+      struct poly::device_pointers device_pointers {
+            device_context->meshes,
+            device_context->num_meshes,
+            device_context->mesh_geometries,
+            device_context->device_samples,
+            device_context->device_bvh,
+            device_context->num_bvh_nodes,
+            device_context->index_pair,
+            device_context->num_indices
       };
 
       cudaError_t error = cudaSuccess;
       
-      const float tan_fov_half = std::tan(memory_manager->camera_fov * poly::PIOver360);
-      
-      cuda_check_error( cudaMemcpyToSymbol(camera_to_world_matrix, memory_manager->camera_to_world_matrix, sizeof(float) * 16));
+      cuda_check_error( cudaMemcpyToSymbol(camera_to_world_matrix, device_context->camera_to_world_matrix, sizeof(float) * 16));
       cuda_check_error( cudaMemcpyToSymbol(const_device_pointers, &device_pointers, sizeof(struct device_pointers)) );
-      cuda_check_error( cudaMemcpyToSymbol(const_bvh_nodes, memory_manager->scene_field->bvh_root.compact_root->nodes, sizeof(poly::device_bvh_node) * num_constant_nodes));
+      cuda_check_error( cudaMemcpyToSymbol(const_bvh_nodes, device_context->scene_field->bvh_root.compact_root->nodes, sizeof(poly::device_bvh_node) * num_constant_nodes));
       
-      const unsigned int blocksPerGrid = (memory_manager->num_pixels + threads_per_block - 1) / threads_per_block;
+      const unsigned int blocksPerGrid = (device_context->pixel_count + threads_per_block - 1) / threads_per_block;
 
       curandState_t* device_states;
-      cuda_check_error( cudaMalloc((void**)&device_states, sizeof(curandState_t) * memory_manager->num_pixels));
+      cuda_check_error( cudaMalloc((void**)&device_states, sizeof(curandState_t) * device_context->pixel_count));
       {
          const unsigned int curand_init_tpb = 256;
-         const unsigned int curand_init_bgp = (memory_manager->num_pixels + curand_init_tpb - 1) / curand_init_tpb;
+         const unsigned int curand_init_bgp = (device_context->pixel_count + curand_init_tpb - 1) / curand_init_tpb;
 
          //printf("launching init_curand_states_kernel<<<%i, %i>>>\n", curand_init_bgp, curand_init_tpb);
-         init_curand_states_kernel<<<curand_init_bgp, curand_init_tpb>>>(device_states, memory_manager->num_pixels);
+         init_curand_states_kernel<<<curand_init_bgp, curand_init_tpb>>>(device_states, device_context->pixel_count);
          cudaDeviceSynchronize();
          error = cudaGetLastError();
    
          if (error != cudaSuccess)
          {
-            Log.error("Kernel init_curand_states_kernel failed (error: %s)!\n", cudaGetErrorString(error));
+            LOG_ERROR("Kernel init_curand_states_kernel failed with error: " << cudaGetErrorString(error));
             exit(EXIT_FAILURE);
          }
       }
       
-      const unsigned int width = memory_manager->width;
-      const unsigned int height = memory_manager->height;
+      const unsigned int width = device_context->width;
+      const unsigned int height = device_context->height;
 
       const size_t sample_bytes = sizeof(float3) * width * height;
       
@@ -951,15 +1022,21 @@ namespace poly {
       cuda_check_error( cudaMalloc((void**)&sample_directions_inverse, sample_bytes) );
 
       for (int i = 0; i < num_samples; i++) {
-         {
-            const unsigned int generate_rays_tpb = 64;
-            const unsigned int generate_rays_bpg = (memory_manager->num_pixels + generate_rays_tpb - 1) / generate_rays_tpb;
-            
-            // generate rays
-            //printf("launching generate_camera_rays_centered_kernel<<<%i, %i>>>\n", blocksPerGrid, threads_per_block);
-            generate_camera_rays_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
-                  sample_origins, sample_directions, sample_directions_inverse, device_states,
-                  width, (float) height, tan_fov_half, i, num_samples);
+         const unsigned int generate_rays_tpb = 64;
+         const unsigned int generate_rays_bpg = (device_context->pixel_count + generate_rays_tpb - 1) / generate_rays_tpb;
+         
+         // generate rays
+         generate_camera_rays_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
+               sample_origins, 
+               sample_directions, 
+               sample_directions_inverse, 
+               device_states,
+               width, 
+               (float) height, 
+               tan_fov_half, 
+               i,
+               num_samples, 
+               device_context->device_index);
 
 //            generate_camera_rays_stratified_random_kernel<<<generate_rays_bpg, generate_rays_tpb>>>(
 //                  sample_origins, sample_directions, sample_directions_inverse, device_states,
@@ -976,7 +1053,7 @@ namespace poly {
 //                       cudaGetErrorString(error));
 //               exit(EXIT_FAILURE);
 //            }
-         }
+         
 
          // run path tracer => sample_results
 
@@ -987,6 +1064,7 @@ namespace poly {
                sample_directions_inverse,
                device_states
          );
+         
 
 //         cudaDeviceSynchronize();
 //         error = cudaGetLastError();
@@ -997,17 +1075,18 @@ namespace poly {
 //         }
       }
 
+      
       // consolidate samples
 
       const float num_samples_inv = 1.f / (float)num_samples;
       //printf("launching reduce_samples_kernel<<<%i, %i>>>\n", blocksPerGrid, threads_per_block);
-      reduce_samples_kernel<<<blocksPerGrid, threads_per_block>>>(num_samples_inv, memory_manager->num_pixels);
+      reduce_samples_kernel<<<blocksPerGrid, threads_per_block>>>(num_samples_inv, device_context->pixel_count);
 
       cudaDeviceSynchronize();
       error = cudaGetLastError();
 
       if (error != cudaSuccess) {
-         Log.error("Kernel reduce_samples_kernel failed (error: %s)!\n", cudaGetErrorString(error));
+         LOG_ERROR("Kernel reduce_samples_kernel failed with error: " << cudaGetErrorString(error));
          exit(EXIT_FAILURE);
       }
       

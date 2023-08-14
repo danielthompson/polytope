@@ -13,14 +13,14 @@ namespace poly {
    class MirrorBRDF : public AbstractBRDF {
    public:
       std::shared_ptr<poly::texture> texture;
-      MirrorBRDF(const ReflectanceSpectrum &refl) : AbstractBRDF(BRDF_TYPE::Mirror), refl(refl) { }
+      MirrorBRDF(const poly::ReflectanceSpectrum &refl) : AbstractBRDF(BRDF_TYPE::Mirror), refl(refl) { }
       float f(const float thetaIncoming, const float thetaOutgoing) const override {
          if (poly::WithinEpsilon(thetaIncoming, thetaOutgoing))
             return 1.0f;
          return 0.0f;
       }
 
-      Vector sample(const Vector &incoming, const float u, const float v, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
+      vector sample(const poly::vector &incoming, const float u, const float v, poly::ReflectanceSpectrum &refl_spectrum, float &pdf) const override {
          //const Normal normal = Normal(0, 1, 0);
 //         const float factor = incoming.Dot(normal) * 2;
 //         const Vector scaled = Vector(normal * factor);
@@ -34,7 +34,7 @@ namespace poly {
          return {incoming.x, -incoming.y, incoming.z};
       }
 
-      float f(const Vector &incoming, const Normal &normal, const Vector &outgoing) const override {
+      float f(const poly::vector &incoming, const poly::normal &normal, const poly::vector &outgoing) const override {
 
          const float thetaIncoming = RadiansBetween(-incoming, normal);
          const float thetaOutgoing = RadiansBetween(outgoing, normal);
@@ -42,9 +42,9 @@ namespace poly {
          return f(thetaIncoming, thetaOutgoing);
       }
       
-      ReflectanceSpectrum refl;
+      poly::ReflectanceSpectrum refl;
    private:
-      const Normal normal = Normal(0, 1, 0);
+      const poly::normal normal = poly::normal(0, 1, 0);
    };
 
 }

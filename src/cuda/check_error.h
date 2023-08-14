@@ -14,7 +14,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 {
    if (code != cudaSuccess)
    {
-      Log.error("GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      LOG_ERROR("GPUassert: " << cudaGetErrorString(code) << ", " << file << ", " << line);
       if (abort)
          exit(code);
    }

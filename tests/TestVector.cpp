@@ -6,13 +6,13 @@
 namespace Tests {
 
    namespace Vector {
-      using poly::Vector;
-      using poly::Normal;
+      using poly::vector;
+      using poly::normal;
 
       namespace Equality {
          TEST(Vector, Equals) {
-            Vector p1 = Vector(1.0f, 1.0f, 1.0f);
-            Vector p2 = Vector(1.0f, 1.0f, 1.0f);
+            vector p1 = vector(1.0f, 1.0f, 1.0f);
+            vector p2 = vector(1.0f, 1.0f, 1.0f);
 
             EXPECT_EQ(p1, p1);
             EXPECT_EQ(p1, p2);
@@ -20,15 +20,15 @@ namespace Tests {
          }
 
          TEST(Vector, NotEquals) {
-            Vector p1 = Vector(1.0f, 1.0f, 1.0f);
-            Vector p2 = Vector(0.0f, 1.0f, 1.0f);
+            vector p1 = vector(1.0f, 1.0f, 1.0f);
+            vector p2 = vector(0.0f, 1.0f, 1.0f);
             EXPECT_NE(p1, p2);
          }
       }
 
       namespace AtOperator {
          TEST(Vector, At1) {
-            Vector v = Vector(1.0f, 2.0f, 3.0f);
+            vector v = vector(1.0f, 2.0f, 3.0f);
 
             EXPECT_EQ(1.0f, v[0]);
             EXPECT_EQ(2.0f, v[1]);
@@ -38,8 +38,8 @@ namespace Tests {
 
       namespace UnaryMinusOperator {
          TEST(Vector, UnaryMinusOperator1) {
-            Vector v0 = Vector(1.0f, 2.0f, 3.0f);
-            Vector actual = -v0;
+            vector v0 = vector(1.0f, 2.0f, 3.0f);
+            vector actual = -v0;
 
             EXPECT_NE(v0, actual);
 
@@ -51,9 +51,9 @@ namespace Tests {
 
       namespace PlusOperator {
          TEST(Vector, PlusOperator1) {
-            Vector v0 = Vector(1.0f, 2.0f, 3.0f);
-            Vector v1 = Vector(4.0f, 5.0f, 6.0f);
-            Vector actual = v0 + v1;
+            vector v0 = vector(1.0f, 2.0f, 3.0f);
+            vector v1 = vector(4.0f, 5.0f, 6.0f);
+            vector actual = v0 + v1;
 
             EXPECT_NE(v0, actual);
             EXPECT_NE(v1, actual);
@@ -66,11 +66,11 @@ namespace Tests {
 
       namespace CrossNormal {
          TEST(Vector, CrossNormal1) {
-            Vector p1 = Vector(1, 2, 3);
-            Normal p2 = Normal(4, 5, 6);
+            vector p1 = vector(1, 2, 3);
+            normal p2 = normal(4, 5, 6);
 
-            Vector actual = p1.Cross(p2);
-            Vector expected = Vector(-3, 6, -3);
+            vector actual = p1.cross(p2);
+            vector expected = vector(-3, 6, -3);
 
             EXPECT_EQ(actual, expected);
          }
@@ -78,30 +78,30 @@ namespace Tests {
 
       namespace Dot {
          TEST(Vector, Dot1) {
-            Vector p1 = Vector(1, 2, 3);
-            Vector p2 = Vector(4, 5, 6);
+            vector p1 = vector(1, 2, 3);
+            vector p2 = vector(4, 5, 6);
 
-            float actual = p1.Dot(p2);
+            float actual = p1.dot(p2);
             float expected = 32.0f;
 
             EXPECT_EQ(actual, expected);
          }
 
          TEST(Vector, Dot2) {
-            Vector p1 = Vector(-1, 2, 3);
-            Vector p2 = Vector(4, 5, 6);
+            vector p1 = vector(-1, 2, 3);
+            vector p2 = vector(4, 5, 6);
 
-            float actual = p1.Dot(p2);
+            float actual = p1.dot(p2);
             float expected = 24.0f;
 
             EXPECT_EQ(actual, expected);
          }
 
          TEST(Vector, Dot3) {
-            Vector p1 = Vector(0, 0, 0);
-            Vector p2 = Vector(0, 0, 0);
+            vector p1 = vector(0, 0, 0);
+            vector p2 = vector(0, 0, 0);
 
-            float actual = p1.Dot(p2);
+            float actual = p1.dot(p2);
             float expected = 0.f;
 
             EXPECT_EQ(actual, expected);

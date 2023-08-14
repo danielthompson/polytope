@@ -8,74 +8,74 @@
 #include <functional>
 
 namespace poly {
-   enum class Axis {
+   enum class axis {
       x = 0,
       y,
       z
    };
 
-   class Normal {
+   class normal {
    public:
       float x, y, z;
 
-      Normal() : x(0), y(0), z(0) { };
-      Normal(const float x, const float y, const float z) : x(x), y(y), z(z) { }
-      Normal(const Normal &n) = default;
+      normal() : x(0), y(0), z(0) { };
+      normal(const float x, const float y, const float z) : x(x), y(y), z(z) { }
+      normal(const normal &n) = default;
 
-      bool operator==(const Normal &rhs) const;
-      Normal operator*(const float t) const;
+      bool operator==(const normal &rhs) const;
+      normal operator*(const float t) const;
 
-      void Flip();
-      void Normalize();
+      void flip();
+      void normalize();
    };
 
-   class Vector {
+   class vector {
    public:
       float x, y, z;
 
-      Vector() : x(0), y(0), z(0) { };
-      Vector(const float x, const float y, const float z);
-      Vector(const Vector &v) = default;
-      explicit Vector(const Normal &n);
+      constexpr vector() : x(0), y(0), z(0) { };
+      constexpr vector(const float x, const float y, const float z) : x(x), y(y), z(z) { };
+      constexpr vector(const vector &v) = default;
+      constexpr explicit vector(const poly::normal &n) : x(n.x), y(n.y), z(n.z) { };
 
-      bool operator==(const Vector &rhs) const;
-      bool operator!=(const Vector &rhs) const;
+      bool operator==(const vector &rhs) const;
+      bool operator!=(const vector &rhs) const;
       float operator[] (int index) const;
-      Vector operator*(const float t) const;
-      Vector operator-(const Vector &rhs) const;
-      Vector operator+(const Vector &rhs) const;
-      Vector operator-() const;
+      vector operator*(const float t) const;
+      vector operator-(const vector &rhs) const;
+      vector operator+(const vector &rhs) const;
+      vector operator-() const;
 
-      float Dot(const Vector &v) const;
-      float Dot(const Normal &n) const;
-      float Length() const;
-      float LengthSquared() const;
-      void Normalize();
-      Vector Cross(const Vector &rhs) const;
-      Vector Cross(const Normal &rhs) const;
+      float dot(const vector &v) const;
+      float dot(const poly::normal &n) const;
+      float length() const;
+      float length_squared() const;
+      void normalize();
+      vector cross(const vector &rhs) const;
+      vector cross(const poly::normal &rhs) const;
    };
 
-   class Point {
+   class point {
    public:
       float x, y, z;
 
-      Point() : x(0), y(0), z(0) { };
-      Point(const float x, const float y, const float z)  : x(x), y(y), z(z) {}
-      Point(const Point &p) : x(p.x), y(p.y), z(p.z) { }
+      point() : x(0), y(0), z(0) { };
+      point(const float x, const float y, const float z)  : x(x), y(y), z(z) {}
+      point(const point &p) : x(p.x), y(p.y), z(p.z) { }
 
-      bool operator<(const Point &rhs) const;
-      bool operator==(const Point &rhs) const;
-      bool operator!=(const Point &rhs) const;
-      Vector operator-(const Point &rhs) const;
-      Point operator+(const Point &rhs) const;
-      Point operator+(const Vector &rhs) const;
+      bool operator<(const point &rhs) const;
+      bool operator==(const point &rhs) const;
+      bool operator!=(const point &rhs) const;
+      poly::vector operator-(const point &rhs) const;
+      point operator+(const point &rhs) const;
+      point operator+(const poly::vector &rhs) const;
       float &operator[] (const int index);
-      float &operator[] (const Axis axis);
-      Point &operator+=(const Vector &rhs);
-      Point &operator+=(const Normal &rhs);
+      float &operator[] (const poly::axis axis);
+      point &operator+=(const poly::vector &rhs);
+      point &operator+=(const poly::normal &rhs);
 
-      float Dot(const Point &p) const;
-      float Dot(const Vector &v) const;
+      float dot(const point &p) const;
+      float dot(const vector &v) const;
    };
 
    class Point3i {
@@ -96,9 +96,9 @@ namespace poly {
 
 namespace std {
    template <>
-   struct hash<poly::Point>
+   struct hash<poly::point>
    {
-      std::size_t operator()(const poly::Point& k) const
+      std::size_t operator()(const poly::point& k) const
       {
          // Compute individual hash values for first, second and third
          // http://stackoverflow.com/a/1646913/126995

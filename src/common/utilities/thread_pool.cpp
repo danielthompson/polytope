@@ -8,8 +8,6 @@ std::mutex fprintf_mutex;
 
 namespace poly {
    
-   
-   
 //#define THREAD_POOL_DEBUG
 #ifdef THREAD_POOL_DEBUG
 #define thread_pool_printf(...) do { std::lock_guard<std::mutex> guard(fprintf_mutex); fprintf(stderr, __VA_ARGS__); } while (0)
@@ -140,12 +138,11 @@ namespace poly {
       thread_pool_printf("synchronize(): done\n");
    }
    
-   void thread_pool::enqueue(const std::function<void()>& task, int indices) {
+   void thread_pool::enqueue(const std::function<void()>& task) {
       thread_pool_printf("enqueue(): started\n");
       {
          std::lock_guard<std::mutex> lock(q_mutex);
          ready_q.push(task);
-         indices_count_q.push(indices);
          thread_pool_printf("enqueue(): enqueued %i indices, signalling ready cvar...\n", indices);
          ready_cvar.notify_one();
       }
@@ -157,52 +154,51 @@ namespace poly {
       std::unique_lock<std::mutex> q_lock(q_mutex, std::defer_lock);
       while (1) {
          // acquire ready Q mutex
-         thread_pool_printf("run(%i): Acquiring lock...\n", thread_num);
+         thread_pool_printf("thread_entrypoint(%i): Acquiring lock...\n", thread_num);
          q_lock.lock();
-         thread_pool_printf("run(%i): Lock acquired.\n", thread_num);
+         thread_pool_printf("thread_entrypoint(%i): Lock acquired.\n", thread_num);
 
          // any tasks in Q?
          while (ready_q.empty()) {
-            thread_pool_printf("run(%i): Q empty, pool state %i\n", thread_num, pool_state);
+            thread_pool_printf("thread_entrypoint(%i): Q empty, pool state %i\n", thread_num, pool_state);
             if (pool_state == ending) {
                q_lock.unlock();
-               thread_pool_printf("run(%i): Pool is ending, signalling idle cvar\n", thread_num);
+               thread_pool_printf("thread_entrypoint(%i): Pool is ending, signalling idle cvar\n", thread_num);
                thread_states[thread_num] = ending;
                //std::lock_guard<std::mutex> guard(idle_mutex);
                idle_cvar.notify_one();
-               thread_pool_printf("run(%i): Returning\n", thread_num);
+               thread_pool_printf("thread_entrypoint(%i): Returning\n", thread_num);
                return;
             }
             // wait on ready cvar
             thread_states[thread_num] = ready;
             {
                //std::lock_guard<std::mutex> guard(idle_mutex);
-               thread_pool_printf("run(%i): Signalling idle cvar...\n", thread_num);   
+               thread_pool_printf("thread_entrypoint(%i): Signalling idle cvar...\n", thread_num);   
                idle_cvar.notify_one();
             }
-            thread_pool_printf("run(%i): Waiting on ready cvar...\n", thread_num);
+            thread_pool_printf("thread_entrypoint(%i): Waiting on ready cvar...\n", thread_num);
             ready_cvar.wait(q_lock);
-            thread_pool_printf("run(%i): Woke on ready cvar\n", thread_num);
+            thread_pool_printf("thread_entrypoint(%i): Woke on ready cvar\n", thread_num);
             if (!ready_q.empty()) {
-               thread_pool_printf("run(%i): Found work in Q\n", thread_num);
+               thread_pool_printf("thread_entrypoint(%i): Found work in Q\n", thread_num);
                break;
             }
          }
 
          std::function<void()> task = ready_q.front();
-         int indices = indices_count_q.front();
+         
          ready_q.pop();
-         indices_count_q.pop();
-         thread_pool_printf("run(%i): Popped task with %i indices, unlocking\n", thread_num, indices);
+         thread_pool_printf("thread_entrypoint(%i): Popped task with %i indices, unlocking\n", thread_num, indices);
          thread_states[thread_num] = running;
          q_lock.unlock();
 
-         thread_pool_printf("run(%i): Running task...\n", thread_num);
+         thread_pool_printf("thread_entrypoint(%i): Running task...\n", thread_num);
          // process task
          task();
 
          // signal done
-         thread_pool_printf("run(%i): Task complete.\n", thread_num);
+         thread_pool_printf("thread_entrypoint(%i): Task complete.\n", thread_num);
          // start over
       }
    }

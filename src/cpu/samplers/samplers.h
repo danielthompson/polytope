@@ -5,50 +5,36 @@
 #ifndef POLY_SAMPLERS_H
 #define POLY_SAMPLERS_H
 
-#include "../../common/structures/Point2.h"
+#include "../../common/structures/point2.h"
+#include "random_number_generator.h"
 
 namespace poly {
 
-   class AbstractSampler {
+   class abstract_sampler {
    public:
-
-      // methods
-      virtual Point2f GetSample(int x, int y) const = 0;
-
-      virtual void GetSamples(Point2f points[], unsigned int number, int x, int y) const = 0;
-
-      // destructors
-
-      virtual ~AbstractSampler() = default;
-
+      virtual void get_samples(poly::point2f points[], unsigned int number, int x, int y) = 0;
+      virtual ~abstract_sampler() = default;
    };
 
-   class CenterSampler : public AbstractSampler {
+   class center_sampler : public abstract_sampler {
    public:
-      Point2f GetSample(int x, int y) const override;
-
-      void GetSamples(Point2f points[], unsigned int number, int x, int y) const override;
-
-      ~CenterSampler() override = default;
+      void get_samples(poly::point2f points[], unsigned int number, int x, int y) override;
    };
 
-   class HaltonSampler : public AbstractSampler {
+   class halton_sampler : public abstract_sampler {
    public:
-      Point2f GetSample(int x, int y) const override;
-
-      void GetSamples(Point2f points[], unsigned int number, int x, int y) const override;
-
+      void get_samples(poly::point2f points[], unsigned int number, int x, int y) override;
    };
 
-   class GridSampler : public AbstractSampler {
+   class grid_sampler : public abstract_sampler {
    public:
-      Point2f GetSample(int x, int y) const override;
-
-      ~GridSampler() override = default;
-
-      void GetSamples(Point2f points[], unsigned int number, int x, int y) const override;
+      void get_samples(poly::point2f points[], unsigned int number, int x, int y) override;
    };
    
+   class random_sampler : public abstract_sampler {
+   public:
+      void get_samples(poly::point2f points[], unsigned int number, int x, int y) override;
+   };
 }
 
 

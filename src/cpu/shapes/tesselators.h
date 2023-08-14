@@ -10,17 +10,17 @@
 namespace poly {
    class SphereTesselator {
    public:
-      static void Create(unsigned int meridians, unsigned int parallels, std::shared_ptr<poly::mesh_geometry> mesh);
+      static void Create(unsigned int meridians, unsigned int parallels, const std::shared_ptr<poly::mesh_geometry>& mesh);
    };
 
    class DiskTesselator {
    public:
-      static void Create(unsigned int meridians, std::shared_ptr<poly::mesh_geometry> mesh);
+      static void Create(unsigned int meridians, const std::shared_ptr<poly::mesh_geometry>& mesh);
    };
 
    class ConeTesselator {
    public:
-      static void Create(unsigned int meridians, std::shared_ptr<poly::mesh_geometry> mesh);
+      static void Create(unsigned int meridians, const std::shared_ptr<poly::mesh_geometry>& mesh);
    };
 }
 

@@ -5,10 +5,10 @@
 #include "gtest/gtest.h"
 
 #include "../../../src/common/parsers/pbrt_parser.h"
-#include "../../../src/cpu/films/PNGFilm.h"
-#include "../../../src/cpu/filters/BoxFilter.h"
+#include "../../../src/cpu/films/png_film.h"
+#include "../../../src/cpu/filters/box_filter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
-#include "../../../src/cpu/cameras/PerspectiveCamera.h"
+#include "../../../src/cpu/cameras/perspective_camera.h"
 #include "../../../src/cpu/shading/brdf/lambert_brdf.h"
 #include "../../../lib/lodepng.h"
 
@@ -17,7 +17,7 @@ namespace Tests {
    
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/texture/rainbow-texture.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
    
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -54,7 +54,7 @@ namespace Tests {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/texture/rainbow-texture.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
 
       // ensure nothing is null
    }

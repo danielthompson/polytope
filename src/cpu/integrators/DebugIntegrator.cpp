@@ -6,19 +6,19 @@
 
 namespace poly {
 
-   Sample DebugIntegrator::GetSample(Ray &ray, const int depth, const int x, const int y) {
+   poly::Sample DebugIntegrator::get_sample(ray &ray, int depth, int x, int y) {
 
-      const Intersection closestStateToRay = Scene->intersect(ray, x, y);
+      const poly::intersection closest_intersection = Scene->intersect(ray, x, y);
 
-      if (closestStateToRay.Hits) {
+      if (closest_intersection.Hits) {
          // TODO
 //         const ReflectanceSpectrum refl = closestStateToRay.Shape->Material->ReflectanceSpectrum;
 //         return Sample(SpectralPowerDistribution(refl.r, refl.g, refl.b));
-         return Sample(SpectralPowerDistribution(ray.MinT, ray.MinT, ray.MinT));
+         return poly::Sample(poly::SpectralPowerDistribution(ray.min_t, ray.min_t, ray.min_t));
       }
 
       else {
-         return Sample(SpectralPowerDistribution());
+         return poly::Sample(poly::SpectralPowerDistribution());
       }
    }
 }

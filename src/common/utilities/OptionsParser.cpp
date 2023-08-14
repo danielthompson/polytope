@@ -50,11 +50,11 @@ namespace poly {
          try {
             unsigned int parsedValue = stou(value);
             options.threads = parsedValue;
-            Log.debug("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
+            LOG_DEBUG("Parsed [" << option << "] = [" << parsedValue << "].");
             options.threadsSpecified = true;
          }
          catch (...) {
-            ERROR("Failed to parse [" + option + "] = [" + value + "].");
+            ERROR("Failed to parse [" << option << "] = [" << value << "].");
          }
       }
 
@@ -66,7 +66,7 @@ namespace poly {
          try {
             unsigned int parsedValue = stou(value);
             options.samples = parsedValue;
-            Log.debug("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
+            LOG_DEBUG("Parsed [" + option + "] = [" + std::to_string(parsedValue) + "].");
             options.samplesSpecified = true;
          }
          catch (...) {
@@ -81,11 +81,11 @@ namespace poly {
 
          try {
             options.input_filename = value;
-            Log.debug("Parsed [" + option + "] = [" + value + "].");
+            LOG_DEBUG("Parsed [" << option << "] = [" << value << "].");
             options.inputSpecified = true;
          }
          catch (...) {
-            ERROR("Failed to parse [" + option + "] = [" + value + "].");
+            ERROR("Failed to parse [" << option << "] = [" << value << "].");
          }
       }
 
@@ -102,11 +102,11 @@ namespace poly {
 
          try {
             options.output_filename = value;
-            Log.debug("Parsed [" + option + "] = [" + value + "].");
+            LOG_DEBUG("Parsed [" << option << "] = [" << value << "].");
             options.outputSpecified = true;
          }
          catch (...) {
-            ERROR("Failed to parse [" + option + "] = [" + value + "].");
+            ERROR("Failed to parse [" << option << "] = [" << value << "].");
          }
       }
 

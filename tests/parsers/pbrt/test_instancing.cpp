@@ -5,17 +5,17 @@
 #include "gtest/gtest.h"
 
 #include "../../../src/common/parsers/pbrt_parser.h"
-#include "../../../src/cpu/films/PNGFilm.h"
-#include "../../../src/cpu/filters/BoxFilter.h"
+#include "../../../src/cpu/films/png_film.h"
+#include "../../../src/cpu/filters/box_filter.h"
 #include "../../../src/cpu/integrators/PathTraceIntegrator.h"
-#include "../../../src/cpu/cameras/PerspectiveCamera.h"
+#include "../../../src/cpu/cameras/perspective_camera.h"
 
 namespace Tests {
    TEST(instancing_scene, teapot1) {
    
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing1.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
    
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -37,7 +37,7 @@ namespace Tests {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing2.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -70,7 +70,7 @@ namespace Tests {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing3.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -103,7 +103,7 @@ namespace Tests {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -141,7 +141,7 @@ namespace Tests {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -177,7 +177,7 @@ namespace Tests {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -192,11 +192,11 @@ namespace Tests {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing4.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
-      EXPECT_EQ(3, runner->Scene->num_mesh_geometries);
+      EXPECT_EQ(3, runner->Scene->mesh_geometry_count);
    }
    
    /**
@@ -206,7 +206,7 @@ namespace Tests {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing5.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
@@ -220,10 +220,10 @@ namespace Tests {
 
       auto fp = poly::pbrt_parser();
       std::string file = "../scenes/test/instancing/teapot-instancing5.pbrt";
-      std::unique_ptr<poly::AbstractRunner> runner = fp.parse_file(file);
+      std::shared_ptr<poly::runner> runner = fp.parse_file(file);
 
       // ensure nothing is null
       ASSERT_NE(nullptr, runner->Scene);
-      EXPECT_EQ(2, runner->Scene->num_mesh_geometries);
+      EXPECT_EQ(2, runner->Scene->mesh_geometry_count);
    }
 }

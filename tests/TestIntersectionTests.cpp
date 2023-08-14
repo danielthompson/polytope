@@ -1,21 +1,21 @@
 #include "gtest/gtest.h"
 
 #include "../src/cpu/structures/Vectors.h"
-#include "../src/cpu/structures/Intersection.h"
+#include "../src/cpu/structures/intersection.h"
 
 namespace Tests {
 
    namespace Intersection {
       namespace Transformation {
          TEST(Intersection, WorldToLocal1) {
-            poly::Intersection intersection;
-            intersection.bent_normal = poly::Normal(0, 0, 1);
-            intersection.Tangent1 = poly::Vector(1, 0, 0);
-            intersection.Tangent2 = poly::Vector(0, 1, 0);
+            poly::intersection intersection;
+            intersection.bent_normal = poly::normal(0, 0, 1);
+            intersection.tangent_1 = poly::vector(1, 0, 0);
+            intersection.tangent_2 = poly::vector(0, 1, 0);
 
-            poly::Vector worldIncoming(0, 0, -1);
+            poly::vector worldIncoming(0, 0, -1);
 
-            poly::Vector localIncoming = intersection.WorldToLocal(worldIncoming);
+            poly::vector localIncoming = intersection.world_to_local(worldIncoming);
 
             EXPECT_EQ(localIncoming.x, 0);
             EXPECT_EQ(localIncoming.y, -1);
@@ -23,14 +23,14 @@ namespace Tests {
          }
 
          TEST(Intersection, WorldToLocal2) {
-            poly::Intersection intersection;
-            intersection.bent_normal = poly::Normal(0, 0, 1);
-            intersection.Tangent1 = poly::Vector(0, 1, 0);
-            intersection.Tangent2 = poly::Vector(1, 0, 0);
+            poly::intersection intersection;
+            intersection.bent_normal = poly::normal(0, 0, 1);
+            intersection.tangent_1 = poly::vector(0, 1, 0);
+            intersection.tangent_2 = poly::vector(1, 0, 0);
 
-            poly::Vector worldIncoming(0, 0, -1);
+            poly::vector worldIncoming(0, 0, -1);
 
-            poly::Vector localIncoming = intersection.WorldToLocal(worldIncoming);
+            poly::vector localIncoming = intersection.world_to_local(worldIncoming);
 
             EXPECT_EQ(localIncoming.x, 0);
             EXPECT_EQ(localIncoming.y, -1);
